@@ -1,0 +1,228 @@
+[
+  {
+    "type": "WMTS",
+    "name": "basemap.at HighDPI",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmaphidpi",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "projection": null,
+      "attributions": "Grundkarte: <a href=\"https://www.basemap.at\">basemap.at</a>"
+    },
+    "id": "e123e05a-f1dc-4226-a6f5-5a87a5298534"
+  },
+  {
+    "type": "WMTS",
+    "name": "basemap.at Orthofoto",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmaporthofoto30cm",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "attributions": "Grundkarte: <a href=\"basemap.at\">basemap.at</a>"
+    },
+    "id": "92b9c826-e28e-4776-a789-0a0fabfbf612"
+  },
+  {
+    "type": "WMTS",
+    "name": "Beschriftung Städte, Verkehrsadern",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmapoverlay",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "attributions": "Grundkarte: <a href=\"https://www.basemap.at\">basemap.at</a>"
+    },
+    "id": "3baa1f83-b527-474f-8141-1e2d22cf5580"
+  },
+  {
+    "type": "WMTS",
+    "name": "basemap.at Gelände",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmapgelaende",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "attributions": "Grundkarte: <a href=\"https://www.basemap.at\">basemap.at</a>"
+    },
+    "id": "ddde9d63-43eb-44a6-896f-a526d3908fa8"
+  },
+  {
+    "type": "WMTS",
+    "name": "basemap.at Oberfläche",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmapoberflaeche",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ]
+    },
+    "id": "5555bc20-74c6-4f2d-9540-d146776edf68"
+  },
+  {
+    "type": "XYZ",
+    "name": "Open Topo Map",
+    "options": {
+      "url": "https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "attributions": "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)"
+    },
+    "id": "c1c3fd8e-ee82-48bc-a02f-9decd81f8dc7"
+  },
+  {
+    "type": "WMTS",
+    "name": "Swisstopo Farbe",
+    "options": {
+      "url": "http://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml",
+      "layer": "ch.swisstopo.pixelkarte-farbe",
+      "wgs84BoundingBox": [
+        5.140242,
+        45.398181,
+        11.47757,
+        48.230651
+      ],
+      "projection": null
+    },
+    "id": "79d90d6f-07c7-41e7-bf14-0e88c9657033"
+  },
+  {
+    "type": "XYZ",
+    "name": "Digital Elevation PNG",
+    "options": {
+      "url": "http://localhost:8000/services/dhm_at_EPSG3857_10m_2018/tiles/{z}/{x}/{y}.png"
+    },
+    "id": "50d92875-97d3-4a71-926e-811a6bb7ccf0"
+  },
+  {
+    "type": "XYZ",
+    "name": "OK50 LOCAL",
+    "options": {
+      "url": "http://localhost:8000/services/OMK50-MBTiles/tiles/{z}/{x}/{y}.png",
+      "maxZoom": 15,
+      "minZoom": 7
+    },
+    "id": "87aceaea-82a0-4bad-81b8-91b4d8921286"
+  },
+  {
+    "type": "WMS",
+    "name": "Tirol 5m ELEVATION",
+    "options": {
+      "url": "https://gis.tirol.gv.at/arcgis/services/Service_Public/terrain/MapServer/WMSServer?request=GetCapabilities&service=WMS",
+      "layer": "Image_Gelaendemodell_5m",
+      "projection": "EPSG:3857"
+    },
+    "id": "1f96b8c0-e7bc-4b79-9745-70cb3429b7ae"
+  },
+  {
+    "type": "XYZ",
+    "name": "basemap.at Standard LOCAL",
+    "options": {
+      "url": "http://localhost:8000/services/standard16/tiles/{z}/{x}/{y}.png"
+    },
+    "id": "61858e0d-9d66-423f-9afb-f82424c6c38d"
+  },
+  {
+    "type": "XYZ",
+    "name": "OMK 50 Zone 33 LOCAL",
+    "options": {
+      "url": "http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg",
+      "maxZoom": 15,
+      "minZoom": 6,
+      "attributions": "&#169; <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">OpenStreetMap</a> contributors."
+    },
+    "id": "14dff36e-b81c-4fad-9689-65c9e0798faa"
+  },
+  {
+    "type": "WMTS",
+    "name": "GRAU",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmapgelaende",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "projection": null
+    },
+    "id": "d5ae7787-2b0e-4d42-8a2a-d43fe440fef9"
+  },
+  {
+    "type": "WMTS",
+    "name": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmapoverlay",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "projection": null
+    },
+    "id": "48db0b85-a2f0-4fb0-a33f-c6811396c88c"
+  },
+  {
+    "type": "WMTS",
+    "name": "graus",
+    "options": {
+      "url": "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "bmapgrau",
+      "wgs84BoundingBox": [
+        8.782379,
+        46.35877,
+        17.5,
+        49.037872
+      ],
+      "projection": null
+    },
+    "id": "eb683a09-b0c4-4b06-be61-3eb6f64663a3"
+  },
+  {
+    "type": "WMTS",
+    "name": "Ortho Wien 2020",
+    "options": {
+      "url": "https://maps.wien.gv.at/wmts/1.0.0/WMTSCapabilities.xml",
+      "layer": "lb",
+      "wgs84BoundingBox": [
+        16.17,
+        48.1,
+        16.58,
+        48.33
+      ],
+      "projection": null
+    },
+    "id": "4072a6eb-254c-49ef-a537-5ef3c3112f2f"
+  },
+  {
+    "type": "XYZ",
+    "name": "Stamen",
+    "options": {
+      "url": "http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg",
+      "minZoom": 0,
+      "maxZoom": 17
+    },
+    "id": "4548a8f0-fee8-447f-ac46-67af2db7b23c"
+  }
+]

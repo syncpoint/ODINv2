@@ -1,0 +1,331 @@
+input:focus, div:focus {
+  outline: none;
+}
+
+input {
+  border: 0;
+}
+
+div {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.panel {
+  pointer-events: auto;
+  background-color: white;
+  user-select: none;
+  box-shadow:
+    0px 2px 4px -1px rgba(0,0,0,0.2),
+    0px 4px 5px 0px rgba(0,0,0,0.14),
+    0px 1px 10px 0px rgba(0,0,0,0.12);
+}
+
+.map {
+  z-index: 10;
+  touch-action: none;
+}
+
+.panel-container {
+  z-index: 20;
+
+  padding-top: 6em;
+  padding-bottom: 4em;
+  padding-left: 1em;
+  padding-right: 1em;
+
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: 26em auto 26em;
+  grid-template-areas: "L . R";
+  pointer-events: none;
+
+  /*
+    Give WebKit a chance to calculate determine explicit height.
+    This is necessary to stretch children to desired height.
+  */
+  height: calc(100vh - 4em);
+}
+
+.spotlight {
+  grid-area: L;
+  display: flex;
+  flex-direction: column;
+}
+
+.properties {
+  grid-area: R;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.scopebar {
+  padding: 12px;
+  padding-bottom: 4px;
+  border-bottom-style: solid;
+  border-width: 1px;
+  border-color: 'grey';
+  font-size: '90%';
+}
+
+/* TODO: Do we need this container and why? */
+.search-container {
+  padding: 8px;
+  display: inline-flex;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  border-bottom-style: solid;
+  border-width: 1px;
+  border-color: gray;
+}
+
+.search-input {
+  font-size: 1.2em;
+  width: 100%;
+  margin: 0;
+  padding: 6px 0 7px;
+}
+
+.list-container {
+  height: 100%;
+  overflow: auto;
+}
+
+.list {
+  max-height: 0px;
+  margin: 0;
+  padding: 0;
+}
+
+.property {
+  padding: 12px;
+  padding-bottom: 0px;
+  display: flex;
+  flex-direction: column; /* row (default) | row-reverse | column | column-reverse */
+}
+
+.card {
+  padding: 12px;
+  display: flex;
+  flex-direction: row; /* row (default) | row-reverse | column | column-reverse */
+  font-size: 90%;
+
+  border-bottom-style: solid;
+  border-width: 1px;
+  border-color: gray;
+}
+
+/* TODO: focus background should not be grayed when input has focus. */
+.spotlight:focus .card-focus {
+  background-color: #e3f5f7;
+}
+
+.card-focus {
+  background-color: #eeeeee;
+}
+
+.spotlight:focus .card[aria-selected="true"] {
+  background-color: #c3e8ec;
+}
+
+.card[aria-selected="true"] {
+  background-color: #dadbdb;
+}
+
+.card-avatar {
+  margin-right: 8px;
+}
+
+.avatar-image {
+  width: 48px;
+}
+
+.card-body {
+  /* none | [ <'flex-grow'> <'flex-shrink'>? || <'flex-basis'> ] */
+  flex: 1 1 auto;
+  margin-right: 16px;
+
+  /*
+  WebKit does not support flexbox/gap.
+  grid-gap is fine though.
+  This is more convenient than to set margin/padding on each child.
+  */
+
+  display: grid;
+  grid-gap: 4px;
+}
+
+.title-label {
+  font-weight: bold;
+}
+
+.title-input {
+  background-color: inherit;
+  font-weight: bold;
+  color: #e03c31;
+  font-size: inherit;
+  width: 100%;
+  padding: 0;
+  margin: 0; /* override Webkit margin. */
+}
+
+.card-description {
+  display: inline-block;
+  font-size: 0.9em;
+  line-height: 16px;
+}
+
+.card-secondary {
+  font-size: 0.9em;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 0.7em;
+  padding: 3px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: inline-block;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.tag-active {
+  font-size: 0.7em;
+  padding: 3px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: inline-block;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.tag-icon {
+  display: inline-block;
+  color: inherit;
+  line-height: 0;
+  vertical-align: -.265em;
+  margin-right: 3px;
+}
+
+.tag-close-icon {
+  cursor: pointer;
+  margin-left: 3px;
+}
+
+.tag-input {
+  font-size: 0.7em;
+  display: inline-block;
+  background-color: inherit;
+  box-sizing: border-box;
+
+  padding: 3px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  line-height: 12px;
+  width: 67px;
+}
+
+.tag-input:focus {
+  border: 1px dashed darkgrey;
+  border-radius: 2px;
+}
+
+.tag-active:hover {
+  background-color: #8d8d8d;
+  color: white;
+}
+
+.tag-group {
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #1fc3ce;
+  background-color: #1fc3ce; /* CG red */
+}
+
+.tag-scope {
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #e03c31;
+  background-color: #e03c31; /* CG red */
+}
+
+.tag-system {
+  border-width: 1px;
+  border-style: solid;
+  border-color:#e03c31;
+}
+
+.tag-image {
+  border-width: 1px;
+  border-style: solid;
+  border-color:#e03c31;
+  padding-left: 6px;
+}
+
+.tag-user {
+  border-width: 1px;
+  border-style: solid;
+  border-color:#1fc3ce;
+}
+
+.tag-plus {
+  border: 1px dashed darkgrey;
+}
+
+.toolbar {
+  grid-area: T;
+  margin: 0;
+  padding: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  position: relative;
+  list-style: none;
+}
+
+.iconbutton {
+  display: inline-flex;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-left: 0px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.iconbutton-selected {
+  display: inline-flex;
+  padding-left: 7px;
+  padding-right: 10px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-left: 0px;
+  color: rgba(0, 0, 0, 0.54);
+
+  border-left-style: solid;
+  border-width: 5px;
+  border-color: #e03c31;
+}
+
+.iconbutton:hover {
+  background-color: #dddddd;
+}

@@ -1,0 +1,55 @@
+{
+  "name": "nido",
+  "productName": "NIDO",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "electron . --trace-deprecation=true --noDevServer",
+    "hot": "webpack serve",
+    "webpack": "webpack",
+    "webpack:production": "webpack --mode='production'",
+    "test": "mocha --require esm --recursive",
+    "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha --require esm --recursive",
+    "lint": "eslint"
+  },
+  "author": {
+    "name": "Syncpoint GmbH",
+    "email": "office@syncpoint.io"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/eslint-parser": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
+    "@babel/preset-react": "^7.12.13",
+    "babel-loader": "^8.1.0",
+    "c8": "^7.6.0",
+    "css-loader": "^5.1.3",
+    "electron": "^12.0.1",
+    "eslint": "^7.22.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-react": "^7.22.0",
+    "esm": "^3.2.25",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.3.1",
+    "level-mem": "^5.0.1",
+    "mocha": "^8.3.2",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.27.1",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "level": "^6.0.1",
+    "ol": "^6.5.0",
+    "path-to-regexp": "^6.2.0",
+    "proj4": "^2.7.2",
+    "ramda": "^0.27.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "subleveldown": "^5.0.1",
+    "uuid-random": "^1.3.2",
+    "wkx": "^0.5.0"
+  }
+}
