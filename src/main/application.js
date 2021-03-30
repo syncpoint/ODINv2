@@ -1,34 +1,41 @@
 import os from 'os'
 import path from 'path'
-import { app, BrowserWindow, Menu } from 'electron'
+import { app, Menu } from 'electron'
 import level from 'level'
-import { evented, EVENT, COMMAND } from './evented'
+import { evented, EVENT } from './evented'
 import './window'
 import { template } from './menu'
-import master from './master'
-import { transfer } from './legacy'
+import * as Master from '../../src/main/master'
+import * as Legacy from '../../src/main/legacy'
+import * as Session from './session'
+import * as L from '../shared/level'
 
 const transferLegacy = async master => {
+
+  const transferred = await L.get(master, 'legacy:transferred', false)
+  if (transferred) return
+
   const userData = app.getPath('userData')
   const userHome = os.homedir()
   const directory = path.join(userHome, 'ODIN')
+  const home = Legacy.home(directory)
 
   const databases = {}
-  const options = {
-    master,
-    directory,
-    projectDatabase: project => {
-      const directory = path.join(userData, 'databases', project)
-      databases[project] = level(directory)
-      return databases[project]
-    }
-  }
 
   // true: transferred, false: already transferred
-  const result = transfer(options)
-  // Close project databases aftrer transfer (if any):
-  await Promise.all(Object.values(databases).map(database => database.close()))
-  return result
+  const { sources, projects } = Master.transfer(master, project => {
+    const name = project.split(':')[1]
+    const directory = path.join(userData, 'databases', name)
+    databases[name] = level(directory)
+    return databases[name]
+  })
+
+  await projects(await Legacy.projects(home))
+  await sources(await home.sources())
+
+  // Close project databases after transfer (if any):
+  const close = database => database.close()
+  await Promise.all(Object.values(databases).map(close))
 }
 
 /**
@@ -38,9 +45,10 @@ const ready = async () => {
 
   // Open/create master database and migrate legacy projects (if any).
   const userData = app.getPath('userData')
-  master.open(userData)
+  Master.open(userData)
 
-  await transferLegacy(master.db())
+  await transferLegacy(Master.database())
+  await Session.restore()
 
   const menu = Menu.buildFromTemplate(template())
   Menu.setApplicationMenu(menu)
@@ -69,8 +77,7 @@ const quit = () => evented.emit(EVENT.QUIT)
  */
 const activate = (/* event, hasWisibleWindows */) => {
   // Create new window, when none is open right now.
-  const windows = BrowserWindow.getAllWindows()
-  if (windows.length === 0) evented.emit(COMMAND.CREATE_WINDOW)
+  console.log('[application] activate - UNHANDLED!')
 }
 
 
@@ -78,8 +85,7 @@ const activate = (/* event, hasWisibleWindows */) => {
  * Track attempts to start additional program instances.
  */
 const secondInstance = () => {
-  const windows = BrowserWindow.getAllWindows()
-  if (windows.length === 0) evented.emit(COMMAND.CREATE_WINDOW)
+  console.log('[application] secondInstance - UNHANDLED!')
 }
 
 

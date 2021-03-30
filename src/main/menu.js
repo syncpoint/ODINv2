@@ -1,7 +1,8 @@
 import { app } from 'electron'
 import { evented, COMMAND } from './evented'
 
-// TODO: Application menu depends on active window if any.
+
+// TODO: Application menu depends on focused window (if any.)
 const darwin = process.platform === 'darwin'
 
 const appMenu = darwin
@@ -29,8 +30,15 @@ const fileMenu = {
       label: 'New Window',
       accelerator: 'CmdOrCtrl+Shift+N',
       click: async (/* menuItem, browserWindow, event */) => {
-        evented.emit(COMMAND.CREATE_WINDOW)
+        evented.emit(COMMAND.CREATE_PROJECT)
       }
+    },
+    { type: 'separator' },
+    {
+      label: 'Open Recent',
+      submenu: [
+        { label: '...' }
+      ]
     },
     darwin ? { role: 'close' } : { role: 'quit' }
   ]

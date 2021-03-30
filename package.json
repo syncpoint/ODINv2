@@ -5,11 +5,12 @@
   "description": "",
   "main": "dist/main.js",
   "scripts": {
-    "start": "electron . --trace-deprecation=true --noDevServer",
+    "start": "electron . --cold",
     "hot": "webpack serve",
     "webpack": "webpack",
     "webpack:production": "webpack --mode='production'",
     "test": "mocha --require esm --recursive",
+    "test:watch": "mocha --require esm --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha --require esm --recursive",
     "lint": "eslint"
   },
@@ -42,6 +43,7 @@
   },
   "dependencies": {
     "level": "^6.0.1",
+    "luxon": "^1.26.0",
     "ol": "^6.5.0",
     "path-to-regexp": "^6.2.0",
     "proj4": "^2.7.2",

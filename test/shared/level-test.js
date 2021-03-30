@@ -9,7 +9,7 @@ describe('level', function () {
   const expected = [...expectedA, ...expectedB]
 
   beforeEach(async function () {
-    db = level()
+    db = level({ valueEncoding: 'json' })
     await expected.reduce((acc, entry) => {
       acc.put(entry.key, entry.value)
       return acc
@@ -38,5 +38,30 @@ describe('level', function () {
     await db.put('key', 'value')
     assert.strictEqual(await L.get(db, 'key'), 'value')
     assert.strictEqual(await L.get(db, 'fantasy', 'default'), 'default')
+  })
+
+  it('#aggregate', async function () {
+    const expected = {
+      property: 'value',
+      number: 4711,
+      boolean: false,
+      complex: { a: 2, b: 1, c: 'string' }
+    }
+
+    const batch = Object.entries(expected).reduce((batch, [name, value]) => {
+      batch.put(`object/${name}`, value)
+      return batch
+    }, db.batch())
+
+    await batch.write()
+    assert.deepStrictEqual(await L.aggregate(db, 'object/'), expected)
+  })
+
+  it('#update', async function () {
+    await db.put('key', { count: 1 })
+    const value = await L.update(db, 'key', ({ count }) => ({ count: count + 1 }))
+    const expected = { count: 2 }
+    assert.deepStrictEqual(value, expected)
+    assert.deepStrictEqual(await db.get('key'), expected)
   })
 })

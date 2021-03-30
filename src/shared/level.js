@@ -50,6 +50,19 @@ export const keys = (db, prefix) => new Promise((resolve, reject) => {
 })
 
 
+export const aggregate = (db, prefix) => new Promise((resolve, reject) => {
+  const acc = {}
+  const options = prefix
+    ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
+    : { keys: true, values: true }
+
+  db.createReadStream(options)
+    .on('data', ({ key, value }) => (acc[key.substring(prefix.length)] = value))
+    .on('error', reject)
+    .on('end', () => resolve(acc))
+})
+
+
 /**
  * Fetch value; on absence return default value.
  */
@@ -59,4 +72,14 @@ export const get = async (db, key, defaultValue) => {
   } catch (err) {
     return defaultValue
   }
+}
+
+
+/**
+ * Update value of given key with result of supplied function.
+ */
+export const update = async (db, key, fn) => {
+  const value = fn(await db.get(key))
+  await db.put(key, value)
+  return value
 }
