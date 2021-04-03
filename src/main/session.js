@@ -1,71 +1,42 @@
-import path from 'path'
 import * as R from 'ramda'
-import { app, BrowserWindow } from 'electron'
-import * as Master from './master'
-import * as L from '../shared/level'
+import { DateTime } from 'luxon'
 import * as Window from './window'
-import { evented, COMMAND } from './evented'
-
-const byLastAccess = (a, b) => b.lastAccess.localeCompare(a.lastAccess)
-
-const notCold = process.argv.indexOf('--cold') === -1
-const hot = process.defaultApp ||
-  /[\\/]electron-prebuilt[\\/]/.test(process.execPath) ||
-  /[\\/]electron[\\/]/.test(process.execPath)
-
-const mainURL = (hot && notCold)
-  ? new URL('index.html', 'http://localhost:8080')
-  : new URL(path.join(app.getAppPath(), 'dist', 'index.html'), 'file:')
-
-
-const openProject = async project => {
-  const master = Master.database()
-
-  const options = {
-    url: mainURL,
-    title: project.name,
-    x: project.x,
-    y: project.y,
-    width: project.width,
-    height: project.height
-  }
-
-  const window = Window.create(options)
-  window.projectId = project.id
-
-  ;['resized', 'moved'].forEach(event => window.on(event, () => {
-    L.update(master, `project:${project.id}`, project => ({
-      ...project,
-      ...window.getBounds()
-    }))
-  }))
-}
+import { evented, COMMAND, EVENT } from './evented'
+import * as Master from './master'
 
 const createProject = () => {
-  console.log('createProject')
-  const windows = BrowserWindow.getAllWindows()
-  console.log('[createProject]', windows)
+  // TODO: ...
 }
 
-const fetchProjects = async () => {
-  const master = Master.database()
-  const projects = await L.aggregate(master, 'project:')
-
-  return Object.entries(projects).reduce((acc, [id, project]) => {
-    return acc.concat({ id, ...project })
-  }, [])
+const restoreProjectWindow = project => {
+  const lastAccess = DateTime.now().toISO()
+  Master.updateEntry(project.id, project => ({ ...project, open: true, lastAccess }))
+  Window.projectWindow(project)
 }
-
 
 export const restore = async () => {
-  const projects = await fetchProjects()
-  projects.sort(byLastAccess)
+  const projects = await Master.projectList()
 
-  R.cond([
-    [projects => projects.length > 0, projects => openProject(R.head(projects))],
-    [R.T, createProject]
-  ])(projects)
+  // Restore open projects from last session (if any).
+  const open = projects.filter(project => project.open)
+
+  if (open.length > 0) open.forEach(restoreProjectWindow)
+  else if (projects.length > 0) Window.projectWindow(R.head(projects))
+  else {
+    // TODO: create/open new project
+  }
 }
 
-
 evented.on(COMMAND.CREATE_PROJECT, () => createProject())
+
+evented.on(COMMAND.OPEN_PROJECT, async ({ id }) => {
+  const win = Window.fromProjectId(id)
+  if (win) win.focus()
+  else {
+    const lastAccess = DateTime.now().toISO()
+    Master.updateEntry(id, project => ({ ...project, open: true, lastAccess }))
+    const project = await Master.project(id)
+    Window.projectWindow({ id, ...project })
+    evented.emit(EVENT.PROJECT_OPENED, { id })
+  }
+})

@@ -23,24 +23,48 @@ const appMenu = darwin
     }]
   : []
 
-const fileMenu = {
-  label: 'File',
+const fileMenu = projects => {
+
+  const recentProjects = projects.map(project => ({
+    id: project.id,
+    label: project.name,
+    click: (menuItem, focusedWindow, focusedWebContents) => {
+      evented.emit(COMMAND.OPEN_PROJECT, { id: menuItem.id })
+    }
+  }))
+
+  return {
+    label: 'File',
+    submenu: [
+      {
+        label: 'New Window',
+        accelerator: 'CmdOrCtrl+Shift+N',
+        click: async (/* menuItem, browserWindow, event */) => {
+          evented.emit(COMMAND.CREATE_PROJECT)
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Open Recent',
+        submenu: recentProjects
+      },
+      darwin ? { role: 'close' } : { role: 'quit' }
+    ]
+  }
+}
+
+const viewMenu = {
+  label: 'View',
   submenu: [
-    {
-      label: 'New Window',
-      accelerator: 'CmdOrCtrl+Shift+N',
-      click: async (/* menuItem, browserWindow, event */) => {
-        evented.emit(COMMAND.CREATE_PROJECT)
-      }
-    },
+    { role: 'reload' },
+    { role: 'forceReload' },
+    { role: 'toggleDevTools' },
     { type: 'separator' },
-    {
-      label: 'Open Recent',
-      submenu: [
-        { label: '...' }
-      ]
-    },
-    darwin ? { role: 'close' } : { role: 'quit' }
+    { role: 'resetZoom' },
+    { role: 'zoomIn' },
+    { role: 'zoomOut' },
+    { type: 'separator' },
+    { role: 'togglefullscreen' }
   ]
 }
 
@@ -54,11 +78,21 @@ const windowMenu = {
           { type: 'separator' },
           { role: 'front' },
           { type: 'separator' },
-          { role: 'window' } // FIXME: useless
+
+          // FIXME: useless
+          // TODO: add list windows
+          { role: 'window' }
         ]
       : [{ role: 'close' }]
     )
   ]
 }
 
-export const template = () => [...appMenu, fileMenu, windowMenu]
+export const template = projects => {
+  return [
+    ...appMenu,
+    fileMenu(projects),
+    viewMenu,
+    windowMenu
+  ]
+}

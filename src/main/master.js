@@ -4,10 +4,15 @@ import level from 'level'
 import sublevel from 'subleveldown'
 import { wkb } from '../shared/encoding'
 import { evented, EVENT } from './evented'
+import * as L from '../shared/level'
 
+
+/**
+ * Database must not be opened on module load time, because second process
+ * will crash at this point. LevelDB supports only one process
+ * holding a database lock.
+ */
 let db
-
-const quit = () => db.close()
 
 
 /**
@@ -15,10 +20,10 @@ const quit = () => db.close()
  */
 export const open = directory => {
   const databases = path.join(directory, 'databases')
-  const master = path.join(databases, 'master')
+  const filename = path.join(databases, 'master')
   fs.mkdirSync(databases, { recursive: true })
-  db = level(master, { valueEncoding: 'json' })
-  evented.on(EVENT.QUIT, quit)
+  db = level(filename, { valueEncoding: 'json' })
+  evented.on(EVENT.QUIT, () => db.close())
 }
 
 
@@ -38,10 +43,14 @@ export const partitions = {
 }
 
 
+export const transferred = async (master = db) =>
+  L.get(master, 'legacy:transferred', false)
+
+
 /**
  *
  */
-export const transfer = (master, database) => {
+export const transfer = (database, master = db) => {
   const op = ([key, value]) => ({ type: 'put', key, value })
 
   const sources = async sources => {
@@ -63,6 +72,9 @@ export const transfer = (master, database) => {
     const projectIds = Object.keys(projects)
     for (const projectId of projectIds) {
       const { layers, preferences } = projects[projectId]
+
+      // Note: Caller in (main process) is expected to close
+      // project database after transfer.
       const db = database(projectId)
       const geometries = partitions.geometries(db)
       const tuples = partitions.tuples(db)
@@ -81,7 +93,7 @@ export const transfer = (master, database) => {
         .map(([featureId, feature]) => [featureId, feature.geometry])
         .map(op)
 
-      await tuples.put('property:viewport', preferences.viewport)
+      await tuples.put('session:viewport', preferences.viewport)
       await tuples.batch(layerOps)
       await tuples.batch(featureOps)
       await geometries.batch(geometryOps)
@@ -92,4 +104,30 @@ export const transfer = (master, database) => {
     sources,
     projects
   }
+}
+
+export const projectList = async (master = db) => {
+  const projects = await L.aggregate(master, 'project:')
+  const byLastAccess = (a, b) => b.lastAccess.localeCompare(a.lastAccess)
+  return Object.entries(projects).reduce((acc, [id, project]) => {
+    return acc.concat({ id: `project:${id}`, ...project })
+  }, []).sort(byLastAccess)
+}
+
+const get = async (db, key) => {
+  try {
+    return await db.get(key)
+  } catch (err) {
+    console.log(err)
+  }
+}
+export const project = (id, master = db) => get(master, id)
+
+export const updateEntry = (id, fn, master = db) => L.update(master, id, fn)
+
+export const updateBounds = (projectId, bounds, master = db) => {
+  L.update(master, projectId, project => ({
+    ...project,
+    ...bounds
+  }))
 }

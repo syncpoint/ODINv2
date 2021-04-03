@@ -5,27 +5,33 @@ import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
-
+import sessionStore from '../store/session'
 
 /**
  *
  */
 export const Map = () => {
+
   React.useEffect(async () => {
     const target = 'map'
     const controls = [new Rotate()]
 
-    const viewOptions = {
-      center: [1823376.75753279, 6143598.472197734], // Vienna
-      resolution: 612,
-      rotation: 0
-    }
+    const session = sessionStore()
+    const view = new ol.View(await session.getViewport())
 
-    const view = new ol.View(viewOptions)
+    view.on('change', ({ target: view }) => {
+      session.putViewport({
+        center: view.getCenter(),
+        resolution: view.getResolution(),
+        rotation: view.getRotation()
+      })
+    })
+
     const layers = [
       new TileLayer({ source: new OSM() })
     ]
 
+    /* eslint-disable no-new */
     new ol.Map({
       target,
       controls,

@@ -43,6 +43,8 @@
   },
   "dependencies": {
     "level": "^6.0.1",
+    "leveldown": "^5.6.0",
+    "levelup": "^4.4.0",
     "luxon": "^1.26.0",
     "ol": "^6.5.0",
     "path-to-regexp": "^6.2.0",

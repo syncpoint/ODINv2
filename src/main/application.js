@@ -10,11 +10,7 @@ import * as Legacy from '../../src/main/legacy'
 import * as Session from './session'
 import * as L from '../shared/level'
 
-const transferLegacy = async master => {
-
-  const transferred = await L.get(master, 'legacy:transferred', false)
-  if (transferred) return
-
+const transferLegacy = async () => {
   const userData = app.getPath('userData')
   const userHome = os.homedir()
   const directory = path.join(userHome, 'ODIN')
@@ -22,10 +18,10 @@ const transferLegacy = async master => {
 
   const databases = {}
 
-  // true: transferred, false: already transferred
-  const { sources, projects } = Master.transfer(master, project => {
+  const { sources, projects } = Master.transfer(project => {
     const name = project.split(':')[1]
     const directory = path.join(userData, 'databases', name)
+    console.log('directory', directory)
     databases[name] = level(directory)
     return databases[name]
   })
@@ -35,7 +31,12 @@ const transferLegacy = async master => {
 
   // Close project databases after transfer (if any):
   const close = database => database.close()
-  await Promise.all(Object.values(databases).map(close))
+  const closeAll = () => Object.entries(databases).map(async ([key, database]) => {
+    console.log(key, await L.keys(database))
+    return close(database)
+  })
+
+  await Promise.all(closeAll())
 }
 
 /**
@@ -47,11 +48,21 @@ const ready = async () => {
   const userData = app.getPath('userData')
   Master.open(userData)
 
-  await transferLegacy(Master.database())
+  if (await Master.transferred() === false) {
+    await transferLegacy()
+  }
+
   await Session.restore()
 
-  const menu = Menu.buildFromTemplate(template())
-  Menu.setApplicationMenu(menu)
+  const setApplicationMenu = async () => {
+    const projects = await Master.projectList()
+    const menu = Menu.buildFromTemplate(template(projects))
+    Menu.setApplicationMenu(menu)
+  }
+
+  // Update File/Recent menu when project is opened.
+  setApplicationMenu()
+  evented.on(EVENT.PROJECT_OPENED, setApplicationMenu)
 }
 
 

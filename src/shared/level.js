@@ -79,6 +79,7 @@ export const get = async (db, key, defaultValue) => {
  * Update value of given key with result of supplied function.
  */
 export const update = async (db, key, fn) => {
+  if (!key) throw new Error('key undefined')
   const value = fn(await db.get(key))
   await db.put(key, value)
   return value

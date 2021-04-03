@@ -2,6 +2,7 @@ import path from 'path'
 import { existsSync, promises as fs } from 'fs'
 import * as R from 'ramda'
 import uuid from 'uuid-random'
+import proj4 from 'proj4'
 
 const UUID_PATTERN = /^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89AB][a-f\d]{3}-[a-f\d]{12}$/i
 
@@ -44,7 +45,7 @@ export const home = directory => {
    *
    * preferences: {
    *   activeLayer: String - name of active/default layer,
-   *   viewport - Map center and zoom,
+   *   viewport - Map center (WGS84) and zoom,
    *   basemaps: [basemap] - tile providers references used in project
    * }
    *
@@ -64,6 +65,12 @@ export const home = directory => {
     const filename = path.join(projectsDirectory(directory), project, 'preferences.json')
     const json = await readJSON(filename)
     delete json.paletteMemento // no longer needed
+
+    // Convert WGS84 (EPSG:4326) center to Web Mercator (EPSG:3857).
+    if (json.viewport && json.viewport.center) {
+      json.viewport.center = proj4('EPSG:4326', 'EPSG:3857', json.viewport.center)
+    }
+
     return json
   }
 

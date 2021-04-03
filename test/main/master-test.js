@@ -18,7 +18,7 @@ describe('master#transfer', function () {
   }
 
   before(async function () {
-    const { sources, projects } = transfer(master, database)
+    const { sources, projects } = transfer(database, master)
     const home = Legacy.home(directory)
     projects(await Legacy.projects(home))
     sources(await home.sources())
@@ -79,10 +79,10 @@ describe('master#transfer', function () {
   })
 
   it('project: viewport', async function () {
-    const actual = await tuples().get('property:viewport')
+    const actual = await tuples().get('session:viewport')
     assert.deepStrictEqual(actual, {
       zoom: 12.43743201077918,
-      center: [15.703785944998451, 46.743394609814715]
+      center: [1748137.454923794, 5900289.66132636]
     })
   })
 
