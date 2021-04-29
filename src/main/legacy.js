@@ -16,6 +16,9 @@ const layerName = name => path.basename(name, '.json')
 const readJSON = async filename => JSON.parse(await fs.readFile(filename, 'utf8'))
 
 
+/**
+ * Access files in legacy ODIN home directory.
+ */
 export const home = directory => {
   const home = {}
 
@@ -134,7 +137,6 @@ export const home = directory => {
 
   return home
 }
-
 
 
 export const projects = async home => {

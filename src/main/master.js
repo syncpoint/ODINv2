@@ -1,3 +1,6 @@
+/**
+ * Master database: R/W access.
+ */
 import path from 'path'
 import fs from 'fs'
 import level from 'level'
@@ -37,6 +40,12 @@ export const open = directory => {
  */
 export const database = () => db
 
+
+/**
+ * Renderer database partitions.
+ * tuples: usual key/value (json) entries
+ * geometries: feature/WKB encoded geometries
+ */
 export const partitions = {
   tuples: db => sublevel(db, 'tuples', { valueEncoding: 'json' }),
   geometries: db => sublevel(db, 'geometries', wkb)
@@ -48,7 +57,11 @@ export const transferred = async (master = db) =>
 
 
 /**
+ * Transfer legacy sources (tile providers) and projects to database.
  *
+ * @param {*} database factory for renderer database
+ * @param {*} master main database
+ * @returns functions to transfer sources and projects.
  */
 export const transfer = (database, master = db) => {
   const op = ([key, value]) => ({ type: 'put', key, value })
@@ -121,6 +134,7 @@ const get = async (db, key) => {
     console.log(err)
   }
 }
+
 export const project = (id, master = db) => get(master, id)
 
 export const updateEntry = (id, fn, master = db) => L.update(master, id, fn)

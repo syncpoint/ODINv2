@@ -21,7 +21,6 @@ const transferLegacy = async () => {
   const { sources, projects } = Master.transfer(project => {
     const name = project.split(':')[1]
     const directory = path.join(userData, 'databases', name)
-    console.log('directory', directory)
     databases[name] = level(directory)
     return databases[name]
   })
