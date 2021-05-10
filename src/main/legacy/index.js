@@ -53,7 +53,6 @@ export const transferLegacy = async (location, master, databases) => {
   await master.transferSources(await readSources(location))
   const projects = await readProjects(location)
   await master.transferMetadata(projects)
-  console.log(location)
 
   const entries = Object.entries(projects)
   const promises = await entries.map(async ([id, project]) => {
