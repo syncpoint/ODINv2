@@ -9,7 +9,7 @@
     "hot": "webpack serve",
     "webpack": "webpack",
     "webpack:production": "webpack --mode='production'",
-    "test": "mocha --require esm --recursive",
+    "test": "mocha --bail --require esm --recursive",
     "test:watch": "mocha --require esm --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha --require esm --recursive",
     "lint": "eslint"
@@ -42,7 +42,6 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "level": "^6.0.1",
     "leveldown": "^5.6.0",
     "levelup": "^4.4.0",
     "luxon": "^1.26.0",

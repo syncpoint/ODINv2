@@ -5,7 +5,6 @@ import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
-import sessionStore from '../store/session'
 
 /**
  *
@@ -16,16 +15,13 @@ export const Map = () => {
     const target = 'map'
     const controls = [new Rotate()]
 
-    const session = sessionStore()
-    const view = new ol.View(await session.getViewport())
+    const defaultViewport = {
+      center: [1823376.75753279, 6143598.472197734], // Vienna
+      resolution: 612,
+      rotation: 0
+    }
 
-    view.on('change', ({ target: view }) => {
-      session.putViewport({
-        center: view.getCenter(),
-        resolution: view.getResolution(),
-        rotation: view.getRotation()
-      })
-    })
+    const view = new ol.View(defaultViewport)
 
     const layers = [
       new TileLayer({ source: new OSM() })
