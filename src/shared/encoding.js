@@ -1,4 +1,4 @@
-import wkx from 'wkx'
+import wkx from '@syncpoint/wkx'
 import * as R from 'ramda'
 
 const parseGeoJSON = wkx.Geometry.parseGeoJSON

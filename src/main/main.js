@@ -6,12 +6,6 @@ import { template } from './menu'
 import Master from './Master'
 
 
-// Known warnings:
-// Buffer() deprecation - node_modules/wkx/lib/binarywriter.js?:4:19 (PR: https://github.com/cschwarz/wkx/pull/42)
-process.on('warning', warning => {
-  console.log(warning.stack)
-})
-
 // TODO: move to appropriate place
 const showWindow = () => {
   const notCold = process.argv.indexOf('--cold') === -1
