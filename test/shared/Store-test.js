@@ -1,25 +1,27 @@
 import assert from 'assert'
-import level from 'level-mem'
-import Store from '../../src/shared/Store'
+import levelup from 'levelup'
+import memdown from 'memdown'
+import encode from 'encoding-down'
+import Store from '../../src/shared/level/Store'
 
 describe('Store', function () {
 
   it('close :: () -> Promise', async function () {
-    const db = level()
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
     await store.close()
     assert(db.isClosed())
   })
 
   it('put :: String key, Any value => key -> value -> Promise', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
     await store.put('key', 'value')
     assert.strictEqual(await db.get('key'), 'value')
   })
 
   it('put :: Object -> Promise', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
     await store.put({ a: 1, b: 2, c: 3 })
     assert.strictEqual(await db.get('a'), 1)
@@ -28,7 +30,7 @@ describe('Store', function () {
   })
 
   it('put :: String key, Any value => [[key, value]] -> Promise', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
     await store.put([['a', 1], ['b', 2], ['c', 3]])
     assert.strictEqual(await db.get('a'), 1)
@@ -37,7 +39,7 @@ describe('Store', function () {
   })
 
   it('get :: String key => key => Promise(value)', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
     await db.put('key', 'value')
     assert.strictEqual(await store.get('key'), 'value')
@@ -51,7 +53,7 @@ describe('Store', function () {
   })
 
   it('get :: String key, Any default => key => Promise(value || default)', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
     await db.put('key', 'value')
 
@@ -66,7 +68,7 @@ describe('Store', function () {
   })
 
   it('entries :: () -> Promise({ key -> value })', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
 
     await db.put('prefix-a', 0)
@@ -79,7 +81,7 @@ describe('Store', function () {
   })
 
   it('entries :: String -> Promise({ key -> value })', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
 
     await db.put('prefix-a', 0)
@@ -91,8 +93,43 @@ describe('Store', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
+  it('list :: () -> Promise([{ key, value }])', async function () {
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const store = new Store(db)
+
+    await db.put('prefix-a', 0)
+    await db.put('prefix-b', 1)
+    await db.put('c', 2)
+
+    const expected = [
+      { key: 'c', value: 2 },
+      { key: 'prefix-a', value: 0 },
+      { key: 'prefix-b', value: 1 }
+    ]
+
+    const actual = await store.list()
+    assert.deepStrictEqual(actual, expected)
+  })
+
+  it('list :: String -> Promise([{ key, value }])', async function () {
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const store = new Store(db)
+
+    await db.put('prefix-a', 0)
+    await db.put('prefix-b', 1)
+    await db.put('c', 2)
+
+    const expected = [
+      { key: 'prefix-a', value: 0 },
+      { key: 'prefix-b', value: 1 }
+    ]
+
+    const actual = await store.list('prefix')
+    assert.deepStrictEqual(actual, expected)
+  })
+
   it('key :: (Object -> Boolean) -> Promise(String)', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
 
     await db.put('a', 0)
@@ -104,7 +141,7 @@ describe('Store', function () {
   })
 
   it('key :: (Object -> Boolean) -> String -> Promise(String)', async function () {
-    const db = level({ valueEncoding: 'json' })
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
 
     await db.put('a', 0)
@@ -114,5 +151,16 @@ describe('Store', function () {
 
     assert.strictEqual(await store.key(value => value === 1, 'prefix'), 'prefix:b')
     assert.strictEqual(await store.key(value => value === 2, 'prefix'), undefined)
+  })
+
+  it('assign :: (key, value) -> Promise()', async function () {
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const store = new Store(db)
+
+    await db.put('key', { a: '0' })
+    await store.assign('key', { b: 1 })
+    const actual = await db.get('key')
+    const expected = { a: '0', b: 1 }
+    assert.deepStrictEqual(actual, expected)
   })
 })

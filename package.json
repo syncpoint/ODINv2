@@ -34,7 +34,7 @@
     "esm": "^3.2.25",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",
-    "level-mem": "^5.0.1",
+    "memdown": "^5.1.0",
     "mocha": "^8.4.0",
     "style-loader": "^2.0.0",
     "webpack": "^5.36.2",
@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@syncpoint/wkx": "^0.5.2",
+    "abstract-leveldown": "^6.3.0",
     "leveldown": "^6.0.0",
     "levelup": "^5.0.0",
     "luxon": "^1.26.0",

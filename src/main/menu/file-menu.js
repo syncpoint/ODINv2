@@ -1,3 +1,7 @@
+
+const lastAccessDescending = (a, b) =>
+  b.value.lastAccess.localeCompare(a.value.lastAccess)
+
 /**
  *
  * @param {*} options
@@ -6,13 +10,15 @@
  */
 export default options => {
   const platform = options.platform || process.platform
-  const projects = options.projects || {}
+  const projects = options.projects || []
 
-  const recentProjects = Object.entries(projects).map(([id, project]) => ({
-    id,
-    label: project.name,
+  const sortedProjects = [...projects].sort(lastAccessDescending)
+
+  const recentProjects = sortedProjects.map(({ key, value }) => ({
+    id: key,
+    label: value.name,
     click: (menuItem, focusedWindow, focusedWebContents) => {
-      console.log('command: file/recent', project.id)
+      console.log('command: file/recent', key)
     }
   }))
 

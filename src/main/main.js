@@ -1,33 +1,11 @@
-import { app, BrowserWindow, Menu } from 'electron'
+import { app, Menu, ipcMain } from 'electron'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
 import { jsonStore } from '../shared/stores'
 import { template } from './menu'
 import Master from './Master'
-
-
-// TODO: move to appropriate place
-const showWindow = () => {
-  const notCold = process.argv.indexOf('--cold') === -1
-  const hot = process.defaultApp ||
-    /[\\/]electron-prebuilt[\\/]/.test(paths.execPath) ||
-    /[\\/]electron[\\/]/.test(paths.execPath)
-
-  const url = (hot && notCold)
-    ? new URL('index.html', 'http://localhost:8080')
-    : new URL(paths.staticIndexPage(app), 'file:')
-
-  const window = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    }
-  })
-
-  window.loadURL(url.toString())
-  window.once('ready-to-show', () => window.show())
-}
-
+import * as Window from './window'
+import { IPCServer } from '../shared/level/ipc'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -37,7 +15,12 @@ const ready = async () => {
   // Open/create master database.
   const databases = paths.databases(app)
   paths.mkdir(databases)
-  const master = new Master(jsonStore(paths.master(app)))
+  const db = jsonStore(paths.master(app))
+  const master = new Master(db)
+
+  /* eslint-disable no-new */
+  new IPCServer(db, ipcMain)
+  /* eslint-enable no-new */
 
   // Note: Not triggered on SIGINT.
   app.once('quit', async () => {
@@ -48,17 +31,28 @@ const ready = async () => {
   // Transfer legacy data if not already done.
   if (await master.getTransferred() === false) {
     const location = paths.odinHome
-    transferLegacy(location, master, databases)
+    await transferLegacy(location, master, databases)
   }
 
-  // TODO: restore last session
-  showWindow()
+  // FIXME: temporary - create/show any project window
+  const projects = await master.getProjects()
+
+  {
+    const window = await Window.splashScreen()
+    window.show()
+  }
+
+  if (projects.length) {
+    const window = await Window.projectWindow(projects[0].key, projects[0].value)
+    window.show()
+  }
 
   // TODO: test (dynamic) menu construction
   const menu = Menu.buildFromTemplate(template({
     platform: process.platform,
     appName: app.name,
-    projects: {}
+    // TODO: replace `projects` with factory for menu items for 'Open Recent'
+    projects
   }))
 
   Menu.setApplicationMenu(menu)

@@ -1,8 +1,10 @@
 import assert from 'assert'
-import levelmem from 'level-mem'
+import levelup from 'levelup'
+import memdown from 'memdown'
+import encode from 'encoding-down'
 import { readJSON } from '../../src/main/legacy/io'
 import { transferProject } from '../../src/main/legacy'
-import Store from '../../src/shared/Store'
+import Store from '../../src/shared/level/Store'
 import { tuplePartition, geometryPartition } from '../../src/shared/stores'
 
 describe('legacy', async function () {
@@ -12,7 +14,7 @@ describe('legacy', async function () {
     const entries = Object.entries(projects)
     const databases = await entries.reduce(async (acc, [key, value]) => {
       const databases = await acc
-      databases[key] = levelmem()
+      databases[key] = levelup(encode(memdown(), { valueEncoding: 'json' }))
       await transferProject(databases[key], value)
       return acc
     }, {})

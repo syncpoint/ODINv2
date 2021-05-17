@@ -16,11 +16,9 @@ import { tuplePartition, geometryPartition } from '../../shared/stores'
  */
 export const transferProject = async (db, project) => {
   const put = ([key, value]) => ({ type: 'put', key, value })
-  const { layers, preferences } = project
+  const { layers } = project
   const tuples = tuplePartition(db)
   const geometries = geometryPartition(db)
-
-  await tuples.put('session:viewport', preferences.viewport)
 
   // [layerId -> { name: layerName }]
   await tuples.batch(Object.entries(layers)

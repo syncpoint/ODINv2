@@ -66,6 +66,25 @@ Store.prototype.entries = function (prefix) {
 
 
 /**
+ * list :: () -> Promise([{ key, value }])
+ * list :: String -> Promise([{ key, value }])
+ */
+Store.prototype.list = function (prefix) {
+  const options = prefix
+    ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
+    : { keys: true, values: true }
+
+  const acc = []
+  return new Promise((resolve, reject) => {
+    this.db.createReadStream(options)
+      .on('data', entry => (acc.push(entry)))
+      .on('error', reject)
+      .on('end', () => resolve(acc))
+  })
+}
+
+
+/**
  * key :: (Object -> Boolean) -> Promise(String)
  * key :: (Object -> Boolean) -> String -> Promise(String)
  */
@@ -88,6 +107,14 @@ Store.prototype.key = function (predicate, prefix) {
       .on('error', reject)
       .on('end', () => resolve(undefined))
   })
+}
+
+/**
+ * assign :: key -> value -> Promise()
+ */
+Store.prototype.assign = async function (key, value) {
+  const target = Object.assign(await this.db.get(key), value)
+  return this.db.put(key, target)
 }
 
 export default Store
