@@ -43,7 +43,11 @@ const ready = async () => {
   }
 
   if (projects.length) {
-    const window = await Window.projectWindow(projects[0].key, projects[0].value)
+    const window = await Window.projectWindow(projects[0])
+    ;['resized', 'moved'].forEach(event => window.on(event, () => {
+      master.putWindowBounds(projects[0].key, window.getBounds())
+    }))
+
     window.show()
   }
 

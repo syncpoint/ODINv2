@@ -54,4 +54,8 @@ Master.prototype.getProjects = function () {
   return this.store.list(PROJECT)
 }
 
+Master.prototype.putWindowBounds = function (key, bounds) {
+  return this.store.assign(key, { bounds })
+}
+
 export default Master

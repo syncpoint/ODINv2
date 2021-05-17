@@ -93,35 +93,35 @@ describe('Store', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('list :: () -> Promise([{ key, value }])', async function () {
+  it('list :: () -> Promise([{ key, ...value }])', async function () {
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
 
-    await db.put('prefix-a', 0)
-    await db.put('prefix-b', 1)
-    await db.put('c', 2)
+    await db.put('prefix-a', { n: 0 })
+    await db.put('prefix-b', { n: 1 })
+    await db.put('c', { n: 2 })
 
     const expected = [
-      { key: 'c', value: 2 },
-      { key: 'prefix-a', value: 0 },
-      { key: 'prefix-b', value: 1 }
+      { key: 'c', n: 2 },
+      { key: 'prefix-a', n: 0 },
+      { key: 'prefix-b', n: 1 }
     ]
 
     const actual = await store.list()
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('list :: String -> Promise([{ key, value }])', async function () {
+  it('list :: String -> Promise([{ key, ...value }])', async function () {
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)
 
-    await db.put('prefix-a', 0)
-    await db.put('prefix-b', 1)
-    await db.put('c', 2)
+    await db.put('prefix-a', { n: 0 })
+    await db.put('prefix-b', { n: 1 })
+    await db.put('c', { n: 2 })
 
     const expected = [
-      { key: 'prefix-a', value: 0 },
-      { key: 'prefix-b', value: 1 }
+      { key: 'prefix-a', n: 0 },
+      { key: 'prefix-b', n: 1 }
     ]
 
     const actual = await store.list('prefix')

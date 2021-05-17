@@ -66,8 +66,10 @@ Store.prototype.entries = function (prefix) {
 
 
 /**
- * list :: () -> Promise([{ key, value }])
- * list :: String -> Promise([{ key, value }])
+ * list :: () -> Promise([{ key: String, ...value }])
+ * list :: String -> Promise([{ key: String, ...value }])
+ *
+ * Note: Does only support Object values (i.e. non-scalar values)
  */
 Store.prototype.list = function (prefix) {
   const options = prefix
@@ -77,7 +79,7 @@ Store.prototype.list = function (prefix) {
   const acc = []
   return new Promise((resolve, reject) => {
     this.db.createReadStream(options)
-      .on('data', entry => (acc.push(entry)))
+      .on('data', ({ key, value }) => acc.push({ key, ...value }))
       .on('error', reject)
       .on('end', () => resolve(acc))
   })

@@ -67,12 +67,20 @@ const url = app => {
     : new URL(paths.staticIndexPage(app), 'file:')
 }
 
-export const projectWindow = (id, project) => createWindow({
-  handle: id,
-  title: project.name,
-  url: url(app),
-  additionalArguments: [`--page=${id}`, `--databases=${paths.databases(app)}`]
-})
+export const projectWindow = async project => {
+  const additionalArguments = [
+    `--page=${project.key}`,
+    `--databases=${paths.databases(app)}`
+  ]
+
+  return createWindow({
+    handle: project.key,
+    title: project.name,
+    url: url(app),
+    ...project.bounds,
+    additionalArguments
+  })
+}
 
 export const splashScreen = () => createWindow({
   handle: 'splash',

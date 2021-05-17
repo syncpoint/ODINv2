@@ -1,6 +1,6 @@
 
 const lastAccessDescending = (a, b) =>
-  b.value.lastAccess.localeCompare(a.value.lastAccess)
+  b.lastAccess.localeCompare(a.lastAccess)
 
 /**
  *
@@ -11,12 +11,11 @@ const lastAccessDescending = (a, b) =>
 export default options => {
   const platform = options.platform || process.platform
   const projects = options.projects || []
-
   const sortedProjects = [...projects].sort(lastAccessDescending)
 
-  const recentProjects = sortedProjects.map(({ key, value }) => ({
+  const recentProjects = sortedProjects.map(({ key, name }) => ({
     id: key,
-    label: value.name,
+    label: name,
     click: (menuItem, focusedWindow, focusedWebContents) => {
       console.log('command: file/recent', key)
     }
