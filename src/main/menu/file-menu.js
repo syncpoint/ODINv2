@@ -1,4 +1,3 @@
-
 const lastAccessDescending = (a, b) =>
   b.lastAccess.localeCompare(a.lastAccess)
 
@@ -8,27 +7,29 @@ const lastAccessDescending = (a, b) =>
  * @param {String} options.platform
  * @param {{ id -> project }} options.projects
  */
-export default options => {
+export default async options => {
+  const { master, evented } = options
   const platform = options.platform || process.platform
-  const projects = options.projects || []
-  const sortedProjects = [...projects].sort(lastAccessDescending)
 
+  // TODO: replace project list with __recent__ project list.
+  const projects = await master.getProjects()
+  const sortedProjects = [...projects].sort(lastAccessDescending)
   const recentProjects = sortedProjects.map(({ key, name }) => ({
     id: key,
     label: name,
     click: (menuItem, focusedWindow, focusedWebContents) => {
-      console.log('command: file/recent', key)
+      evented.emit('command:project/open', { key })
     }
   }))
 
-  return [{
+  return {
     label: 'File',
     submenu: [
       {
         label: 'New Project',
         accelerator: 'CmdOrCtrl+Shift+N',
         click: async (/* menuItem, browserWindow, event */) => {
-          console.log('command: file/new project')
+          evented.emit('command:project/create')
         }
       },
       { type: 'separator' },
@@ -38,5 +39,5 @@ export default options => {
       },
       platform === 'darwin' ? { role: 'close' } : { role: 'quit' }
     ]
-  }]
+  }
 }

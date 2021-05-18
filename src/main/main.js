@@ -1,11 +1,13 @@
-import { app, Menu, ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
 import { jsonStore } from '../shared/stores'
-import { template } from './menu'
 import Master from './Master'
-import * as Window from './window'
 import { IPCServer } from '../shared/level/ipc'
+import { Session } from './Session'
+import EventEmitter from '../shared/emitter'
+import { ApplicationMenu } from './menu'
+import { WindowManager } from './WindowManager'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -16,14 +18,15 @@ const ready = async () => {
   const databases = paths.databases(app)
   paths.mkdir(databases)
   const db = jsonStore(paths.master(app))
-  const master = new Master(db)
 
   /* eslint-disable no-new */
   new IPCServer(db, ipcMain)
   /* eslint-enable no-new */
 
-  // Note: Not triggered on SIGINT.
-  app.once('quit', async () => {
+  const master = new Master(db)
+
+  // Emitted when all windows have been closed and the application will quit.
+  app.once('will-quit', async () => {
     // Reference to master is no longer valid beyond this point.
     await master.close()
   })
@@ -34,43 +37,12 @@ const ready = async () => {
     await transferLegacy(location, master, databases)
   }
 
-  // FIXME: temporary - create/show any project window
-  const projects = await master.getProjects()
-
-  {
-    const window = await Window.splashScreen()
-    window.show()
-  }
-
-  if (projects.length) {
-    const window = await Window.projectWindow(projects[0])
-    ;['resized', 'moved'].forEach(event => window.on(event, () => {
-      master.putWindowBounds(projects[0].key, window.getBounds())
-    }))
-
-    window.show()
-  }
-
-  // TODO: test (dynamic) menu construction
-  const menu = Menu.buildFromTemplate(template({
-    platform: process.platform,
-    appName: app.name,
-    // TODO: replace `projects` with factory for menu items for 'Open Recent'
-    projects
-  }))
-
-  Menu.setApplicationMenu(menu)
-}
-
-
-/**
- * Emitted when the application is quitting.
- * Note: On Windows, this event will not be emitted
- * if the app is closed due to a shutdown/restart of the
- * system or a user logout.
- */
-const quit = () => {
-  console.log('quit')
+  const evented = new EventEmitter()
+  const windowManager = new WindowManager(master, evented)
+  const session = new Session(master, windowManager, evented)
+  const menu = new ApplicationMenu(master, evented)
+  session.restore()
+  await menu.show()
 }
 
 
@@ -103,7 +75,6 @@ const windowAllClosed = () => {
  */
 const run = () => {
   app.once('ready', ready)
-  app.once('quit', quit)
   app.on('activate', activate)
   app.on('window-all-closed', windowAllClosed)
 }
