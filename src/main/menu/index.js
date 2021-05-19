@@ -6,8 +6,8 @@ import windowMenu from './window-menu'
 
 const menus = [appMenu, fileMenu, viewMenu, windowMenu]
 
-export function ApplicationMenu (projectStore, evented) {
-  this.projectStore = projectStore
+export function ApplicationMenu (sessionStore, evented) {
+  this.sessionStore = sessionStore
   this.evented = evented
 
   // TODO: update on window focus/close
@@ -20,7 +20,7 @@ ApplicationMenu.prototype.show = async function () {
   const options = {
     platform: process.platform,
     appName: app.name,
-    projectStore: this.projectStore,
+    sessionStore: this.sessionStore,
     evented: this.evented
   }
 

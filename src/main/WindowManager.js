@@ -12,13 +12,34 @@ const url = app => {
     : new URL(paths.staticIndexPage(app), 'file:')
 }
 
-export const WindowManager = function (evented) {
 
+/**
+ * @classdesc
+ * @param {*} evented
+ */
+export const WindowManager = function (evented) {
   /** _windows :: { window.id -> handle } */
   this.windows = {}
   this.evented = evented
 }
 
+/**
+ * @typedef {Object} WindowOptions
+ *
+ * @property {String} [handle]
+ * @property {String} [title]
+ * @property {Array<String>} [additionalArguments]
+ * @property {Number} [x]
+ * @property {Number} [y]
+ * @property {Number} [width]
+ * @property {Number} [height]
+ */
+
+/**
+ * @private
+ * @param {WindowOptions} options
+ * @returns
+ */
 WindowManager.prototype.createWindow = function (options) {
   const { handle, url } = options
   const additionalArguments = options.additionalArguments || []
@@ -69,6 +90,12 @@ WindowManager.prototype.createWindow = function (options) {
   })
 }
 
+
+/**
+ * @private
+ * @param {*} handle
+ * @returns
+ */
 WindowManager.prototype.windowFromHandle = function (handle) {
   const entry = Object.entries(this.windows).find(entry => entry[1] === handle)
   if (!entry) return undefined
@@ -76,20 +103,39 @@ WindowManager.prototype.windowFromHandle = function (handle) {
   return BrowserWindow.fromId(id)
 }
 
+
+/**
+ * @param {*} handle
+ * @returns
+ */
 WindowManager.prototype.isWindowOpen = function (handle) {
   return Object.values(this.windows).includes(handle)
 }
 
+
+/**
+ * @param {*} handle
+ */
 WindowManager.prototype.focusWindow = function (handle) {
   const window = this.windowFromHandle(handle)
   if (window) window.focus()
 }
 
+
+/**
+ * @param {*} handle
+ */
 WindowManager.prototype.closeWindow = function (handle) {
   const window = this.windowFromHandle(handle)
   if (window) window.close()
 }
 
+
+/**
+ * @param {*} key
+ * @param {*} project
+ * @returns
+ */
 WindowManager.prototype.showProject = async function (key, project) {
   const additionalArguments = [
     `--page=${key}`,
@@ -105,6 +151,10 @@ WindowManager.prototype.showProject = async function (key, project) {
   })
 }
 
+
+/**
+ * @returns
+ */
 WindowManager.prototype.showSplash = function () {
   const additionalArguments = ['--page=splash']
   return this.createWindow({

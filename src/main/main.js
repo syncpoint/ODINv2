@@ -30,9 +30,7 @@ const ready = async () => {
   const legacyStore = new LegacyStore(db)
 
   // Emitted when all windows have been closed and the application will quit.
-  app.once('will-quit', async () => {
-    await db.close()
-  })
+  app.once('will-quit', () => db.close())
 
   // Transfer legacy data if not already done.
   if (await legacyStore.getTransferred() === false) {
@@ -42,16 +40,16 @@ const ready = async () => {
 
   const evented = new EventEmitter()
   const windowManager = new WindowManager(evented)
-  const session = new Session(sessionStore, projectStore, windowManager)
+  const session = new Session(sessionStore, projectStore, windowManager, evented)
 
   evented.on('command:project/open', ({ key }) => session.openProject(key))
   evented.on('command:project/create', () => session.createProject())
   evented.on(':id/close', ({ id }) => session.windowClosed(id))
 
-
-  const menu = new ApplicationMenu(projectStore, evented)
-
   session.restore()
+
+  const menu = new ApplicationMenu(sessionStore, evented)
+  evented.on('command:menu/refresh', () => menu.show())
   await menu.show()
 }
 

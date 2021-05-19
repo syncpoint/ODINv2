@@ -1,9 +1,10 @@
 import { app } from 'electron'
 
-export function Session (sessionStore, projectStore, windowManager) {
+export function Session (sessionStore, projectStore, windowManager, evented) {
   this.windowManager = windowManager
   this.sessionStore = sessionStore
   this.projectStore = projectStore
+  this.evented = evented
 
   // Emitted before the application starts closing its windows.
   this._quitting = false
@@ -33,6 +34,10 @@ Session.prototype.openProject = async function (key) {
 
   const project = await this.projectStore.getProject(key)
   const window = await this.windowManager.showProject(key, project)
+  await this.sessionStore.addRecent(key, project.name)
+
+  // TODO: refresh application menu
+  this.evented.emit('command:menu/refresh')
 
   ;['resized', 'moved'].forEach(event => window.on(event, () => {
     this.projectStore.updateWindowBounds(key, window.getBounds())

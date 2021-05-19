@@ -1,20 +1,16 @@
-const lastAccessDescending = (a, b) =>
-  b.lastAccess.localeCompare(a.lastAccess)
-
 /**
- *
  * @param {*} options
  * @param {String} options.platform
+ * @param {String} options.sessionStore
+ * @param {String} options.evented
  * @param {{ id -> project }} options.projects
  */
 export default async options => {
-  const { projectStore, evented } = options
+  const { sessionStore, evented } = options
   const platform = options.platform || process.platform
+  const recent = await sessionStore.getRecent()
 
-  // TODO: replace project list with __recent__ project list.
-  const projects = await projectStore.getProjects()
-  const sortedProjects = [...projects].sort(lastAccessDescending)
-  const recentProjects = sortedProjects.map(({ key, name }) => ({
+  const submenu = recent.map(({ key, name }) => ({
     id: key,
     label: name,
     click: (menuItem, focusedWindow, focusedWebContents) => {
@@ -35,7 +31,7 @@ export default async options => {
       { type: 'separator' },
       {
         label: 'Open Recent',
-        submenu: recentProjects
+        submenu
       },
       platform === 'darwin' ? { role: 'close' } : { role: 'quit' }
     ]
