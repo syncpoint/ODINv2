@@ -1,58 +1,48 @@
 import { app } from 'electron'
-import * as R from 'ramda'
 
-export function Session (master, windowManager, evented) {
-  this._master = master
-  this._windowManager = windowManager
-
-  evented.on('command:project/open', ({ key }) => this.openProject(key))
-  evented.on('command:project/create', () => this.createProject())
-  evented.on(':id/close', ({ id }) => this.windowClosed(id))
+export function Session (sessionStore, projectStore, windowManager) {
+  this.windowManager = windowManager
+  this.sessionStore = sessionStore
+  this.projectStore = projectStore
 
   // Emitted before the application starts closing its windows.
-  app.once('before-quit', async () => {
+  this._quitting = false
+  app.once('before-quit', () => {
     this._quitting = true
   })
 }
 
 Session.prototype.restore = async function () {
-
-  // await this._master.putSession({ projects: [] })
-  const session = await this._master.getSession()
-  const projects = R.uniq(session.projects)
+  const projects = await this.sessionStore.getProjects()
 
   if (projects.length) {
     await Promise.all(projects.map(key => this.openProject(key)))
   } else {
-    const window = await this._windowManager.showSplash()
+    const window = await this.windowManager.showSplash()
     window.show()
   }
 }
 
 Session.prototype.openProject = async function (key) {
 
-  if (this._windowManager.isWindowOpen(key)) {
-    return this._windowManager.focusWindow(key)
+  if (this.windowManager.isWindowOpen(key)) {
+    return this.windowManager.focusWindow(key)
   }
 
   // TODO: update project lastAccess to now
 
-  const project = await this._master.getProject(key)
-  const window = await this._windowManager.showProject(project)
+  const project = await this.projectStore.getProject(key)
+  const window = await this.windowManager.showProject(key, project)
 
   ;['resized', 'moved'].forEach(event => window.on(event, () => {
-    // TODO: move window bounds to session scope
-    this._master.putWindowBounds(key, window.getBounds())
+    this.projectStore.updateWindowBounds(key, window.getBounds())
   }))
 
-  const session = await this._master.getSession()
-  const projects = R.uniq(session.projects)
-  projects.push(key)
-  await this._master.putSession({
-    ...session,
-    projects: R.uniq(projects)
-  })
+  if (this.windowManager.isWindowOpen('splash')) {
+    this.windowManager.closeWindow('splash')
+  }
 
+  await this.sessionStore.addProject(key)
   window.show()
 }
 
@@ -65,7 +55,5 @@ Session.prototype.windowClosed = async function (key) {
   // Leave seesion/open projects untouched when quitting.
   if (this._quitting) return
 
-  const session = await this._master.getSession()
-  session.projects = session.projects.filter(_key => _key !== key)
-  this._master.putSession(session)
+  await this.sessionStore.removeProject(key)
 }

@@ -8,11 +8,11 @@ const lastAccessDescending = (a, b) =>
  * @param {{ id -> project }} options.projects
  */
 export default async options => {
-  const { master, evented } = options
+  const { projectStore, evented } = options
   const platform = options.platform || process.platform
 
   // TODO: replace project list with __recent__ project list.
-  const projects = await master.getProjects()
+  const projects = await projectStore.getProjects()
   const sortedProjects = [...projects].sort(lastAccessDescending)
   const recentProjects = sortedProjects.map(({ key, name }) => ({
     id: key,

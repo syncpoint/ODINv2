@@ -12,12 +12,11 @@ const url = app => {
     : new URL(paths.staticIndexPage(app), 'file:')
 }
 
-export const WindowManager = function (master, evented) {
+export const WindowManager = function (evented) {
 
   /** _windows :: { window.id -> handle } */
-  this._windows = {}
-  this._evented = evented
-  this._master = master
+  this.windows = {}
+  this.evented = evented
 }
 
 WindowManager.prototype.createWindow = function (options) {
@@ -50,11 +49,11 @@ WindowManager.prototype.createWindow = function (options) {
       }
     })
 
-    this._windows[window.id] = handle
+    this.windows[window.id] = handle
 
     window.once('close', () => {
-      delete this._windows[window.id]
-      this._evented.emit(`${handle}/close`)
+      delete this.windows[window.id]
+      this.evented.emit(`${handle}/close`)
     })
 
     // Prevent window title to be overwritten by HTML page title:
@@ -62,7 +61,7 @@ WindowManager.prototype.createWindow = function (options) {
     window.on('page-title-updated', event => event.preventDefault())
 
     window.on('focus', () => {
-      this._evented.emit(`${handle}/focus`)
+      this.evented.emit(`${handle}/focus`)
     })
 
     window.loadURL(url.toString())
@@ -71,15 +70,14 @@ WindowManager.prototype.createWindow = function (options) {
 }
 
 WindowManager.prototype.windowFromHandle = function (handle) {
-  const entry = Object.entries(this._windows).find(entry => entry[1] === handle)
-  console.log('[WindowManager] entry', entry)
+  const entry = Object.entries(this.windows).find(entry => entry[1] === handle)
   if (!entry) return undefined
   const id = parseInt(entry[0])
   return BrowserWindow.fromId(id)
 }
 
 WindowManager.prototype.isWindowOpen = function (handle) {
-  return Object.values(this._windows).includes(handle)
+  return Object.values(this.windows).includes(handle)
 }
 
 WindowManager.prototype.focusWindow = function (handle) {
@@ -87,14 +85,19 @@ WindowManager.prototype.focusWindow = function (handle) {
   if (window) window.focus()
 }
 
-WindowManager.prototype.showProject = async function (project) {
+WindowManager.prototype.closeWindow = function (handle) {
+  const window = this.windowFromHandle(handle)
+  if (window) window.close()
+}
+
+WindowManager.prototype.showProject = async function (key, project) {
   const additionalArguments = [
-    `--page=${project.key}`,
+    `--page=${key}`,
     `--databases=${paths.databases(app)}`
   ]
 
   return this.createWindow({
-    handle: project.key,
+    handle: key,
     title: project.name,
     url: url(app),
     ...project.bounds,

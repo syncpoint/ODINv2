@@ -2,12 +2,14 @@ import { app, ipcMain } from 'electron'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
 import { jsonStore } from '../shared/stores'
-import Master from './Master'
 import { IPCServer } from '../shared/level/ipc'
 import { Session } from './Session'
 import EventEmitter from '../shared/emitter'
 import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
+import { ProjectStore } from './stores/ProjectStore'
+import { SessionStore } from './stores/SessionStore'
+import { LegacyStore } from './stores/LegacyStore'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -23,24 +25,32 @@ const ready = async () => {
   new IPCServer(db, ipcMain)
   /* eslint-enable no-new */
 
-  const master = new Master(db)
+  const projectStore = new ProjectStore(db)
+  const sessionStore = new SessionStore(db)
+  const legacyStore = new LegacyStore(db)
 
   // Emitted when all windows have been closed and the application will quit.
   app.once('will-quit', async () => {
-    // Reference to master is no longer valid beyond this point.
-    await master.close()
+    await db.close()
   })
 
   // Transfer legacy data if not already done.
-  if (await master.getTransferred() === false) {
+  if (await legacyStore.getTransferred() === false) {
     const location = paths.odinHome
-    await transferLegacy(location, master, databases)
+    await transferLegacy(location, legacyStore, databases)
   }
 
   const evented = new EventEmitter()
-  const windowManager = new WindowManager(master, evented)
-  const session = new Session(master, windowManager, evented)
-  const menu = new ApplicationMenu(master, evented)
+  const windowManager = new WindowManager(evented)
+  const session = new Session(sessionStore, projectStore, windowManager)
+
+  evented.on('command:project/open', ({ key }) => session.openProject(key))
+  evented.on('command:project/create', () => session.createProject())
+  evented.on(':id/close', ({ id }) => session.windowClosed(id))
+
+
+  const menu = new ApplicationMenu(projectStore, evented)
+
   session.restore()
   await menu.show()
 }
