@@ -41,18 +41,27 @@ const ready = async () => {
   const session = new Session({
     sessionStore,
     projectStore,
-    windowManager,
-    evented
+    windowManager
   })
 
   evented.on('command/project/open/:key', ({ key }) => session.openProject(key))
   evented.on('command/project/create', () => session.createProject())
-  evented.on(':id/close', ({ id }) => session.windowClosed(id))
+
 
   session.restore()
 
   const menu = new ApplicationMenu(sessionStore, evented)
-  evented.on('command/menu/refresh', () => menu.show())
+
+  windowManager.on('window/closed/:id', event => {
+    console.log('[main]', event.path)
+    session.windowClosed(event.id)
+  })
+
+  windowManager.on('window/focus-gained/:id', event => {
+    console.log('[main]', event.path)
+    menu.show()
+  })
+
   await menu.show()
 }
 

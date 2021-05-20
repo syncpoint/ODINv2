@@ -1,5 +1,9 @@
 import { match as exec } from 'path-to-regexp'
 
+
+/**
+ * @constructor
+ */
 const EventEmitter = function () {}
 
 EventEmitter.ERR_INVALID_ARG = 'ERR_INVALID_ARG'

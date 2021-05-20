@@ -2,10 +2,9 @@ import { app } from 'electron'
 
 /**
  * @typedef {Object} SessionOptions
- * @property {SessionStore} [sessionStore]
- * @property {ProjectStore} [projectStore]
- * @property {WindowManager} [windowManager]
- * @property {Emitter} [evented]
+ * @property {SessionStore} sessionStore
+ * @property {ProjectStore} projectStore
+ * @property {WindowManager} windowManager
  */
 
 /**
@@ -16,7 +15,6 @@ export function Session (options) {
   this.windowManager = options.windowManager
   this.sessionStore = options.sessionStore
   this.projectStore = options.projectStore
-  this.evented = options.evented
 
   // Emitted before the application starts closing its windows.
   this._quitting = false
@@ -24,6 +22,7 @@ export function Session (options) {
     this._quitting = true
   })
 }
+
 
 Session.prototype.restore = async function () {
   const projects = await this.sessionStore.getProjects()
@@ -37,19 +36,16 @@ Session.prototype.restore = async function () {
 }
 
 Session.prototype.openProject = async function (key) {
+  const project = await this.projectStore.getProject(key)
+
+  // Menu is refreshed implicitly, because existing (or new window) gain focus.
+  await this.sessionStore.addRecent(key, project.name)
 
   if (this.windowManager.isWindowOpen(key)) {
     return this.windowManager.focusWindow(key)
   }
 
-  // TODO: update project lastAccess to now
-
-  const project = await this.projectStore.getProject(key)
   const window = await this.windowManager.showProject(key, project)
-  await this.sessionStore.addRecent(key, project.name)
-
-  // TODO: refresh application menu
-  this.evented.emit('command/menu/refresh')
 
   ;['resized', 'moved'].forEach(event => window.on(event, () => {
     this.projectStore.updateWindowBounds(key, window.getBounds())

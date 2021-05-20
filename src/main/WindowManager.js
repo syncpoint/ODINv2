@@ -1,5 +1,7 @@
+import util from 'util'
 import { BrowserWindow, app } from 'electron'
 import * as paths from './paths'
+import Emitter from '../shared/emitter'
 
 const url = app => {
   const notCold = process.argv.indexOf('--cold') === -1
@@ -14,31 +16,34 @@ const url = app => {
 
 
 /**
- * @param {*} evented
  * @constructor
+ * @fires windows/closed/:handle
+ * @fires windows/focus-gained/:handle
  */
-export const WindowManager = function (evented) {
-  /** _windows :: { window.id -> handle } */
+export const WindowManager = function () {
+  Emitter.call(this)
   this.windows = {}
-  this.evented = evented
 }
+
+util.inherits(WindowManager, Emitter)
+
 
 /**
  * @typedef {Object} WindowOptions
  *
- * @property {String} [handle]
- * @property {String} [title]
- * @property {Array<String>} [additionalArguments]
- * @property {Number} [x]
- * @property {Number} [y]
- * @property {Number} [width]
- * @property {Number} [height]
+ * @property {String} handle - window handle
+ * @property {String} title - window title
+ * @property {String[]} additionalArguments - forwarded to webPreferences.additionalArguments
+ * @property {Number} [x] - window bounds x
+ * @property {Number} [y] - window bounds y
+ * @property {Number} [width] - window bounds width
+ * @property {Number} [height] - window bounds height
  */
 
+
 /**
- * @private
  * @param {WindowOptions} options
- * @returns {BrowserWindow}
+ * @returns {Promise<BrowserWindow>}
  */
 WindowManager.prototype.createWindow = function (options) {
   const { handle, url } = options
@@ -74,7 +79,7 @@ WindowManager.prototype.createWindow = function (options) {
 
     window.once('close', () => {
       delete this.windows[window.id]
-      this.evented.emit(`event/window/${handle}/close`)
+      this.emit(`window/closed/${handle}`)
     })
 
     // Prevent window title to be overwritten by HTML page title:
@@ -82,7 +87,7 @@ WindowManager.prototype.createWindow = function (options) {
     window.on('page-title-updated', event => event.preventDefault())
 
     window.on('focus', () => {
-      this.evented.emit(`event/window/${handle}/focus`)
+      this.emit(`window/focus-gained/${handle}`)
     })
 
     window.loadURL(url.toString())
@@ -92,9 +97,9 @@ WindowManager.prototype.createWindow = function (options) {
 
 
 /**
+ * @param {String} handle - window handle
+ * @returns {Promise<BrowserWindow>}
  * @private
- * @param {*} handle
- * @returns BrowserWindow
  */
 WindowManager.prototype.windowFromHandle = function (handle) {
   const entry = Object.entries(this.windows).find(entry => entry[1] === handle)
@@ -105,8 +110,8 @@ WindowManager.prototype.windowFromHandle = function (handle) {
 
 
 /**
- * @param {*} handle
- * @returns
+ * @param {String} handle - window handle
+ * @returns {boolean} whether or not a window with this handle is open
  */
 WindowManager.prototype.isWindowOpen = function (handle) {
   return Object.values(this.windows).includes(handle)
@@ -114,7 +119,9 @@ WindowManager.prototype.isWindowOpen = function (handle) {
 
 
 /**
- * @param {*} handle
+ * Focus window with given handle.
+ *
+ * @param {String} handle - window handle
  */
 WindowManager.prototype.focusWindow = function (handle) {
   const window = this.windowFromHandle(handle)
@@ -123,7 +130,9 @@ WindowManager.prototype.focusWindow = function (handle) {
 
 
 /**
- * @param {*} handle
+ * Close window with given handle.
+ *
+ * @param {String} handle - window handle
  */
 WindowManager.prototype.closeWindow = function (handle) {
   const window = this.windowFromHandle(handle)
@@ -132,9 +141,11 @@ WindowManager.prototype.closeWindow = function (handle) {
 
 
 /**
- * @param {*} key
- * @param {*} project
- * @returns
+ * Create and show project window.
+ *
+ * @param {String} key project id (also used as window handle)
+ * @param {Object} project
+ * @returns {Promise<BrowserWindow>}
  */
 WindowManager.prototype.showProject = function (key, project) {
   const additionalArguments = [
@@ -153,7 +164,9 @@ WindowManager.prototype.showProject = function (key, project) {
 
 
 /**
- * @returns
+ * Create and show splash window.
+ *
+ * @returns {Promise<BrowserWindow>}
  */
 WindowManager.prototype.showSplash = function () {
   const additionalArguments = ['--page=splash']
