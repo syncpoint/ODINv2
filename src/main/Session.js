@@ -1,10 +1,22 @@
 import { app } from 'electron'
 
-export function Session (sessionStore, projectStore, windowManager, evented) {
-  this.windowManager = windowManager
-  this.sessionStore = sessionStore
-  this.projectStore = projectStore
-  this.evented = evented
+/**
+ * @typedef {Object} SessionOptions
+ * @property {SessionStore} [sessionStore]
+ * @property {ProjectStore} [projectStore]
+ * @property {WindowManager} [windowManager]
+ * @property {Emitter} [evented]
+ */
+
+/**
+ * @param {SessionOptions} options
+ * @constructor
+ */
+export function Session (options) {
+  this.windowManager = options.windowManager
+  this.sessionStore = options.sessionStore
+  this.projectStore = options.projectStore
+  this.evented = options.evented
 
   // Emitted before the application starts closing its windows.
   this._quitting = false
@@ -37,7 +49,7 @@ Session.prototype.openProject = async function (key) {
   await this.sessionStore.addRecent(key, project.name)
 
   // TODO: refresh application menu
-  this.evented.emit('command:menu/refresh')
+  this.evented.emit('command/menu/refresh')
 
   ;['resized', 'moved'].forEach(event => window.on(event, () => {
     this.projectStore.updateWindowBounds(key, window.getBounds())

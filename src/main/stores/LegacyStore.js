@@ -5,7 +5,10 @@ const LEGACY = {
   TRANSFERRED: 'legacy:transferred'
 }
 
-export function LegacyStore (db) {
+/**
+ * @constructor
+ */
+function LegacyStore (db) {
   this.store = new Store(db)
 }
 
@@ -42,3 +45,5 @@ LegacyStore.prototype.transferMetadata = async function (projects) {
 LegacyStore.prototype.getSources = function () {
   return this.store.entries(BASEMAP)
 }
+
+export default LegacyStore

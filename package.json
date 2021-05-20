@@ -12,7 +12,8 @@
     "test": "mocha --bail --require esm --recursive",
     "test:watch": "mocha --require esm --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha --require esm --recursive",
-    "lint": "eslint"
+    "lint": "eslint",
+    "jsdoc:main": "jsdoc src/main -r -d jsdoc/main"
   },
   "author": {
     "name": "Syncpoint GmbH",
@@ -44,6 +45,7 @@
   "dependencies": {
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.0.0",
+    "jsdoc": "^3.6.7",
     "leveldown": "^6.0.0",
     "levelup": "^5.0.0",
     "luxon": "^1.27.0",

@@ -14,7 +14,7 @@ export default async options => {
     id: key,
     label: name,
     click: (menuItem, focusedWindow, focusedWebContents) => {
-      evented.emit('command:project/open', { key })
+      evented.emit(`command/project/open/${key}`)
     }
   }))
 

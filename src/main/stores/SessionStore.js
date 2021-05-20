@@ -4,7 +4,10 @@ import Store from '../../shared/level/Store'
 const SESSION = 'session:'
 const RECENT = 'recent:'
 
-export function SessionStore (db) {
+/**
+ * @constructor
+ */
+function SessionStore (db) {
   this.store = new Store(db)
 }
 
@@ -43,3 +46,5 @@ SessionStore.prototype.getRecent = async function () {
 SessionStore.prototype.clearRecent = function () {
   return this.store.put(RECENT, [])
 }
+
+export default SessionStore

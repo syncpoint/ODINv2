@@ -7,9 +7,7 @@ import { Session } from './Session'
 import EventEmitter from '../shared/emitter'
 import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
-import { ProjectStore } from './stores/ProjectStore'
-import { SessionStore } from './stores/SessionStore'
-import { LegacyStore } from './stores/LegacyStore'
+import { ProjectStore, SessionStore, LegacyStore } from './stores'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -40,16 +38,21 @@ const ready = async () => {
 
   const evented = new EventEmitter()
   const windowManager = new WindowManager(evented)
-  const session = new Session(sessionStore, projectStore, windowManager, evented)
+  const session = new Session({
+    sessionStore,
+    projectStore,
+    windowManager,
+    evented
+  })
 
-  evented.on('command:project/open', ({ key }) => session.openProject(key))
-  evented.on('command:project/create', () => session.createProject())
+  evented.on('command/project/open/:key', ({ key }) => session.openProject(key))
+  evented.on('command/project/create', () => session.createProject())
   evented.on(':id/close', ({ id }) => session.windowClosed(id))
 
   session.restore()
 
   const menu = new ApplicationMenu(sessionStore, evented)
-  evented.on('command:menu/refresh', () => menu.show())
+  evented.on('command/menu/refresh', () => menu.show())
   await menu.show()
 }
 

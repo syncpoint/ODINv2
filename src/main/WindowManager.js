@@ -14,8 +14,8 @@ const url = app => {
 
 
 /**
- * @classdesc
  * @param {*} evented
+ * @constructor
  */
 export const WindowManager = function (evented) {
   /** _windows :: { window.id -> handle } */
@@ -38,7 +38,7 @@ export const WindowManager = function (evented) {
 /**
  * @private
  * @param {WindowOptions} options
- * @returns
+ * @returns {BrowserWindow}
  */
 WindowManager.prototype.createWindow = function (options) {
   const { handle, url } = options
@@ -74,7 +74,7 @@ WindowManager.prototype.createWindow = function (options) {
 
     window.once('close', () => {
       delete this.windows[window.id]
-      this.evented.emit(`${handle}/close`)
+      this.evented.emit(`event/window/${handle}/close`)
     })
 
     // Prevent window title to be overwritten by HTML page title:
@@ -82,7 +82,7 @@ WindowManager.prototype.createWindow = function (options) {
     window.on('page-title-updated', event => event.preventDefault())
 
     window.on('focus', () => {
-      this.evented.emit(`${handle}/focus`)
+      this.evented.emit(`event/window/${handle}/focus`)
     })
 
     window.loadURL(url.toString())
@@ -94,7 +94,7 @@ WindowManager.prototype.createWindow = function (options) {
 /**
  * @private
  * @param {*} handle
- * @returns
+ * @returns BrowserWindow
  */
 WindowManager.prototype.windowFromHandle = function (handle) {
   const entry = Object.entries(this.windows).find(entry => entry[1] === handle)
@@ -136,7 +136,7 @@ WindowManager.prototype.closeWindow = function (handle) {
  * @param {*} project
  * @returns
  */
-WindowManager.prototype.showProject = async function (key, project) {
+WindowManager.prototype.showProject = function (key, project) {
   const additionalArguments = [
     `--page=${key}`,
     `--databases=${paths.databases(app)}`

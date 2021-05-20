@@ -2,7 +2,10 @@ import Store from '../../shared/level/Store'
 
 const PROJECT = 'project:'
 
-export function ProjectStore (db) {
+/**
+ * @constructor
+ */
+function ProjectStore (db) {
   this.store = new Store(db)
 }
 
@@ -17,3 +20,5 @@ ProjectStore.prototype.getProject = function (key) {
 ProjectStore.prototype.updateWindowBounds = function (key, bounds) {
   return this.store.assign(key, { bounds })
 }
+
+export default ProjectStore
