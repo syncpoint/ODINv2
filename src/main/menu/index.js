@@ -1,15 +1,26 @@
+import util from 'util'
 import { app, Menu } from 'electron'
 import appMenu from './app-menu'
 import fileMenu from './file-menu'
 import viewMenu from './view-menu'
 import windowMenu from './window-menu'
+import Emitter from '../../shared/emitter'
 
 const menus = [appMenu, fileMenu, viewMenu, windowMenu]
 
-export function ApplicationMenu (sessionStore, evented) {
+/**
+ * @constructor
+ * @param {SessionStore} sessionStore
+ * @fires project/create create new project
+ * @fires project/open/:key open existing project
+ */
+export function ApplicationMenu (sessionStore) {
+  Emitter.call(this)
   this.sessionStore = sessionStore
-  this.evented = evented
 }
+
+util.inherits(ApplicationMenu, Emitter)
+
 
 ApplicationMenu.prototype.show = async function () {
 
@@ -17,7 +28,7 @@ ApplicationMenu.prototype.show = async function () {
     platform: process.platform,
     appName: app.name,
     sessionStore: this.sessionStore,
-    evented: this.evented
+    emitter: this
   }
 
   const template = await Promise.all(menus.flatMap(menu => menu(options)))

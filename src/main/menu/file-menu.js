@@ -1,12 +1,18 @@
+
 /**
- * @param {*} options
- * @param {String} options.platform
- * @param {String} options.sessionStore
- * @param {String} options.evented
- * @param {{ id -> project }} options.projects
+ * @typedef {Object} FileMenuOptions
+ * @property {SessionStore} sessionStore
+ * @property {Emitter} emitter
+ * @property {String} [platform]
+ */
+
+/**
+ * @function
+ * @name FileMenu
+ * @param {FileMenuOptions} options
  */
 export default async options => {
-  const { sessionStore, evented } = options
+  const { sessionStore, emitter } = options
   const platform = options.platform || process.platform
   const recent = await sessionStore.getRecent()
 
@@ -14,7 +20,7 @@ export default async options => {
     id: key,
     label: name,
     click: (menuItem, focusedWindow, focusedWebContents) => {
-      evented.emit(`command/project/open/${key}`)
+      emitter.emit(`project/open/${key}`)
     }
   }))
 
@@ -25,7 +31,7 @@ export default async options => {
         label: 'New Project',
         accelerator: 'CmdOrCtrl+Shift+N',
         click: async (/* menuItem, browserWindow, event */) => {
-          evented.emit('command:project/create')
+          emitter.emit('project/create')
         }
       },
       { type: 'separator' },

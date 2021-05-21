@@ -4,7 +4,6 @@ import { transferLegacy } from './legacy'
 import { jsonStore } from '../shared/stores'
 import { IPCServer } from '../shared/level/ipc'
 import { Session } from './Session'
-import EventEmitter from '../shared/emitter'
 import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore } from './stores'
@@ -19,6 +18,9 @@ const ready = async () => {
   paths.mkdir(databases)
   const db = jsonStore(paths.master(app))
 
+  // Emitted when all windows have been closed and the application will quit.
+  app.once('will-quit', () => db.close())
+
   /* eslint-disable no-new */
   new IPCServer(db, ipcMain)
   /* eslint-enable no-new */
@@ -27,30 +29,19 @@ const ready = async () => {
   const sessionStore = new SessionStore(db)
   const legacyStore = new LegacyStore(db)
 
-  // Emitted when all windows have been closed and the application will quit.
-  app.once('will-quit', () => db.close())
-
   // Transfer legacy data if not already done.
   if (await legacyStore.getTransferred() === false) {
     const location = paths.odinHome
     await transferLegacy(location, legacyStore, databases)
   }
 
-  const evented = new EventEmitter()
-  const windowManager = new WindowManager(evented)
-  const session = new Session({
-    sessionStore,
-    projectStore,
-    windowManager
-  })
-
-  evented.on('command/project/open/:key', ({ key }) => session.openProject(key))
-  evented.on('command/project/create', () => session.createProject())
+  const windowManager = new WindowManager()
+  const session = new Session({ sessionStore, projectStore, windowManager })
+  const menu = new ApplicationMenu(sessionStore)
 
 
-  session.restore()
-
-  const menu = new ApplicationMenu(sessionStore, evented)
+  menu.on('project/open/:key', ({ key }) => session.openProject(key))
+  menu.on('project/create', () => session.createProject())
 
   windowManager.on('window/closed/:id', event => {
     console.log('[main]', event.path)
@@ -62,6 +53,7 @@ const ready = async () => {
     menu.show()
   })
 
+  await session.restore()
   await menu.show()
 }
 
