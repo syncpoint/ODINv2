@@ -53,6 +53,15 @@ const ready = async () => {
     menu.show()
   })
 
+  ipcMain.on('PREVIEW', ({ sender }, url) => {
+    const handle = windowManager.handleFromId(sender.id)
+    projectStore.putPreview(handle, url)
+  })
+
+  ipcMain.on('OPEN_PROJECT', (event, key) => {
+    session.openProject(key)
+  })
+
   await session.restore()
   await menu.show()
 }

@@ -10,7 +10,7 @@ import * as paths from '../paths'
  * Read JSON file.
  * Note: Also used for testing.
  *
- * @param {string} filename name of file to read
+ * @param {String} filename name of file to read
  */
 export const readJSON = async filename => JSON.parse(await fs.readFile(filename, 'utf8'))
 
@@ -18,7 +18,7 @@ export const readJSON = async filename => JSON.parse(await fs.readFile(filename,
 /**
  * Legacy sources (aka tile providers).
  *
- * @param {string} location sources directory, usually $odinHome.
+ * @param {String} location sources directory, usually $odinHome.
  */
 export const readSources = async location => {
   const filename = paths.sources(location)
@@ -37,7 +37,7 @@ export const readSources = async location => {
 /**
  * Plain project UUIDs (not projects paths) for all projects in $location/projects.
  *
- * @param {string} location projects parent directory
+ * @param {String} location projects parent directory
  */
 export const readProjects = async location => {
 
@@ -59,8 +59,8 @@ export const readProjects = async location => {
 /**
  * Layer names for a given project.
  *
- * @param {string} location projects parent directory
- * @param {string} uuid project UUID
+ * @param {String} location projects parent directory
+ * @param {String} uuid project UUID
  */
 export const readLayers = async (location, uuid) => {
   const dir = paths.layers(location, uuid)
@@ -92,8 +92,8 @@ export const readLayers = async (location, uuid) => {
  *   lastAccess: String - datetime
  * }
  *
- * @param {string} location projects parent directory
- * @param {string} uuid project UUID
+ * @param {String} location projects parent directory
+ * @param {String} uuid project UUID
  */
 export const readMetadata = (location, uuid) => {
   const filename = paths.metadata(location, uuid)
@@ -148,9 +148,9 @@ export const readPreferences = async (location, uuid) => {
  *   features: [feature id -> feature]
  * }
  *
- * @param {string} location projects parent directory
- * @param {string} projectUUID project UUID
- * @param {string} layer layer name (without '.json' extension)
+ * @param {String} location projects parent directory
+ * @param {String} projectUUID project UUID
+ * @param {String} layer layer name (without '.json' extension)
  */
 export const readLayer = async (location, projectUUID, layer) => {
   const filename = paths.layer(location, projectUUID, layer)

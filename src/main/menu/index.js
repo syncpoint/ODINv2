@@ -2,11 +2,12 @@ import util from 'util'
 import { app, Menu } from 'electron'
 import appMenu from './app-menu'
 import fileMenu from './file-menu'
+import editMenu from './edit-menu'
 import viewMenu from './view-menu'
 import windowMenu from './window-menu'
 import Emitter from '../../shared/emitter'
 
-const menus = [appMenu, fileMenu, viewMenu, windowMenu]
+const menus = [appMenu, fileMenu, editMenu, viewMenu, windowMenu]
 
 /**
  * @constructor

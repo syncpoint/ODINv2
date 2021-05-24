@@ -109,6 +109,10 @@ WindowManager.prototype.windowFromHandle = function (handle) {
 }
 
 
+WindowManager.prototype.handleFromId = function (id) {
+  return this.windows[id]
+}
+
 /**
  * @param {String} handle - window handle
  * @returns {boolean} whether or not a window with this handle is open

@@ -21,4 +21,8 @@ ProjectStore.prototype.updateWindowBounds = function (key, bounds) {
   return this.store.assign(key, { bounds })
 }
 
+ProjectStore.prototype.putPreview = function (key, dataURL) {
+  return this.store.put(`preview:${key}`, dataURL)
+}
+
 export default ProjectStore

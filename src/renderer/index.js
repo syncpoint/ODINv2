@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom'
 import { ipcRenderer } from 'electron'
 import levelup from 'levelup'
 import leveldown from 'leveldown'
-
 import * as Registry from './registry'
 import { Session } from './store/Session'
 import { IPCDownClient } from '../shared/level/ipc'
@@ -12,6 +11,12 @@ import './index.css'
 import { Project } from './components/Project'
 import { Splash } from './components/Splash'
 import EventEmitter from '../shared/emitter'
+
+
+document.addEventListener('copy', event => console.log('[index] copy', event))
+document.addEventListener('cut', event => console.log('[index] cut', event))
+document.addEventListener('paste', event => console.log('[index] paste', event))
+
 
 Registry.put(Registry.EVENTED, new EventEmitter())
 Registry.put(Registry.MASTER, levelup(new IPCDownClient(ipcRenderer)))

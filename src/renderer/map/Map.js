@@ -7,6 +7,8 @@ import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import * as Registry from '../registry'
 
+import { ipcRenderer } from 'electron'
+
 /**
  *
  */
@@ -37,7 +39,7 @@ export const Map = () => {
     ]
 
     /* eslint-disable no-new */
-    new ol.Map({
+    const map = new ol.Map({
       target,
       controls,
       layers,
@@ -46,6 +48,47 @@ export const Map = () => {
         doubleClickZoom: false
       })
     })
+
+
+    // Send map preview every 5 minutes to main process.
+
+    const sendPreview = target => {
+
+      // Adapted from: https://openlayers.org/en/latest/examples/export-map.html
+      const draw = context => canvas => {
+        if (canvas.width > 0) {
+          const opacity = canvas.parentNode.style.opacity
+          context.globalAlpha = opacity === '' ? 1 : Number(opacity)
+          const transform = canvas.style.transform
+
+          // Get the transform parameters from the style's transform matrix
+          const matrix = transform
+            .match(/^matrix\(([^(]*)\)$/)[1]
+            .split(',')
+            .map(Number)
+
+          // Apply the transform to the export map context
+          CanvasRenderingContext2D.prototype.setTransform.apply(context, matrix)
+          context.drawImage(canvas, 0, 0)
+        }
+      }
+
+      const canvas = document.createElement('canvas')
+      const size = target.getSize()
+      canvas.width = size[0]
+      canvas.height = size[1]
+      const context = canvas.getContext('2d')
+
+      const list = document.querySelectorAll('.ol-layer canvas')
+      Array.prototype.forEach.call(list, draw(context))
+      const url = canvas.toDataURL()
+      ipcRenderer.send('PREVIEW', url)
+
+      const reschedule = () => map.once('rendercomplete', ({ target }) => sendPreview(target))
+      setTimeout(reschedule, 5 * 60 * 1000)
+    }
+
+    map.once('rendercomplete', ({ target }) => sendPreview(target))
   }, [])
 
   return <div

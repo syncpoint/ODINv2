@@ -42,25 +42,33 @@ Session.prototype.openProject = async function (key) {
   await this.sessionStore.addRecent(key, project.name)
 
   if (this.windowManager.isWindowOpen(key)) {
-    return this.windowManager.focusWindow(key)
+    this.windowManager.focusWindow(key)
+  } else {
+
+    // Create and show project window.
+    const window = await this.windowManager.showProject(key, project)
+
+    ;['resized', 'moved'].forEach(event => window.on(event, () => {
+      this.projectStore.updateWindowBounds(key, window.getBounds())
+    }))
+
+    if (this.windowManager.isWindowOpen('splash')) {
+      this.windowManager.closeWindow('splash')
+    }
+
+    await this.sessionStore.addProject(key)
+    window.show()
   }
-
-  const window = await this.windowManager.showProject(key, project)
-
-  ;['resized', 'moved'].forEach(event => window.on(event, () => {
-    this.projectStore.updateWindowBounds(key, window.getBounds())
-  }))
-
-  if (this.windowManager.isWindowOpen('splash')) {
-    this.windowManager.closeWindow('splash')
-  }
-
-  await this.sessionStore.addProject(key)
-  window.show()
 }
 
-Session.prototype.createProject = function () {
-  console.log('[Session] createProject')
+Session.prototype.createProject = async function () {
+  const key = 'splash'
+  if (this.windowManager.isWindowOpen(key)) {
+    return this.windowManager.focusWindow(key)
+  } else {
+    const window = await this.windowManager.showSplash()
+    window.show()
+  }
 }
 
 Session.prototype.windowClosed = async function (key) {

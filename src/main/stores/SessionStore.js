@@ -29,7 +29,8 @@ SessionStore.prototype.removeProject = async function (key) {
 
 SessionStore.prototype.getProjects = async function () {
   const session = await this.store.get(SESSION, { projects: [] })
-  return R.uniq(session.projects)
+  const projects = session.projects
+  return projects
 }
 
 SessionStore.prototype.addRecent = async function (key, name) {
@@ -40,7 +41,7 @@ SessionStore.prototype.addRecent = async function (key, name) {
 }
 
 SessionStore.prototype.getRecent = async function () {
-  return await this.store.get(RECENT, [])
+  return this.store.get(RECENT, [])
 }
 
 SessionStore.prototype.clearRecent = function () {
