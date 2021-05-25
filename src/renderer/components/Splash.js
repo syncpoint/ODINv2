@@ -3,6 +3,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import * as Registry from '../registry'
 import Store from '../../shared/level/Store'
+import { militaryFormat } from '../../shared/datetime'
 
 const DeferredImage = props => {
   const [source, setSource] = React.useState(undefined)
@@ -53,10 +54,6 @@ CardContent.propTypes = {
   children: PropTypes.array
 }
 
-const CardMedia = props => {
-  return props.children
-}
-
 const ProjectList = props => {
   const width = 320
   const height = 240
@@ -67,12 +64,21 @@ const ProjectList = props => {
     onDoubleClick={props.onDoubleClick(project.id)}
   >
     <CardContent>
-    <span className='cardtitle'>{project.name}</span>
-    <span className='cardtext'>{project.lastAccess}</span>
+      <span className='cardtitle'>{project.name}</span>
+      <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
+
+      {/* TODO: buttons: OPEN, EXPORT, DELETE */}
+      <div style={{
+        display: 'grid',
+        columnGap: '16px',
+        gridTemplateColumns: 'auto auto auto'
+      }}>
+        <button className="button">Open</button>
+        <button className="button">Export</button>
+        <button style={{ color: 'red' }} className="button">Delete</button>
+      </div>
     </CardContent>
-    <CardMedia >
-      <DeferredImage fetch={props.fetch(project.id)} width={width} height={height} scale={scale}/>
-    </CardMedia>
+    <DeferredImage fetch={props.fetch(project.id)} width={width} height={height} scale={scale}/>
   </Card>
 
   return <div className="projectlist">

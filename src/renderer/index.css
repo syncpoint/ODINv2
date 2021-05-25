@@ -31,7 +31,7 @@ div {
 }
 
 .card {
-  transition: background-color 0.5s ease, padding 0.1s linear;
+  transition: background-color 0.5s ease;
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -43,13 +43,12 @@ div {
 
 .card:hover {
   background-color: rgba(0, 0, 0, 0.1);
-  padding-left: 8px;
 }
 
 .cardcontent {
   display: flex;
   flex-direction: column;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
   padding: 16px;
 }
 
@@ -61,4 +60,29 @@ div {
 .cardtext {
   font-size: 100%;
   color: grey;
+}
+
+.button {
+  /* background-color: lime; */
+  text-transform: uppercase;
+  padding: 8px;
+  color: black;
+  font-size: 100%;
+  font-weight: 100;
+  border-width: 1px;
+  /* border-color: red; */
+  border-radius: 4px;
+  background-color: inherit;
+}
+
+.button:hover {
+  background-color:rgba(0, 0, 0, 0.1);
+  /* text-transform: uppercase;
+  padding: 8px; */
+  color: white;
+  /* font-size: 100%;
+  font-weight: 100;
+  border-width: 1px; */
+  /* border-color: red; */
+  /* border-radius: 4px; */
 }
