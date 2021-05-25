@@ -4,8 +4,6 @@ import PropTypes from 'prop-types'
 import * as Registry from '../registry'
 import Store from '../../shared/level/Store'
 
-// /* eslint-disable */
-
 const DeferredImage = props => {
   const [source, setSource] = React.useState(undefined)
   const scale = props.scale || 1
@@ -32,13 +30,21 @@ DeferredImage.propTypes = {
 }
 
 const Card = props => {
-  return <div onDoubleClick={props.onDoubleClick} style={{
-    display: 'flex',
-    flexDirection: 'row',
-    margin: '8px',
-    borderRadius: '8px',
-    boxShadow: 'rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset'
-  }}>
+
+  const ref = React.useRef()
+
+  return <div
+    ref={ref}
+    onDoubleClick={props.onDoubleClick}
+    style={{
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'row',
+      margin: '8px',
+      borderRadius: '8px',
+      boxShadow: 'rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset'
+    }}
+  >
     { props.children }
   </div>
 }
@@ -59,8 +65,7 @@ const CardContent = props => {
 }
 
 CardContent.propTypes = {
-  children: PropTypes.array,
-  onDoubleClick: PropTypes.func.isRequired
+  children: PropTypes.array
 }
 
 const CardMedia = props => {
@@ -128,8 +133,8 @@ export const Splash = () => {
   }, [])
 
   const fetch = key => () => store.get(`preview:${key}`, null)
+
   const onDoubleClick = id => () => {
-    console.log('onDoubleClick', id)
     ipcRenderer.send('OPEN_PROJECT', id)
   }
 
