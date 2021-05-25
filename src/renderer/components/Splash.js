@@ -30,20 +30,9 @@ DeferredImage.propTypes = {
 }
 
 const Card = props => {
-
-  const ref = React.useRef()
-
   return <div
-    ref={ref}
+    className='card'
     onDoubleClick={props.onDoubleClick}
-    style={{
-      cursor: 'pointer',
-      display: 'flex',
-      flexDirection: 'row',
-      margin: '8px',
-      borderRadius: '8px',
-      boxShadow: 'rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset'
-    }}
   >
     { props.children }
   </div>
@@ -55,11 +44,7 @@ Card.propTypes = {
 }
 
 const CardContent = props => {
-  return <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    flex: '1 1 auto'
-  }}>
+  return <div className='cardcontent'>
     { props.children }
   </div>
 }
@@ -81,28 +66,16 @@ const ProjectList = props => {
     key={project.id}
     onDoubleClick={props.onDoubleClick(project.id)}
   >
-    <CardContent name={project.name} lastAccess={project.lastAccess}>
-    <span style={{
-      padding: '16px',
-      fontSize: '120%'
-    }}>{project.name}
-    </span>
-    <span style={{
-      paddingLeft: '16px',
-      fontSize: '100%'
-    }}>{project.lastAccess}
-    </span>
+    <CardContent>
+    <span className='cardtitle'>{project.name}</span>
+    <span className='cardtext'>{project.lastAccess}</span>
     </CardContent>
     <CardMedia >
       <DeferredImage fetch={props.fetch(project.id)} width={width} height={height} scale={scale}/>
     </CardMedia>
   </Card>
 
-  return <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    margin: '0'
-  }}>
+  return <div className="projectlist">
     { props.projects.map(projectCard)}
   </div>
 }

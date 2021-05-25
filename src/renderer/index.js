@@ -9,7 +9,7 @@ import { Session } from './store/Session'
 import { IPCDownClient } from '../shared/level/ipc'
 import './index.css'
 import { Project } from './components/Project'
-import { Splash } from './components/Splash-plain'
+import { Splash } from './components/Splash'
 import EventEmitter from '../shared/emitter'
 
 
