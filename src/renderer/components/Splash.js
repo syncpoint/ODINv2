@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron'
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Button } from 'antd'
 import * as Registry from '../registry'
 import Store from '../../shared/level/Store'
 import { militaryFormat } from '../../shared/datetime'
@@ -33,15 +34,13 @@ DeferredImage.propTypes = {
 const Card = props => {
   return <div
     className='card'
-    onDoubleClick={props.onDoubleClick}
   >
     { props.children }
   </div>
 }
 
 Card.propTypes = {
-  children: PropTypes.array,
-  onDoubleClick: PropTypes.func.isRequired
+  children: PropTypes.array
 }
 
 const CardContent = props => {
@@ -54,47 +53,58 @@ CardContent.propTypes = {
   children: PropTypes.array
 }
 
-const ProjectList = props => {
+const Project = props => {
+  const { project } = props
+
   const width = 320
   const height = 240
   const scale = 0.75
 
-  const projectCard = project => <Card
-    key={project.id}
-    onDoubleClick={props.onDoubleClick(project.id)}
-  >
+  const send = message => () => ipcRenderer.send(message, project.id)
+
+  return <Card>
     <CardContent>
       <span className='cardtitle'>{project.name}</span>
       <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
-      {/* TODO: buttons: OPEN, EXPORT, DELETE */}
       <div style={{
-        display: 'grid',
-        columnGap: '16px',
-        gridTemplateColumns: 'auto auto auto'
+        display: 'flex',
+        marginTop: 'auto',
+        gap: '8px'
       }}>
-        <button className="button">Open</button>
-        <button className="button">Export</button>
-        <button style={{ color: 'red' }} className="button">Delete</button>
+        <Button style={{ backgroundColor: 'inherit' }} onClick={send('OPEN_PROJECT')}>Open</Button>
+        <Button style={{ backgroundColor: 'inherit' }} onClick={send('EXPORT_PROJECT')}>Export</Button>
+        <Button danger style={{ backgroundColor: 'inherit' }} onClick={send('DELETE_PROJECT')}>Delete</Button>
       </div>
     </CardContent>
     <DeferredImage fetch={props.fetch(project.id)} width={width} height={height} scale={scale}/>
   </Card>
+}
+
+Project.propTypes = {
+  project: PropTypes.object.isRequired,
+  fetch: PropTypes.func.isRequired
+}
+
+const ProjectList = props => {
+  const project = project => <Project
+    key={project.id}
+    project={project}
+    fetch={props.fetch}
+  />
 
   return <div className="projectlist">
-    { props.projects.map(projectCard)}
+    { props.projects.map(project)}
   </div>
 }
 
 ProjectList.propTypes = {
   projects: PropTypes.array.isRequired,
-  onDoubleClick: PropTypes.func.isRequired,
   fetch: PropTypes.func.isRequired
 }
 
 
 export const Splash = () => {
-
   const master = Registry.get(Registry.MASTER)
   const store = new Store(master)
   const [projects, setProjects] = React.useState([])
@@ -113,14 +123,9 @@ export const Splash = () => {
 
   const fetch = key => () => store.get(`preview:${key}`, null)
 
-  const onDoubleClick = id => () => {
-    ipcRenderer.send('OPEN_PROJECT', id)
-  }
-
   return <ProjectList
     projects={projects}
     fetch={fetch}
-    onDoubleClick={onDoubleClick}
   >
 
   </ProjectList>

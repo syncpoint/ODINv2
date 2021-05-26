@@ -42,7 +42,7 @@ div {
 }
 
 .card:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .cardcontent {
@@ -60,29 +60,4 @@ div {
 .cardtext {
   font-size: 100%;
   color: grey;
-}
-
-.button {
-  /* background-color: lime; */
-  text-transform: uppercase;
-  padding: 8px;
-  color: black;
-  font-size: 100%;
-  font-weight: 100;
-  border-width: 1px;
-  /* border-color: red; */
-  border-radius: 4px;
-  background-color: inherit;
-}
-
-.button:hover {
-  background-color:rgba(0, 0, 0, 0.1);
-  /* text-transform: uppercase;
-  padding: 8px; */
-  color: white;
-  /* font-size: 100%;
-  font-weight: 100;
-  border-width: 1px; */
-  /* border-color: red; */
-  /* border-radius: 4px; */
 }

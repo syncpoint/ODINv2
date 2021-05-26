@@ -176,7 +176,7 @@ WindowManager.prototype.showSplash = function () {
   const additionalArguments = ['--page=splash']
   return this.createWindow({
     handle: 'splash',
-    title: 'ODIN',
+    title: 'ODIN - Projects',
     url: url(app),
     additionalArguments
   })

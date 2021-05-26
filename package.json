@@ -45,6 +45,7 @@
   "dependencies": {
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.0.0",
+    "antd": "^4.16.0",
     "jsdoc": "^3.6.7",
     "leveldown": "^6.0.0",
     "levelup": "^5.0.0",
