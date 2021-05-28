@@ -3,7 +3,7 @@ import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
 import { readJSON } from '../../../src/main/legacy/io'
-import { LegacyStore } from '../../../src/main/stores/LegacyStore'
+import LegacyStore from '../../../src/main/stores/LegacyStore'
 
 describe('LegacyStore', async function () {
 
