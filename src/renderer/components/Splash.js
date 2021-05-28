@@ -54,17 +54,30 @@ CardContent.propTypes = {
 }
 
 const Project = props => {
-  const { project } = props
+  const { project, editing } = props
 
   const width = 320
   const height = 240
   const scale = 0.75
 
   const send = message => () => ipcRenderer.send(message, project.id)
+  const [title, setTitle] = React.useState(project.name)
+
+  const handleTitleChange = event => {
+    setTitle(event.target.value)
+  }
 
   return <Card>
     <CardContent>
-      <span className='cardtitle'>{project.name}</span>
+      <input
+        className='cardtitle'
+        type={editing ? 'search' : 'submit'}
+        value={title}
+        onChange={handleTitleChange}
+        style={{
+          cursor: editing ? 'auto' : 'pointer'
+        }}
+      />
       <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
       <div style={{
@@ -74,7 +87,11 @@ const Project = props => {
       }}>
         <Button style={{ backgroundColor: 'inherit' }} onClick={send('OPEN_PROJECT')}>Open</Button>
         <Button style={{ backgroundColor: 'inherit' }} onClick={send('EXPORT_PROJECT')}>Export</Button>
-        <Button danger style={{ backgroundColor: 'inherit' }} onClick={send('DELETE_PROJECT')}>Delete</Button>
+        {
+          editing
+            ? <Button danger style={{ backgroundColor: 'inherit', marginLeft: 'auto' }} onClick={send('DELETE_PROJECT')}>Delete</Button>
+            : null
+        }
       </div>
     </CardContent>
     <DeferredImage fetch={props.fetch(project.id)} width={width} height={height} scale={scale}/>
@@ -83,7 +100,8 @@ const Project = props => {
 
 Project.propTypes = {
   project: PropTypes.object.isRequired,
-  fetch: PropTypes.func.isRequired
+  fetch: PropTypes.func.isRequired,
+  editing: PropTypes.bool.isRequired
 }
 
 const ProjectList = props => {
@@ -91,16 +109,18 @@ const ProjectList = props => {
     key={project.id}
     project={project}
     fetch={props.fetch}
+    editing={props.editing}
   />
 
-  return <div className="projectlist">
+  return <ul role='listbox' className="projectlist">
     { props.projects.map(project)}
-  </div>
+  </ul>
 }
 
 ProjectList.propTypes = {
   projects: PropTypes.array.isRequired,
-  fetch: PropTypes.func.isRequired
+  fetch: PropTypes.func.isRequired,
+  editing: PropTypes.bool.isRequired
 }
 
 
@@ -108,6 +128,8 @@ export const Splash = () => {
   const master = Registry.get(Registry.MASTER)
   const store = new Store(master)
   const [projects, setProjects] = React.useState([])
+
+  const editing = true
 
   React.useEffect(async () => {
     const projects = await new Promise((resolve, reject) => {
@@ -126,7 +148,6 @@ export const Splash = () => {
   return <ProjectList
     projects={projects}
     fetch={fetch}
-  >
-
-  </ProjectList>
+    editing={editing}
+  />
 }

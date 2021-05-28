@@ -55,6 +55,7 @@ div {
 .cardtitle {
   font-size: 130%;
   padding-bottom: 8px;
+  background: inherit;
 }
 
 .cardtext {
