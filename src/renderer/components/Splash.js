@@ -1,12 +1,10 @@
-import { ipcRenderer } from 'electron'
 import uuid from 'uuid-random'
 import { DateTime } from 'luxon'
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button, Input } from 'antd'
-import * as Registry from '../registry'
-import Store from '../../shared/level/Store'
 import { militaryFormat } from '../../shared/datetime'
+import { useServices } from './services'
 
 const DeferredImage = props => {
   const [source, setSource] = React.useState(undefined)
@@ -87,6 +85,7 @@ TitleInput.propTypes = {
 }
 
 const Project = props => {
+  const { ipcRenderer } = useServices()
   const { project, editing, dispatch } = props
   const dimensions = { width: 320, height: 240, scale: 0.75 }
   const send = message => () => ipcRenderer.send(message, project.id)
@@ -181,9 +180,8 @@ const reducer = () => {
 }
 
 export const Splash = () => {
+  const { master, store } = useServices()
   const { Search } = Input
-  const master = Registry.get(Registry.MASTER)
-  const store = new Store(master)
   const [editing, setEditing] = React.useState(false)
   const [projects, dispatch] = React.useReducer(reducer(), [])
 
@@ -205,33 +203,32 @@ export const Splash = () => {
   const onEditStart = () => setEditing(true)
   const onEditDone = () => setEditing(false)
 
-  return <div
-    style={{
+  return (
+    <div style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100vh'
-    }}
-  >
-    <div style={{
-      display: 'flex',
-      gap: '0',
-      padding: '8px'
     }}>
-      <Search placeholder="Search project" onSearch={onSearch}/>
-      <Button type='link' onClick={() => dispatch({ type: 'create-project' })}>New</Button>
-      <Button type='link'>Import</Button>
-      {
-        editing
-          ? <Button type='link' onClick={onEditDone}>Done</Button>
-          : <Button type='link' onClick={onEditStart}>Edit</Button>
-      }
+      <div style={{
+        display: 'flex',
+        gap: '0',
+        padding: '8px'
+      }}>
+        <Search placeholder="Search project" onSearch={onSearch}/>
+        <Button type='link' onClick={() => dispatch({ type: 'create-project' })}>New</Button>
+        <Button type='link'>Import</Button>
+        {
+          editing
+            ? <Button type='link' onClick={onEditDone}>Done</Button>
+            : <Button type='link' onClick={onEditStart}>Edit</Button>
+        }
+      </div>
+      <ProjectList
+        projects={projects}
+        fetch={fetch}
+        editing={editing}
+        dispatch={dispatch}
+      />
     </div>
-    <ProjectList
-      projects={projects}
-      fetch={fetch}
-      editing={editing}
-      dispatch={dispatch}
-    />
-  </div>
-
+  )
 }

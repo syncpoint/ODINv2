@@ -5,13 +5,13 @@ import { ipcRenderer } from 'electron'
 import levelup from 'levelup'
 import leveldown from 'leveldown'
 import 'antd/dist/antd.css'
-import * as Registry from './registry'
 import { Session } from './store/Session'
 import { IPCDownClient } from '../shared/level/ipc'
 import './index.css'
 import { Project } from './components/Project'
 import { Splash } from './components/Splash'
-import EventEmitter from '../shared/emitter'
+import { ServiceProvider } from './components/services'
+import Store from '../shared/level/Store'
 
 // Clipboard events: Handlers must evaluate target element to determin context.
 document.addEventListener('copy', event => console.log('[index] copy', event))
@@ -19,10 +19,6 @@ document.addEventListener('cut', event => console.log('[index] cut', event))
 document.addEventListener('paste', event => console.log('[index] paste', event))
 ipcRenderer.on('EDIT_UNDO', () => console.log('IPC:EDIT_UNDO', document.activeElement))
 ipcRenderer.on('EDIT_REDO', () => console.log('IPC:EDIT_REDO', document.activeElement))
-
-
-Registry.put(Registry.EVENTED, new EventEmitter())
-Registry.put(Registry.MASTER, levelup(new IPCDownClient(ipcRenderer)))
 
 const page = (() => {
   const entry = process.argv.find(s => s.startsWith('--page='))
@@ -34,21 +30,39 @@ const databases = (() => {
   if (entry) return entry.split('=')[1]
 })()
 
-if (page.startsWith('project:')) {
+const project = () => {
+  const services = {}
+  services.ipcRenderer = ipcRenderer
+  services.master = levelup(new IPCDownClient(ipcRenderer))
+  services.session = new Session(services.master, page)
+
   const project = page.split(':')[1]
   const location = path.join(databases, project)
-  const db = levelup(leveldown(location))
-  Registry.put(Registry.DB, db)
+  services.db = levelup(leveldown(location))
 
-  // Setup session store (project metadata in main/master).
-  const master = Registry.get(Registry.MASTER)
-  const session = new Session(master, page)
-  Registry.put(Registry.SESSION, session)
+  return (
+    <ServiceProvider { ...services }>
+      <Project/>
+    </ServiceProvider>
+  )
+}
+
+const splash = () => {
+  const services = {}
+  services.ipcRenderer = ipcRenderer
+  services.master = levelup(new IPCDownClient(ipcRenderer))
+  services.store = new Store(services.master)
+
+  return (
+    <ServiceProvider { ...services }>
+      <Splash/>
+    </ServiceProvider>
+  )
 }
 
 const app = page === 'splash'
-  ? <Splash/>
-  : <Project/>
+  ? splash()
+  : project()
 
 const container = document.createElement('div')
 document.body.appendChild(container)

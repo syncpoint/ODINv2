@@ -5,17 +5,15 @@ import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
-import * as Registry from '../registry'
-
-import { ipcRenderer } from 'electron'
+import { useServices } from './services'
 
 /**
  *
  */
 export const Map = () => {
+  const { session, ipcRenderer } = useServices()
 
   React.useEffect(async () => {
-    const session = Registry.get(Registry.SESSION)
     const viewport = await session.getViewport({
       center: [1823376.75753279, 6143598.472197734], // Vienna
       resolution: 612,
