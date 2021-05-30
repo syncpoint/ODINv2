@@ -1,9 +1,14 @@
-input:focus, div:focus {
+/* input:focus, div:focus {
   outline: none;
-}
+} */
 
 input {
   border: 0;
+}
+
+input:focus {
+  outline-offset: 4px;
+  outline-color:#1890ff;
 }
 
 div {
@@ -26,13 +31,12 @@ div {
 /* Project-List / Card */
 
 .projectlist {
-  display: flex;
-  flex-direction: column;
+  height: 100%;
+  overflow: auto;
 }
 
 .card {
   transition: background-color 0.5s ease;
-  cursor: pointer;
   user-select: none;
   display: flex;
   flex-direction: row;
@@ -54,8 +58,10 @@ div {
 
 .cardtitle {
   font-size: 130%;
-  padding-bottom: 8px;
+  margin-bottom: 8px;
+  padding: 0;
   background: inherit;
+  text-align: start;
 }
 
 .cardtext {

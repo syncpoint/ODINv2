@@ -13,10 +13,12 @@ import { Project } from './components/Project'
 import { Splash } from './components/Splash'
 import EventEmitter from '../shared/emitter'
 
-
+// Clipboard events: Handlers must evaluate target element to determin context.
 document.addEventListener('copy', event => console.log('[index] copy', event))
 document.addEventListener('cut', event => console.log('[index] cut', event))
 document.addEventListener('paste', event => console.log('[index] paste', event))
+ipcRenderer.on('EDIT_UNDO', () => console.log('IPC:EDIT_UNDO', document.activeElement))
+ipcRenderer.on('EDIT_REDO', () => console.log('IPC:EDIT_REDO', document.activeElement))
 
 
 Registry.put(Registry.EVENTED, new EventEmitter())
@@ -33,7 +35,6 @@ const databases = (() => {
 })()
 
 if (page.startsWith('project:')) {
-  // Setup project database and serve through IPC.
   const project = page.split(':')[1]
   const location = path.join(databases, project)
   const db = levelup(leveldown(location))
