@@ -5,13 +5,13 @@ import { ipcRenderer } from 'electron'
 import levelup from 'levelup'
 import leveldown from 'leveldown'
 import 'antd/dist/antd.css'
-import { Session } from './store/Session'
+import { SessionStore } from './store/SessionStore'
+import { ProjectStore } from './store/ProjectStore'
 import { IPCDownClient } from '../shared/level/ipc'
 import './index.css'
 import { Project } from './components/Project'
 import { Splash } from './components/Splash'
 import { ServiceProvider } from './components/services'
-import Store from '../shared/level/Store'
 
 // Clipboard events: Handlers must evaluate target element to determin context.
 document.addEventListener('copy', event => console.log('[index] copy', event))
@@ -34,7 +34,7 @@ const project = () => {
   const services = {}
   services.ipcRenderer = ipcRenderer
   services.master = levelup(new IPCDownClient(ipcRenderer))
-  services.session = new Session(services.master, page)
+  services.sessionStore = new SessionStore(services.master, page)
 
   const project = page.split(':')[1]
   const location = path.join(databases, project)
@@ -50,8 +50,7 @@ const project = () => {
 const splash = () => {
   const services = {}
   services.ipcRenderer = ipcRenderer
-  services.master = levelup(new IPCDownClient(ipcRenderer))
-  services.store = new Store(services.master)
+  services.projectStore = new ProjectStore(ipcRenderer)
 
   return (
     <ServiceProvider { ...services }>

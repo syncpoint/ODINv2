@@ -11,10 +11,10 @@ import { useServices } from './services'
  *
  */
 export const Map = () => {
-  const { session, ipcRenderer } = useServices()
+  const { sessionStore, ipcRenderer } = useServices()
 
   React.useEffect(async () => {
-    const viewport = await session.getViewport({
+    const viewport = await sessionStore.getViewport({
       center: [1823376.75753279, 6143598.472197734], // Vienna
       resolution: 612,
       rotation: 0
@@ -25,7 +25,7 @@ export const Map = () => {
 
     const view = new ol.View(viewport)
     view.on('change', ({ target: view }) => {
-      session.putViewport({
+      sessionStore.putViewport({
         center: view.getCenter(),
         resolution: view.getResolution(),
         rotation: view.getRotation()

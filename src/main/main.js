@@ -25,7 +25,7 @@ const ready = async () => {
   new IPCServer(db, ipcMain)
   /* eslint-enable no-new */
 
-  const projectStore = new ProjectStore(db)
+  const projectStore = new ProjectStore(db, ipcMain)
   const sessionStore = new SessionStore(db)
   const legacyStore = new LegacyStore(db)
 

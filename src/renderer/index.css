@@ -1,7 +1,3 @@
-/* input:focus, div:focus {
-  outline: none;
-} */
-
 input {
   border: 0;
 }
@@ -67,4 +63,14 @@ div {
 .cardtext {
   font-size: 100%;
   color: grey;
+}
+
+.preview {
+  font-size: 100%;
+  color: grey;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  text-align: center;
 }

@@ -53,10 +53,9 @@ CardContent.propTypes = {
   children: PropTypes.array
 }
 
-// FIXME: should not depend on `dispatch` or `id`
 // TODO: support 'Escape' key to revert edit and focus parent
 const TitleInput = props => {
-  const { id, dispatch, editing } = props
+  const { editing } = props
   const [value, setValue] = React.useState(props.value)
 
   const handleChange = event => {
@@ -64,7 +63,7 @@ const TitleInput = props => {
   }
 
   const handleBlur = () => {
-    if (editing) dispatch({ type: 'rename-project', id, value })
+    if (editing) props.onChange(value)
   }
 
   return <input
@@ -78,21 +77,41 @@ const TitleInput = props => {
 }
 
 TitleInput.propTypes = {
-  id: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   editing: PropTypes.bool.isRequired,
-  dispatch: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired
 }
 
 const Project = props => {
   const { ipcRenderer } = useServices()
   const { project, editing, dispatch } = props
-  const dimensions = { width: 320, height: 240, scale: 0.75 }
-  const send = message => () => ipcRenderer.send(message, project.id)
+  const previewWidth = 320 * 0.75
+  const previewHeight = 240 * 0.75
+  const send = message => () => ipcRenderer.send(message, project.key)
+  const [source, setSource] = React.useState(undefined)
+  const { projectStore } = useServices()
+
+  const fetch = () => projectStore.getPreview(project.key)
+
+  React.useEffect(async () => {
+    const source = await fetch()
+    console.log('source', source)
+    setSource(source)
+  }, [])
+
+  const handleTitleChange = value => {
+    dispatch({ type: 'rename-project', key: project.key, value })
+  }
+
+  const preview = (text = null) => (
+    <div className='preview' style={{ width: `${previewWidth}px`, height: `${previewHeight}px` }}>
+      { text }
+    </div>
+  )
 
   return <Card>
     <CardContent>
-      <TitleInput id={project.id} value={project.name} dispatch={props.dispatch} editing={editing}/>
+      <TitleInput value={project.name} onChange={handleTitleChange} editing={editing}/>
       <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
       <div style={{
@@ -106,14 +125,23 @@ const Project = props => {
             ? <Button
                 type='link'
                 danger
-                onClick={() => dispatch({ type: 'delete-project', id: project.id })}
+                onClick={() => dispatch({ type: 'delete-project', key: project.key })}
                 style={{ marginLeft: 'auto' }}
               >Delete</Button>
             : null
         }
       </div>
     </CardContent>
-    <DeferredImage fetch={props.fetch(project.id)} {...dimensions}/>
+
+    {
+      source === undefined
+        ? preview()
+        : source !== null
+          ? <img src={source} width={`${previewWidth}px`} height={`${previewHeight}px`}/>
+          : preview('Preview not available')
+    }
+
+    {/* <DeferredImage fetch={props.fetch(project.key)} {...dimensions}/> */}
   </Card>
 }
 
@@ -126,9 +154,8 @@ Project.propTypes = {
 
 const ProjectList = props => {
   const project = project => <Project
-    key={project.id}
+    key={project.key}
     project={project}
-    fetch={props.fetch}
     editing={props.editing}
     dispatch={props.dispatch}
   />
@@ -140,7 +167,6 @@ const ProjectList = props => {
 
 ProjectList.propTypes = {
   projects: PropTypes.array.isRequired,
-  fetch: PropTypes.func.isRequired,
   editing: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired
 }
@@ -148,22 +174,25 @@ ProjectList.propTypes = {
 const reducer = () => {
   const snapshot = (_, { projects }) => projects
 
-  const renameProject = (projects, { id, value }) => {
-    return projects.map(project => project.id === id
+  const renameProject = (projects, { key, value }) => {
+    // TODO: call projectStore.renameProject()
+    return projects.map(project => project.key === key
       ? { ...project, name: value }
       : project)
   }
 
   const createProject = state => {
+    // TODO: call projectStore.createProject()
     return [{
-      id: `project:${uuid()}`,
+      key: `project:${uuid()}`,
       name: 'New Project',
       lastAccess: DateTime.local().toISO()
     }, ...state]
   }
 
-  const deleteProject = (projects, { id }) => {
-    return projects.filter(project => project.id !== id)
+  const deleteProject = (projects, { key }) => {
+    // TODO: call projectStore.deleteProject()
+    return projects.filter(project => project.key !== key)
   }
 
   const handlers = {
@@ -180,26 +209,17 @@ const reducer = () => {
 }
 
 export const Splash = () => {
-  const { master, store } = useServices()
+  const { projectStore } = useServices()
   const { Search } = Input
   const [editing, setEditing] = React.useState(false)
   const [projects, dispatch] = React.useReducer(reducer(), [])
 
   React.useEffect(async () => {
-    const projects = await new Promise((resolve, reject) => {
-      const acc = []
-      master.createReadStream({ keys: true, values: true, gte: 'project:', lte: 'project:\xff' })
-        .on('data', ({ key, value }) => acc.push({ id: key, ...value }))
-        .on('error', err => reject(err))
-        .on('end', () => resolve(acc))
-    })
-
+    const projects = await projectStore.getProjects()
     dispatch({ type: 'snapshot', projects })
   }, [])
 
-  const fetch = key => () => store.get(`preview:${key}`, null)
   const onSearch = () => console.log('search')
-
   const onEditStart = () => setEditing(true)
   const onEditDone = () => setEditing(false)
 
@@ -225,7 +245,6 @@ export const Splash = () => {
       </div>
       <ProjectList
         projects={projects}
-        fetch={fetch}
         editing={editing}
         dispatch={dispatch}
       />
