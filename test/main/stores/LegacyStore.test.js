@@ -22,6 +22,7 @@ describe('LegacyStore', async function () {
     const store = new LegacyStore(db)
     await store.transferMetadata(projects)
     const actual = await store.store.list('project:')
+    console.log(JSON.stringify(actual))
     const expected = await readJSON('./test/data/metadata.json')
     assert.deepStrictEqual(actual, expected)
   })

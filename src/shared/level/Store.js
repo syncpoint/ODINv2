@@ -45,6 +45,10 @@ Store.prototype.get = async function (key, value) {
   }
 }
 
+Store.prototype.del = function (key) {
+  return this.db.del(key)
+}
+
 
 /**
  * entries :: () -> Promise({ key -> value })
@@ -66,8 +70,8 @@ Store.prototype.entries = function (prefix) {
 
 
 /**
- * list :: () -> Promise([{ key: String, ...value }])
- * list :: String -> Promise([{ key: String, ...value }])
+ * list :: () -> Promise([[key, value], ...])
+ * list :: String -> Promise([[key, value], ...])
  *
  * Note: Does only support Object values (i.e. non-scalar values)
  */
@@ -79,7 +83,7 @@ Store.prototype.list = function (prefix) {
   const acc = []
   return new Promise((resolve, reject) => {
     this.db.createReadStream(options)
-      .on('data', ({ key, value }) => acc.push({ key, ...value }))
+      .on('data', ({ key, value }) => acc.push([key, value]))
       .on('error', reject)
       .on('end', () => resolve(acc))
   })

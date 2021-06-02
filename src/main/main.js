@@ -25,7 +25,7 @@ const ready = async () => {
   new IPCServer(db, ipcMain)
   /* eslint-enable no-new */
 
-  const projectStore = new ProjectStore(db, ipcMain)
+  const projectStore = new ProjectStore(db)
   const sessionStore = new SessionStore(db)
   const legacyStore = new LegacyStore(db)
 
@@ -39,6 +39,31 @@ const ready = async () => {
   const session = new Session({ sessionStore, projectStore, windowManager })
   const menu = new ApplicationMenu(sessionStore)
 
+  // Forward renderer requests.
+
+  ipcMain.handle('ipc:get:projects', () => {
+    return projectStore.getProjects()
+  })
+
+  ipcMain.handle('ipc:get:project/preview', (_, id) => {
+    return projectStore.getPreview(id)
+  })
+
+  ipcMain.handle('ipc:put:project', (_, id, project) => {
+    return projectStore.putProject(id, project)
+  })
+
+  ipcMain.handle('ipc:post:project', (_, id, project) => {
+    // TODO: create project database
+    console.log('ipc:post:project', id)
+    return projectStore.putProject(id, project)
+  })
+
+  ipcMain.handle('ipc:delete:project', (_, id) => {
+    // TODO: delete project database
+    console.log('ipc:delete:project', id)
+    return projectStore.deleteProject(id)
+  })
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())

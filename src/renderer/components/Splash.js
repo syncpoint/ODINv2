@@ -6,48 +6,19 @@ import { Button, Input } from 'antd'
 import { militaryFormat } from '../../shared/datetime'
 import { useServices } from './services'
 
-const DeferredImage = props => {
-  const [source, setSource] = React.useState(undefined)
-  const scale = props.scale || 1
-  const width = props.width * scale
-  const height = props.height * scale
-
-  React.useEffect(async () => {
-    const source = await props.fetch()
-    setSource(source)
-  }, [])
-
-  return <img
-    src={source}
-    width={width}
-    height={height}
-  />
-}
-
-DeferredImage.propTypes = {
-  scale: PropTypes.number,
-  width: PropTypes.number.isRequired,
-  height: PropTypes.number.isRequired,
-  fetch: PropTypes.func.isRequired
-}
-
-const Card = props => {
-  return <div
-    className='card'
-  >
+const Card = props =>
+  <div className='card'>
     { props.children }
   </div>
-}
 
 Card.propTypes = {
   children: PropTypes.array
 }
 
-const CardContent = props => {
-  return <div className='cardcontent'>
+const CardContent = props =>
+  <div className='cardcontent'>
     { props.children }
   </div>
-}
 
 CardContent.propTypes = {
   children: PropTypes.array
@@ -84,23 +55,22 @@ TitleInput.propTypes = {
 
 const Project = props => {
   const { ipcRenderer } = useServices()
-  const { project, editing, dispatch } = props
+  const { id, project, editing, dispatch } = props
   const previewWidth = 320 * 0.75
   const previewHeight = 240 * 0.75
-  const send = message => () => ipcRenderer.send(message, project.key)
+  const send = message => () => ipcRenderer.send(message, id)
   const [source, setSource] = React.useState(undefined)
   const { projectStore } = useServices()
 
-  const fetch = () => projectStore.getPreview(project.key)
+  const fetch = () => projectStore.getPreview(id)
 
   React.useEffect(async () => {
     const source = await fetch()
-    console.log('source', source)
     setSource(source)
   }, [])
 
-  const handleTitleChange = value => {
-    dispatch({ type: 'rename-project', key: project.key, value })
+  const handleTitleChange = name => {
+    dispatch({ type: 'rename-project', id, name })
   }
 
   const preview = (text = null) => (
@@ -118,14 +88,14 @@ const Project = props => {
         display: 'flex',
         marginTop: 'auto'
       }}>
-        <Button type='link' onClick={send('OPEN_PROJECT')}>Open</Button>
-        <Button type='link' onClick={send('EXPORT_PROJECT')}>Export</Button>
+        <Button type='link' disabled={editing} onClick={send('OPEN_PROJECT')}>Open</Button>
+        <Button type='link' disabled={editing} onClick={send('EXPORT_PROJECT')}>Export</Button>
         {
           editing
             ? <Button
                 type='link'
                 danger
-                onClick={() => dispatch({ type: 'delete-project', key: project.key })}
+                onClick={() => dispatch({ type: 'delete-project', id })}
                 style={{ marginLeft: 'auto' }}
               >Delete</Button>
             : null
@@ -140,21 +110,20 @@ const Project = props => {
           ? <img src={source} width={`${previewWidth}px`} height={`${previewHeight}px`}/>
           : preview('Preview not available')
     }
-
-    {/* <DeferredImage fetch={props.fetch(project.key)} {...dimensions}/> */}
   </Card>
 }
 
 Project.propTypes = {
+  id: PropTypes.string.isRequired,
   project: PropTypes.object.isRequired,
-  fetch: PropTypes.func.isRequired,
   editing: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired
 }
 
 const ProjectList = props => {
-  const project = project => <Project
-    key={project.key}
+  const project = ([id, project]) => <Project
+    key={id}
+    id={id}
     project={project}
     editing={props.editing}
     dispatch={props.dispatch}
@@ -171,28 +140,33 @@ ProjectList.propTypes = {
   dispatch: PropTypes.func.isRequired
 }
 
-const reducer = () => {
+// FIXME: passing project store possibly makes reducer impure, i.e. messages are dispatched more than once
+const reducer = (projectStore) => {
+  const findProject = (projects, id) => Object.fromEntries(projects)[id]
   const snapshot = (_, { projects }) => projects
 
-  const renameProject = (projects, { key, value }) => {
-    // TODO: call projectStore.renameProject()
-    return projects.map(project => project.key === key
-      ? { ...project, name: value }
-      : project)
+  const renameProject = (projects, { id, name }) => {
+    const project = findProject(projects, id)
+    if (project) projectStore.updateProject(id, { ...project, name })
+
+    return projects.map(([_id, _project]) =>
+      _id === id
+        ? [id, { ..._project, name }]
+        : [_id, _project]
+    )
   }
 
-  const createProject = state => {
-    // TODO: call projectStore.createProject()
-    return [{
-      key: `project:${uuid()}`,
-      name: 'New Project',
-      lastAccess: DateTime.local().toISO()
-    }, ...state]
+  const createProject = (projects, { id }) => {
+    if (findProject(projects, id)) return projects
+    const project = { name: 'New Project', lastAccess: DateTime.local().toISO() }
+    projectStore.createProject(id, project)
+    return [[id, project], ...projects]
   }
 
-  const deleteProject = (projects, { key }) => {
-    // TODO: call projectStore.deleteProject()
-    return projects.filter(project => project.key !== key)
+  const deleteProject = (projects, { id }) => {
+    if (!findProject(projects, id)) return projects
+    projectStore.deleteProject(id)
+    return projects.filter(([_id]) => _id !== id)
   }
 
   const handlers = {
@@ -208,11 +182,12 @@ const reducer = () => {
       : state
 }
 
+
 export const Splash = () => {
   const { projectStore } = useServices()
   const { Search } = Input
   const [editing, setEditing] = React.useState(false)
-  const [projects, dispatch] = React.useReducer(reducer(), [])
+  const [projects, dispatch] = React.useReducer(reducer(projectStore), [])
 
   React.useEffect(async () => {
     const projects = await projectStore.getProjects()
@@ -222,6 +197,9 @@ export const Splash = () => {
   const onSearch = () => console.log('search')
   const onEditStart = () => setEditing(true)
   const onEditDone = () => setEditing(false)
+  const handleCreate = () => {
+    dispatch({ type: 'create-project', id: `project:${uuid()}` })
+  }
 
   return (
     <div style={{
@@ -235,7 +213,7 @@ export const Splash = () => {
         padding: '8px'
       }}>
         <Search placeholder="Search project" onSearch={onSearch}/>
-        <Button type='link' onClick={() => dispatch({ type: 'create-project' })}>New</Button>
+        <Button type='link' onClick={handleCreate}>New</Button>
         <Button type='link'>Import</Button>
         {
           editing

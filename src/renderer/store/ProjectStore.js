@@ -18,6 +18,30 @@ ProjectStore.prototype.getProjects = function () {
 /**
  * @async
  */
-ProjectStore.prototype.getPreview = function (key) {
-  return this.ipcRenderer.invoke('ipc:get:project/preview', key)
+ProjectStore.prototype.updateProject = function (id, project) {
+  return this.ipcRenderer.invoke('ipc:put:project', id, project)
+}
+
+
+/**
+ * @async
+ */
+ProjectStore.prototype.createProject = function (id, project) {
+  return this.ipcRenderer.invoke('ipc:post:project', id, project)
+}
+
+
+/**
+ * @async
+ */
+ProjectStore.prototype.deleteProject = function (id) {
+  return this.ipcRenderer.invoke('ipc:delete:project', id)
+}
+
+
+/**
+ * @async
+ */
+ProjectStore.prototype.getPreview = function (id) {
+  return this.ipcRenderer.invoke('ipc:get:project/preview', id)
 }

@@ -6,36 +6,36 @@ const PREVIEW = key => `preview:${key}`
 /**
  * @constructor
  */
-function ProjectStore (db, ipcMain) {
+function ProjectStore (db) {
   this.store = new Store(db)
-
-  ipcMain.handle('ipc:get:projects', () => {
-    return this.getProjects()
-  })
-
-  ipcMain.handle('ipc:get:project/preview', (_, key) => {
-    return this.getPreview(key)
-  })
 }
 
 ProjectStore.prototype.getProjects = function () {
   return this.store.list(PROJECT)
 }
 
-ProjectStore.prototype.getProject = function (key) {
-  return this.store.get(key)
+ProjectStore.prototype.getProject = function (id) {
+  return this.store.get(id)
 }
 
-ProjectStore.prototype.updateWindowBounds = function (key, bounds) {
-  return this.store.assign(key, { bounds })
+ProjectStore.prototype.putProject = function (id, value) {
+  return this.store.put(id, value)
 }
 
-ProjectStore.prototype.putPreview = function (key, dataURL) {
-  return this.store.put(PREVIEW(key), dataURL)
+ProjectStore.prototype.deleteProject = function (id) {
+  return this.store.del(id)
 }
 
-ProjectStore.prototype.getPreview = function (key) {
-  return this.store.get(PREVIEW(key), null)
+ProjectStore.prototype.updateWindowBounds = function (id, bounds) {
+  return this.store.assign(id, { bounds })
+}
+
+ProjectStore.prototype.putPreview = function (id, dataURL) {
+  return this.store.put(PREVIEW(id), dataURL)
+}
+
+ProjectStore.prototype.getPreview = function (id) {
+  return this.store.get(PREVIEW(id), null)
 }
 
 export default ProjectStore

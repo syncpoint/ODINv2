@@ -102,9 +102,9 @@ describe('Store', function () {
     await db.put('c', { n: 2 })
 
     const expected = [
-      { key: 'c', n: 2 },
-      { key: 'prefix-a', n: 0 },
-      { key: 'prefix-b', n: 1 }
+      ['c', { n: 2 }],
+      ['prefix-a', { n: 0 }],
+      ['prefix-b', { n: 1 }]
     ]
 
     const actual = await store.list()
@@ -120,8 +120,8 @@ describe('Store', function () {
     await db.put('c', { n: 2 })
 
     const expected = [
-      { key: 'prefix-a', n: 0 },
-      { key: 'prefix-b', n: 1 }
+      ['prefix-a', { n: 0 }],
+      ['prefix-b', { n: 1 }]
     ]
 
     const actual = await store.list('prefix')
