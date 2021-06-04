@@ -2,9 +2,8 @@ input {
   border: 0;
 }
 
-input:focus {
-  outline-offset: 4px;
-  outline-color:#1890ff;
+*:focus {
+  outline-width: 0;
 }
 
 div {
@@ -45,6 +44,10 @@ div {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+.card:focus-within {
+  background-color: lightyellow;
+}
+
 .cardcontent {
   display: flex;
   flex-direction: column;
@@ -58,6 +61,14 @@ div {
   padding: 0;
   background: inherit;
   text-align: start;
+}
+
+.cardtitle:hover {
+  color: #1890ff;;
+}
+
+.cardtitle:focus {
+  color: #1890ff;;
 }
 
 .cardtext {

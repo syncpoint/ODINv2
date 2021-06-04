@@ -52,7 +52,6 @@ const reducer = (projectStore) => {
 export const Splash = () => {
   const { projectStore } = useServices()
   const { Search } = Input
-  const [editing, setEditing] = React.useState(false)
   const [projects, dispatch] = React.useReducer(reducer(projectStore), [])
 
   React.useEffect(async () => {
@@ -61,33 +60,27 @@ export const Splash = () => {
   }, [])
 
   const onSearch = () => console.log('search')
-  const onEditStart = () => setEditing(true)
-  const onEditDone = () => setEditing(false)
   const handleCreateProject = () => dispatch({ type: 'createProject', id: `project:${uuid()}` })
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh'
+      }}
+    >
       <div style={{
         display: 'flex',
-        gap: '0',
+        gap: '8px',
         padding: '8px'
       }}>
         <Search placeholder="Search project" onSearch={onSearch}/>
-        <Button type='link' onClick={handleCreateProject}>New</Button>
-        <Button type='link'>Import</Button>
-        {
-          editing
-            ? <Button type='link' onClick={onEditDone}>Done</Button>
-            : <Button type='link' onClick={onEditStart}>Edit</Button>
-        }
+        <Button onClick={handleCreateProject}>New</Button>
+        <Button>Import</Button>
       </div>
       <ProjectList
         projects={projects}
-        editing={editing}
         dispatch={dispatch}
       />
     </div>

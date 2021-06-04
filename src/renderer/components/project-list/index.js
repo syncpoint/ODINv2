@@ -7,7 +7,6 @@ export const ProjectList = props => {
     key={id}
     id={id}
     project={project}
-    editing={props.editing}
     dispatch={props.dispatch}
   />
 
@@ -20,6 +19,5 @@ export const ProjectList = props => {
 
 ProjectList.propTypes = {
   projects: PropTypes.array.isRequired,
-  editing: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired
 }
