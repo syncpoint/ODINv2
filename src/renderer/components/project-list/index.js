@@ -7,7 +7,6 @@ export const ProjectList = props => {
     key={id}
     id={id}
     project={project}
-    dispatch={props.dispatch}
   />
 
   return (
@@ -18,6 +17,6 @@ export const ProjectList = props => {
 }
 
 ProjectList.propTypes = {
-  projects: PropTypes.array.isRequired,
-  dispatch: PropTypes.func.isRequired
+  // FIXME: use `children` instead
+  projects: PropTypes.array.isRequired
 }

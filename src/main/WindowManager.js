@@ -18,6 +18,7 @@ const url = app => {
 /**
  * @constructor
  * @fires windows/closed/:handle
+ * @fires windows/opened/:handle
  * @fires windows/focus-gained/:handle
  */
 export const WindowManager = function () {
@@ -91,7 +92,10 @@ WindowManager.prototype.createWindow = function (options) {
     })
 
     window.loadURL(url.toString())
-    window.once('ready-to-show', () => resolve(window))
+    window.once('ready-to-show', () => {
+      this.emit(`window/opened/${handle}`)
+      resolve(window)
+    })
   })
 }
 

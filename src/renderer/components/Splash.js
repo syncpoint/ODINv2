@@ -1,66 +1,31 @@
-import uuid from 'uuid-random'
-import { DateTime } from 'luxon'
 import React from 'react'
 import { Button, Input } from 'antd'
 import { useServices } from './services'
 import { ProjectList } from './project-list'
 
-
-// NOTE: Might called multiple times for same message.
-const reducer = (projectStore) => {
-  const findProject = (projects, id) => Object.fromEntries(projects)[id]
-  const snapshot = (_, { projects }) => projects
-
-  const renameProject = (projects, { id, name }) => {
-    const project = findProject(projects, id)
-    if (project) projectStore.updateProject(id, { ...project, name })
-
-    return projects.map(([_id, _project]) =>
-      _id === id
-        ? [id, { ..._project, name }]
-        : [_id, _project]
-    )
-  }
-
-  const createProject = (projects, { id }) => {
-    if (findProject(projects, id)) return projects
-    const project = { name: 'New Project', lastAccess: DateTime.local().toISO() }
-    projectStore.createProject(id, project)
-    return [[id, project], ...projects]
-  }
-
-  const deleteProject = (projects, { id }) => {
-    if (!findProject(projects, id)) return projects
-    projectStore.deleteProject(id)
-    return projects.filter(([_id]) => _id !== id)
-  }
-
-  const handlers = {
-    snapshot,
-    renameProject,
-    createProject,
-    deleteProject
-  }
-
-  return (state, message) =>
-    handlers[message.type]
-      ? handlers[message.type](state, message)
-      : state
-}
-
-
 export const Splash = () => {
   const { projectStore } = useServices()
   const { Search } = Input
-  const [projects, dispatch] = React.useReducer(reducer(projectStore), [])
+  const [projects, setProjects] = React.useState([])
+
+  const onUpdated = ({ projects }) => {
+    const sorted = projects.filter(([_, project]) => !projectStore.includesTag(project, 'deleted'))
+    sorted.sort((a, b) => a[1].name.localeCompare(b[1].name))
+    setProjects(sorted)
+  }
 
   React.useEffect(async () => {
+    projectStore.on('projects/updated', onUpdated)
     const projects = await projectStore.getProjects()
-    dispatch({ type: 'snapshot', projects })
+    onUpdated({ projects })
+
+    return () => {
+      projectStore.off('projects/updated', onUpdated)
+    }
   }, [])
 
   const onSearch = () => console.log('search')
-  const handleCreateProject = () => dispatch({ type: 'createProject', id: `project:${uuid()}` })
+  const handleNew = () => projectStore.createProject()
 
   return (
     <div
@@ -76,12 +41,11 @@ export const Splash = () => {
         padding: '8px'
       }}>
         <Search placeholder="Search project" onSearch={onSearch}/>
-        <Button onClick={handleCreateProject}>New</Button>
+        <Button onClick={handleNew}>New</Button>
         <Button>Import</Button>
       </div>
       <ProjectList
         projects={projects}
-        dispatch={dispatch}
       />
     </div>
   )

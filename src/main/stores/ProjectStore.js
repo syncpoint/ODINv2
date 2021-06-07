@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import Store from '../../shared/level/Store'
 
 const PROJECT = 'project:'
@@ -28,6 +29,22 @@ ProjectStore.prototype.deleteProject = function (id) {
 
 ProjectStore.prototype.updateWindowBounds = function (id, bounds) {
   return this.store.assign(id, { bounds })
+}
+
+ProjectStore.prototype.addTag = async function (id, tag) {
+  const project = await this.store.get(id)
+  return this.store.put(id, {
+    ...project,
+    tags: R.uniq([...(project.tags || []), tag.toUpperCase()])
+  })
+}
+
+ProjectStore.prototype.removeTag = async function (id, tag) {
+  const project = await this.store.get(id)
+  return this.store.put(id, {
+    ...project,
+    tags: (project.tags || []).filter(tag_ => tag_ !== tag.toUpperCase())
+  })
 }
 
 ProjectStore.prototype.putPreview = function (id, dataURL) {

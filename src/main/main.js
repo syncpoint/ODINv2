@@ -53,28 +53,28 @@ const ready = async () => {
     return projectStore.putProject(id, project)
   })
 
-  ipcMain.handle('ipc:post:project', (_, id, project) => {
+  ipcMain.handle('ipc:post:project', async (_, id, project) => {
     // TODO: create project database
-    console.log('ipc:post:project', id)
-    return projectStore.putProject(id, project)
+    return await projectStore.putProject(id, project)
   })
 
   ipcMain.handle('ipc:delete:project', (_, id) => {
-    // TODO: delete project database
-    console.log('ipc:delete:project', id)
-    return projectStore.deleteProject(id)
+    return projectStore.addTag('archived')
   })
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())
 
-  windowManager.on('window/closed/:id', event => {
-    console.log('[main]', event.path)
-    session.windowClosed(event.id)
+  windowManager.on('window/closed/:id', ({ id }) => {
+    session.windowClosed(id)
+    if (id.startsWith('project:')) projectStore.removeTag(id, 'open')
+  })
+
+  windowManager.on('window/opened/:id', async ({ id }) => {
+    if (id.startsWith('project:')) await projectStore.addTag(id, 'open')
   })
 
   windowManager.on('window/focus-gained/:id', event => {
-    console.log('[main]', event.path)
     menu.show()
   })
 

@@ -20,7 +20,11 @@ export const ProjectMedia = props => {
   return source === undefined
     ? preview()
     : source !== null
-      ? <img src={source} width={`${width}px`} height={`${height}px`}/>
+      ? <img
+          src={source}
+          width={`${width}px`}
+          height={`${height}px`}
+        />
       : preview('Preview not available')
 }
 

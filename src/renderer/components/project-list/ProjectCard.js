@@ -6,33 +6,48 @@ import { ProjectTitleInput } from './ProjectTitleInput'
 import { ProjectMedia } from './ProjectMedia'
 import { CustomButton } from './CustomButton'
 
+const ButtonBar = props => (
+  <div style={{
+    display: 'flex',
+    marginTop: 'auto',
+    gap: '8px'
+  }}>
+    {props.children}
+  </div>
+)
+
+ButtonBar.propTypes = {
+  children: PropTypes.array.isRequired
+}
+
 export const ProjectCard = props => {
   const { ipcRenderer, projectStore } = useServices()
-  const { id, project, dispatch } = props
+  const { id, project } = props
   const send = message => () => ipcRenderer.send(message, id)
-  const handleTitleChange = name => dispatch({ type: 'renameProject', id, name })
   const loadPreview = () => projectStore.getPreview(id)
 
+  const handleRename = name => projectStore.updateProject(id, { ...project, name })
+  const handleDelete = () => projectStore.addTag(id, project, 'deleted')
+
   return (
-    <div className='card' tabIndex={0}>
+    <div
+      className='card'
+      tabIndex={0}
+    >
       <div className='cardcontent'>
-        <ProjectTitleInput value={project.name} onChange={handleTitleChange}/>
+        <ProjectTitleInput value={project.name} onChange={handleRename}/>
         <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
-        <div style={{
-          display: 'flex',
-          marginTop: 'auto',
-          gap: '8px'
-        }}>
+        <ButtonBar>
           <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
           <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
           <CustomButton
             danger
-            onClick={() => dispatch({ type: 'deleteProject', id })}
+            onClick={handleDelete}
             style={{ marginLeft: 'auto' }}
             text='Delete'
           />
-        </div>
+        </ButtonBar>
       </div>
       <ProjectMedia loadPreview={loadPreview}/>
     </div>
@@ -41,6 +56,5 @@ export const ProjectCard = props => {
 
 ProjectCard.propTypes = {
   id: PropTypes.string.isRequired,
-  project: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired
+  project: PropTypes.object.isRequired
 }
