@@ -1,18 +1,11 @@
 import { match as exec } from 'path-to-regexp'
+import { error, ERR_INVALID_ARG } from '../shared/error'
 
 
 /**
  * @constructor
  */
 const EventEmitter = function () {}
-
-EventEmitter.ERR_INVALID_ARG = 'ERR_INVALID_ARG'
-
-const error = (code, message) => {
-  const error = new Error(`[${code}]: ${message}`)
-  error.code = code
-  return error
-}
 
 EventEmitter.prototype.on = function (pattern, handler) {
   this.handlers = this.handlers || {}
@@ -52,9 +45,9 @@ EventEmitter.prototype.emit = function (path, arg = {}) {
 }
 
 EventEmitter.prototype.off = function (pattern, handler) {
-  if (!pattern) throw error(EventEmitter.ERR_INVALID_ARG, '"pattern" argument is undefined')
-  if (!handler) throw error(EventEmitter.ERR_INVALID_ARG, '"handler" argument is undefined')
-  if (typeof handler !== 'function') throw error(EventEmitter.ERR_INVALID_ARG, '"handler" function expected')
+  if (!pattern) throw error(ERR_INVALID_ARG, '"pattern" argument is undefined')
+  if (!handler) throw error(ERR_INVALID_ARG, '"handler" argument is undefined')
+  if (typeof handler !== 'function') throw error(ERR_INVALID_ARG, '"handler" function expected')
 
   this.handlers = this.handlers || {}
   if (this.handlers[pattern]) {

@@ -1,6 +1,7 @@
 import assert from 'assert'
 import * as R from 'ramda'
 import EventEmitter from '../../src/shared/emitter'
+import { ERR_INVALID_ARG } from '../../src/shared/error'
 
 
 describe('EventEmitter', function () {
@@ -64,18 +65,18 @@ describe('EventEmitter', function () {
   it('#off - invalid arg: pattern', function () {
     const emitter = new EventEmitter()
     const code = errorCode(() => emitter.off())
-    assert.strictEqual(EventEmitter.ERR_INVALID_ARG, code)
+    assert.strictEqual(ERR_INVALID_ARG, code)
   })
 
   it('#off - invalid arg: handler (undefined)', function () {
     const emitter = new EventEmitter()
     const code = errorCode(() => emitter.off('event'))
-    assert.strictEqual(EventEmitter.ERR_INVALID_ARG, code)
+    assert.strictEqual(ERR_INVALID_ARG, code)
   })
 
   it('#off - invalid arg: handler (not a function)', function () {
     const emitter = new EventEmitter()
     const code = errorCode(() => emitter.off('event', 'NOF'))
-    assert.strictEqual(EventEmitter.ERR_INVALID_ARG, code)
+    assert.strictEqual(ERR_INVALID_ARG, code)
   })
 })

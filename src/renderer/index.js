@@ -12,6 +12,7 @@ import './index.css'
 import { Project } from './components/Project'
 import { Splash } from './components/Splash'
 import { ServiceProvider } from './components/services'
+import { Selection } from './Selection'
 
 // Clipboard events: Handlers must evaluate target element to determin context.
 document.addEventListener('copy', event => console.log('[index] copy', event))
@@ -51,6 +52,7 @@ const splash = () => {
   const services = {}
   services.ipcRenderer = ipcRenderer
   services.projectStore = new ProjectStore(ipcRenderer)
+  services.selection = new Selection()
 
   return (
     <ServiceProvider { ...services }>

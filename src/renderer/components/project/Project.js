@@ -1,9 +1,11 @@
+/* eslint-disable */
+
 import React from 'react'
 import PropTypes from 'prop-types'
 import { militaryFormat } from '../../../shared/datetime'
 import { useServices } from '../services'
-import { ProjectTitleInput } from './ProjectTitleInput'
-import { ProjectMedia } from './ProjectMedia'
+import { Title } from './Title'
+import { Media } from './Media'
 import { CustomButton } from './CustomButton'
 
 const ButtonBar = props => (
@@ -20,9 +22,10 @@ ButtonBar.propTypes = {
   children: PropTypes.array.isRequired
 }
 
-export const ProjectCard = props => {
+export const Project = props => {
+  // TODO: remove dependencies on ipc and store if possible
   const { ipcRenderer, projectStore } = useServices()
-  const { id, project } = props
+  const { id, project, focused, selected } = props
   const send = message => () => ipcRenderer.send(message, id)
   const loadPreview = () => projectStore.getPreview(id)
 
@@ -31,11 +34,12 @@ export const ProjectCard = props => {
 
   return (
     <div
-      className='card'
+      className='project'
       tabIndex={0}
+      aria-selected={selected} // TODO: || focused (selection follow focus)
     >
       <div className='cardcontent'>
-        <ProjectTitleInput value={project.name} onChange={handleRename}/>
+        <Title value={project.name} onChange={handleRename}/>
         <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
         <ButtonBar>
@@ -49,12 +53,14 @@ export const ProjectCard = props => {
           />
         </ButtonBar>
       </div>
-      <ProjectMedia loadPreview={loadPreview}/>
+      <Media loadPreview={loadPreview}/>
     </div>
   )
 }
 
-ProjectCard.propTypes = {
+Project.propTypes = {
   id: PropTypes.string.isRequired,
-  project: PropTypes.object.isRequired
+  project: PropTypes.object.isRequired,
+  focused: PropTypes.bool.isRequired,
+  selected: PropTypes.bool.isRequired
 }
