@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { toggleSelection } from './selection'
+import { toggleSelection, indexOf, firstId, lastId } from './selection'
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -14,17 +14,20 @@ import { toggleSelection } from './selection'
  *   every time, a feature gets focus. This is something we do not want.
  */
 export const multiselect = {
-  snapshot: (state, { ids }) => {
-    return { ...state, ids, selected: [], focusIndex: -1 }
-  },
+  filter: (state, { filter }) => ({ ...state, filter }),
 
   /** Focus clicked entry, optionally selecting it. */
-  click: (state, { index, shiftKey, metaKey }) => {
+  click: (state, { id, shiftKey, metaKey }) => {
     const selected = metaKey
-      ? toggleSelection(state.selected, state.ids[index])
+      ? toggleSelection(state.selected, id)
       : []
 
-    return { ...state, focusIndex: index, selected }
+    return {
+      ...state,
+      focusId: id,
+      focusIndex: indexOf(state.entries, id),
+      selected
+    }
   },
 
   /**
@@ -39,76 +42,89 @@ export const multiselect = {
    * Reference: https://www.w3.org/TR/wai-aria-practices-1.1/#listbox_kbd_interaction
    */
   focus: state => {
-    if (state.focusIndex !== -1) return state
-    if (!state.ids.length) return state
+    if (state.focusId !== null) return state
+    if (!state.entries.length) return state
 
-    const selectedIndexes = state.selected.map(id => state.ids.indexOf(id)).sort()
-    const focusIndex = selectedIndexes.length
-      ? selectedIndexes[0]
-      : 0
+    // Focus first selected entry or first entry if no selection:
+    const selectedIndexes = state.selected
+      .map(id => indexOf(state.entries, id))
+      .sort()
 
-    return { ...state, focusIndex }
+    const focusIndex = selectedIndexes.length ? selectedIndexes[0] : 0
+    const focusId = state.entries[focusIndex][0]
+    console.log('focus', focusIndex, focusIndex)
+    return { ...state, focusIndex, focusId }
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
     if (metaKey) return state // not handled here.
 
-    const focusIndex = Math.min(state.ids.length - 1, state.focusIndex + 1)
-    const current = state.ids[state.focusIndex]
-    const next = state.ids[focusIndex]
+    const index = indexOf(state.entries, state.focusId)
+    const focusIndex = Math.min(state.entries.length - 1, index + 1)
+    const focusId = state.entries[focusIndex][0]
 
     const selected = shiftKey
-      ? state.selected.includes(next)
-        ? R.uniq([...toggleSelection(state.selected, current), next])
-        : R.uniq([...state.selected, next, current])
+      ? state.selected.includes(focusId)
+        ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])
+        : R.uniq([...state.selected, focusId, state.focusId])
       : []
 
-    return { ...state, focusIndex, selected, scroll: 'smooth' }
+    return {
+      ...state,
+      focusId,
+      focusIndex,
+      selected,
+      scroll: 'smooth'
+    }
   },
 
   'keydown/ArrowUp': (state, { shiftKey, metaKey }) => {
     if (metaKey) return state // not handled here.
 
-    const focusIndex = Math.max(0, state.focusIndex - 1)
-    const current = state.ids[state.focusIndex]
-    const next = state.ids[focusIndex]
+    const index = indexOf(state.entries, state.focusId)
+    const focusIndex = Math.max(0, index - 1)
+    const focusId = state.entries[focusIndex][0]
 
     const selected = shiftKey
-      ? state.selected.includes(next)
-        ? R.uniq([...toggleSelection(state.selected, current), next])
-        : R.uniq([...state.selected, next, current])
+      ? state.selected.includes(focusId)
+        ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])
+        : R.uniq([...state.selected, focusId, state.focusId])
       : []
 
-    return { ...state, focusIndex, selected, scroll: 'smooth' }
+    return {
+      ...state,
+      focusId,
+      focusIndex,
+      selected,
+      scroll: 'smooth'
+    }
   },
 
   'keydown/Home': state => {
-    if (state.focusIndex === -1) return state
-    const focusIndex = state.ids.length ? 0 : -1
-    return { ...state, focusIndex, scroll: 'auto' }
+    if (state.focusId === null) return state
+    const focusId = firstId(state.entries)
+    const focusIndex = indexOf(state.entries, focusId)
+    return { ...state, focusId, focusIndex, scroll: 'auto' }
   },
 
   'keydown/End': state => {
-    if (state.focusIndex === -1) return state
-    const focusIndex = state.ids.length - 1
-    return { ...state, focusIndex, scroll: 'auto' }
+    if (state.focusId === null) return state
+    const focusId = lastId(state.entries)
+    const focusIndex = indexOf(state.entries, focusId)
+    return { ...state, focusId, focusIndex, scroll: 'auto' }
   },
 
   'keydown/a': (state, { metaKey }) => {
     if (!metaKey) return state
-
-    return {
-      ...state,
-      selected: [...state.ids],
-      focusIndex: state.ids.length - 1,
-      scroll: 'none'
-    }
+    const focusId = lastId(state.entries)
+    const focusIndex = indexOf(state.entries, focusId)
+    const selected = [...state.entries.map(entry => entry[0])]
+    return { ...state, selected, focusId, focusIndex, scroll: 'none' }
   },
 
   'keydown/ ': state => {
-    if (state.focusIndex === -1) return state
-    const current = state.ids[state.focusIndex]
-    const selected = toggleSelection(state.selected, current)
+    if (state.focusId === null) return state
+    const selected = toggleSelection(state.selected, state.focusId)
     return { ...state, selected }
   }
 }

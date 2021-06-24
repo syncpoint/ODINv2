@@ -4,9 +4,9 @@ import { DateTime } from 'luxon'
 import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
 
-/**
+/*
  * @constructor
- * @fires projects/updated
+ * @fires updated
  */
 export function ProjectStore (ipcRenderer) {
   Emitter.call(this)
@@ -35,20 +35,17 @@ ProjectStore.prototype.getProjects = function () {
  */
 ProjectStore.prototype.updateProject = async function (id, project) {
   await this.ipcRenderer.invoke('ipc:put:project', id, project)
-  const projects = await this.getProjects()
-  this.emit('projects/updated', { projects })
+  this.emit('updated', { id, project })
 }
 
 
 /**
  * @async
  */
-ProjectStore.prototype.addTag = async function (id, project, tag) {
-  const tags = project.tags || []
-  return this.updateProject(id, {
-    ...project,
-    tags: R.uniq([...tags, tag.toUpperCase()])
-  })
+ProjectStore.prototype.archiveProject = async function (id, project) {
+  const tags = project.tags ? R.uniq([...project.tags, 'DELETED']) : ['DELETED']
+  await this.ipcRenderer.invoke('ipc:put:project', id, { ...project, tags })
+  this.emit('archived', { id })
 }
 
 
@@ -59,16 +56,16 @@ ProjectStore.prototype.createProject = async function () {
   const id = `project:${uuid()}`
   const project = { name: 'New Project', lastAccess: DateTime.local().toISO() }
   await this.ipcRenderer.invoke('ipc:post:project', id, project)
-  const projects = await this.getProjects()
-  this.emit('projects/updated', { projects })
+  this.emit('created', { id, project })
 }
 
 
 /**
  * @async
  */
-ProjectStore.prototype.deleteProject = function (id) {
-  return this.ipcRenderer.invoke('ipc:delete:project', id)
+ProjectStore.prototype.deleteProject = async function (id) {
+  await this.ipcRenderer.invoke('ipc:delete:project', id)
+  this.emit('deleted', { id })
 }
 
 
