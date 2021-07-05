@@ -6,6 +6,7 @@ export const CustomButton = props => (
   <Button
     danger={props.danger}
     onClick={props.onClick}
+    disabled={props.disabled}
     style={{ ...props.style, background: 'inherit' }}
   >
     {props.text}
@@ -16,5 +17,6 @@ CustomButton.propTypes = {
   danger: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   style: PropTypes.object,
-  text: PropTypes.string.isRequired
+  text: PropTypes.string.isRequired,
+  disabled: PropTypes.bool
 }

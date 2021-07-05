@@ -32,6 +32,10 @@ export const Project = props => {
   const handleRename = name => projectStore.updateProject(id, { ...project, name })
   const handleDelete = () => projectStore.deleteProject(id)
 
+  const isOpen = props.project.tags
+    ? props.project.tags.includes('OPEN')
+    : false
+
   return (
     <div
       className='project'
@@ -50,6 +54,7 @@ export const Project = props => {
             onClick={handleDelete}
             style={{ marginLeft: 'auto' }}
             text='Delete'
+            disabled={isOpen}
           />
         </ButtonBar>
       </div>

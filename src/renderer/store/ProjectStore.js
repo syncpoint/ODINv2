@@ -17,6 +17,17 @@ const isTag = s => s[0] === '#'
 const tags = project =>
   project.tags ? project.tags.map(tag => tag.toLowerCase()) : []
 
+const filterProjects = tokens =>
+  tokens.length
+    ? projects =>
+      projects.filter(([_, project]) =>
+        tokens.every(({ tag, token }) => {
+          const xs = tag ? tags(project) : tokenizeName(project)
+          return xs.some(x => x.startsWith(token))
+        })
+      )
+    : R.identity
+
 
 /**
  * @constructor
@@ -32,12 +43,6 @@ export function ProjectStore (ipcRenderer) {
 util.inherits(ProjectStore, Emitter)
 
 
-ProjectStore.prototype.includesTag = (project, tag) => {
-  const tags = project.tags || []
-  return tags.includes(tag.toUpperCase())
-}
-
-
 /**
  * @async
  */
@@ -50,23 +55,13 @@ ProjectStore.prototype.getProjects = async function (filter) {
     .map(token => ({ tag: isTag(token), token: isTag(token) ? token.substring(1) : token }))
     .filter(({ token }) => token.length)
 
-  const filterProjects = tokens.length
-    ? projects =>
-      projects.filter(([_, project]) =>
-        tokens.every(({ tag, token }) => {
-          const xs = tag ? tags(project) : tokenizeName(project)
-          return xs.some(x => x.startsWith(token))
-        })
-      )
-    : R.identity
-
   const projects = await this.ipcRenderer.invoke('ipc:get:projects')
   projects.sort((a, b) =>
     a[1].name.localeCompare(b[1].name) ||
     a[1].lastAccess.localeCompare(b[1].lastAccess)
   )
 
-  return filterProjects(projects)
+  return filterProjects(tokens)(projects)
 }
 
 
