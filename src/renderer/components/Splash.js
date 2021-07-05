@@ -55,7 +55,7 @@ const useListStore = options => {
  *
  */
 export const Splash = () => {
-  const { projectStore } = useServices()
+  const { projectStore, ipcRenderer } = useServices()
   const ref = React.useRef()
 
   const { state, dispatch, fetch } = useListStore({
@@ -75,6 +75,13 @@ export const Splash = () => {
       Object.entries(handlers).forEach(([event, handler]) => projectStore.off(event, handler))
     }
   }, [dispatch])
+
+  React.useEffect(() => {
+    const channel = 'ipc:post:project/closed'
+    const handleClosed = () => fetch()
+    ipcRenderer.on(channel, handleClosed)
+    return () => ipcRenderer.off(channel, handleClosed)
+  }, [])
 
   const handleCreate = () => projectStore.createProject()
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })

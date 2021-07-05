@@ -68,7 +68,11 @@ const ready = async () => {
 
   windowManager.on('window/closed/:id', ({ id }) => {
     session.windowClosed(id)
-    if (id.startsWith('project:')) projectStore.removeTag(id, 'open')
+    if (id.startsWith('project:')) {
+      projectStore.removeTag(id, 'open')
+      const splash = windowManager.windowFromHandle('splash')
+      if (splash) splash.webContents.postMessage('ipc:post:project/closed', { id })
+    }
   })
 
   windowManager.on('window/opened/:id', async ({ id }) => {
