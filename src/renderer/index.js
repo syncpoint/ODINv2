@@ -14,6 +14,8 @@ import { Splash } from './components/Splash'
 import { ServiceProvider } from './components/services'
 import { Selection } from './Selection'
 
+process.traceProcessWarnings = true
+
 // Clipboard events: Handlers must evaluate target element to determin context.
 document.addEventListener('copy', event => console.log('[index] copy', event))
 document.addEventListener('cut', event => console.log('[index] cut', event))

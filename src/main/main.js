@@ -59,7 +59,8 @@ const ready = async () => {
   })
 
   ipcMain.handle('ipc:delete:project', (_, id) => {
-    return projectStore.addTag('archived')
+    // TODO: delete project database
+    return projectStore.deleteProject(id)
   })
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))

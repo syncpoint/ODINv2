@@ -52,7 +52,6 @@ export const multiselect = {
 
     const focusIndex = selectedIndexes.length ? selectedIndexes[0] : 0
     const focusId = state.entries[focusIndex][0]
-    console.log('focus', focusIndex, focusIndex)
     return { ...state, focusIndex, focusId }
   },
 

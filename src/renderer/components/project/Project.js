@@ -30,7 +30,7 @@ export const Project = props => {
   const loadPreview = () => projectStore.getPreview(id)
 
   const handleRename = name => projectStore.updateProject(id, { ...project, name })
-  const handleDelete = () => projectStore.archiveProject(id, project)
+  const handleDelete = () => projectStore.deleteProject(id)
 
   return (
     <div

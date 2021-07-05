@@ -1,12 +1,28 @@
 import util from 'util'
-import * as R from 'ramda'
 import { DateTime } from 'luxon'
 import uuid from 'uuid-random'
+import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
 
-/*
+const split = s =>
+  s.replace(/[()-]/gi, ' ')
+    .split(' ')
+    .filter(R.identity)
+    .map(name => name.toLowerCase())
+
+const tokenizeName = project =>
+  split(project.name)
+
+const isTag = s => s[0] === '#'
+const tags = project =>
+  project.tags ? project.tags.map(tag => tag.toLowerCase()) : []
+
+
+/**
  * @constructor
- * @fires updated
+ * @fires updated { id, project }
+ * @fires created { id, project }
+ * @fired deleted { id }
  */
 export function ProjectStore (ipcRenderer) {
   Emitter.call(this)
@@ -25,8 +41,32 @@ ProjectStore.prototype.includesTag = (project, tag) => {
 /**
  * @async
  */
-ProjectStore.prototype.getProjects = function () {
-  return this.ipcRenderer.invoke('ipc:get:projects')
+ProjectStore.prototype.getProjects = async function (filter) {
+
+  // Split filter into tag and name tokens:
+  const tokens = (filter || '').split(' ')
+    .filter(R.identity)
+    .map(token => token.toLowerCase())
+    .map(token => ({ tag: isTag(token), token: isTag(token) ? token.substring(1) : token }))
+    .filter(({ token }) => token.length)
+
+  const filterProjects = tokens.length
+    ? projects =>
+      projects.filter(([_, project]) =>
+        tokens.every(({ tag, token }) => {
+          const xs = tag ? tags(project) : tokenizeName(project)
+          return xs.some(x => x.startsWith(token))
+        })
+      )
+    : R.identity
+
+  const projects = await this.ipcRenderer.invoke('ipc:get:projects')
+  projects.sort((a, b) =>
+    a[1].name.localeCompare(b[1].name) ||
+    a[1].lastAccess.localeCompare(b[1].lastAccess)
+  )
+
+  return filterProjects(projects)
 }
 
 
@@ -36,16 +76,6 @@ ProjectStore.prototype.getProjects = function () {
 ProjectStore.prototype.updateProject = async function (id, project) {
   await this.ipcRenderer.invoke('ipc:put:project', id, project)
   this.emit('updated', { id, project })
-}
-
-
-/**
- * @async
- */
-ProjectStore.prototype.archiveProject = async function (id, project) {
-  const tags = project.tags ? R.uniq([...project.tags, 'DELETED']) : ['DELETED']
-  await this.ipcRenderer.invoke('ipc:put:project', id, { ...project, tags })
-  this.emit('archived', { id })
 }
 
 
@@ -64,6 +94,7 @@ ProjectStore.prototype.createProject = async function () {
  * @async
  */
 ProjectStore.prototype.deleteProject = async function (id) {
+  console.log('deleteProject', id)
   await this.ipcRenderer.invoke('ipc:delete:project', id)
   this.emit('deleted', { id })
 }

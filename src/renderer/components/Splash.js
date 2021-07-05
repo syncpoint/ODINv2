@@ -12,7 +12,7 @@ import { indexOf } from './list/selection'
  */
 const useListStore = options => {
   const [state, setState] = React.useState({
-    /** entries :: [[id, entry], [...]] */
+    /** entries :: [[id, entry]] */
     entries: [],
 
     /** focusId :: id || null */
@@ -20,7 +20,7 @@ const useListStore = options => {
 
     focusIndex: -1,
 
-    /** selected :: [id, ...] */
+    /** selected :: [id] */
     selected: [],
     scroll: 'smooth',
     filter: null
@@ -60,31 +60,18 @@ export const Splash = () => {
 
   const { state, dispatch, fetch } = useListStore({
     strategy: multiselect,
-    fetch: async filter => {
-      const entries = await projectStore.getProjects()
-      const isArchived = project => projectStore.includesTag(project, 'deleted')
-      const isMatch = project => filter
-        ? project.name.toLowerCase().includes(filter)
-        : true
-
-      return entries
-        .filter(([_, project]) => !isArchived(project))
-        .filter(([_, project]) => isMatch(project))
-        .sort((a, b) => a[1].name.localeCompare(b[1].name))
-    }
+    fetch: filter => projectStore.getProjects(filter)
   })
 
   React.useEffect(() => {
     const updated = ({ id, project }) => fetch()
     const created = ({ id, project }) => fetch(id)
     const deleted = ({ id }) => fetch()
-    const archived = ({ id }) => fetch()
 
-    const handlers = { updated, created, deleted, archived }
+    const handlers = { updated, created, deleted }
     Object.entries(handlers).forEach(([event, handler]) => projectStore.on(event, handler))
 
     return () => {
-      console.log('cleaning up handlers...')
       Object.entries(handlers).forEach(([event, handler]) => projectStore.off(event, handler))
     }
   }, [dispatch])
