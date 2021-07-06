@@ -1,3 +1,7 @@
+import path from 'path'
+import { promises as fs } from 'fs'
+import levelup from 'levelup'
+import leveldown from 'leveldown'
 import { app, ipcMain } from 'electron'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
@@ -54,12 +58,21 @@ const ready = async () => {
   })
 
   ipcMain.handle('ipc:post:project', async (_, id, project) => {
-    // TODO: create project database
+    // Create and close projejct database:
+    const uuid = id.split(':')[1]
+    const location = path.join(databases, uuid)
+    const db = levelup(leveldown(location))
+    await db.close()
+
     return await projectStore.putProject(id, project)
   })
 
-  ipcMain.handle('ipc:delete:project', (_, id) => {
-    // TODO: delete project database
+  ipcMain.handle('ipc:delete:project', async (_, id) => {
+    // Delete project database:
+    const uuid = id.split(':')[1]
+    const location = path.join(databases, uuid)
+    await fs.rmdir(location, { recursive: true })
+
     return projectStore.deleteProject(id)
   })
 
