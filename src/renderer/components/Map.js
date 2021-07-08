@@ -2,7 +2,7 @@ import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
 import { OSM } from 'ol/source'
-import { Tile as TileLayer } from 'ol/layer'
+import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import { useServices } from './services'
@@ -11,7 +11,7 @@ import { useServices } from './services'
  *
  */
 export const Map = () => {
-  const { sessionStore, ipcRenderer } = useServices()
+  const { sessionStore, ipcRenderer, sources } = useServices()
 
   React.useEffect(async () => {
     const viewport = await sessionStore.getViewport({
@@ -19,6 +19,19 @@ export const Map = () => {
       resolution: 612,
       rotation: 0
     })
+
+    console.time('sources')
+    const featureSources = await sources.getFeatureSources()
+    const featureCount = Object.entries(featureSources).reduce((acc, [key, source]) => acc + source.getFeatures().length, 0)
+    console.log('featureCount', featureCount)
+    const featureLayers = Object.entries(featureSources).map(([key, source]) => new VectorLayer({
+      id: key,
+      source,
+      updateWhileAnimating: true
+    }))
+
+    const layers = [new TileLayer({ source: new OSM() }), ...featureLayers]
+    console.timeEnd('sources')
 
     const target = 'map'
     const controls = [new Rotate()]
@@ -31,10 +44,6 @@ export const Map = () => {
         rotation: view.getRotation()
       })
     })
-
-    const layers = [
-      new TileLayer({ source: new OSM() })
-    ]
 
     /* eslint-disable no-new */
     const map = new ol.Map({

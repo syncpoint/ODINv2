@@ -13,6 +13,8 @@ import { Project } from './components/Project'
 import { Splash } from './components/Splash'
 import { ServiceProvider } from './components/services'
 import { Selection } from './Selection'
+import { LayerStore } from './store/LayerStore'
+import { Sources } from './model/Sources'
 
 process.traceProcessWarnings = true
 
@@ -33,6 +35,10 @@ const databases = (() => {
   if (entry) return entry.split('=')[1]
 })()
 
+
+/**
+ *
+ */
 const project = () => {
   const services = {}
   services.ipcRenderer = ipcRenderer
@@ -41,7 +47,9 @@ const project = () => {
 
   const project = page.split(':')[1]
   const location = path.join(databases, project)
-  services.db = levelup(leveldown(location))
+  const db = levelup(leveldown(location))
+  const layerStore = new LayerStore(db)
+  services.sources = new Sources(layerStore)
 
   return (
     <ServiceProvider { ...services }>
@@ -50,6 +58,10 @@ const project = () => {
   )
 }
 
+
+/**
+ *
+ */
 const splash = () => {
   const services = {}
   services.ipcRenderer = ipcRenderer
