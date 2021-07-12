@@ -5,38 +5,31 @@ import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
+import ScaleLine from 'ol/control/ScaleLine'
 import { useServices } from './services'
+import { featureStyle } from '../ol/style'
+
+const DEFAULT_VIEWPORT = {
+  center: [1823376.75753279, 6143598.472197734], // Vienna
+  resolution: 612,
+  rotation: 0
+}
 
 /**
  *
  */
 export const Map = () => {
-  const { sessionStore, ipcRenderer, sources } = useServices()
+  const { sessionStore, ipcRenderer, sources, selection } = useServices()
 
   React.useEffect(async () => {
-    const viewport = await sessionStore.getViewport({
-      center: [1823376.75753279, 6143598.472197734], // Vienna
-      resolution: 612,
-      rotation: 0
-    })
-
-    console.time('sources')
-    const featureSources = await sources.getFeatureSources()
-    const featureCount = Object.entries(featureSources).reduce((acc, [key, source]) => acc + source.getFeatures().length, 0)
-    console.log('featureCount', featureCount)
-    const featureLayers = Object.entries(featureSources).map(([key, source]) => new VectorLayer({
-      id: key,
-      source,
-      updateWhileAnimating: true
-    }))
-
-    const layers = [new TileLayer({ source: new OSM() }), ...featureLayers]
-    console.timeEnd('sources')
-
     const target = 'map'
-    const controls = [new Rotate()]
-
+    const controls = [new Rotate(), new ScaleLine({ bar: true, text: true })]
+    const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
     const view = new ol.View(viewport)
+    const features = await sources.getFeatureSource()
+    const featureLayer = new VectorLayer({ source: features, style: featureStyle(selection) })
+    const layers = [new TileLayer({ source: new OSM() }), featureLayer]
+
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({
         center: view.getCenter(),

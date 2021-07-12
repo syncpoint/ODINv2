@@ -50,6 +50,7 @@ const project = () => {
   const db = levelup(leveldown(location))
   const layerStore = new LayerStore(db)
   services.sources = new Sources(layerStore)
+  services.selection = new Selection()
 
   return (
     <ServiceProvider { ...services }>

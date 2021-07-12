@@ -21,6 +21,9 @@ export function Sources (layerStore) {
   this.layerStore = layerStore
 }
 
+/**
+ * @deprecated
+ */
 Sources.prototype.getFeatureSources = async function () {
   const layers = await this.layerStore.getFeatures()
   const sources = Object.entries(layers).reduce((acc, [key, features]) => {
@@ -29,6 +32,12 @@ Sources.prototype.getFeatureSources = async function () {
   }, {})
 
   return sources
+}
+
+Sources.prototype.getFeatureSource = async function () {
+  const json = await this.layerStore.getFeatures()
+  const features = readFeatures(json)
+  return new VectorSource({ features })
 }
 
 util.inherits(Sources, Emitter)
