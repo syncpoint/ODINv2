@@ -1,0 +1,67 @@
+MILITARY AND GENERIC FEATURES STYLES
+
+Requirement - ef5f457a-559f-4be3-b7a0-2bd5082ef8ce
+  Different graphics require differing styles for line primitives.
+  Example 1: COUNTER ATTACK for example renders lines as dashed,
+  whereas most other graphics would show solid lines at the same time.
+  Example 2: TASKS / FOLLOW AND ASSUME even uses solid and dashed line styles
+  at the same time.
+
+Requirement - 80da929f-f891-4635-b957-0b22e5c9a22c
+  Geometry used for rendering might depend on resolution.
+  Example 1: Spikes for STRONG POINT should have roughly the same length
+  independent of zoom factor.
+  Example 2: Spikes for STRONG POINT might be omitted for certain zoom factors.
+
+Corollary - 852936ca-b3a5-4a68-91ef-b817e58bf6d8
+  From requirements ef5f457a-559f-4be3-b7a0-2bd5082ef8ce and
+  80da929f-f891-4635-b957-0b22e5c9a22c follows that vector layer for military
+  features cannot be styled by a static/global style (array), but by a style function.
+
+Definition - Defining Geometry
+  Geometry used to define a feature.
+  Example 1: STRONG POINT is defined by a single polygon geometry, but to render
+  its spikes, additional geometries are necessary.
+
+Definition - Simplified Geometry
+  Defining line or polygon geometry which is simplified depending on resolution
+  or other factors.
+  Example 1: A polygon with thousands of points should be simplified.
+
+Definition - Style Geometry (or Render Geometry)
+  Optional style information used to render a feature.
+  When provided, style geometry is usually derived from defining geometry or
+  simplified geometry.  One feature may have multiple geometries styled differently,
+  see requirement ef5f457a-559f-4be3-b7a0-2bd5082ef8ce, example 2.
+  Style geometry is omitted if defining/simplified geometry is used directly as is.
+
+Requirement - c7029184-bb26-4da9-9cd1-f5d7a183ea37
+  For generic features, no style geometries should be supported.
+  I.e. no differing styles for primitives are supported for a single feature.
+
+Requirement - f56fb4b4-40fa-4ec4-a204-4e68762675ab
+  Generic features may be styled with the following information:
+  * Strokes: One or more stroke styles with different colors, widths, dash options, etc.
+  * Optional fill color or pattern for polygons
+  * Texts: zero, one or more texts with declarative or absolute positioning
+  * Optional image with absolute point position
+
+Constraint - b4985e0e-2e67-4c65-9ebe-1e88e4f75d2b
+  GeoJSON format has no means to store or transport style information.
+
+Requirement - 48e7b0b3-c791-480f-b95c-6384d5781f10
+  For performance reasons geometries with many points may be simplified.
+  See definition Simplified Geometry.
+
+Requirement (QUESTIONABLE) - dc327c97-042b-4fca-af1f-49dcba58f052
+  Military feature layers can be exported in GeoJSON format.
+
+Corollary - 84190a2d-6e85-4296-8f80-6899274e6f2e
+  From the definition of style geometry and constraint b4985e0e-2e67-4c65-9ebe-1e88e4f75d2b
+  follows that GeoJSON geometry must be the feature's defining geometry.
+  Would style geometry be stored/transported with GeoJSON, different styles would
+  also be necessary, which GeoJSON cannot convey.
+
+Corollary - b323298e-3ffd-4431-ba6d-07694b898b99
+  From requirement dc327c97-042b-4fca-af1f-49dcba58f052 follows that the defining
+  geometry must be stored.

@@ -3,9 +3,10 @@ import 'ol/ol.css'
 import * as ol from 'ol'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
-import { Rotate } from 'ol/control'
+import { Rotate, Zoom } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import ScaleLine from 'ol/control/ScaleLine'
+import '../epsg'
 import { useServices } from './services'
 import { featureStyle } from '../ol/style'
 
@@ -23,12 +24,21 @@ export const Map = () => {
 
   React.useEffect(async () => {
     const target = 'map'
-    const controls = [new Rotate(), new ScaleLine({ bar: true, text: true })]
+    const controls = [
+      new Rotate(), // macOS: OPTION + SHIFT + DRAG
+      new Zoom(),
+      new ScaleLine({ bar: true, text: true, minWidth: 128 })
+    ]
+
     const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
-    const view = new ol.View(viewport)
+    const view = new ol.View({ ...viewport })
+
     const features = await sources.getFeatureSource()
     const featureLayer = new VectorLayer({ source: features, style: featureStyle(selection) })
-    const layers = [new TileLayer({ source: new OSM() }), featureLayer]
+    const layers = [
+      new TileLayer({ source: new OSM() }),
+      featureLayer
+    ]
 
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({
@@ -81,8 +91,13 @@ export const Map = () => {
 
       const list = document.querySelectorAll('.ol-layer canvas')
       Array.prototype.forEach.call(list, draw(context))
-      const url = canvas.toDataURL()
-      ipcRenderer.send('PREVIEW', url)
+
+      try {
+        const url = canvas.toDataURL()
+        ipcRenderer.send('PREVIEW', url)
+      } catch (err) {
+        console.error('[PREVIEW]', err.message)
+      }
 
       const reschedule = () => map.once('rendercomplete', ({ target }) => sendPreview(target))
       setTimeout(reschedule, 5 * 60 * 1000)

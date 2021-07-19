@@ -1,26 +1,28 @@
-import { Style } from 'ol/style'
-import { STROKE_CAROLINA_BLUE } from './presets'
+import * as MILSTD from '../../2525c'
+import styleSpecs from './style-properties'
+import * as Style from './primitives'
 
 const styles = {}
 
-styles['LineString:highest'] = () => {
-  return new Style({ stroke: STROKE_CAROLINA_BLUE })
-}
-
-styles['LineString:high'] = styles['LineString:highest']
-
-styles['LineString:medium'] = ({ resolution, feature }) => {
-  const geometry = feature.getGeometry()
+styles.LineString = args => {
+  const { resolution, feature } = args
+  const sidc = feature.get('sidc')
+  const key = MILSTD.parameterized(sidc)
+  const geometry = feature.getGeometry().simplify()
   const lengthRatio = geometry.getLength() / resolution
   if (lengthRatio < 250) return null
 
-  return new Style({
-    geometry: geometry.simplify(),
-    stroke: STROKE_CAROLINA_BLUE
-  })
+  if (styles[key]) {
+    return styles[key](args)
+  } else {
+    return Style.featureStyle({
+      geometry,
+      lengthRatio,
+      properties: feature.getProperties(),
+      strokes: styleSpecs['STROKES:DEFAULT'](sidc),
+      texts: []
+    })
+  }
 }
-
-styles['LineString:low'] = styles['LineString:medium']
-styles['LineString:lowest'] = styles['LineString:medium']
 
 export default styles

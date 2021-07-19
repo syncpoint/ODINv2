@@ -1,31 +1,41 @@
-import { Style } from 'ol/style'
-import { STROKE_CAROLINA_BLUE, FILL_WHITE_40 } from './presets'
+import * as MILSTD from '../../2525c'
+import styleSpecs from './style-properties'
+import polygons from './polygons'
+import * as Style from './primitives'
+import { textPositions } from './polygons/text-positions'
 
-const styles = {}
-
-styles['Polygon:highest'] = () => {
-  return new Style({
-    stroke: STROKE_CAROLINA_BLUE,
-    fill: FILL_WHITE_40
-  })
+const styles = {
+  ...polygons
 }
 
-styles['Polygon:high'] = styles['Polygon:highest']
+styles.Polygon = args => {
+  const { feature, resolution } = args
 
-styles['Polygon:medium'] = options => {
-  const { resolution, feature } = options
-  const geometry = feature.getGeometry()
-  const areaRatio = geometry.getArea() / (resolution * resolution)
-  if (areaRatio < 1000) return null
+  const geometry = feature.getGeometry().simplify()
+  if (!geometry.getCoordinates().length) {
+    console.error('missing coordinates', feature)
+    return null
+  }
 
-  return new Style({
-    geometry: geometry.simplify(resolution),
-    stroke: STROKE_CAROLINA_BLUE,
-    fill: FILL_WHITE_40
-  })
+  const sizeRatio = geometry.getArea() / (resolution * resolution)
+  if (sizeRatio < 1500) return null
+
+  const sidc = feature.get('sidc')
+  const key = MILSTD.parameterized(sidc)
+  const positions = textPositions(geometry)
+
+  if (styles[key]) {
+    return styles[key]({ ...args, positions })
+  } else {
+    return Style.featureStyle({
+      geometry,
+      sizeRatio,
+      positions,
+      properties: feature.getProperties(),
+      strokes: styleSpecs['STROKES:DEFAULT'](sidc),
+      texts: styleSpecs[`TEXTS:${key}`] || styleSpecs['TEXTS:DEFAULT']
+    })
+  }
 }
-
-styles['Polygon:low'] = styles['Polygon:medium']
-styles['Polygon:lowest'] = styles['Polygon:medium']
 
 export default styles
