@@ -1,6 +1,6 @@
 import * as MILSTD from '../../2525c'
 import styleSpecs from './style-properties'
-import polygons from './polygons'
+import polygons from './polygons/index'
 import * as Style from './primitives'
 import { textPositions } from './polygons/text-positions'
 
@@ -9,16 +9,10 @@ const styles = {
 }
 
 styles.Polygon = args => {
-  const { feature, resolution } = args
+  const { feature } = args
 
   const geometry = feature.getGeometry().simplify()
-  if (!geometry.getCoordinates().length) {
-    console.error('missing coordinates', feature)
-    return null
-  }
-
-  const sizeRatio = geometry.getArea() / (resolution * resolution)
-  if (sizeRatio < 1500) return null
+  if (!geometry.getCoordinates().length) return null
 
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
@@ -29,7 +23,6 @@ styles.Polygon = args => {
   } else {
     return Style.featureStyle({
       geometry,
-      sizeRatio,
       positions,
       properties: feature.getProperties(),
       strokes: styleSpecs['STROKES:DEFAULT'](sidc),

@@ -20,7 +20,7 @@ export const textStyle = (positions, properties) => label => {
     text: text({
       text: lines,
       font: `${fontSize} sans-serif`, // TODO: settings/font-size
-      stroke: new Stroke({ color: 'white', width: 5 }),
+      stroke: new Stroke({ color: 'white', width: 2 }),
       textAlign: label.align || 'center',
       offsetX: label.offsetX,
       offsetY: label.offsetY

@@ -3,7 +3,7 @@ import 'ol/ol.css'
 import * as ol from 'ol'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
-import { Rotate, Zoom } from 'ol/control'
+import { Rotate } from 'ol/control'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import ScaleLine from 'ol/control/ScaleLine'
 import '../epsg'
@@ -26,7 +26,6 @@ export const Map = () => {
     const target = 'map'
     const controls = [
       new Rotate(), // macOS: OPTION + SHIFT + DRAG
-      new Zoom(),
       new ScaleLine({ bar: true, text: true, minWidth: 128 })
     ]
 

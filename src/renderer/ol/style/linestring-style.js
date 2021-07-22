@@ -5,19 +5,19 @@ import * as Style from './primitives'
 const styles = {}
 
 styles.LineString = args => {
-  const { resolution, feature } = args
+  const { feature } = args
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   const geometry = feature.getGeometry().simplify()
-  const lengthRatio = geometry.getLength() / resolution
-  if (lengthRatio < 250) return null
+  if (!geometry.getCoordinates().length) return null
+
+  // const sizeRatio = geometry.getLength() / resolution
 
   if (styles[key]) {
     return styles[key](args)
   } else {
     return Style.featureStyle({
       geometry,
-      lengthRatio,
       properties: feature.getProperties(),
       strokes: styleSpecs['STROKES:DEFAULT'](sidc),
       texts: []

@@ -21,13 +21,15 @@ export const featureStyle = selection => {
     const key = `${feature.getGeometry().getType()}`
     if (!styles[key]) return null
 
-    // TODO: handle possible style errors
-
-    return styles[key]({
-      cache,
-      feature,
-      resolution,
-      selected: selection.isSelected(feature.getId())
-    })
+    try {
+      return styles[key]({
+        cache,
+        feature,
+        resolution,
+        selected: selection.isSelected(feature.getId())
+      })
+    } catch (err) {
+      console.error('[style]', err)
+    }
   }
 }
