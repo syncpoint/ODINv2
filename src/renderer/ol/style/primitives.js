@@ -17,9 +17,10 @@ export const textStyle = (positions, properties) => label => {
 
   return style({
     geometry: positions[label.position].apply(),
+    // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
     text: text({
       text: lines,
-      font: `${fontSize} sans-serif`, // TODO: settings/font-size
+      font: `${fontSize} sans-serif`,
       stroke: new Stroke({ color: 'white', width: 2 }),
       textAlign: label.align || 'center',
       offsetX: label.offsetX,

@@ -23,3 +23,32 @@ export const standardIdentity = sidc => sidc
 export const status = sidc => sidc
   ? sidc[STATUS]
   : 'P'
+
+export const MODIFIERS = {
+  aa: 'specialHeadquarters',
+  ad: 'platformType',
+  ae: 'equipmentTeardownTime',
+  af: 'commonIdentifier',
+  ah: 'headquartersElement',
+  ao: 'engagementBar',
+  ap: 'targetNumber',
+  aq: 'guardedUnit',
+  ar: 'specialDesignator',
+  c: 'quantity', // also modifier R
+  f: 'reinforcedReduced',
+  j: 'evaluationRating',
+  k: 'combatEffectiveness',
+  g: 'staffComments',
+  h: 'additionalInformation',
+  m: 'higherFormation',
+  n: 'hostile',
+  p: 'iffSif',
+  q: 'direction',
+  r: 'quantity', // also modifier C
+  t: 'uniqueDesignation',
+  v: 'type',
+  x: 'altitudeDepth',
+  y: 'location',
+  z: 'speed',
+  w: 'dtg'
+}

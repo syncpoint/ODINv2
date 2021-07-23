@@ -33,7 +33,7 @@ export const textPositions = geometry => {
   const center = geometry.getInteriorPoint().getCoordinates() // XYM layout
   const points = {}
 
-  // TODO: lazy evaluation/caching
+  // TODO: c839daed-08ba-4f2c-9257-d4790dec037f - polygon labels: lazy evaluation/cache declarative positions
 
   const topRightLeft = () => {
     const y = box[1] + (box[3] - box[1]) * 0.95

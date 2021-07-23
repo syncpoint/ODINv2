@@ -9,7 +9,7 @@ export default options => {
       submenu: [
         { role: 'about' },
         { type: 'separator' },
-        // TODO: preferences
+        // TODO: 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
         { role: 'services' },
         { type: 'separator' },
         { role: 'hide' },

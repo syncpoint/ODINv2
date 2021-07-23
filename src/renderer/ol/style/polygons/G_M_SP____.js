@@ -16,7 +16,7 @@ export default args => {
   // const geometry = feature.getGeometry().simplify()
   const geometry = smooth(feature.getGeometry().simplify())
 
-  // TODO: force right hand rule on import, draw etc.
+  // TODO: 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   const coordinates = geometry.getCoordinates(true)
   const lineString = TS.lineString(TS.coordinates(TS.read(new Polygon(coordinates))))
   const indexedLine = TS.lengthIndexedLine(lineString)

@@ -23,6 +23,9 @@ const TLBR = text => ['top', 'left', 'bottom', 'right'].map(position => ({ text,
 const TL = text => [{ text, position: 'topLeft', align: 'right', offsetX: -20 }]
 const OPT = (label, property) => `${property} ? "${label}: " + ${property} : null`
 
+// 8cbb6c2e-7637-4603-9d2c-dd59b8252ea4 - preferences/project: color scheme (dark, medium, light)
+const scheme = 'medium'
+
 const specs = {}
 export default specs
 
@@ -36,7 +39,6 @@ specs['TEMPLATE:TACGRP.C2GM.AVN.ARS'] = title => C([
 ])
 
 specs['STROKES:DEFAULT'] = sidc => {
-  const scheme = 'medium' // TODO: settings/color-scheme
   const standardIdentity = MILSTD.standardIdentity(sidc)
   const lineDash = MILSTD.status(sidc) === 'A' ? [20, 10] : null
 
@@ -48,7 +50,6 @@ specs['STROKES:DEFAULT'] = sidc => {
 }
 
 specs['STROKES:SOLID'] = sidc => {
-  const scheme = 'medium' // TODO: settings/color-scheme
   const standardIdentity = MILSTD.standardIdentity(sidc)
 
   // Order matters: Thicker stroke first, thinner stroke (fill) last.
@@ -71,7 +72,7 @@ specs['TEXTS:G*G*AAMH--'] = specs['TEMPLATE:TACGRP.C2GM.AVN.ARS']('HIMEZ')
 specs['TEXTS:G*G*AAML--'] = specs['TEMPLATE:TACGRP.C2GM.AVN.ARS']('LOMEZ')
 specs['TEXTS:G*G*AAR---'] = specs['TEMPLATE:TACGRP.C2GM.AVN.ARS']('ROZ')
 specs['TEXTS:G*G*OAO---'] = C('t ? "OBJ\n" + t : "OBJ"')
-specs['TEXTS:G*G*PM----'] = TLBR('"M"') // TODO: decoy signifier
+specs['TEXTS:G*G*PM----'] = TLBR('"M"') // TODO: da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
 specs['TEXTS:G*G*SAT---'] = C('t ? "TAI\n" + t : "TAI"')
 specs['TEXTS:G*M*OFA---'] = TLBR('"M"')
 specs['TEXTS:G*M*SP----'] = C('t')

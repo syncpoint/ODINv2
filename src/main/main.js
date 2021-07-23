@@ -119,7 +119,7 @@ const ready = async () => {
  */
 const activate = () => {
   console.log('activate')
-  // TODO: create new window, when currently none is open.
+  // TODO: 81c8e77a-3181-421f-8a64-8bb5590c2d34 - main: show project selection on activation (macOS)
 }
 
 

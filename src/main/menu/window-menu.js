@@ -13,7 +13,7 @@ export default options => {
             { type: 'separator' },
 
             // FIXME: useless
-            // TODO: list windows
+            // TODO: 8ece194d-b5f3-4d6c-9746-6cc96018cd06 - menu/Window - list open projects
             { role: 'window' }
           ]
         : [{ role: 'close' }]

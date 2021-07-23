@@ -28,7 +28,6 @@ export const Project = props => {
   const { id, project, focused, selected } = props
   const send = message => () => ipcRenderer.send(message, id)
   const loadPreview = () => projectStore.getPreview(id)
-
   const handleRename = name => projectStore.updateProject(id, { ...project, name })
   const handleDelete = () => projectStore.deleteProject(id)
 
