@@ -1,18 +1,24 @@
 CURRENT FOCUS: dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
 
 IN PROGRESS:
-27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
+DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
+HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN:
+47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
 c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
-  NOTE: alternative to missing drag interaction
+  NOTE: alternative to missing draw interaction
+  DEPENDS: 47ca14d5-cd26-4fda-942e-98b8b590b2b2
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
+8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
+f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
 dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
   NOTE: style functions based on ODIN
   DEPENDS: c2ad262e-f291-47eb-9d41-fe0dfddbdec4
   DEPENDS: b7605468-bcbc-4c2c-8951-989703e8e2ab
+27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
 6a932e7a-bd4b-49dc-b96a-7c36b749fbd1 - feature style: cascaded (layer, feature)
   NOTE: complete replacement, no inheritance
