@@ -42,7 +42,7 @@ export const multiselect = {
    * Reference: https://www.w3.org/TR/wai-aria-practices-1.1/#listbox_kbd_interaction
    */
   focus: state => {
-    if (state.focusId !== null) return state
+    if (state.focusId) return state
     if (!state.entries.length) return state
 
     // Focus first selected entry or first entry if no selection:
@@ -100,14 +100,14 @@ export const multiselect = {
   },
 
   'keydown/Home': state => {
-    if (state.focusId === null) return state
+    if (!state.focusId) return state
     const focusId = firstId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
     return { ...state, focusId, focusIndex, scroll: 'auto' }
   },
 
   'keydown/End': state => {
-    if (state.focusId === null) return state
+    if (!state.focusId) return state
     const focusId = lastId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
     return { ...state, focusId, focusIndex, scroll: 'auto' }
