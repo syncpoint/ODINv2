@@ -1,8 +1,8 @@
 CURRENT FOCUS: dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
 
 IN PROGRESS:
-DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
+DEH - c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
 
 OPEN:
 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
@@ -41,3 +41,4 @@ IDEAS/EPICS:
 DONE:
 DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
 DEH - 83bfe462-21a6-4c9b-8fe6-88b79f613987 - mocha: downgraded to v8.4.0
+DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
