@@ -20,7 +20,13 @@ const DEFAULT_VIEWPORT = {
  *
  */
 export const Map = () => {
-  const { sessionStore, ipcRenderer, sources, selection } = useServices()
+  const {
+    sessionStore,
+    ipcRenderer,
+    sources,
+    selection,
+    dragAndDrop
+  } = useServices()
 
   React.useEffect(async () => {
     const target = 'map'
@@ -29,6 +35,7 @@ export const Map = () => {
       new ScaleLine({ bar: true, text: true, minWidth: 128 })
     ]
 
+    const interactions = defaultInteractions({ doubleClickZoom: false })
     const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
     const view = new ol.View({ ...viewport })
 
@@ -38,6 +45,7 @@ export const Map = () => {
       new TileLayer({ source: new OSM() }),
       featureLayer
     ]
+
 
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({
@@ -53,9 +61,7 @@ export const Map = () => {
       controls,
       layers,
       view,
-      interactions: defaultInteractions({
-        doubleClickZoom: false
-      })
+      interactions
     })
 
 
@@ -103,6 +109,15 @@ export const Map = () => {
     }
 
     map.once('rendercomplete', ({ target }) => sendPreview(target))
+
+    // Setup Drag'n Drop.
+
+    ;(() => {
+      const map = document.getElementById('map')
+      map.addEventListener('dragover', dragAndDrop.dragover, false)
+      map.addEventListener('drop', dragAndDrop.drop, false)
+    })()
+
   }, [])
 
   return <div

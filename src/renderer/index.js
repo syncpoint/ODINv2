@@ -15,6 +15,7 @@ import { ServiceProvider } from './components/services'
 import { Selection } from './Selection'
 import { LayerStore } from './store/LayerStore'
 import { Sources } from './model/Sources'
+import { DragAndDrop } from './DragAndDrop'
 
 process.traceProcessWarnings = true
 
@@ -51,6 +52,7 @@ const project = () => {
   const layerStore = new LayerStore(db)
   services.sources = new Sources(layerStore)
   services.selection = new Selection()
+  services.dragAndDrop = new DragAndDrop()
 
   return (
     <ServiceProvider { ...services }>
