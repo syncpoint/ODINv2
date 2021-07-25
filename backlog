@@ -1,12 +1,10 @@
 CURRENT FOCUS: dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
 
 IN PROGRESS:
-DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
 DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN:
-f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
 c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
   NOTE: alternative to missing draw interaction
@@ -34,9 +32,12 @@ c839daed-08ba-4f2c-9257-d4790dec037f - polygon labels: lazy evaluation/cache dec
 81c8e77a-3181-421f-8a64-8bb5590c2d34 - main: show project selection on activation (macOS)
 8ece194d-b5f3-4d6c-9746-6cc96018cd06 - menu/Window: list open projects
 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 - project database: remove unnecessary `properties` scope
+9297ff3a-993d-481f-a194-02d979add9c4 - list/multiselect: support SHIFT+CLICK
 
 IDEAS/EPICS:
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
   NOTE: Preference partitions (application, project)
 
 DONE:
+DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
+DEH - 83bfe462-21a6-4c9b-8fe6-88b79f613987 - mocha: downgraded to v8.4.0
