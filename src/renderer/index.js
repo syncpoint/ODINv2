@@ -16,6 +16,7 @@ import { Selection } from './Selection'
 import { LayerStore } from './store/LayerStore'
 import { Sources } from './model/Sources'
 import { DragAndDrop } from './DragAndDrop'
+import { Undo } from './Undo'
 
 process.traceProcessWarnings = true
 
@@ -23,8 +24,6 @@ process.traceProcessWarnings = true
 document.addEventListener('copy', event => console.log('[index] copy', event))
 document.addEventListener('cut', event => console.log('[index] cut', event))
 document.addEventListener('paste', event => console.log('[index] paste', event))
-ipcRenderer.on('EDIT_UNDO', () => console.log('IPC:EDIT_UNDO', document.activeElement))
-ipcRenderer.on('EDIT_REDO', () => console.log('IPC:EDIT_REDO', document.activeElement))
 
 const page = (() => {
   const entry = process.argv.find(s => s.startsWith('--page='))
@@ -45,14 +44,20 @@ const project = () => {
   services.ipcRenderer = ipcRenderer
   services.master = levelup(new IPCDownClient(ipcRenderer))
   services.sessionStore = new SessionStore(services.master, page)
+  services.undo = new Undo(ipcRenderer)
 
   const project = page.split(':')[1]
   const location = path.join(databases, project)
   const db = levelup(leveldown(location))
   const layerStore = new LayerStore(db)
   services.sources = new Sources(layerStore)
+
+  // TODO: 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
+
   services.selection = new Selection()
   services.dragAndDrop = new DragAndDrop()
+
+  services.dragAndDrop.on('json', event => services.undo.apply(layerStore.commands.importGeoJSON(event.json)))
 
   return (
     <ServiceProvider { ...services }>

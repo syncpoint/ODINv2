@@ -18,6 +18,7 @@ const icon = (properties, symbol) => {
   return new Icon({
     anchor,
     imgSize,
+    scale: 0.5,
     anchorXUnits: 'pixels',
     anchorYUnits: 'pixels',
     img: symbol.asCanvas(),
@@ -32,7 +33,7 @@ export const symbolStyle = (feature, options = {}) => {
 
   const symbol = new ms.Symbol(sidc, {
     // Note: infoFields (boolean) does not affect all modifiers (i.e. points/targets)
-    size: 30,
+    size: 60,
     ...options.modifiers ? modifiers(properties) : {},
     outlineWidth: 4,
     outlineColor: 'white'

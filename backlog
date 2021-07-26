@@ -2,17 +2,17 @@ CURRENT FOCUS: dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
 
 IN PROGRESS:
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
+DEH - b9e5feb5-6e83-476d-a770-453ec0d937fd - layer store/command: importGeoJSON/inverse
+DEH - 39af245a-bb33-480d-b2ba-f7be1e5ba446 - layer store/import: write layer properties
+DEH - 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 DEH - c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
-
-OPEN:
-47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
-c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
   NOTE: alternative to missing draw interaction
   DEPENDS: 47ca14d5-cd26-4fda-942e-98b8b590b2b2
+
+OPEN:
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
-8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
 dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
   NOTE: style functions based on ODIN
@@ -42,3 +42,4 @@ DONE:
 DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
 DEH - 83bfe462-21a6-4c9b-8fe6-88b79f613987 - mocha: downgraded to v8.4.0
 DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
+DEH - d34f5440-70af-4433-bed7-5501443b3a67 - symbol: improve rendering (downscaling)

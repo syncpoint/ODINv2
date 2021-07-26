@@ -11,9 +11,12 @@ const shift = async ([head, ...tail], to) => {
   return tail
 }
 
-export function Undo () {
+export function Undo (ipcRenderer) {
   this.undoStack = []
   this.redoStack = []
+
+  ipcRenderer.on('EDIT_UNDO', () => console.log('IPC:EDIT_UNDO', document.activeElement, this.canUndo()))
+  ipcRenderer.on('EDIT_REDO', () => console.log('IPC:EDIT_REDO', document.activeElement, this.canRedo()))
 }
 
 /**

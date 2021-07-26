@@ -17,19 +17,19 @@ import { tuplePartition, geometryPartition } from '../../shared/stores'
 export const transferProject = async (db, project) => {
   const put = ([key, value]) => ({ type: 'put', key, value })
   const { layers } = project
-  const tuples = tuplePartition(db)
+  const properties = tuplePartition(db)
   const geometries = geometryPartition(db)
 
   // [layerId -> { name: layerName }]
-  await tuples.batch(Object.entries(layers)
+  await properties.batch(Object.entries(layers)
     .map(([id, { name }]) => [id, { name }])
     .map(put)
   )
 
   // [featureId -> { properties }]
-  await tuples.batch(Object.values(layers)
+  await properties.batch(Object.values(layers)
     .flatMap(({ features }) => Object.entries(features))
-    .map(([id, feature]) => [id, { properties: feature.properties }])
+    .map(([id, feature]) => [id, { ...feature.properties }])
     .map(put)
   )
 

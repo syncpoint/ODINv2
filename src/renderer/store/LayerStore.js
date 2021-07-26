@@ -1,4 +1,5 @@
 import util from 'util'
+import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
 import { tuplePartition, geometryPartition } from '../../shared/stores'
 
@@ -11,8 +12,33 @@ export function LayerStore (db) {
   Emitter.call(this)
   this.propertiesStore = tuplePartition(db)
   this.geometryStore = geometryPartition(db)
+
+  this.commands = {
+    importGeoJSON: json => {
+      const layerUUID = uuid()
+      const layerId = `layer:${layerUUID}`
+
+      return {
+        apply: () => {
+          const features = json.features.map(feature => {
+            delete feature.id // just to make sure
+            delete feature.title // mipdb legacy field
+            delete feature.type // no need to keep
+            return [`feature:${layerUUID}/${uuid()}`, feature]
+          }, {})
+
+          this.putFeatures(layerId, features)
+        },
+        inverse: () => {
+          // TODO: b9e5feb5-6e83-476d-a770-453ec0d937fd - layer store/command: importGeoJSON/inverse
+          console.log('[importGeoJSON] inverse')
+        }
+      }
+    }
+  }
 }
 
+util.inherits(LayerStore, Emitter)
 
 /**
  * @private
@@ -74,11 +100,21 @@ LayerStore.prototype.getFeatures = async function (layerId) {
   const features = Object.entries(properties).map(([id, properties]) => ({
     type: 'Feature',
     id,
-    ...properties,
+    properties,
     geometry: geometries[id]
   }))
 
   return { type: 'FeatureCollection', features }
 }
 
-util.inherits(LayerStore, Emitter)
+LayerStore.prototype.putFeatures = async function (layerId, features) {
+  const propertiesOp = ([key, feature]) => ({ type: 'put', key, value: feature.properties })
+  const geometryOp = ([key, feature]) => ({ type: 'put', key, value: feature.geometry })
+  await this.propertiesStore.batch(features.map(propertiesOp))
+  await this.geometryStore.batch(features.map(geometryOp))
+
+  // TODO: 39af245a-bb33-480d-b2ba-f7be1e5ba446 - layer store/import: write layer properties
+
+  const op = ([key, feature]) => ({ type: 'put', key, value: { type: 'Feature', ...feature, id: key } })
+  this.emit('batch', { operations: features.map(op) })
+}

@@ -113,11 +113,14 @@ export const Map = () => {
     // Setup Drag'n Drop.
 
     ;(() => {
+      // Note: Neither dragstart nor dragend events are fired when dragging
+      // a file into the browser from the OS.
       const map = document.getElementById('map')
-      map.addEventListener('dragover', dragAndDrop.dragover, false)
-      map.addEventListener('drop', dragAndDrop.drop, false)
+      map.addEventListener('dragenter', event => dragAndDrop.dragenter(event))
+      map.addEventListener('dragleave', event => dragAndDrop.dragleave(event))
+      map.addEventListener('dragover', event => dragAndDrop.dragover(event), false)
+      map.addEventListener('drop', event => dragAndDrop.drop(event), false)
     })()
-
   }, [])
 
   return <div
