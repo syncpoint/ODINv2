@@ -1,5 +1,4 @@
 import util from 'util'
-import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
 import { tuplePartition, geometryPartition } from '../../shared/stores'
 
@@ -10,30 +9,39 @@ import { tuplePartition, geometryPartition } from '../../shared/stores'
  */
 export function LayerStore (db) {
   Emitter.call(this)
+
+  this.commands = {}
   this.propertiesStore = tuplePartition(db)
   this.geometryStore = geometryPartition(db)
 
-  this.commands = {
-    importGeoJSON: json => {
-      const layerUUID = uuid()
-      const layerId = `layer:${layerUUID}`
+  this.commands.composite = async commands => {
+    const resolved = await Promise.all(commands)
+    return {
+      apply: () => Promise.all(resolved.map(command => command.apply())),
+      inverse: () => this.commands.composite(resolved.reverse().map(command => command.inverse()))
+    }
+  }
 
-      return {
-        apply: () => {
-          const features = json.features.map(feature => {
-            delete feature.id // just to make sure
-            delete feature.title // mipdb legacy field
-            delete feature.type // no need to keep
-            return [`feature:${layerUUID}/${uuid()}`, feature]
-          }, {})
+  this.commands.importLayers = layers => {
+    return this.commands.composite(layers.map(this.commands.putLayer))
+  }
 
-          this.putFeatures(layerId, features)
-        },
-        inverse: () => {
-          // TODO: b9e5feb5-6e83-476d-a770-453ec0d937fd - layer store/command: importGeoJSON/inverse
-          console.log('[importGeoJSON] inverse')
-        }
-      }
+  this.commands.putLayer = layer => {
+    return {
+      apply: () => this.putLayer(layer),
+      inverse: () => this.commands.deleteLayer(layer.id)
+    }
+  }
+
+  this.commands.deleteLayer = async (layerId) => {
+    const layer = {
+      ...await this.getFeatures(layerId),
+      ...await this.propertiesStore.get(layerId)
+    }
+
+    return {
+      apply: () => this.deleteLayer(layerId),
+      inverse: () => this.commands.putLayer(layer)
     }
   }
 }
@@ -89,6 +97,20 @@ LayerStore.prototype.geometries = function (layerId) {
   })
 }
 
+/**
+ * @private
+ */
+LayerStore.prototype.keys = function (store, prefix) {
+  return new Promise((resolve, reject) => {
+    const acc = []
+    const options = { keys: true, values: false, gte: prefix, lte: prefix + '\xff' }
+
+    store.createReadStream(options)
+      .on('data', key => acc.push(key))
+      .on('error', reject)
+      .on('end', () => resolve(acc))
+  })
+}
 
 /**
  * @param {String} layerId optional
@@ -107,14 +129,27 @@ LayerStore.prototype.getFeatures = async function (layerId) {
   return { type: 'FeatureCollection', features }
 }
 
-LayerStore.prototype.putFeatures = async function (layerId, features) {
-  const propertiesOp = ([key, feature]) => ({ type: 'put', key, value: feature.properties })
-  const geometryOp = ([key, feature]) => ({ type: 'put', key, value: feature.geometry })
+LayerStore.prototype.putLayer = async function (layer) {
+  const { id, name, features } = layer
+  await this.propertiesStore.put(id, { name, id })
+
+  const propertiesOp = feature => ({ type: 'put', key: feature.id, value: feature.properties })
   await this.propertiesStore.batch(features.map(propertiesOp))
+
+  const geometryOp = feature => ({ type: 'put', key: feature.id, value: feature.geometry })
   await this.geometryStore.batch(features.map(geometryOp))
 
-  // TODO: 39af245a-bb33-480d-b2ba-f7be1e5ba446 - layer store/import: write layer properties
-
-  const op = ([key, feature]) => ({ type: 'put', key, value: { type: 'Feature', ...feature, id: key } })
+  const op = feature => ({ type: 'put', key: feature.properties.id, value: feature })
   this.emit('batch', { operations: features.map(op) })
+}
+
+LayerStore.prototype.deleteLayer = async function (layerId) {
+  await this.propertiesStore.del(layerId)
+  const op = key => ({ type: 'del', key })
+  const layerUUID = layerId.split(':')[1]
+  const keys = await this.keys(this.propertiesStore, `feature:${layerUUID}`)
+  const operations = keys.map(op)
+  await this.propertiesStore.batch(operations)
+  await this.geometryStore.batch(operations)
+  this.emit('batch', { operations })
 }

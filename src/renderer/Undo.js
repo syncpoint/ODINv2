@@ -7,16 +7,13 @@ const unshift = (stack, command) => stack.unshift(command)
 const shift = async ([head, ...tail], to) => {
   if (!head) return []
   await head.apply()
-  unshift(to, head.inverse())
+  unshift(to, await head.inverse())
   return tail
 }
 
-export function Undo (ipcRenderer) {
+export function Undo () {
   this.undoStack = []
   this.redoStack = []
-
-  ipcRenderer.on('EDIT_UNDO', () => console.log('IPC:EDIT_UNDO', document.activeElement, this.canUndo()))
-  ipcRenderer.on('EDIT_REDO', () => console.log('IPC:EDIT_REDO', document.activeElement, this.canRedo()))
 }
 
 /**
@@ -44,7 +41,7 @@ Undo.prototype.redo = async function () {
  */
 Undo.prototype.apply = async function (command) {
   await command.apply()
-  unshift(this.undoStack, command.inverse())
+  unshift(this.undoStack, await command.inverse())
 }
 
 Undo.prototype.canUndo = function () {

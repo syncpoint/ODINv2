@@ -40,24 +40,41 @@ const databases = (() => {
  *
  */
 const project = () => {
-  const services = {}
-  services.ipcRenderer = ipcRenderer
-  services.master = levelup(new IPCDownClient(ipcRenderer))
-  services.sessionStore = new SessionStore(services.master, page)
-  services.undo = new Undo(ipcRenderer)
-
+  const undo = new Undo()
   const project = page.split(':')[1]
   const location = path.join(databases, project)
   const db = levelup(leveldown(location))
   const layerStore = new LayerStore(db)
+
+  ipcRenderer.on('EDIT_UNDO', () => {
+    // TODO: precondition: check document.activeElement
+    if (undo.canUndo()) undo.undo()
+  })
+
+  ipcRenderer.on('EDIT_REDO', () => {
+    // TODO: precondition: check document.activeElement
+    if (undo.canRedo()) undo.redo()
+  })
+
+  const dragAndDrop = new DragAndDrop()
+
+  dragAndDrop.on('layers', async ({ layers }) => {
+    const command = await layerStore.commands.importLayers(layers)
+    services.undo.apply(command)
+  })
+
+  const services = {}
+  services.ipcRenderer = ipcRenderer
+  services.master = levelup(new IPCDownClient(ipcRenderer))
+  services.sessionStore = new SessionStore(services.master, page)
+  services.undo = undo
+
   services.sources = new Sources(layerStore)
 
   // TODO: 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 
   services.selection = new Selection()
-  services.dragAndDrop = new DragAndDrop()
-
-  services.dragAndDrop.on('json', event => services.undo.apply(layerStore.commands.importGeoJSON(event.json)))
+  services.dragAndDrop = dragAndDrop
 
   return (
     <ServiceProvider { ...services }>

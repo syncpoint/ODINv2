@@ -1,6 +1,7 @@
 import util from 'util'
 import { promises as fs } from 'fs'
 import path from 'path'
+import uuid from 'uuid-random'
 import Emitter from '../shared/emitter'
 
 const readJSON = async path => {
@@ -31,9 +32,25 @@ DragAndDrop.prototype.drop = async function (event) {
   event.stopPropagation()
 
   const files = [...event.dataTransfer.files]
-  files
+  const layers = await Promise.all(files
     .filter(file => path.extname(file.name) === '.json')
-    .forEach(async file => this.emit('json', { file, json: await readJSON(file.path) }))
+    .map(async file => {
+
+      // Assign unique ids to layer/features:
+      const layerUUID = uuid()
+      const geoJSON = await readJSON(file.path)
+      geoJSON.id = `layer:${layerUUID}`
+      geoJSON.name = path.basename(file.name, '.json')
+      geoJSON.features = geoJSON.features.map(feature => {
+        delete feature.title // legacy
+        feature.id = `feature:${layerUUID}/${uuid()}`
+        return feature
+      })
+
+      return geoJSON
+    }))
+
+  if (layers.length) this.emit('layers', { layers })
 }
 
 

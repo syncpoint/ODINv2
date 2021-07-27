@@ -18,18 +18,14 @@ const readFeatures = source => format.readFeatures(source)
 // const writeFeaturesObject = features => format.writeFeaturesObject(features)
 // const writeFeatureObject = feature => format.writeFeatureObject(feature)
 
-const featureById = source => id => source.getFeatureById(id)
 
 /**
  * removeFeature :: ol/Feature | string -> unit
  */
 const removeFeature = source => x => {
-  const byId = featureById(source)
-
-  if (!x) return
   if (x instanceof Feature) source.removeFeature(x)
-  else if (typeof x === 'string') removeFeature(byId(x))
-  else removeFeature(x.id)
+  else if (x.type === 'Feature') removeFeature(x.id)
+  else if (typeof x === 'string') source.removeFeature(source.getFeatureById(x))
 }
 
 const addFeature = source => x => {
@@ -56,6 +52,7 @@ Sources.prototype.storeBatch_ = function (operations) {
 
   const removals = operations.filter(op => op.type === 'del').map(op => op.key)
   const additions = operations.filter(op => op.type === 'put').map(op => op.value)
+
   removals.forEach(removeFeature(this.featureSource))
   additions.forEach(removeFeature(this.featureSource))
   additions.forEach(addFeature(this.featureSource)) // TODO: bulk - addFeatures()
