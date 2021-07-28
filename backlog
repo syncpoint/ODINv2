@@ -9,10 +9,12 @@ b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la Ope
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
+398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
 dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
   NOTE: style functions based on ODIN
   DEPENDS: c2ad262e-f291-47eb-9d41-fe0dfddbdec4
   DEPENDS: b7605468-bcbc-4c2c-8951-989703e8e2ab
+  DEPENDS: 398fed12-b84e-48a5-b6e5-4f5a87d28b41
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: ESM, upgrade to v9.x
 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
@@ -30,6 +32,7 @@ c839daed-08ba-4f2c-9257-d4790dec037f - polygon labels: lazy evaluation/cache dec
 8ece194d-b5f3-4d6c-9746-6cc96018cd06 - menu/Window: list open projects
 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 - project database: remove unnecessary `properties` scope
 9297ff3a-993d-481f-a194-02d979add9c4 - list/multiselect: support SHIFT+CLICK
+022c181d-e5a0-4ab4-b749-1068b4a95865 - feature properties: move to another layer
 
 IDEAS/EPICS:
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -43,3 +46,4 @@ DEH - d34f5440-70af-4433-bed7-5501443b3a67 - symbol: improve rendering (downscal
 DEH - 39af245a-bb33-480d-b2ba-f7be1e5ba446 - layer store/import: write layer properties
 DEH - b9e5feb5-6e83-476d-a770-453ec0d937fd - layer store/command: importGeoJSON/inverse
 DEH - c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
+DEH - 2b40ea01-745e-4083-9bf7-0c2b5e89406e - rendering: area (polygon) labels

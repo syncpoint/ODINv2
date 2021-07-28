@@ -1,3 +1,4 @@
+import { STYLE_OL_DEFAULT } from './presets'
 import { StyleCache } from './StyleCache'
 import pointStyles from './point-style'
 import lineStringStyles from './linestring-style'
@@ -18,16 +19,16 @@ export const featureStyle = selection => {
   return (feature, resolution) => {
     if (!feature.getGeometry()) return null
 
-    const key = `${feature.getGeometry().getType()}`
-    if (!styles[key]) return null
-
     try {
-      return styles[key]({
-        cache,
-        feature,
-        resolution,
-        selected: selection.isSelected(feature.getId())
-      })
+      const key = `${feature.getGeometry().getType()}`
+      return styles[key]
+        ? styles[key]({
+          cache,
+          feature,
+          resolution,
+          selected: selection.isSelected(feature.getId())
+        })
+        : STYLE_OL_DEFAULT
     } catch (err) {
       console.error('[style]', err)
     }

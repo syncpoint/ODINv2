@@ -1,5 +1,5 @@
 import * as MILSTD from '../../2525c'
-import styleSpecs from './style-properties'
+import styleSpecs from './style-specs'
 import polygons from './polygons/index'
 import * as Style from './primitives'
 import { textPositions } from './polygons/text-positions'

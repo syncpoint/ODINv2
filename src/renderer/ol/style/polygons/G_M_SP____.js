@@ -3,7 +3,7 @@ import Polygon from 'ol/geom/Polygon'
 import * as Style from '../primitives'
 import * as MILSTD from '../../../2525c'
 import { smooth } from '../chaikin'
-import styleSpecs from '../style-properties'
+import styleSpecs from '../style-specs'
 import * as TS from '../ts'
 
 // TACGRP.MOBSU.SU.STRGPT
