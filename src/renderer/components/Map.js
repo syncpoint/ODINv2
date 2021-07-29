@@ -4,11 +4,14 @@ import * as ol from 'ol'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
-import { defaults as defaultInteractions } from 'ol/interaction'
+import { defaults as defaultInteractions, Select } from 'ol/interaction'
+import { click } from 'ol/events/condition'
 import ScaleLine from 'ol/control/ScaleLine'
 import '../epsg'
 import { useServices } from './services'
 import { featureStyle } from '../ol/style'
+import * as MILSTD from '../2525c'
+
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -29,13 +32,17 @@ export const Map = () => {
   } = useServices()
 
   React.useEffect(async () => {
+
+    const hitTolerance = 3
+    const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
+    const noAltKey = ({ originalEvent }) => originalEvent.altKey !== true // macOS: option key
+
     const target = 'map'
     const controls = [
       new Rotate(), // macOS: OPTION + SHIFT + DRAG
       new ScaleLine({ bar: true, text: true, minWidth: 128 })
     ]
 
-    const interactions = defaultInteractions({ doubleClickZoom: false })
     const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
     const view = new ol.View({ ...viewport })
 
@@ -46,6 +53,21 @@ export const Map = () => {
       featureLayer
     ]
 
+    const select = new Select({
+      hitTolerance,
+      layers: [featureLayer],
+      style: featureStyle(selection),
+      condition: conjunction(click, noAltKey)
+    })
+
+    select.on('select', event => {
+      const sidc = event.selected.map(feature => MILSTD.parameterized(feature.get('sidc')))
+      console.log('[select]', sidc)
+    })
+
+    const interactions = defaultInteractions({ doubleClickZoom: false }).extend(
+      [select]
+    )
 
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({

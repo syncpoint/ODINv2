@@ -26,7 +26,7 @@ const axisIntersect = (points, y, z) => R
   .map(segment => segmentIntersect(y, z)(segment))
   .reduce((acc, intersections) => acc.concat(intersections), [])
 
-export const textPositions = geometry => {
+export const polygon = geometry => {
   const ring = geometry.getLinearRing(0)
   const box = ring.getExtent()
   const coords = ring.getCoordinates()
@@ -79,4 +79,17 @@ export const textPositions = geometry => {
   points.top = () => { vIntersect(); return points.top() }
 
   return points
+}
+
+const lineString = geometry => {
+  return {}
+}
+
+export const placement = geometry => {
+  const geometryType = geometry.getType()
+  switch (geometryType) {
+    case 'Polygon': return polygon(geometry)
+    case 'LineString': return lineString(geometry)
+    default: return {}
+  }
 }

@@ -1,3 +1,8 @@
+import { styles } from '../styles'
+
+// TACGRP.MOBSU.SU.STRGPT
+// TACTICAL GRAPHICS /  MOBILITY/SURVIVABILITY / STRONG POINT
+
 import * as R from 'ramda'
 import Polygon from 'ol/geom/Polygon'
 import * as Style from '../primitives'
@@ -6,11 +11,9 @@ import { smooth } from '../chaikin'
 import styleSpecs from '../style-specs'
 import * as TS from '../ts'
 
-// TACGRP.MOBSU.SU.STRGPT
-// TACTICAL GRAPHICS /  MOBILITY/SURVIVABILITY / STRONG POINT
-
-export default args => {
-  const { feature, resolution, positions } = args
+styles['G*M*SP----'] = args => {
+  console.log('[STONG POINT]')
+  const { feature, resolution, placement } = args
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   // const geometry = feature.getGeometry().simplify()
@@ -43,7 +46,7 @@ export default args => {
     ...spikesStyle,
     ...Style.featureStyle({
       geometry,
-      positions,
+      placement,
       strokes,
       properties: feature.getProperties(),
       texts: styleSpecs[`TEXTS:${key}`] || []

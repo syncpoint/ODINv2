@@ -1,13 +1,18 @@
-import { STYLE_OL_DEFAULT } from './presets'
+import * as MILSTD from '../../2525c'
 import { StyleCache } from './StyleCache'
-import pointStyles from './point-style'
-import lineStringStyles from './linestring-style'
-import polygonStyles from './polygon-style'
+import { placement } from './labels'
+import { styles } from './styles'
+import './point'
+import './linestring'
+import './polygon'
 
-const styles = {
-  ...pointStyles,
-  ...lineStringStyles,
-  ...polygonStyles
+const styleFactory = feature => {
+  const sidc = MILSTD.parameterized(feature.get('sidc'))
+  const geometryType = feature.getGeometry().getType()
+
+  if (styles[`${geometryType}:${sidc}`]) return styles[`${geometryType}:${sidc}`]
+  else if (styles[`${geometryType}`]) return styles[`${geometryType}`]
+  else return styles.DEFAULT
 }
 
 /**
@@ -20,15 +25,13 @@ export const featureStyle = selection => {
     if (!feature.getGeometry()) return null
 
     try {
-      const key = `${feature.getGeometry().getType()}`
-      return styles[key]
-        ? styles[key]({
-          cache,
-          feature,
-          resolution,
-          selected: selection.isSelected(feature.getId())
-        })
-        : STYLE_OL_DEFAULT
+      return styleFactory(feature)({
+        cache,
+        feature,
+        resolution,
+        selected: selection.isSelected(feature.getId()),
+        placement: placement(feature.getGeometry())
+      })
     } catch (err) {
       console.error('[style]', err)
     }
