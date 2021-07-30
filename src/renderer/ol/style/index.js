@@ -1,6 +1,5 @@
 import * as MILSTD from '../../2525c'
 import { StyleCache } from './StyleCache'
-import { placement } from './labels'
 import { styles } from './styles'
 import './point'
 import './linestring'
@@ -29,8 +28,7 @@ export const featureStyle = selection => {
         cache,
         feature,
         resolution,
-        selected: selection.isSelected(feature.getId()),
-        placement: placement(feature.getGeometry())
+        selected: selection.isSelected(feature.getId())
       })
     } catch (err) {
       console.error('[style]', err)

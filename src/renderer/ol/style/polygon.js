@@ -1,6 +1,6 @@
 import * as MILSTD from '../../2525c'
 import { styles } from './styles'
-
+import './polygons'
 
 const C = text => [{ text, position: 'center' }]
 const T = text => [{ text, position: 'top' }]
@@ -14,11 +14,8 @@ const ALL_LINES = title => title
   ? [`"${title}"`, 't', 'h', ALT_LINE, DTG_LINE]
   : ['t', 'h', ALT_LINE, DTG_LINE]
 
-
-
-styles['TEXTS:DEFAULT'] = C(ALL_LINES())
-
-styles['TEXTS:G*G*GAG---'] = styles['TEXTS:DEFAULT'] // GENERAL AREA
+styles['TEXTS:POLYGON'] = C(ALL_LINES())
+styles['TEXTS:G*G*GAG---'] = styles['TEXTS:POLYGON'] // GENERAL AREA
 styles['TEXTS:G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
 styles['TEXTS:G*G*GAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA
 // TODO: G*G*GAF--- : FORTIFIED AREA
@@ -38,7 +35,7 @@ styles['TEXTS:G*G*AAW---'] = C(ALL_LINES('WFZ')) // WEAPONS FREE ZONE
 styles['TEXTS:G*G*PM----'] = TLBR('"M"') // DECOY MINED AREA
 // TODO: G*G*PY---- : DECOY MINED AREA, FENCED
 // TODO: G*G*PC---- : DUMMY MINEFIELD (DYNAMIC)
-styles['TEXTS:G*G*DAB---'] = styles['TEXTS:DEFAULT'] // BATTLE POSITION
+styles['TEXTS:G*G*DAB---'] = styles['TEXTS:POLYGON'] // BATTLE POSITION
 styles['TEXTS:G*G*DABP--'] = C('t ? "(P) " + t : (P)') // BATTLE POSITION / PREPARED BUT NOT OCCUPIED
 styles['TEXTS:G*G*DAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA (DEFENSE)
 styles['TEXTS:G*G*OAA---'] = C(ALL_LINES('ASLT\nPSN')) // ASSAULT POSITION
@@ -51,14 +48,14 @@ styles['TEXTS:G*G*SAA---'] = F(['"AIRHEAD LINE"', 't ? "(PL " + t + ")" : null']
 styles['TEXTS:G*G*SAN---'] = C(ALL_LINES('NAI')) // NAMED AREA OF INTEREST (NAI)
 styles['TEXTS:G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (TAI)
 styles['TEXTS:G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
-styles['TEXTS:G*M*OGZ---'] = styles['TEXTS:DEFAULT'] // GENERAL ZONE (OBSTACLES)
+styles['TEXTS:G*M*OGZ---'] = styles['TEXTS:POLYGON'] // GENERAL ZONE (OBSTACLES)
 styles['TEXTS:G*M*OGF---'] = C(ALL_LINES('FREE')) // OBSTACLE FREE AREA
-styles['TEXTS:G*M*OGR---'] = styles['TEXTS:DEFAULT'] // OBSTACLE RESTRICTED AREA
+styles['TEXTS:G*M*OGR---'] = styles['TEXTS:POLYGON'] // OBSTACLE RESTRICTED AREA
 // TODO: G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
 styles['TEXTS:G*M*OFA---'] = TLBR('"M"') // MINED AREA
 styles['TEXTS:G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
 styles['TEXTS:G*M*SP----'] = C('t') // STRONG POINT
-styles['TEXTS:G*F*AT----'] = styles['TEXTS:DEFAULT'] // AREA TARGET
+styles['TEXTS:G*F*AT----'] = styles['TEXTS:POLYGON'] // AREA TARGET
 // TODO: G*F*ATR--- : RECTANGULAR TARGET
 styles['TEXTS:G*F*ATG---'] = T('t') // SERIES OR GROUP OF TARGETS
 styles['TEXTS:G*F*ATS---'] = C(ALL_LINES('SMOKE')) // AREA TARGET / SMOKE
@@ -89,9 +86,8 @@ styles['TEXTS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA
 styles['TEXTS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
 
-
 styles.Polygon = args => {
-  const { feature, placement } = args
+  const { feature } = args
   const geometry = feature.getGeometry().simplify()
   if (!geometry.getCoordinates().length) return null
 
@@ -102,10 +98,9 @@ styles.Polygon = args => {
     ? styles[key](args)
     : styles.FEATURE({
       geometry,
-      placement,
       properties: feature.getProperties(),
       strokes: styles['STROKES:DEFAULT'](sidc),
-      texts: styles[`TEXTS:${key}`] || styles['TEXTS:DEFAULT']
+      texts: styles[`TEXTS:${key}`] || styles['TEXTS:POLYGON']
     })
 }
 

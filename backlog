@@ -1,10 +1,11 @@
-CURRENT FOCUS: dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
+CURRENT FOCUS
+dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
 
-IN PROGRESS:
+IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
+DEH - bb9a8802-fcbe-4866-a422-a93396165ab1 - style: custom line string geometries
 
-OPEN:
+OPEN
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
@@ -12,7 +13,7 @@ f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET
 398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
 dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
   NOTE: style functions based on ODIN
-  DEPENDS: c2ad262e-f291-47eb-9d41-fe0dfddbdec4
+  DEPENDS: bb9a8802-fcbe-4866-a422-a93396165ab1
   DEPENDS: b7605468-bcbc-4c2c-8951-989703e8e2ab
   DEPENDS: 398fed12-b84e-48a5-b6e5-4f5a87d28b41
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
@@ -27,7 +28,6 @@ e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
   DEPENDS: 6a932e7a-bd4b-49dc-b96a-7c36b749fbd1
 8cbb6c2e-7637-4603-9d2c-dd59b8252ea4 - preferences/project: color scheme (dark, medium, light)
 da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
-c839daed-08ba-4f2c-9257-d4790dec037f - polygon labels: lazy evaluation/cache declarative positions
 45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
 81c8e77a-3181-421f-8a64-8bb5590c2d34 - main: show project selection on activation (macOS)
 8ece194d-b5f3-4d6c-9746-6cc96018cd06 - menu/Window: list open projects
@@ -40,11 +40,11 @@ c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST
 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS
 109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL
 
-IDEAS/EPICS:
+IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
   NOTE: Preference partitions (application, project)
 
-DONE:
+DONE
 DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
 DEH - 83bfe462-21a6-4c9b-8fe6-88b79f613987 - mocha: downgraded to v8.4.0
 DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
@@ -53,3 +53,5 @@ DEH - 39af245a-bb33-480d-b2ba-f7be1e5ba446 - layer store/import: write layer pro
 DEH - b9e5feb5-6e83-476d-a770-453ec0d937fd - layer store/command: importGeoJSON/inverse
 DEH - c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
 DEH - 2b40ea01-745e-4083-9bf7-0c2b5e89406e - rendering: area (polygon) labels (nearly completely)
+DEH - c839daed-08ba-4f2c-9257-d4790dec037f - polygon labels: lazy evaluation/cache declarative positions
+DEH - 79349f31-bbd0-4306-9f6e-5e1e30959c59 - style: line string feature labels

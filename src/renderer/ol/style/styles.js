@@ -1,10 +1,9 @@
 import * as R from 'ramda'
 import { Fill, Stroke, Circle, Style, Text } from 'ol/style'
-import { Jexl } from 'jexl'
 import * as Colors from './color-schemes'
 import * as MILSTD from '../../2525c'
+import { geometryLabels } from './labels'
 
-export const jexl = new Jexl()
 export const stroke = options => new Stroke(options)
 export const style = options => new Style(options)
 export const text = options => new Text(options)
@@ -49,32 +48,13 @@ styles['STROKES:SOLID'] = sidc => {
   ]
 }
 
-styles.LABEL = ({ placement, properties }) => label => {
-  const fontSize = label.fontSize || '10pt'
-
-  const lines = Array.isArray(label.text)
-    ? label.text.map(text => jexl.evalSync(text, properties)).filter(R.identity).join('\n')
-    : jexl.evalSync(label.text, properties)
-
-  return new Style({
-    geometry: placement[label.position].apply(),
-    // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-    text: new Text({
-      text: lines,
-      font: `${fontSize} sans-serif`,
-      stroke: stroke({ color: 'white', width: 2 }),
-      textAlign: label.align || 'center',
-      offsetX: label.offsetX,
-      offsetY: label.offsetY
-    })
-  })
-}
-
 styles.FEATURE = options => {
-  const { strokes, geometry, texts } = options
+  const { strokes, geometry, properties, texts } = options
+  const labels = geometryLabels(geometry, properties)
+
   return [
     ...strokes.map(options => style({ geometry, stroke: stroke(options) })),
-    ...texts.flat().map(styles.LABEL(options))
+    ...texts.flat().map(text => labels.label(text)).filter(R.identity)
   ]
 }
 
