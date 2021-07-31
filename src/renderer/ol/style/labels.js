@@ -10,7 +10,7 @@ const jexl = new Jexl()
 /**
  *
  */
-const PolygonLabels = function (geometry, properties) {
+export const PolygonLabels = function (geometry, properties) {
   this.geometry = geometry
   this.properties = properties
   this.ring = this.geometry.getLinearRing(0)
@@ -146,7 +146,7 @@ PolygonLabels.prototype.label = function (text) {
  *                    |  P1                |              P2 |
  * BOTTOM             |  |                 |              |  |
  */
-const LineStringLabels = function (geometry, properties) {
+export const LineStringLabels = function (geometry, properties) {
   this.geometry = geometry
   this.properties = properties
   this.points = geometry.getCoordinates()
@@ -252,6 +252,7 @@ LineStringLabels.prototype.label = function (text) {
 export const geometryLabels = (geometry, properties) => {
   const geometryType = geometry.getType()
   switch (geometryType) {
+    case 'GeometryCollection': return geometryLabels(geometry.getGeometries()[0], properties)
     case 'Polygon': return new PolygonLabels(geometry, properties)
     case 'LineString': return new LineStringLabels(geometry, properties)
     default: return null

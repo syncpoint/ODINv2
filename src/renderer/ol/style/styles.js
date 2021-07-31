@@ -49,9 +49,9 @@ styles['STROKES:SOLID'] = sidc => {
 }
 
 styles.FEATURE = options => {
-  const { strokes, geometry, properties, texts } = options
-  const labels = geometryLabels(geometry, properties)
-
+  const { strokes, geometry, properties } = options
+  const labels = options.labels || geometryLabels(geometry, properties)
+  const texts = options.texts || []
   return [
     ...strokes.map(options => style({ geometry, stroke: stroke(options) })),
     ...texts.flat().map(text => labels.label(text)).filter(R.identity)

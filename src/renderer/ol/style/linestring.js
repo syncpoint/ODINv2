@@ -1,5 +1,6 @@
 import * as MILSTD from '../../2525c'
 import { styles } from './styles'
+import './linestrings'
 
 const MT = text => [{ text, textAlign: 0.5, verticalAlign: 'top' }]
 const MB = text => [{ text, textAlign: 0.5, verticalAlign: 'bottom' }]
@@ -32,7 +33,7 @@ const MFP = [
 
 styles['TEXTS:LINE_STRING'] = []
 styles['TEXTS:G*T*F-----'] = [{ text: '"F"', textAlign: 0.1 }] // TASKS / FIX
-styles['TEXTS:G*T*A-----'] = [{ text: 't', textAlign: 0.2 }] // FOLLOW AND ASSUME
+styles['TEXTS:G*T*A-----'] = [{ text: 't', textAlign: 0.15 }] // FOLLOW AND ASSUME
 styles['TEXTS:G*T*AS----'] = [{ text: 't', textAlign: 0.2 }] // FOLLOW AND SUPPORT
 styles['TEXTS:G*G*GLP---'] = SE('t ? "PL " + t : "PL"') // PHASE LINE
 styles['TEXTS:G*G*GLL---'] = PL('LL') // LIGHT LINE
@@ -69,8 +70,6 @@ styles.LineString = args => {
   // TODO: simplify geometry depending on point count and resolution
   const { feature } = args
   const geometry = feature.getGeometry()
-  if (!geometry.getCoordinates().length) return null
-
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
 

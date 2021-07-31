@@ -69,6 +69,13 @@ parser.__proto__.convertToLinearRing = function (linearRing) {
 export const read = olGeometry => parser.read(olGeometry)
 export const write = jstGeometry => parser.write(jstGeometry)
 
+export const use = fn => olGeometry => {
+  const jstGeometry = fn(read(olGeometry))
+  return Array.isArray(jstGeometry)
+    ? jstGeometry.map(write)
+    : write(jstGeometry)
+}
+
 export const buffer = (opts = {}) => geometry => distance => {
   // NOTE: 3-ary form not supported, use either 0, 1, 2 or 4 arguments.
   // SEE: https://locationtech.github.io/jts/javadoc/org/locationtech/jts/operation/buffer/BufferParameters.html
