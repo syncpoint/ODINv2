@@ -6,14 +6,12 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 DEH - bb9a8802-fcbe-4866-a422-a93396165ab1 - style: custom line string geometries
 
 OPEN
-64fc1894-3cdf-4f34-b39b-e893bdcbb949 - G*G*GLB---: BOUNDARIES
-1f41f035-b84c-406e-8b2f-a9f4ad906d39 - G*M*OADC--: ANTITANK DITCH / COMPLETE
-055d71ed-61c3-4460-ab31-f48835a31e1b - G*M*OADU--: ANTITANK DITCH / UNDER CONSTRUCTION
 3be30670-dcb1-41b7-a37b-ea587238448c - G*M*OAR---: ANTITANK DITCH REINFORCED WITH ANTITANK MINES
 4903a227-f838-4e61-8ced-bad912f7d146 - G*M*OAW---: ANTITANK WALL
 2027c0a0-491d-4639-93f0-dbe23871be4d - G*M*OGL---: OBSTACLES / GENERAL / LINE
 e1df31d5-7879-4e72-a562-b5f5433666d4 - G*M*OS____: ABATIS
 8e2b0d2a-c32d-4914-9f10-a11111f8fbb6 - G*M*SL----: FORTIFIED LINE
+64fc1894-3cdf-4f34-b39b-e893bdcbb949 - G*G*GLB---: BOUNDARIES
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
@@ -68,3 +66,5 @@ DEH - a381a2c4-c66a-4133-9b66-3e59655b935c - G*G*PF----: DIRECTION OF ATTACK FOR
 DEH - 15d0b552-0403-4eea-823c-d851a3ecf32d - G*M*BCF---: FERRY (solid color fill)
 DEH - 1a40dd8d-4aa9-4ee5-893b-ca2129fa6c79 - G*M*OEF---: OBSTACLE EFFECT / FIX (solid color fill)
 DEH - 468eb407-3810-42a2-bca4-b3b0cc34ab5c - G*T*AS----: FOLLOW AND SUPPORT (solid color fill)
+DEH - 1f41f035-b84c-406e-8b2f-a9f4ad906d39 - G*M*OADC--: ANTITANK DITCH / COMPLETE
+DEH - 055d71ed-61c3-4460-ab31-f48835a31e1b - G*M*OADU--: ANTITANK DITCH / UNDER CONSTRUCTION
