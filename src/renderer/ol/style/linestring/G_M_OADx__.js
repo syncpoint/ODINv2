@@ -4,7 +4,7 @@ import * as UTM from '../utm'
 import * as TS from '../ts'
 
 const teeth = (geometry, resolution) => {
-  const width = resolution * 20
+  const width = resolution * 10
   const line = TS.lengthIndexedLine(geometry)
   const count = Math.floor(line.getEndIndex() / width)
   const offset = (line.getEndIndex() - count * width) / 2

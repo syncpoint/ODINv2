@@ -12,7 +12,7 @@ const ECHELON = 11
 // E.g. 'GFGPOAO----****' (15) => 'G*G*OAO---' (10)
 export const parameterized = sidc => sidc
   ? `${sidc[0]}*${sidc[2]}*${sidc.substring(4, 10)}`
-  : undefined
+  : null
 
 // Standard Identity (ex. Affiliation)
 export const standardIdentity = sidc => sidc

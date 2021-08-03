@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { styles, style, stroke } from '../styles'
+import { styles, style, stroke, text } from '../styles'
 import * as UTM from '../utm'
 import * as TS from '../ts'
 import { LineStringLabels } from '../labels'
@@ -38,11 +38,14 @@ styles['G*G*PF----'] = ({ feature }) => {
   const dashed = styles['STROKES:DASHED'](feature.get('sidc'), { lineDash: [8, 8] })
   const lastSegment = R.last(geometries[1].getGeometries())
   const labels = new LineStringLabels(lastSegment, feature.getProperties())
-  const texts = styles['TEXTS:G*G*PF----']
+  const texts = styles['TEXTS:G*G*PF----'].flat()
+    .map(labels.label.bind(labels))
+    .map(styles.TEXT)
+
 
   return [
     ...dashed.map(options => style({ geometry: geometries[0], stroke: stroke(options) })),
     ...solid.map(options => style({ geometry: geometries[1], stroke: stroke(options) })),
-    ...texts.flat().map(text => labels.label(text)).filter(R.identity)
+    ...texts
   ]
 }

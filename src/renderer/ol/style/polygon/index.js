@@ -1,6 +1,6 @@
-import * as MILSTD from '../../2525c'
-import { styles } from './styles'
-import './polygons'
+import * as MILSTD from '../../../2525c'
+import { styles } from '../styles'
+import './G_M_SP____'
 
 const C = text => [{ text, position: 'center' }]
 const T = text => [{ text, position: 'top' }]
@@ -87,21 +87,23 @@ styles['TEXTS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA
 styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
 
 styles.Polygon = args => {
-  const { feature } = args
-  const geometry = feature.getGeometry().simplify()
-  if (!geometry.getCoordinates().length) return null
+  const { feature, geometry } = args
 
-  const sidc = feature.get('sidc')
-  const key = MILSTD.parameterized(sidc)
+  const style = () => {
+    const sidc = feature.get('sidc')
+    const key = MILSTD.parameterized(sidc)
+    if (!key) return styles.DEFAULT()
 
-  return styles[key]
-    ? styles[key](args)
-    : styles.FEATURE({
-      geometry,
-      properties: feature.getProperties(),
-      strokes: styles['STROKES:DEFAULT'](sidc),
-      texts: styles[`TEXTS:${key}`] || styles['TEXTS:POLYGON']
-    })
+    return styles[key]
+      ? styles[key](args)
+      : styles.FEATURE({
+        geometry,
+        properties: feature.getProperties(),
+        strokes: styles['STROKES:DEFAULT'](sidc),
+        texts: styles[`TEXTS:${key}`] || styles['TEXTS:POLYGON']
+      })
+  }
+
+  // TODO: cache styles, beware resolution dependent features
+  return style()
 }
-
-export default styles

@@ -5,7 +5,7 @@ import * as TS from '../ts'
 import { LineStringLabels } from '../labels'
 
 // FOLLOW AND SUPPORT
-styles['G*T*AS----'] = ({ feature, resolution }) => {
+styles['G*T*AS----'] = ({ feature }) => {
   const geometries = UTM.use(TS.use(geometry => {
     const coords = TS.coordinates(geometry)
     const segment = TS.segment(coords)
@@ -26,11 +26,14 @@ styles['G*T*AS----'] = ({ feature, resolution }) => {
   const solid = styles['STROKES:SOLID'](feature.get('sidc'))
   const filled = styles['STROKES:FILLED'](feature.get('sidc'))
   const labels = new LineStringLabels(feature.getGeometry(), feature.getProperties())
-  const texts = styles['TEXTS:G*T*AS----']
+  const texts = styles['TEXTS:G*T*AS----'].flat()
+    .map(labels.label.bind(labels))
+    .map(styles.TEXT)
+    .filter(R.identity)
 
   return [
     ...solid.map(options => style({ geometry: geometries[0], stroke: stroke(options) })),
     ...filled.map(options => style({ geometry: geometries[1], stroke: stroke(options), fill: fill(options.fill) })),
-    ...texts.flat().map(text => labels.label(text)).filter(R.identity)
+    ...texts
   ]
 }

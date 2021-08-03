@@ -2,10 +2,9 @@ import * as R from 'ramda'
 import { styles, style, stroke, fill } from '../styles'
 import * as UTM from '../utm'
 import * as TS from '../ts'
-import { smooth } from '../chaikin'
 
 const teeth = (geometry, resolution) => {
-  const width = resolution * 20
+  const width = resolution * 10
   const line = TS.lengthIndexedLine(geometry)
   const count = Math.floor(line.getEndIndex() / (width * 2))
   const offset = (line.getEndIndex() - 2 * count * width) / 2
@@ -42,7 +41,7 @@ const teeth = (geometry, resolution) => {
 styles['G*M*OAR---'] = ({ feature, resolution }) => {
   const geometry = UTM.use(TS.use(geometry => {
     return TS.collect(teeth(geometry, resolution))
-  }))(smooth(feature.getGeometry()))
+  }))(feature.getGeometry())
 
   return styles['STROKES:FILLED'](feature.get('sidc'))
     .map(options => style({

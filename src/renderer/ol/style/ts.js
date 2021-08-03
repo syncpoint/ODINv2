@@ -67,7 +67,7 @@ parser.__proto__.convertToLinearRing = function (linearRing) {
 }
 
 export const read = olGeometry => parser.read(olGeometry)
-export const write = jstGeometry => parser.write(jstGeometry)
+export const write = jtsGeometry => parser.write(jtsGeometry)
 
 export const use = fn => olGeometry => {
   const jstGeometry = fn(read(olGeometry))

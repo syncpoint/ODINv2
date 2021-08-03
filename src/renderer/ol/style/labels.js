@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { Jexl } from 'jexl'
-import { Stroke, Style, Text } from 'ol/style'
+import { Stroke } from 'ol/style'
 import * as geom from 'ol/geom'
 import { containsXY } from 'ol/extent'
 import * as math from 'mathjs'
@@ -113,24 +113,19 @@ PolygonLabels.prototype.label = function (text) {
   if (!this[text.position]) this.evaluate(text.position)
   if (!this[text.position]) return null
 
-  // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-  const fontSize = text.fontSize || '10pt'
-
   const lines = Array.isArray(text.text)
     ? text.text.map(text => jexl.evalSync(text, this.properties)).filter(R.identity).join('\n')
     : jexl.evalSync(text.text, this.properties)
 
-  return new Style({
+  return {
     geometry: this[text.position],
-    text: new Text({
+    options: {
       text: lines,
-      font: `${fontSize} sans-serif`,
-      stroke: new Stroke({ color: 'white', width: 2 }),
       textAlign: text.align || 'center',
       offsetX: text.offsetX,
       offsetY: text.offsetY
-    })
-  })
+    }
+  }
 }
 
 
@@ -173,21 +168,21 @@ export const TOP = 'top'
 export const MIDDLE = 'middle'
 export const BOTTOM = 'bottom'
 
-const textAlign = α => R.cond([
-  [hAlign(LEFT), R.always(flip(α) ? 'end' : 'start')],
-  [hAlign(END), R.always(flip(α) ? 'end' : 'start')],
-  [hAlign(START), R.always(flip(α) ? 'start' : 'end')],
-  [hAlign(RIGHT), R.always(flip(α) ? 'start' : 'end')],
+const textAlign = text => flip => R.cond([
+  [hAlign(LEFT), R.always(flip ? 'end' : 'start')],
+  [hAlign(END), R.always(flip ? 'end' : 'start')],
+  [hAlign(START), R.always(flip ? 'start' : 'end')],
+  [hAlign(RIGHT), R.always(flip ? 'start' : 'end')],
   [R.T, R.always(null)]
-])
+])(text)
 
-const offsetX = α => R.cond([
-  [hAlign(END), R.always(flip(α) ? -15 : 15)],
-  [hAlign(START), R.always(flip(α) ? 15 : -15)],
-  // [hAlign(LEFT), R.always(flip(α) ? -15 : 15)],
-  // [hAlign(RIGHT), R.always(flip(α) ? 15 : -15)],
+const offsetX = text => flip => R.cond([
+  [hAlign(END), R.always(flip ? -15 : 15)],
+  [hAlign(START), R.always(flip ? 15 : -15)],
+  // [hAlign(LEFT), R.always(flip ? -15 : 15)],
+  // [hAlign(RIGHT), R.always(flip ? 15 : -15)],
   [R.T, R.always(null)]
-])
+])(text)
 
 const offsetY = R.cond([
   [vAlign(TOP), R.always(-25)],
@@ -226,32 +221,25 @@ LineStringLabels.prototype.point = function (text) {
 
 LineStringLabels.prototype.label = function (text) {
   const α = this.alpha(text)
-
-  // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-  const fontSize = text.fontSize || '10pt'
-
   const lines = Array.isArray(text.text)
     ? text.text.map(text => jexl.evalSync(text, this.properties)).filter(R.identity).join('\n')
     : jexl.evalSync(text.text, this.properties)
 
-  return new Style({
+  return {
     geometry: new geom.Point(this.point(text)),
-    text: new Text({
+    options: {
       text: lines,
-      font: `${fontSize} sans-serif`,
-      stroke: new Stroke({ color: 'white', width: 2 }),
-      rotation: flip(α) ? α - Math.PI : α,
-      textAlign: textAlign(α)(text),
-      offsetX: offsetX(α)(text),
+      flip: true,
+      rotation: α,
+      textAlign: textAlign(text),
+      offsetX: offsetX(text),
       offsetY: offsetY(text)
-    })
-  })
-
+    }
+  }
 }
 
 export const geometryLabels = (geometry, properties) => {
-  const geometryType = geometry.getType()
-  switch (geometryType) {
+  switch (geometry.getType()) {
     case 'GeometryCollection': return geometryLabels(geometry.getGeometries()[0], properties)
     case 'Polygon': return new PolygonLabels(geometry, properties)
     case 'LineString': return new LineStringLabels(geometry, properties)

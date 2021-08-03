@@ -6,7 +6,7 @@ import * as TS from '../ts'
 // ABATIS
 styles['G*M*OS----'] = ({ feature, resolution }) => {
   const geometry = UTM.use(TS.use(geometry => {
-    const width = resolution * 20
+    const width = resolution * 10
     const line = TS.lengthIndexedLine(geometry)
     const firstSegment = line.extractLine(0, width)
     const coords = TS.coordinates(firstSegment)

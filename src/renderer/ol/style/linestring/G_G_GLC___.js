@@ -9,7 +9,7 @@ styles['G*G*GLC---'] = ({ feature, resolution }) => {
   const geometry = UTM.use(TS.use(geometry => {
     const line = TS.lengthIndexedLine(geometry)
     const length = line.getEndIndex()
-    const width = resolution * 20
+    const width = resolution * 15
     const n = Math.floor(length / width)
     const offset = (length - n * width) / 2
     const point = index => line.extractPoint(index)

@@ -6,8 +6,7 @@ export const utmSRID = coordinate => {
   const [longitude, latitude] = proj.forward(coordinate)
   const zone = Math.ceil((longitude + 180) / 6)
   const south = latitude < 0
-  const code = (south ? 32700 : 32600) + zone
-  return `EPSG:${code}`
+  return (south ? 32700 : 32600) + zone
 }
 
 // Reference point for given geometry.
@@ -21,14 +20,18 @@ export const reference = geometry => {
 export const transform = geometry => {
   const coordinate = reference(geometry)
   const srid = utmSRID(coordinate)
+
   return {
-    toUTM: geometry => geometry.clone().transform('EPSG:3857', srid),
-    fromUTM: geometry => geometry.clone().transform(srid, 'EPSG:3857'),
-    withUTM: fn => {
-      console.log('[withUTM]', srid)
-      const transformed = geometry.transform('EPSG:3857', srid)
-      const calculated = fn(transformed)
-      return calculated.transform(srid, 'EPSG:3857')
+    srid,
+    toUTM: geometry => {
+      const transformed = geometry.clone().transform('EPSG:3857', `EPSG:${srid}`)
+      transformed.set('srid', srid)
+      return transformed
+    },
+    fromUTM: geometry => {
+      const transformed = geometry.clone().transform(`EPSG:${srid}`, 'EPSG:3857')
+      transformed.set('srid', 3857)
+      return transformed
     }
   }
 }
@@ -36,9 +39,9 @@ export const transform = geometry => {
 export const use = fn => geometry => {
   const coordinate = reference(geometry)
   const srid = utmSRID(coordinate)
-  const transformed = geometry.clone().transform('EPSG:3857', srid)
+  const transformed = geometry.clone().transform('EPSG:3857', `EPSG:${srid}`)
   const calculated = fn(transformed)
   return Array.isArray(calculated)
-    ? calculated.map(geometry => geometry.transform(srid, 'EPSG:3857'))
-    : calculated.transform(srid, 'EPSG:3857')
+    ? calculated.map(geometry => geometry.transform(`EPSG:${srid}`, 'EPSG:3857'))
+    : calculated.transform(`EPSG:${srid}`, 'EPSG:3857')
 }

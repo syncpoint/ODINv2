@@ -2,12 +2,11 @@ import * as R from 'ramda'
 import { styles, style, stroke } from '../styles'
 import * as UTM from '../utm'
 import * as TS from '../ts'
-import { smooth } from '../chaikin'
 
 // FORTIFIED LINE
 styles['G*M*SL----'] = ({ feature, resolution }) => {
   const geometry = UTM.use(TS.use(geometry => {
-    const width = resolution * 15
+    const width = resolution * 10
     const line = TS.lengthIndexedLine(geometry)
     const count = Math.floor(line.getEndIndex() / (width * 2))
     const offset = (line.getEndIndex() - 2 * count * width) / 2
@@ -29,7 +28,7 @@ styles['G*M*SL----'] = ({ feature, resolution }) => {
       .map(([a, b, c, d, x, y]) => TS.lineString([a, b, x, y, c, d]))
 
     return TS.collect(teeth)
-  }))(smooth(feature.getGeometry()))
+  }))(feature.getGeometry())
 
   return styles['STROKES:SOLID'](feature.get('sidc'))
     .map(options => style({

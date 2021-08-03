@@ -1,18 +1,9 @@
-import * as MILSTD from '../../2525c'
 import { StyleCache } from './StyleCache'
-import { styles } from './styles'
+import { styles, geometryType } from './styles'
 import './point'
 import './linestring'
 import './polygon'
-
-const styleFactory = feature => {
-  const sidc = MILSTD.parameterized(feature.get('sidc'))
-  const geometryType = feature.getGeometry().getType()
-
-  if (styles[`${sidc}`]) return styles[`${sidc}`]
-  else if (styles[`${geometryType}`]) return styles[`${geometryType}`]
-  else return styles.DEFAULT
-}
+import './corridor'
 
 /**
  *
@@ -22,9 +13,11 @@ export const featureStyle = selection => {
 
   return (feature, resolution) => {
     try {
-      return styleFactory(feature)({
+      const geometry = feature.getGeometry()
+      return (styles[geometryType(geometry)] || styles.DEFAULT)({
         cache,
         feature,
+        geometry,
         resolution,
         selected: selection.isSelected(feature.getId())
       })

@@ -58,24 +58,17 @@ Sources.prototype.storeBatch_ = function (operations) {
   additions.forEach(addFeature(this.featureSource)) // TODO: bulk - addFeatures()
 }
 
-/**
- * @deprecated
- */
-Sources.prototype.getFeatureSources = async function () {
-  const layers = await this.layerStore.getFeatures()
-  const sources = Object.entries(layers).reduce((acc, [key, features]) => {
-    acc[key] = new VectorSource({ features: readFeatures(features) })
-    return acc
-  }, {})
-
-  return sources
-}
-
 Sources.prototype.getFeatureSource = async function () {
   if (this.featureSource) return this.featureSource
 
+  console.time('load')
   const json = await this.layerStore.getFeatures()
+  console.timeEnd('load')
+
+  console.time('read')
   const features = readFeatures(json)
   this.featureSource = new VectorSource({ features })
+  console.timeEnd('read')
+
   return this.featureSource
 }
