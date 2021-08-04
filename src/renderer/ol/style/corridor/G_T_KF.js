@@ -1,8 +1,7 @@
 import * as R from 'ramda'
-import { styles, style, stroke, fill } from '../styles'
+import { styles } from '../styles'
 import * as TS from '../ts'
 import { arrowCoordinates } from './commons'
-
 
 // COUNTERATTACK BY FIRE
 styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
@@ -24,34 +23,23 @@ styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
   const lastSegment = R.last(R.aperture(2, linePoints).map(TS.segment))
   const fontSize = `${width / resolution / 2}px`
 
-  const anchor = TS.point(aps[3])
-  const head = TS.polygon(R.props([10, 11, 12, 10], aps))
-  const geometry = TS.union([
-    TS.difference([
-      TS.union([buffer, arrow]).getBoundary(),
-      TS.pointBuffer(TS.startPoint(lineString))(width / 2)
-    ]),
-    TS.lineString(R.props([4, 5, 6, 7], aps)),
-    TS.lineString(R.props([8, 9], aps))
-  ])
-
-  const dashed = styles['STROKES:DASHED'](feature.get('sidc'))
-  const filled = styles['STROKES:FILLED'](feature.get('sidc'))
-  const textStyle = styles.TEXT({
-    geometry: anchor,
-    options: {
+  return [
+    styles.dashedStroke({}, TS.union([
+      TS.difference([
+        TS.union([buffer, arrow]).getBoundary(),
+        TS.pointBuffer(TS.startPoint(lineString))(width / 2)
+      ]),
+      TS.lineString(R.props([4, 5, 6, 7], aps)),
+      TS.lineString(R.props([8, 9], aps))
+    ]))(feature),
+    styles.filledStroke({}, TS.polygon(R.props([10, 11, 12, 10], aps)))(feature),
+    styles.text({
+      fontSize,
       text: 'CATK',
       flip: true,
-      rotation: Math.PI - lastSegment.angle(),
       textAlign: flipped => flipped ? 'end' : 'start',
       offsetX: flipped => flipped ? -10 : 10,
-      fontSize
-    }
-  })
-
-  return [
-    ...dashed.map(options => style({ geometry: geometry, stroke: stroke(options) })),
-    ...filled.map(options => style({ geometry: head, stroke: stroke(options), fill: fill(options.fill) })),
-    textStyle
+      rotation: Math.PI - lastSegment.angle()
+    }, TS.point(aps[3]))
   ]
 }

@@ -1,19 +1,16 @@
-// TACGRP.MOBSU.SU.STRGPT
-// TACTICAL GRAPHICS /  MOBILITY/SURVIVABILITY / STRONG POINT
-
 import * as R from 'ramda'
 import Polygon from 'ol/geom/Polygon'
-import * as MILSTD from '../../../2525c'
 import * as TS from '../ts'
-import { styles, style, stroke } from '../styles'
+import { styles } from '../styles'
 
+// STRONG POINT
 styles['G*M*SP----'] = ({ feature, resolution }) => {
-  const sidc = feature.get('sidc')
-  const key = MILSTD.parameterized(sidc)
   const geometry = feature.getGeometry().simplify()
 
   // TODO: 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   const coordinates = geometry.getCoordinates(true)
+
+  // Note: We are still (and remain) in Web Mercator (not UTM).
   const lineString = TS.lineString(TS.coordinates(TS.read(new Polygon(coordinates))))
   const indexedLine = TS.lengthIndexedLine(lineString)
   const endIndex = indexedLine.getEndIndex()
@@ -25,22 +22,12 @@ styles['G*M*SP----'] = ({ feature, resolution }) => {
     const [A, B] = [indexedLine.extractPoint(a), indexedLine.extractPoint(b)]
     const segment = TS.segment([A, B])
     const angle = segment.angle() - Math.PI / 2
-    const P2 = TS.projectCoordinate(P1)([angle, delta])
+    const P2 = TS.projectCoordinate(P1)([angle, delta * 0.75])
     return TS.lineString([P1, P2])
   })))
 
-  const strokes = styles['STROKES:SOLID'](sidc)
-  const spikesStyle = spikes
-    ? strokes.map(options => style({ geometry: spikes, stroke: stroke(options) }))
-    : []
-
   return [
-    ...spikesStyle,
-    ...styles.FEATURE({
-      geometry,
-      strokes,
-      properties: feature.getProperties(),
-      texts: styles[`TEXTS:${key}`] || []
-    })
+    styles.solidStroke({}, geometry)(feature),
+    styles.solidStroke({}, spikes)(feature)
   ]
 }

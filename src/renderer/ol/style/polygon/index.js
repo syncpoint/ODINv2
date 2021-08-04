@@ -1,5 +1,6 @@
 import * as MILSTD from '../../../2525c'
 import { styles } from '../styles'
+import { PolygonLabels } from '../labels'
 import './G_M_SP____'
 
 const C = text => [{ text, position: 'center' }]
@@ -88,22 +89,18 @@ styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (
 
 styles.Polygon = args => {
   const { feature, geometry } = args
+  const sidc = feature.get('sidc')
+  const key = MILSTD.parameterized(sidc)
+  if (!key) return styles.DEFAULT()
 
-  const style = () => {
-    const sidc = feature.get('sidc')
-    const key = MILSTD.parameterized(sidc)
-    if (!key) return styles.DEFAULT()
+  const labels = new PolygonLabels(geometry, feature.getProperties())
+  const texts = (styles[`TEXTS:${key}`] || []).flat()
+    .map(labels.label.bind(labels))
+    .map(({ geometry, options }) => styles.text(options, geometry))
 
-    return styles[key]
-      ? styles[key](args)
-      : styles.FEATURE({
-        geometry,
-        properties: feature.getProperties(),
-        strokes: styles['STROKES:DEFAULT'](sidc),
-        texts: styles[`TEXTS:${key}`] || styles['TEXTS:POLYGON']
-      })
-  }
+  const style = styles[key]
+    ? styles[key](args)
+    : styles.defaultStroke({}, geometry)(sidc)
 
-  // TODO: cache styles, beware resolution dependent features
-  return style()
+  return [...style, ...texts]
 }

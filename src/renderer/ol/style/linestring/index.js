@@ -99,15 +99,11 @@ styles.LineString = args => {
   const labels = new LineStringLabels(geometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
-    .map(styles.TEXT)
+    .map(({ geometry, options }) => styles.text(options, geometry))
 
   const style = styles[key]
     ? transform(styles[key])(args)
-    : styles.FEATURE({
-      geometry,
-      properties: feature.getProperties(),
-      strokes: styles['STROKES:DEFAULT'](sidc),
-    })
+    : styles.defaultStroke({}, geometry)(sidc)
 
   return [...style, ...texts]
 }

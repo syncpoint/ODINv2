@@ -3,7 +3,6 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 import { arrowCoordinates } from './commons'
 
-
 // COUNTERATTACK (CATK)
 styles['G*T*K-----'] = ({ feature, lineString, width, resolution }) => {
   const segments = TS.segments(lineString)
@@ -22,14 +21,11 @@ styles['G*T*K-----'] = ({ feature, lineString, width, resolution }) => {
   const lastSegment = R.last(R.aperture(2, linePoints).map(TS.segment))
   const fontSize = `${width / resolution / 2}px`
 
-  const anchor = TS.point(aps[3])
-  const geometry = TS.difference([
-    TS.union([buffer, arrow]).getBoundary(),
-    TS.pointBuffer(TS.startPoint(lineString))(width / 2)
-  ])
-
   return [
-    styles.defaultStroke({}, geometry)(feature),
+    styles.defaultStroke({}, TS.difference([
+      TS.union([buffer, arrow]).getBoundary(),
+      TS.pointBuffer(TS.startPoint(lineString))(width / 2)
+    ]))(feature),
     styles.text({
       fontSize,
       text: 'CATK',
@@ -37,7 +33,6 @@ styles['G*T*K-----'] = ({ feature, lineString, width, resolution }) => {
       textAlign: flipped => flipped ? 'end' : 'start',
       offsetX: flipped => flipped ? -10 : 10,
       rotation: Math.PI - lastSegment.angle()
-    }, anchor)
+    }, TS.point(aps[3]))
   ]
-
 }

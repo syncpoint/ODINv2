@@ -4,7 +4,6 @@ import GeometryCollection from 'ol/geom/GeometryCollection'
 import { Fill, Stroke, Circle, Style, Text } from 'ol/style'
 import * as Colors from './color-schemes'
 import * as MILSTD from '../../2525c'
-import { geometryLabels } from './labels'
 
 export const stroke = options => new Stroke(options)
 export const style = options => new Style(options)
@@ -37,7 +36,7 @@ const STYLE_OL = style({
   stroke: STROKE_CAROLINA_BLUE
 })
 
-export const properties = {}
+const properties = {}
 
 properties['2525C'] = arg => {
   if (!arg) return null
@@ -139,89 +138,4 @@ styles.text = (options, geometry) => {
       offsetX
     })
   })
-}
-
-styles['STROKES:DEFAULT'] = sidc => {
-  // Order matters: Thicker stroke first, thinner stroke (fill) last.
-  const standardIdentity = MILSTD.standardIdentity(sidc)
-  const lineDash = MILSTD.status(sidc) === 'A' ? LINE_DASH_DEFAULT : null
-  return [
-    { color: Colors.stroke(standardIdentity), width: 3, lineDash },
-    { color: Colors.fill(SCHEME_DEFAULT)(standardIdentity), width: 2, lineDash }
-  ]
-}
-
-styles['STROKES:SOLID'] = sidc => {
-  // Order matters: Thicker stroke first, thinner stroke (fill) last.
-  const standardIdentity = MILSTD.standardIdentity(sidc)
-  return [
-    { color: Colors.stroke(standardIdentity), width: 3 },
-    { color: Colors.fill(SCHEME_DEFAULT)(standardIdentity), width: 2 }
-  ]
-}
-
-styles['STROKES:DASHED'] = (sidc, options = {}) => {
-  // Order matters: Thicker stroke first, thinner stroke (fill) last.
-  const standardIdentity = MILSTD.standardIdentity(sidc)
-  const lineDash = options.lineDash || LINE_DASH_DEFAULT
-  return [
-    { color: Colors.stroke(standardIdentity), width: 3, lineDash },
-    { color: Colors.fill(SCHEME_DEFAULT)(standardIdentity), width: 2, lineDash }
-  ]
-}
-
-styles['STROKES:FILLED'] = sidc => {
-  // Order matters: Thicker stroke first, thinner stroke (fill) last.
-  const standardIdentity = MILSTD.standardIdentity(sidc)
-  const fillColor = Colors.fill(SCHEME_DEFAULT)(standardIdentity)
-  return [
-    { color: Colors.stroke(standardIdentity), width: 3 },
-    { color: fillColor, width: 2, fill: { color: fillColor } }
-  ]
-}
-
-styles.TEXT = ({ geometry, options }) => {
-  const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
-  const textAlign = options.flip
-    ? options.textAlign && options.textAlign(flip(options.rotation))
-    : options.textAlign
-
-  const rotation = options.flip
-    ? flip(options.rotation)
-      ? options.rotation - Math.PI
-      : options.rotation
-    : options.rotation
-
-  const offsetX = options.flip
-    ? options.offsetX && options.offsetX(flip(options.rotation))
-    : options.offsetX
-
-  // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-  const fontSize = options.fontSize || '10pt'
-  const fontFamily = 'sans-serif'
-
-  return style({
-    geometry,
-    text: text({
-      ...options,
-      font: `${fontSize} ${fontFamily}`,
-      stroke: new Stroke({ color: 'white', width: 2 }),
-      textAlign,
-      rotation,
-      offsetX
-    })
-  })
-}
-
-styles.FEATURE = options => {
-  const { strokes, geometry, properties } = options
-  const labels = options.labels || geometryLabels(geometry, properties)
-  const texts = (options.texts || []).flat()
-    .map(labels.label.bind(labels))
-    .map(styles.TEXT)
-
-  return [
-    ...strokes.map(options => style({ geometry, stroke: stroke(options) })),
-    ...texts
-  ]
 }
