@@ -1,11 +1,11 @@
 import * as R from 'ramda'
-import { styles, style, stroke, fill } from '../styles'
-import * as UTM from '../utm'
+import { styles } from '../styles'
 import * as TS from '../ts'
 
-const teeth = (geometry, resolution) => {
+// ANTITANK DITCH REINFORCED WITH ANTITANK MINES
+styles['G*M*OAR---'] = ({ feature, resolution, lineString }) => {
   const width = resolution * 10
-  const line = TS.lengthIndexedLine(geometry)
+  const line = TS.lengthIndexedLine(lineString)
   const count = Math.floor(line.getEndIndex() / (width * 2))
   const offset = (line.getEndIndex() - 2 * count * width) / 2
 
@@ -13,7 +13,7 @@ const teeth = (geometry, resolution) => {
     .aperture(2, R.range(0, count + 1).map(i => offset + 2 * width * i))
     .map(([a, b]) => [a, a + width / 2, b - width / 2, b])
 
-  return segmentPoints
+  const geometry = TS.collect(segmentPoints
     .map(([a, b, c, d]) => [
       line.extractPoint(a),
       TS.coordinates(line.extractLine(b, c)),
@@ -35,19 +35,7 @@ const teeth = (geometry, resolution) => {
         TS.pointBuffer(TS.point(c))(width / 3.5)
       ]
     })
+  )
+
+  return styles.filledStroke({}, geometry)(feature)
 }
-
-// ANTITANK DITCH REINFORCED WITH ANTITANK MINES
-styles['G*M*OAR---'] = ({ feature, resolution }) => {
-  const geometry = UTM.use(TS.use(geometry => {
-    return TS.collect(teeth(geometry, resolution))
-  }))(feature.getGeometry())
-
-  return styles['STROKES:FILLED'](feature.get('sidc'))
-    .map(options => style({
-      geometry,
-      stroke: stroke(options),
-      fill: fill(options.fill)
-    }))
-}
-

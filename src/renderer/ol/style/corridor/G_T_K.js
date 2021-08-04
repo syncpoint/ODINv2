@@ -1,11 +1,11 @@
 import * as R from 'ramda'
-import { styles, style, stroke } from '../styles'
+import { styles } from '../styles'
 import * as TS from '../ts'
-import { arrowCoordinates } from './arrows'
+import { arrowCoordinates } from './commons'
 
 
 // COUNTERATTACK (CATK)
-styles['G*T*K-----'] = ({ feature, lineString, width, write, resolution }) => {
+styles['G*T*K-----'] = ({ feature, lineString, width, resolution }) => {
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (3 / 4))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -22,29 +22,22 @@ styles['G*T*K-----'] = ({ feature, lineString, width, write, resolution }) => {
   const lastSegment = R.last(R.aperture(2, linePoints).map(TS.segment))
   const fontSize = `${width / resolution / 2}px`
 
-  const geometries = write(TS.collect([
-    TS.point(aps[3]),
-    TS.difference([
-      TS.union([buffer, arrow]).getBoundary(),
-      TS.pointBuffer(TS.startPoint(lineString))(width / 2)
-    ])
-  ])).getGeometries()
-
-  const solid = styles['STROKES:DASHED'](feature.get('sidc'))
-  const textStyle = styles.TEXT({
-    geometry: geometries[0],
-    options: {
-      text: 'CATK',
-      flip: true,
-      rotation: Math.PI - lastSegment.angle(),
-      textAlign: flipped => flipped ? 'end' : 'start',
-      offsetX: flipped => flipped ? -10 : 10,
-      fontSize
-    }
-  })
+  const anchor = TS.point(aps[3])
+  const geometry = TS.difference([
+    TS.union([buffer, arrow]).getBoundary(),
+    TS.pointBuffer(TS.startPoint(lineString))(width / 2)
+  ])
 
   return [
-    ...solid.map(options => style({ geometry: geometries[1], stroke: stroke(options) })),
-    textStyle
+    styles.defaultStroke({}, geometry)(feature),
+    styles.text({
+      fontSize,
+      text: 'CATK',
+      flip: true,
+      textAlign: flipped => flipped ? 'end' : 'start',
+      offsetX: flipped => flipped ? -10 : 10,
+      rotation: Math.PI - lastSegment.angle()
+    }, anchor)
   ]
+
 }

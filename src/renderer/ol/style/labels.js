@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import { Jexl } from 'jexl'
-import { Stroke } from 'ol/style'
 import * as geom from 'ol/geom'
 import { containsXY } from 'ol/extent'
 import * as math from 'mathjs'
@@ -149,14 +148,12 @@ export const LineStringLabels = function (geometry, properties) {
 }
 
 const _TWO_PI = 2 * Math.PI
-const _HALF_PI = Math.PI / 2
 const vector = points => [points[1][1] - points[0][1], points[1][0] - points[0][0]]
 const atan2 = delta => -1 * Math.atan2(delta[0], delta[1])
 const normalizeAngle = x => x < 0 ? _TWO_PI + x : x
 const segmentAngle = R.compose(normalizeAngle, atan2, vector)
 const head = xs => xs[0]
 const last = xs => xs[xs.length - 1]
-const flip = α => α > _HALF_PI && α < 3 * _HALF_PI
 const vAlign = v => ({ verticalAlign }) => verticalAlign === v
 const hAlign = v => ({ textAlign }) => textAlign === v
 

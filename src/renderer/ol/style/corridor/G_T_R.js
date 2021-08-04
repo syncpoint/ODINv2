@@ -1,9 +1,9 @@
-import { styles, style, stroke } from '../styles'
+import { styles } from '../styles'
 import * as TS from '../ts'
-import { openArrow } from './arrows'
+import { openArrow } from './commons'
 
 // TASKS / RELIEF IN PLACE (RIP)
-styles['G*T*R-----'] = ({ feature, point, lineString, width, write, resolution }) => {
+styles['G*T*R-----'] = ({ feature, point, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
@@ -18,29 +18,20 @@ styles['G*T*R-----'] = ({ feature, point, lineString, width, write, resolution }
     TS.polygon([coords[0], p0, p1, coords[1], coords[0]])
   ])
 
-  const geometries = write(TS.collect([
-    TS.point(segment.midPoint()),
-    TS.collect([
-      lineString,
-      TS.lineString([p1, p0]),
-      openArrow(resolution, angle, coords[1]),
-      openArrow(resolution, angle + Math.PI, p0),
-      arc
-    ])
-  ])).getGeometries()
+  const geometry = TS.collect([
+    lineString,
+    TS.lineString([p1, p0]),
+    openArrow(resolution, angle, coords[1]),
+    openArrow(resolution, angle + Math.PI, p0),
+    arc
+  ])
 
-  const solid = styles['STROKES:SOLID'](feature.get('sidc'))
-  const textStyle = styles.TEXT({
-    geometry: geometries[0],
-    options: {
+  return [
+    styles.defaultStroke({}, geometry)(feature),
+    styles.text({
       text: 'RIP',
       flip: true,
       rotation: Math.PI - angle
-    }
-  })
-
-  return [
-    ...solid.map(options => style({ geometry: geometries[1], stroke: stroke(options) })),
-    textStyle
+    }, TS.point(segment.midPoint()))
   ]
 }

@@ -1,5 +1,7 @@
 import * as MILSTD from '../../../2525c'
 import { styles } from '../styles'
+import { transform } from './commons'
+import { LineStringLabels } from '../labels'
 import './G_F_LT____' // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
 import './G_G_GLC___' // LINE OF CONTACT
 import './G_G_GLF___' // FORWARD LINE OF OWN TROOPS (FLOT)
@@ -54,7 +56,6 @@ const MFP = [
 ]
 
 styles['TEXTS:LINE_STRING'] = []
-styles['TEXTS:G*T*F-----'] = [{ text: '"F"', textAlign: 0.1 }] // TASKS / FIX
 styles['TEXTS:G*T*A-----'] = [{ text: 't', textAlign: 0.15 }] // FOLLOW AND ASSUME
 styles['TEXTS:G*T*AS----'] = [{ text: 't', textAlign: 0.15 }] // FOLLOW AND SUPPORT
 styles['TEXTS:G*G*GLP---'] = SE('t ? "PL " + t : "PL"') // PHASE LINE
@@ -91,21 +92,22 @@ styles['TEXTS:G*O*BO----'] = MM('"O"') // BEARING LINE / ELECTRO-OPTICAL INTERCE
 styles.LineString = args => {
   const { feature, geometry } = args
 
-  const style = () => {
-    const sidc = feature.get('sidc')
-    const key = MILSTD.parameterized(sidc)
-    if (!key) return styles.DEFAULT()
+  const sidc = feature.get('sidc')
+  const key = MILSTD.parameterized(sidc)
+  if (!key) return styles.DEFAULT()
 
-    return styles[key]
-      ? styles[key](args)
-      : styles.FEATURE({
-        geometry,
-        properties: feature.getProperties(),
-        strokes: styles['STROKES:DEFAULT'](sidc),
-        texts: styles[`TEXTS:${key}`] || styles['TEXTS:LINE_STRING']
-      })
-  }
+  const labels = new LineStringLabels(geometry, feature.getProperties())
+  const texts = (styles[`TEXTS:${key}`] || []).flat()
+    .map(labels.label.bind(labels))
+    .map(styles.TEXT)
 
-  // TODO: cache styles, beware resolution dependent features
-  return style()
+  const style = styles[key]
+    ? transform(styles[key])(args)
+    : styles.FEATURE({
+      geometry,
+      properties: feature.getProperties(),
+      strokes: styles['STROKES:DEFAULT'](sidc),
+    })
+
+  return [...style, ...texts]
 }

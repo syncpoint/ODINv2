@@ -1,11 +1,10 @@
 import * as R from 'ramda'
-import { styles, style, stroke } from '../styles'
-import * as UTM from '../utm'
+import { styles } from '../styles'
 import * as TS from '../ts'
 
-const teeth = direction => (geometry, resolution) => {
+const teeth = direction => (lineString, resolution) => {
   const width = resolution * 10
-  const line = TS.lengthIndexedLine(geometry)
+  const line = TS.lengthIndexedLine(lineString)
   const count = Math.floor(line.getEndIndex() / (width * 2))
   const offset = (line.getEndIndex() - 2 * count * width) / 2
 
@@ -23,28 +22,12 @@ const teeth = direction => (geometry, resolution) => {
 }
 
 // OBSTACLES / GENERAL / LINE
-styles['G*M*OGL---'] = ({ feature, resolution }) => {
-  const geometry = UTM.use(TS.use(geometry => {
-    return TS.collect(teeth(1)(geometry, resolution))
-  }))(feature.getGeometry())
-
-  return styles['STROKES:SOLID'](feature.get('sidc'))
-    .map(options => style({
-      geometry,
-      stroke: stroke(options)
-    }))
+styles['G*M*OGL---'] = ({ feature, resolution, lineString }) => {
+  return styles.filledStroke({}, TS.collect(teeth(1)(lineString, resolution)))(feature)
 }
 
 // ANTITANK WALL
-styles['G*M*OAW---'] = ({ feature, resolution }) => {
-  const geometry = UTM.use(TS.use(geometry => {
-    return TS.collect(teeth(-1)(geometry, resolution))
-  }))(feature.getGeometry())
-
-  return styles['STROKES:SOLID'](feature.get('sidc'))
-    .map(options => style({
-      geometry,
-      stroke: stroke(options)
-    }))
+styles['G*M*OAW---'] = ({ feature, resolution, lineString }) => {
+  return styles.filledStroke({}, TS.collect(teeth(-1)(lineString, resolution)))(feature)
 }
 

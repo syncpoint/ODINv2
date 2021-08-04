@@ -1,11 +1,11 @@
 import * as R from 'ramda'
 import { styles, style, stroke, fill } from '../styles'
 import * as TS from '../ts'
-import { arrowCoordinates } from './arrows'
+import { arrowCoordinates } from './commons'
 
 
 // COUNTERATTACK BY FIRE
-styles['G*T*KF----'] = ({ feature, lineString, width, write, resolution }) => {
+styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (48 / 26))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -24,23 +24,21 @@ styles['G*T*KF----'] = ({ feature, lineString, width, write, resolution }) => {
   const lastSegment = R.last(R.aperture(2, linePoints).map(TS.segment))
   const fontSize = `${width / resolution / 2}px`
 
-  const geometries = write(TS.collect([
-    TS.point(aps[3]),
-    TS.union([
-      TS.difference([
-        TS.union([buffer, arrow]).getBoundary(),
-        TS.pointBuffer(TS.startPoint(lineString))(width / 2)
-      ]),
-      TS.lineString(R.props([4, 5, 6, 7], aps)),
-      TS.lineString(R.props([8, 9], aps))
+  const anchor = TS.point(aps[3])
+  const head = TS.polygon(R.props([10, 11, 12, 10], aps))
+  const geometry = TS.union([
+    TS.difference([
+      TS.union([buffer, arrow]).getBoundary(),
+      TS.pointBuffer(TS.startPoint(lineString))(width / 2)
     ]),
-    TS.polygon(R.props([10, 11, 12, 10], aps))
-  ])).getGeometries()
+    TS.lineString(R.props([4, 5, 6, 7], aps)),
+    TS.lineString(R.props([8, 9], aps))
+  ])
 
-  const solid = styles['STROKES:DASHED'](feature.get('sidc'))
+  const dashed = styles['STROKES:DASHED'](feature.get('sidc'))
   const filled = styles['STROKES:FILLED'](feature.get('sidc'))
   const textStyle = styles.TEXT({
-    geometry: geometries[0],
+    geometry: anchor,
     options: {
       text: 'CATK',
       flip: true,
@@ -52,8 +50,8 @@ styles['G*T*KF----'] = ({ feature, lineString, width, write, resolution }) => {
   })
 
   return [
-    ...solid.map(options => style({ geometry: geometries[1], stroke: stroke(options) })),
-    ...filled.map(options => style({ geometry: geometries[2], stroke: stroke(options), fill: fill(options.fill) })),
+    ...dashed.map(options => style({ geometry: geometry, stroke: stroke(options) })),
+    ...filled.map(options => style({ geometry: head, stroke: stroke(options), fill: fill(options.fill) })),
     textStyle
   ]
 }

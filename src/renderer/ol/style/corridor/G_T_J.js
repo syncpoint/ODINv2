@@ -1,14 +1,15 @@
 import * as R from 'ramda'
-import { styles, style, stroke } from '../styles'
+import { styles } from '../styles'
 import * as TS from '../ts'
-import { openArrow } from './arrows'
+import { openArrow } from './commons'
 
 
 // TASKS / CONTAIN
-styles['G*T*J-----'] = ({ feature, lineString, width, write, resolution }) => {
+styles['G*T*J-----'] = ({ feature, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
+  const rotation = Math.PI - angle
 
   const cutout = TS.polygon(R.props([0, 1, 3, 2, 0], [
     ...TS.projectCoordinates(width, angle, coords[0])([[0, 1], [0, -1]]),
@@ -26,28 +27,16 @@ styles['G*T*J-----'] = ({ feature, lineString, width, write, resolution }) => {
 
   const [p1] = TS.projectCoordinates(width / 2, angle, coords[1])([[1, 0]])
 
-  const geometries = write(TS.collect([
-    TS.point(p1),
-    TS.collect([
-      lineString,
-      arcs[0],
-      ...spikes,
-      openArrow(resolution, angle, coords[1])
-    ])
-  ])).getGeometries()
-
-  const solid = styles['STROKES:SOLID'](feature.get('sidc'))
-  const textStyle = styles.TEXT({
-    geometry: geometries[0],
-    options: {
-      text: 'C',
-      flip: true,
-      rotation: Math.PI - angle
-    }
-  })
+  const anchor = TS.point(p1)
+  const geometry = TS.collect([
+    lineString,
+    arcs[0],
+    ...spikes,
+    openArrow(resolution, angle, coords[1])
+  ])
 
   return [
-    ...solid.map(options => style({ geometry: geometries[1], stroke: stroke(options) })),
-    textStyle
+    styles.defaultStroke({}, geometry)(feature),
+    styles.text({ text: 'C', flip: true, rotation }, anchor)
   ]
 }

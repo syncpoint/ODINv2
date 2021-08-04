@@ -14,13 +14,16 @@ export const featureStyle = selection => {
   return (feature, resolution) => {
     try {
       const geometry = feature.getGeometry()
-      return (styles[geometryType(geometry)] || styles.DEFAULT)({
+      const style = (styles[geometryType(geometry)] || styles.DEFAULT)({
         cache,
         feature,
         geometry,
         resolution,
         selected: selection.isSelected(feature.getId())
       })
+
+      if (!style) return
+      return Array.isArray(style) ? style.flat() : style
     } catch (err) {
       console.error('[style]', err)
     }

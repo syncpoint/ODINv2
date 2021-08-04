@@ -1,7 +1,6 @@
 import * as MILSTD from '../../../2525c'
-import * as TS from '../ts'
 import { styles } from '../styles'
-import format from '../format'
+import { transform } from './commons'
 import './G_T_B' // TASKS / BLOCK
 import './G_T_C' // TASKS / CANALIZE
 import './G_T_H' // TASKS / BREACH
@@ -15,23 +14,10 @@ import './G_T_T' // TASKS / DISRUPT
 import './G_T_X' // TASKS / CLEAR
 import './G_T_Y' // TASKS / BYPASS
 
-styles['LineString:Point'] = args => {
-  const { feature, geometry } = args
+styles['LineString:Point'] = ({ feature, resolution }) => {
+  const sidc = feature.get('sidc')
+  const key = MILSTD.parameterized(sidc)
+  if (!key || !styles[key]) return styles.DEFAULT()
 
-  const style = () => {
-    const sidc = feature.get('sidc')
-    const key = MILSTD.parameterized(sidc)
-    if (!key) return styles.DEFAULT()
-
-    const { read, write } = format(geometry)
-    const [lineString, point] = TS.geometries(read(geometry))
-    const width = 2 * TS.segment([TS.startPoint(lineString), point]
-      .map(TS.coordinate)).getLength()
-
-    return styles[key]
-      ? styles[key]({ ...args, point, lineString, width, write })
-      : styles.DEFAULT()
-  }
-
-  return style()
+  return transform(styles[key])({ feature, resolution })
 }

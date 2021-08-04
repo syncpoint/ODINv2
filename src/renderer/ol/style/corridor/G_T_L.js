@@ -1,8 +1,8 @@
-import { styles, style, stroke } from '../styles'
+import { styles } from '../styles'
 import * as TS from '../ts'
-import { openArrow } from './arrows'
+import { openArrow } from './commons'
 
-const withdrawLike = text => ({ feature, point, lineString, width, write, resolution }) => {
+const withdrawLike = text => ({ feature, point, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
@@ -17,28 +17,19 @@ const withdrawLike = text => ({ feature, point, lineString, width, write, resolu
     TS.polygon([coords[0], p0, p1, coords[1], coords[0]])
   ])
 
-  const geometries = write(TS.collect([
-    TS.point(segment.midPoint()),
-    TS.collect([
-      lineString,
-      openArrow(resolution, angle, coords[1]),
-      arc
-    ])
-  ])).getGeometries()
+  const geometry = TS.collect([
+    lineString,
+    openArrow(resolution, angle, coords[1]),
+    arc
+  ])
 
-  const solid = styles['STROKES:SOLID'](feature.get('sidc'))
-  const textStyle = styles.TEXT({
-    geometry: geometries[0],
-    options: {
+  return [
+    styles.defaultStroke({}, geometry)(feature),
+    styles.text({
       text,
       flip: true,
       rotation: Math.PI - angle
-    }
-  })
-
-  return [
-    ...solid.map(options => style({ geometry: geometries[1], stroke: stroke(options) })),
-    textStyle
+    }, TS.point(segment.midPoint()))
   ]
 }
 
