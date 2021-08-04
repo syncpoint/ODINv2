@@ -1,5 +1,5 @@
 import * as MILSTD from '../../../2525c'
-import { styles } from '../styles'
+import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_M_SP____'
 
@@ -87,20 +87,25 @@ styles['TEXTS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA
 styles['TEXTS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
 
-styles.Polygon = args => {
-  const { feature, geometry } = args
+styles.Polygon = ({ feature, resolution }) => {
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
+  const featureStyles = makeStyles(feature)
+  const geometry = feature.getGeometry()
   const labels = new PolygonLabels(geometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
-    .map(({ geometry, options }) => styles.text(options, geometry))
+    .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
   const style = styles[key]
-    ? styles[key](args)
-    : styles.defaultStroke(geometry)(sidc)
+    ? styles[key]({
+      feature,
+      resolution,
+      styles: featureStyles
+    })
+    : featureStyles.defaultStroke(geometry)
 
   return [...style, ...texts]
 }

@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // TASKS / CANALIZE
-styles['G*T*C-----'] = ({ feature, lineString, width, resolution }) => {
+styles['G*T*C-----'] = ({ styles, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -20,11 +20,11 @@ styles['G*T*C-----'] = ({ feature, lineString, width, resolution }) => {
       openCorridor,
       TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p0)([[-1, -1], [1, 1]]))),
       TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, 1], [1, -1]])))
-    ]))(feature),
-    styles.text({
+    ])),
+    styles.text(TS.startPoint(lineString), {
       text: 'C',
       flip: true,
       rotation: Math.PI - angle
-    }, TS.startPoint(lineString))
+    })
   ]
 }

@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // FOLLOW AND ASSUME
-styles['G*T*A-----'] = ({ feature, lineString }) => {
+styles['G*T*A-----'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -21,5 +21,5 @@ styles['G*T*A-----'] = ({ feature, lineString }) => {
     TS.lineString(R.props([3, 9], xs)),
     TS.polygon(R.props([0, 1, 2, 3, 4, 0], xs)),
     TS.polygon(R.props([5, 6, 7, 8, 9, 10, 5], xs))
-  ]))(feature)
+  ]))
 }

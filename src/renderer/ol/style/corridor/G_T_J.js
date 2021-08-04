@@ -3,9 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 import { openArrow } from './commons'
 
-
 // TASKS / CONTAIN
-styles['G*T*J-----'] = ({ feature, lineString, width, resolution }) => {
+styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -33,7 +32,11 @@ styles['G*T*J-----'] = ({ feature, lineString, width, resolution }) => {
       arcs[0],
       ...spikes,
       openArrow(resolution, angle, coords[1])
-    ]))(feature),
-    styles.text({ text: 'C', flip: true, rotation }, TS.point(p1))
+    ])),
+    styles.text(TS.point(p1), {
+      text: 'C',
+      flip: true,
+      rotation
+    })
   ]
 }

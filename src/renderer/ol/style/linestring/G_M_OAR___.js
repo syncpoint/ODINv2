@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
-styles['G*M*OAR---'] = ({ feature, resolution, lineString }) => {
+styles['G*M*OAR---'] = ({ styles, resolution, lineString }) => {
   const width = resolution * 10
   const line = TS.lengthIndexedLine(lineString)
   const count = Math.floor(line.getEndIndex() / (width * 2))
@@ -37,5 +37,5 @@ styles['G*M*OAR---'] = ({ feature, resolution, lineString }) => {
     })
   )
 
-  return styles.filledStroke(geometry)(feature)
+  return styles.filledStroke(geometry)
 }

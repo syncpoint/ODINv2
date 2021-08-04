@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // HALTED CONVOY
-styles['G*S*LCH---'] = ({ feature, lineString }) => {
+styles['G*S*LCH---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const xs = TS.projectCoordinates(segment.getLength(), segment.angle(), coords[0])([
@@ -14,5 +14,5 @@ styles['G*S*LCH---'] = ({ feature, lineString }) => {
   return styles.solidStroke(TS.collect([
     TS.polygon(R.props([0, 1, 2, 3, 0], xs)),
     TS.polygon(R.props([4, 5, 6, 4], xs))
-  ]))(feature)
+  ]))
 }

@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // LANE
-styles['G*M*BCL---'] = ({ feature, lineString }) => {
+styles['G*M*BCL---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -17,5 +17,5 @@ styles['G*M*BCL---'] = ({ feature, lineString }) => {
     lineString,
     TS.lineString(R.props([0, 1, 2], xs)),
     TS.lineString(R.props([3, 4, 5], xs))
-  ]))(feature)
+  ]))
 }

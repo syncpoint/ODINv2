@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // LINE OF CONTACT
-styles['G*G*GLC---'] = ({ feature, resolution, lineString }) => {
+styles['G*G*GLC---'] = ({ styles, resolution, lineString }) => {
   const line = TS.lengthIndexedLine(lineString)
   const length = line.getEndIndex()
   const width = resolution * 15
@@ -28,7 +28,7 @@ styles['G*G*GLC---'] = ({ feature, resolution, lineString }) => {
     .map(coords => TS.lineString(coords))
 
   return [
-    styles.defaultStroke(TS.collect([...segmentsA, ...segmentsB]))(feature)
+    styles.defaultStroke(TS.collect([...segmentsA, ...segmentsB]))
   ]
 }
 

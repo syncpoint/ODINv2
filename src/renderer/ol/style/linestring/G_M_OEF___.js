@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // OBSTACLE EFFECT / FIX
-styles['G*M*OEF---'] = ({ feature, resolution, lineString }) => {
+styles['G*M*OEF---'] = ({ styles, resolution, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -30,7 +30,7 @@ styles['G*M*OEF---'] = ({ feature, resolution, lineString }) => {
       TS.lineString([coords[0], p0]),
       TS.lineString([p0, ...x, p1]),
       TS.lineString([p1, xs[2]])
-    ]))(feature),
-    styles.filledStroke(TS.polygon(xs))(feature)
+    ])),
+    styles.filledStroke(TS.polygon(xs))
   ]
 }

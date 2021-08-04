@@ -4,7 +4,7 @@ import * as TS from '../ts'
 import { arrowCoordinates } from './commons'
 
 // COUNTERATTACK BY FIRE
-styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
+styles['G*T*KF----'] = ({ styles, lineString, width, resolution }) => {
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (48 / 26))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -31,15 +31,15 @@ styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
       ]),
       TS.lineString(R.props([4, 5, 6, 7], aps)),
       TS.lineString(R.props([8, 9], aps))
-    ]))(feature),
-    styles.filledStroke(TS.polygon(R.props([10, 11, 12, 10], aps)))(feature),
-    styles.text({
+    ])),
+    styles.filledStroke(TS.polygon(R.props([10, 11, 12, 10], aps))),
+    styles.text(TS.point(aps[3]), {
       fontSize,
       text: 'CATK',
       flip: true,
       textAlign: flipped => flipped ? 'end' : 'start',
       offsetX: flipped => flipped ? -10 : 10,
       rotation: Math.PI - lastSegment.angle()
-    }, TS.point(aps[3]))
+    })
   ]
 }

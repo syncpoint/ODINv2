@@ -22,12 +22,12 @@ const teeth = direction => (lineString, resolution) => {
 }
 
 // OBSTACLES / GENERAL / LINE
-styles['G*M*OGL---'] = ({ feature, resolution, lineString }) => {
-  return styles.filledStroke(TS.collect(teeth(1)(lineString, resolution)))(feature)
+styles['G*M*OGL---'] = ({ styles, resolution, lineString }) => {
+  return styles.filledStroke(TS.collect(teeth(1)(lineString, resolution)))
 }
 
 // ANTITANK WALL
-styles['G*M*OAW---'] = ({ feature, resolution, lineString }) => {
-  return styles.filledStroke(TS.collect(teeth(-1)(lineString, resolution)))(feature)
+styles['G*M*OAW---'] = ({ styles, resolution, lineString }) => {
+  return styles.filledStroke(TS.collect(teeth(-1)(lineString, resolution)))
 }
 

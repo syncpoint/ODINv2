@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // FORWARD LINE OF OWN TROOPS (FLOT)
-styles['G*G*GLF---'] = ({ feature, resolution, lineString }) => {
+styles['G*G*GLF---'] = ({ styles, resolution, lineString }) => {
   const line = TS.lengthIndexedLine(lineString)
   const length = line.getEndIndex()
   const width = resolution * 15
@@ -20,6 +20,6 @@ styles['G*G*GLF---'] = ({ feature, resolution, lineString }) => {
     .map(coords => TS.lineString(coords))
 
   return [
-    styles.defaultStroke(TS.collect(segments))(feature)
+    styles.defaultStroke(TS.collect(segments))
   ]
 }

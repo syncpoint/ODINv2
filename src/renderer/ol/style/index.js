@@ -17,7 +17,6 @@ export const featureStyle = selection => {
       const style = (styles[geometryType(geometry)] || styles.DEFAULT)({
         cache,
         feature,
-        geometry,
         resolution,
         selected: selection.isSelected(feature.getId())
       })

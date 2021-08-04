@@ -1,5 +1,5 @@
 import * as MILSTD from '../../../2525c'
-import { styles } from '../styles'
+import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import { LineStringLabels } from '../labels'
 import './G_F_LT____' // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
@@ -89,21 +89,25 @@ styles['TEXTS:G*O*BA----'] = MM('"A"') // BEARING LINE / ACOUSTIC
 styles['TEXTS:G*O*BT----'] = MM('"T"') // BEARING LINE / TORPEDO
 styles['TEXTS:G*O*BO----'] = MM('"O"') // BEARING LINE / ELECTRO-OPTICAL INTERCEPT
 
-styles.LineString = args => {
-  const { feature, geometry } = args
-
+styles.LineString = ({ feature, resolution }) => {
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
+  const featureStyles = makeStyles(feature)
+  const geometry = feature.getGeometry()
   const labels = new LineStringLabels(geometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
-    .map(({ geometry, options }) => styles.text(options, geometry))
+    .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
   const style = styles[key]
-    ? transform(styles[key])(args)
-    : styles.defaultStroke(geometry)(sidc)
+    ? transform(styles[key])({
+      feature,
+      resolution,
+      styles: featureStyles
+    })
+    : featureStyles.defaultStroke(geometry)
 
   return [...style, ...texts]
 }

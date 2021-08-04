@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // DIRECTION OF ATTACK / AVIATION
-styles['G*G*OLKA--'] = ({ feature, lineString }) => {
+styles['G*G*OLKA--'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -20,6 +20,6 @@ styles['G*G*OLKA--'] = ({ feature, lineString }) => {
       TS.lineString([xs[1], coords[1]]),
       TS.polygon(R.props([2, 3, 4, 5, 2], xs)),
       TS.lineString(R.props([6, 7, 8], xs))
-    ]))(feature)
+    ]))
   ]
 }

@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // DIRECTION OF ATTACK / SUPPORTING ATTACK
-styles['G*G*OLKGS-'] = ({ feature, lineString }) => {
+styles['G*G*OLKGS-'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -16,6 +16,6 @@ styles['G*G*OLKGS-'] = ({ feature, lineString }) => {
     styles.defaultStroke(TS.collect([
       lineString,
       TS.lineString(R.props([0, 1, 2], xs))
-    ]))(feature)
+    ]))
   ]
 }

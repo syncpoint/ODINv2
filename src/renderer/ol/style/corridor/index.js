@@ -1,5 +1,5 @@
 import * as MILSTD from '../../../2525c'
-import { styles } from '../styles'
+import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import './G_T_B' // TASKS / BLOCK
 import './G_T_C' // TASKS / CANALIZE
@@ -19,5 +19,9 @@ styles['LineString:Point'] = ({ feature, resolution }) => {
   const key = MILSTD.parameterized(sidc)
   if (!key || !styles[key]) return styles.DEFAULT()
 
-  return transform(styles[key])({ feature, resolution })
+  return transform(styles[key])({
+    feature,
+    resolution,
+    styles: makeStyles(feature)
+  })
 }

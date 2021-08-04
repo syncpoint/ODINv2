@@ -2,7 +2,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 import { openArrow } from './commons'
 
-const withdrawLike = text => ({ feature, point, lineString, width, resolution }) => {
+const withdrawLike = text => ({ styles, point, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
@@ -22,12 +22,12 @@ const withdrawLike = text => ({ feature, point, lineString, width, resolution })
       lineString,
       openArrow(resolution, angle, coords[1]),
       arc
-    ]))(feature),
-    styles.text({
+    ])),
+    styles.text(TS.point(segment.midPoint()), {
       text,
       flip: true,
       rotation: Math.PI - angle
-    }, TS.point(segment.midPoint()))
+    })
   ]
 }
 

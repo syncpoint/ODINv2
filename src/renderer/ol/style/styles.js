@@ -36,61 +36,29 @@ const STYLE_OL = style({
   stroke: STROKE_CAROLINA_BLUE
 })
 
-const properties = {}
+export const styles = {}
 
-properties['2525C'] = arg => {
-  if (!arg) return null
-  if (arg instanceof Feature) return properties['2525C'](arg.get('sidc'))
-  if (!(typeof arg === 'string')) return null
+styles.DEFAULT = () => STYLE_OL
 
-  const sidc = arg
+export const makeStyles = sidcLike => {
+  if (!sidcLike) return null
+  if (sidcLike instanceof Feature) return makeStyles(sidcLike.get('sidc'))
+  if (!(typeof sidcLike === 'string')) return null
+
+  const sidc = sidcLike
   const standardIdentity = MILSTD.standardIdentity(sidc)
   const status = MILSTD.status(sidc)
 
-  return {
+  const props = {
     strokeColor: Colors.stroke(standardIdentity),
     strokeFillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
     lineDash: status === 'A' ? LINE_DASH_DEFAULT : null,
     fillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity)
   }
-}
 
-export const styles = {}
+  const styles = {}
 
-styles.DEFAULT = () => STYLE_OL
-
-styles.defaultStroke = geometry => arg => {
-  const props = properties['2525C'](arg)
-  return [
-    style({
-      geometry,
-      stroke: stroke({ color: props.strokeColor, width: 3, lineDash: props.lineDash })
-    }),
-    style({
-      geometry,
-      stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: props.lineDash})
-    })
-  ]
-}
-
-styles.filledStroke = geometry => arg => {
-  const props = properties['2525C'](arg)
-  return [
-    style({
-      geometry,
-      stroke: stroke({color: props.strokeColor, width: 3 })
-    }),
-    style({
-      geometry,
-      stroke: stroke({color: props.strokeFillColor, width: 2 }),
-      fill: fill({ color: props.fillColor })
-    })
-  ]
-}
-
-styles.dashedStroke = geometry => arg => {
-  const props = { ...properties['2525C'](arg), lineDash: [8, 8] }
-  return [
+  styles.defaultStroke = geometry => ([
     style({
       geometry,
       stroke: stroke({ color: props.strokeColor, width: 3, lineDash: props.lineDash })
@@ -99,12 +67,32 @@ styles.dashedStroke = geometry => arg => {
       geometry,
       stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: props.lineDash })
     })
-  ]
-}
+  ])
 
-styles.solidStroke = geometry => arg => {
-  const props = properties['2525C'](arg)
-  return [
+  styles.filledStroke = geometry => ([
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeColor, width: 3 })
+    }),
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeFillColor, width: 2 }),
+      fill: fill({ color: props.fillColor })
+    })
+  ])
+
+  styles.dashedStroke = geometry => ([
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeColor, width: 3, lineDash: [8, 8] })
+    }),
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: [8, 8] })
+    })
+  ])
+
+  styles.solidStroke = geometry => ([
     style({
       geometry,
       stroke: stroke({ color: props.strokeColor, width: 3 })
@@ -113,38 +101,41 @@ styles.solidStroke = geometry => arg => {
       geometry,
       stroke: stroke({ color: props.strokeFillColor, width: 2 })
     })
-  ]
-}
+  ])
 
-styles.text = (options, geometry) => {
-  const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
-  const textAlign = options.flip
-    ? options.textAlign && options.textAlign(flip(options.rotation))
-    : options.textAlign
+  // TODO: flip arguments
+  styles.text = (geometry, options) => {
+    const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
+    const textAlign = options.flip
+      ? options.textAlign && options.textAlign(flip(options.rotation))
+      : options.textAlign
 
-  const rotation = options.flip
-    ? flip(options.rotation)
-      ? options.rotation - Math.PI
+    const rotation = options.flip
+      ? flip(options.rotation)
+        ? options.rotation - Math.PI
+        : options.rotation
       : options.rotation
-    : options.rotation
 
-  const offsetX = options.flip
-    ? options.offsetX && options.offsetX(flip(options.rotation))
-    : options.offsetX
+    const offsetX = options.flip
+      ? options.offsetX && options.offsetX(flip(options.rotation))
+      : options.offsetX
 
-  // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-  const fontSize = options.fontSize || '10pt'
-  const fontFamily = 'sans-serif'
+    // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
+    const fontSize = options.fontSize || '10pt'
+    const fontFamily = 'sans-serif'
 
-  return style({
-    geometry,
-    text: text({
-      ...options,
-      font: `${fontSize} ${fontFamily}`,
-      stroke: new Stroke({ color: 'white', width: 2 }),
-      textAlign,
-      rotation,
-      offsetX
+    return style({
+      geometry,
+      text: text({
+        ...options,
+        font: `${fontSize} ${fontFamily}`,
+        stroke: new Stroke({ color: 'white', width: 2 }),
+        textAlign,
+        rotation,
+        offsetX
+      })
     })
-  })
+  }
+
+  return styles
 }

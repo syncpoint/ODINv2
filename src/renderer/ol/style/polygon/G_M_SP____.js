@@ -4,8 +4,8 @@ import * as TS from '../ts'
 import { styles } from '../styles'
 
 // STRONG POINT
-styles['G*M*SP----'] = ({ feature, resolution }) => {
-  const geometry = feature.getGeometry().simplify()
+styles['G*M*SP----'] = ({ styles, feature, resolution }) => {
+  const geometry = feature.getGeometry()
 
   // TODO: 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   const coordinates = geometry.getCoordinates(true)
@@ -27,7 +27,7 @@ styles['G*M*SP----'] = ({ feature, resolution }) => {
   })))
 
   return [
-    styles.solidStroke(geometry)(feature),
-    styles.solidStroke(spikes)(feature)
+    styles.solidStroke(geometry),
+    styles.solidStroke(spikes)
   ]
 }

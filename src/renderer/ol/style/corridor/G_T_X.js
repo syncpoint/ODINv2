@@ -2,9 +2,8 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 import { openArrow } from './commons'
 
-
 // TASKS / CLEAR
-styles['G*T*X-----'] = ({ feature, lineString, width, write, resolution }) => {
+styles['G*T*X-----'] = ({ styles, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -23,11 +22,11 @@ styles['G*T*X-----'] = ({ feature, lineString, width, write, resolution }) => {
   ])
 
   return [
-    styles.defaultStroke(geometry)(feature),
-    styles.text({
+    styles.defaultStroke(geometry),
+    styles.text(TS.point(segment.midPoint()), {
       text: 'C',
       flip: true,
       rotation: Math.PI - angle
-    }, TS.point(segment.midPoint()))
+    })
   ]
 }

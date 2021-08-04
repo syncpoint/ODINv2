@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // LINEAR TARGET
-styles['G*F*LT----'] = ({ feature, lineString }) => {
+styles['G*F*LT----'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -16,7 +16,7 @@ styles['G*F*LT----'] = ({ feature, lineString }) => {
       lineString,
       TS.lineString(R.props([0, 1], xs)),
       TS.lineString(R.props([2, 3], xs))
-    ]))(feature)
+    ]))
   ]
 }
 

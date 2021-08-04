@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // FORTIFIED LINE
-styles['G*M*SL----'] = ({ feature, resolution, lineString }) => {
+styles['G*M*SL----'] = ({ styles, resolution, lineString }) => {
   const width = resolution * 10
   const line = TS.lengthIndexedLine(lineString)
   const count = Math.floor(line.getEndIndex() / (width * 2))
@@ -25,5 +25,5 @@ styles['G*M*SL----'] = ({ feature, resolution, lineString }) => {
     ])
     .map(([a, b, c, d, x, y]) => TS.lineString([a, b, x, y, c, d]))
 
-  return styles.defaultStroke(TS.collect(teeth))(feature)
+  return styles.defaultStroke(TS.collect(teeth))
 }

@@ -2,7 +2,7 @@ import { styles } from '../styles'
 import * as TS from '../ts'
 
 // TASKS / BLOCK
-styles['G*T*B-----'] = ({ feature, lineString, width }) => {
+styles['G*T*B-----'] = ({ styles, lineString, width }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -12,11 +12,11 @@ styles['G*T*B-----'] = ({ feature, lineString, width }) => {
     styles.defaultStroke(TS.collect([
       lineString,
       TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
-    ]))(feature),
-    styles.text({
+    ])),
+    styles.text(TS.point(segment.midPoint()), {
       text: 'B',
       flip: true,
       rotation: Math.PI - angle
-    }, TS.point(segment.midPoint()))
+    })
   ]
 }

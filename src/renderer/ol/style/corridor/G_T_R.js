@@ -3,7 +3,7 @@ import * as TS from '../ts'
 import { openArrow } from './commons'
 
 // TASKS / RELIEF IN PLACE (RIP)
-styles['G*T*R-----'] = ({ feature, point, lineString, width, resolution }) => {
+styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
@@ -27,11 +27,11 @@ styles['G*T*R-----'] = ({ feature, point, lineString, width, resolution }) => {
   ])
 
   return [
-    styles.defaultStroke(geometry)(feature),
-    styles.text({
+    styles.defaultStroke(geometry),
+    styles.text(TS.point(segment.midPoint()), {
       text: 'RIP',
       flip: true,
       rotation: Math.PI - angle
-    }, TS.point(segment.midPoint()))
+    })
   ]
 }
