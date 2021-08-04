@@ -13,7 +13,7 @@ styles['G*M*BCR---'] = ({ feature, lineString }) => {
     [1.09, -0.2], [1, 0], [1.09, 0.2]
   ])
 
-  return styles.defaultStroke({}, TS.collect([
+  return styles.defaultStroke(TS.collect([
     lineString,
     TS.lineString(R.props([0, 1, 2], xs)),
     TS.lineString(R.props([3, 4, 5], xs))

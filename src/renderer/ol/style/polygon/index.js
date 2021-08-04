@@ -100,7 +100,7 @@ styles.Polygon = args => {
 
   const style = styles[key]
     ? styles[key](args)
-    : styles.defaultStroke({}, geometry)(sidc)
+    : styles.defaultStroke(geometry)(sidc)
 
   return [...style, ...texts]
 }

@@ -16,15 +16,12 @@ styles['G*T*H-----'] = ({ feature, lineString, width, resolution }) => {
     TS.pointBuffer(TS.endPoint(lineString))(width / 2)
   ])
 
-  const anchor = TS.startPoint(lineString)
-  const geometry = TS.collect([
-    openCorridor,
-    TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p0)([[-1, 1], [1, -1]]))),
-    TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, -1], [1, 1]])))
-  ])
-
   return [
-    styles.defaultStroke({}, geometry)(feature),
-    styles.text({ text: 'C', flip: true, rotation }, anchor)
+    styles.defaultStroke(TS.collect([
+      openCorridor,
+      TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p0)([[-1, 1], [1, -1]]))),
+      TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, -1], [1, 1]])))
+    ]))(feature),
+    styles.text({ text: 'C', flip: true, rotation }, TS.startPoint(lineString))
   ]
 }

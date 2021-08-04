@@ -25,7 +25,7 @@ styles['G*G*PF----'] = ({ feature, lineString }) => {
     ])
 
   return [
-    styles.solidStroke({}, geometry)(feature),
-    styles.dashedStroke({}, TS.lineString(R.props([0, 1, 2], xs)))(feature)
+    styles.solidStroke(geometry)(feature),
+    styles.dashedStroke(TS.lineString(R.props([0, 1, 2], xs)))(feature)
   ]
 }

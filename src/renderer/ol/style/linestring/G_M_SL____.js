@@ -25,5 +25,5 @@ styles['G*M*SL----'] = ({ feature, resolution, lineString }) => {
     ])
     .map(([a, b, c, d, x, y]) => TS.lineString([a, b, x, y, c, d]))
 
-  return styles.defaultStroke({}, TS.collect(teeth))(feature)
+  return styles.defaultStroke(TS.collect(teeth))(feature)
 }

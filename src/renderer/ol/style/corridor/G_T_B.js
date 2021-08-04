@@ -8,13 +8,11 @@ styles['G*T*B-----'] = ({ feature, lineString, width }) => {
   const angle = segment.angle()
   const fractions = [[0, 1], [0, -1]]
 
-  const geometry = TS.collect([
-    lineString,
-    TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
-  ])
-
   return [
-    styles.defaultStroke({}, geometry)(feature),
+    styles.defaultStroke(TS.collect([
+      lineString,
+      TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
+    ]))(feature),
     styles.text({
       text: 'B',
       flip: true,

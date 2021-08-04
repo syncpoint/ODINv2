@@ -17,14 +17,12 @@ const withdrawLike = text => ({ feature, point, lineString, width, resolution })
     TS.polygon([coords[0], p0, p1, coords[1], coords[0]])
   ])
 
-  const geometry = TS.collect([
-    lineString,
-    openArrow(resolution, angle, coords[1]),
-    arc
-  ])
-
   return [
-    styles.defaultStroke({}, geometry)(feature),
+    styles.defaultStroke(TS.collect([
+      lineString,
+      openArrow(resolution, angle, coords[1]),
+      arc
+    ]))(feature),
     styles.text({
       text,
       flip: true,

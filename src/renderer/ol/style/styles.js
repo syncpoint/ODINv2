@@ -55,56 +55,65 @@ properties['2525C'] = arg => {
   }
 }
 
-properties.STROKE = options => arg => {
-  const props = { ...properties['2525C'](arg), ...options }
-  return [
-    { color: props.strokeColor, width: 3, lineDash: props.lineDash },
-    { color: props.strokeFillColor, width: 2, lineDash: props.lineDash }
-  ]
-}
-
-properties['STROKE:FILLED'] = options => arg => {
-  const props = { ...properties['2525C'](arg), ...options }
-  return [
-    { color: props.strokeColor, width: 3 },
-    { color: props.strokeFillColor, width: 2, fillColor: props.fillColor }
-  ]
-}
-
-properties['STROKE:SOLID'] = options => arg => {
-  const props = { ...properties['2525C'](arg), ...options }
-  return [
-    { color: props.strokeColor, width: 3 },
-    { color: props.strokeFillColor, width: 2 }
-  ]
-}
-
 export const styles = {}
 
 styles.DEFAULT = () => STYLE_OL
 
-styles.defaultStroke = (options = {}, geometry = null) => arg => {
-  return properties.STROKE(options)(arg)
-    .map(props => style({ geometry, stroke: stroke(props) }))
-}
-
-styles.filledStroke = (options = {}, geometry = null) => arg => {
-  return properties['STROKE:FILLED'](options)(arg)
-    .map(props => style({
+styles.defaultStroke = geometry => arg => {
+  const props = properties['2525C'](arg)
+  return [
+    style({
       geometry,
-      stroke: stroke(props),
-      fill: props.fillColor ? fill({ color: props.fillColor }) : null
-    }))
+      stroke: stroke({ color: props.strokeColor, width: 3, lineDash: props.lineDash })
+    }),
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: props.lineDash})
+    })
+  ]
 }
 
-styles.dashedStroke = (options = {}, geometry = null) => arg => {
-  return properties.STROKE({ lineDash: [8, 8], ...options })(arg)
-    .map(props => style({ geometry, stroke: stroke(props) }))
+styles.filledStroke = geometry => arg => {
+  const props = properties['2525C'](arg)
+  return [
+    style({
+      geometry,
+      stroke: stroke({color: props.strokeColor, width: 3 })
+    }),
+    style({
+      geometry,
+      stroke: stroke({color: props.strokeFillColor, width: 2 }),
+      fill: fill({ color: props.fillColor })
+    })
+  ]
 }
 
-styles.solidStroke = (options = {}, geometry = null) => arg => {
-  return properties['STROKE:SOLID'](options)(arg)
-    .map(props => style({ geometry, stroke: stroke(props) }))
+styles.dashedStroke = geometry => arg => {
+  const props = { ...properties['2525C'](arg), lineDash: [8, 8] }
+  return [
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeColor, width: 3, lineDash: props.lineDash })
+    }),
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: props.lineDash })
+    })
+  ]
+}
+
+styles.solidStroke = geometry => arg => {
+  const props = properties['2525C'](arg)
+  return [
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeColor, width: 3 })
+    }),
+    style({
+      geometry,
+      stroke: stroke({ color: props.strokeFillColor, width: 2 })
+    })
+  ]
 }
 
 styles.text = (options, geometry) => {

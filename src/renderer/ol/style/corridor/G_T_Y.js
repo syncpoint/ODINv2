@@ -20,7 +20,7 @@ styles['G*T*Y-----'] = ({ feature, lineString, width, resolution }) => {
   ])
 
   return [
-    styles.defaultStroke({}, geometry)(feature),
+    styles.defaultStroke(geometry)(feature),
     styles.text({
       text: 'B',
       flip: true,

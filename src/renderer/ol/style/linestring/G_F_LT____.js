@@ -12,7 +12,7 @@ styles['G*F*LT----'] = ({ feature, lineString }) => {
   const xs = TS.projectCoordinates(length, angle, coords[0])(fractions)
 
   return [
-    styles.defaultStroke({}, TS.collect([
+    styles.defaultStroke(TS.collect([
       lineString,
       TS.lineString(R.props([0, 1], xs)),
       TS.lineString(R.props([2, 3], xs))

@@ -13,7 +13,7 @@ styles['G*G*OLKGM-'] = ({ feature, lineString }) => {
   ])
 
   return [
-    styles.defaultStroke({}, TS.collect([
+    styles.defaultStroke(TS.collect([
       TS.lineString([coords[0], xs[4]]),
       TS.polygon(R.props([0, 1, 2, 3, 4, 5, 0], xs))
     ]))(feature)

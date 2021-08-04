@@ -37,5 +37,5 @@ styles['G*M*OAR---'] = ({ feature, resolution, lineString }) => {
     })
   )
 
-  return styles.filledStroke({}, geometry)(feature)
+  return styles.filledStroke(geometry)(feature)
 }

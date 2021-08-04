@@ -11,7 +11,7 @@ styles['G*S*LCH---'] = ({ feature, lineString }) => {
     [1, 0], [1.16, -0.15], [1.16, 0.15]
   ])
 
-  return styles.solidStroke({}, TS.collect([
+  return styles.solidStroke(TS.collect([
     TS.polygon(R.props([0, 1, 2, 3, 0], xs)),
     TS.polygon(R.props([4, 5, 6, 4], xs))
   ]))(feature)

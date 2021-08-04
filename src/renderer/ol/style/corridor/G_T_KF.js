@@ -24,7 +24,7 @@ styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
   const fontSize = `${width / resolution / 2}px`
 
   return [
-    styles.dashedStroke({}, TS.union([
+    styles.dashedStroke(TS.union([
       TS.difference([
         TS.union([buffer, arrow]).getBoundary(),
         TS.pointBuffer(TS.startPoint(lineString))(width / 2)
@@ -32,7 +32,7 @@ styles['G*T*KF----'] = ({ feature, lineString, width, resolution }) => {
       TS.lineString(R.props([4, 5, 6, 7], aps)),
       TS.lineString(R.props([8, 9], aps))
     ]))(feature),
-    styles.filledStroke({}, TS.polygon(R.props([10, 11, 12, 10], aps)))(feature),
+    styles.filledStroke(TS.polygon(R.props([10, 11, 12, 10], aps)))(feature),
     styles.text({
       fontSize,
       text: 'CATK',

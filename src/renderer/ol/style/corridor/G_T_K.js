@@ -22,7 +22,7 @@ styles['G*T*K-----'] = ({ feature, lineString, width, resolution }) => {
   const fontSize = `${width / resolution / 2}px`
 
   return [
-    styles.defaultStroke({}, TS.difference([
+    styles.defaultStroke(TS.difference([
       TS.union([buffer, arrow]).getBoundary(),
       TS.pointBuffer(TS.startPoint(lineString))(width / 2)
     ]))(feature),

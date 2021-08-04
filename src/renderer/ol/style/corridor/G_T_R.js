@@ -27,7 +27,7 @@ styles['G*T*R-----'] = ({ feature, point, lineString, width, resolution }) => {
   ])
 
   return [
-    styles.defaultStroke({}, geometry)(feature),
+    styles.defaultStroke(geometry)(feature),
     styles.text({
       text: 'RIP',
       flip: true,

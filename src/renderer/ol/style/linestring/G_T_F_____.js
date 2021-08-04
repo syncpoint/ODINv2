@@ -27,7 +27,7 @@ styles['G*T*F-----'] = ({ feature, resolution, lineString }) => {
   ))
 
   return [
-    styles.defaultStroke({}, TS.collect([
+    styles.defaultStroke(TS.collect([
       TS.lineString([coords[0], p0]),
       TS.lineString([p0, ...x, p1]),
       TS.lineString([p1, coords[1]]),

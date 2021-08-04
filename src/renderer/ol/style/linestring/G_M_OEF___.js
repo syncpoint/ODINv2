@@ -26,11 +26,11 @@ styles['G*M*OEF---'] = ({ feature, resolution, lineString }) => {
   ))
 
   return [
-    styles.solidStroke({}, TS.collect([
+    styles.solidStroke(TS.collect([
       TS.lineString([coords[0], p0]),
       TS.lineString([p0, ...x, p1]),
       TS.lineString([p1, xs[2]])
     ]))(feature),
-    styles.filledStroke({}, TS.polygon(xs))(feature)
+    styles.filledStroke(TS.polygon(xs))(feature)
   ]
 }

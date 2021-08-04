@@ -27,16 +27,13 @@ styles['G*T*J-----'] = ({ feature, lineString, width, resolution }) => {
 
   const [p1] = TS.projectCoordinates(width / 2, angle, coords[1])([[1, 0]])
 
-  const anchor = TS.point(p1)
-  const geometry = TS.collect([
-    lineString,
-    arcs[0],
-    ...spikes,
-    openArrow(resolution, angle, coords[1])
-  ])
-
   return [
-    styles.defaultStroke({}, geometry)(feature),
-    styles.text({ text: 'C', flip: true, rotation }, anchor)
+    styles.defaultStroke(TS.collect([
+      lineString,
+      arcs[0],
+      ...spikes,
+      openArrow(resolution, angle, coords[1])
+    ]))(feature),
+    styles.text({ text: 'C', flip: true, rotation }, TS.point(p1))
   ]
 }

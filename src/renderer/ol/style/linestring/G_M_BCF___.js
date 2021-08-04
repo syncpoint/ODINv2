@@ -15,8 +15,8 @@ styles['G*M*BCF---'] = ({ feature, lineString }) => {
   ])
 
   return [
-    styles.solidStroke({}, TS.lineString([xs[2], xs[6]]))(feature),
-    styles.filledStroke({}, TS.collect([
+    styles.solidStroke(TS.lineString([xs[2], xs[6]]))(feature),
+    styles.filledStroke(TS.collect([
       TS.polygon(R.props([0, 1, 2, 3, 0], xs)),
       TS.polygon(R.props([4, 5, 6, 7, 4], xs))
     ]))(feature)

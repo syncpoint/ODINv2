@@ -21,7 +21,7 @@ styles['G*T*AS----'] = ({ feature, lineString }) => {
   ])
 
   return [
-    styles.defaultStroke({}, geometry)(feature),
-    styles.filledStroke({}, arrow)(feature)
+    styles.defaultStroke(geometry)(feature),
+    styles.filledStroke(arrow)(feature)
   ]
 }

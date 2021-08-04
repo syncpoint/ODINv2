@@ -14,5 +14,5 @@ styles['G*M*OS----'] = ({ feature, resolution, lineString }) => {
   const b = TS.projectCoordinate(a)([angle + Math.PI / 3, width])
   const c = R.last(coords)
   const geometry = TS.lineString([a, b, c, ...TS.coordinates(lastSegment)])
-  return styles.defaultStroke({}, geometry)(feature)
+  return styles.defaultStroke(geometry)(feature)
 }

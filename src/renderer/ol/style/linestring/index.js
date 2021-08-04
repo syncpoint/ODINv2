@@ -103,7 +103,7 @@ styles.LineString = args => {
 
   const style = styles[key]
     ? transform(styles[key])(args)
-    : styles.defaultStroke({}, geometry)(sidc)
+    : styles.defaultStroke(geometry)(sidc)
 
   return [...style, ...texts]
 }

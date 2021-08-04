@@ -28,7 +28,7 @@ styles['G*G*GLC---'] = ({ feature, resolution, lineString }) => {
     .map(coords => TS.lineString(coords))
 
   return [
-    styles.defaultStroke({}, TS.collect([...segmentsA, ...segmentsB]))(feature)
+    styles.defaultStroke(TS.collect([...segmentsA, ...segmentsB]))(feature)
   ]
 }
 

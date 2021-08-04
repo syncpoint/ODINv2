@@ -27,7 +27,7 @@ styles['G*M*SP----'] = ({ feature, resolution }) => {
   })))
 
   return [
-    styles.solidStroke({}, geometry)(feature),
-    styles.solidStroke({}, spikes)(feature)
+    styles.solidStroke(geometry)(feature),
+    styles.solidStroke(spikes)(feature)
   ]
 }
