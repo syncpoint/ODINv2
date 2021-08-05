@@ -89,13 +89,14 @@ styles['TEXTS:G*O*BA----'] = MM('"A"') // BEARING LINE / ACOUSTIC
 styles['TEXTS:G*O*BT----'] = MM('"T"') // BEARING LINE / TORPEDO
 styles['TEXTS:G*O*BO----'] = MM('"O"') // BEARING LINE / ELECTRO-OPTICAL INTERCEPT
 
-styles.LineString = ({ feature, resolution }) => {
+styles.LineString = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
-  const featureStyles = makeStyles(feature)
+  const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
+  const handles = featureStyles.handles(geometry)
   const labels = new LineStringLabels(geometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
@@ -109,5 +110,5 @@ styles.LineString = ({ feature, resolution }) => {
     })
     : featureStyles.defaultStroke(geometry)
 
-  return [...style, ...texts]
+  return [...style, ...texts, ...handles]
 }

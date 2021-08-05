@@ -88,25 +88,22 @@ styles['TEXTS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA
 styles['TEXTS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
 
-styles.Polygon = ({ feature, resolution }) => {
+styles.Polygon = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
-  const featureStyles = makeStyles(feature)
+  const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
+  const handles = featureStyles.handles(geometry)
   const labels = new PolygonLabels(geometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
   const style = styles[key]
-    ? styles[key]({
-      feature,
-      resolution,
-      styles: featureStyles
-    })
+    ? styles[key]({ feature, resolution, styles: featureStyles })
     : featureStyles.defaultStroke(geometry)
 
-  return [...style, ...texts]
+  return [...style, ...texts, ...handles]
 }

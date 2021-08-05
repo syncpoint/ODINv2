@@ -1,7 +1,8 @@
+import * as geom from 'ol/geom'
 import Feature from 'ol/Feature'
 import Geometry from 'ol/geom/Geometry'
 import GeometryCollection from 'ol/geom/GeometryCollection'
-import { Fill, Stroke, Circle, Style, Text } from 'ol/style'
+import { Fill, Stroke, Circle, Style, Text, RegularShape } from 'ol/style'
 import * as Colors from './color-schemes'
 import * as MILSTD from '../../2525c'
 
@@ -10,6 +11,7 @@ export const style = options => new Style(options)
 export const text = options => new Text(options)
 export const circle = options => new Circle(options)
 export const fill = options => new Fill(options)
+export const regularShape = options => new RegularShape(options)
 
 export const geometryType = arg => {
   if (arg instanceof Feature) return geometryType(arg.getGeometry())
@@ -40,9 +42,9 @@ export const styles = {}
 
 styles.DEFAULT = () => STYLE_OL
 
-export const makeStyles = sidcLike => {
+export const makeStyles = (sidcLike, mode = 'default') => {
   if (!sidcLike) return null
-  if (sidcLike instanceof Feature) return makeStyles(sidcLike.get('sidc'))
+  if (sidcLike instanceof Feature) return makeStyles(sidcLike.get('sidc'), mode)
   if (!(typeof sidcLike === 'string')) return null
 
   const sidc = sidcLike
@@ -136,6 +138,28 @@ export const makeStyles = sidcLike => {
       })
     })
   }
+
+  styles.handles = (geometry, options = {}) => mode === 'selected'
+    ? [style({
+        geometry,
+        image: circle({
+          fill: fill({ color: options.color || 'rgba(255,0,0,0.6)' }),
+          stroke: stroke({ color: 'white', width: 3 }),
+          radius: 7
+        })
+      })]
+    : mode === 'multiple'
+      ? [style({
+          geometry: new geom.Point(geometry.getFirstCoordinate()),
+          image: regularShape({
+            fill: fill({ color: 'white' }),
+            stroke: stroke({ color: 'black', width: 1 }),
+            radius: 6,
+            points: 4,
+            angle: Math.PI / 4
+          })
+        })]
+      : []
 
   return styles
 }

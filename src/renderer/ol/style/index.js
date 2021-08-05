@@ -16,12 +16,18 @@ export const featureStyle = selection => {
     try {
       const geometry = feature.getGeometry()
       const key = geometryType(geometry)
-      if (!styles[key]) console.log(key)
+
+      const mode = selection.selected().length > 1
+        ? 'multiple'
+        : selection.isSelected(feature.getId())
+          ? 'selected'
+          : 'default'
+
       const style = (styles[key] || styles.DEFAULT)({
         cache,
         feature,
         resolution,
-        selected: selection.isSelected(feature.getId())
+        mode
       })
 
       if (!style) return

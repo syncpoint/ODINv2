@@ -43,6 +43,17 @@ export const Map = () => {
     const features = await sources.getFeatureSource()
     const partition = new Partition(features, selection)
 
+    ipcRenderer.on('EDIT_SELECT_ALL', () => {
+      const element = document.activeElement
+      const isBody = element => element.nodeName.toLowerCase() === 'body'
+      const isMap = element => element.id === 'map'
+      if (!element) return
+      if (!isBody(element) && !isMap(element)) return
+
+      const ids = partition.getDeselected().getFeatures().map(feature => feature.getId())
+      selection.select(ids)
+    })
+
     const featureLayer = new VectorLayer({ source: partition.getDeselected(), style: featureStyle(selection) })
     const selectedLayer = new VectorLayer({ source: partition.getSelected(), style: featureStyle(selection) })
     const layers = [

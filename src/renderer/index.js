@@ -47,11 +47,13 @@ const project = () => {
   const layerStore = new LayerStore(db)
 
   ipcRenderer.on('EDIT_UNDO', () => {
+    console.log('EDIT_UNDO')
     // TODO: precondition: check document.activeElement
     if (undo.canUndo()) undo.undo()
   })
 
   ipcRenderer.on('EDIT_REDO', () => {
+    console.log('EDIT_REDO')
     // TODO: precondition: check document.activeElement
     if (undo.canRedo()) undo.redo()
   })

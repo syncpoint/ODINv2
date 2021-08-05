@@ -14,14 +14,20 @@ import './G_T_T' // TASKS / DISRUPT
 import './G_T_X' // TASKS / CLEAR
 import './G_T_Y' // TASKS / BYPASS
 
-styles['LineString:Point'] = ({ feature, resolution }) => {
+styles['LineString:Point'] = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
   const key = MILSTD.parameterized(sidc)
   if (!key || !styles[key]) return styles.DEFAULT()
 
-  return transform(styles[key])({
+  const featureStyles = makeStyles(feature, mode)
+  const geometry = feature.getGeometry()
+  const handles = featureStyles.handles(geometry.getGeometries()[0])
+
+  const style = transform(styles[key])({
     feature,
     resolution,
-    styles: makeStyles(feature)
+    styles: featureStyles
   })
+
+  return [...style, ...handles]
 }

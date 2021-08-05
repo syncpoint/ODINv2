@@ -3,6 +3,8 @@ const dispatch = fn => (_, browserWindow) => {
   if (browserWindow) fn(browserWindow)
 }
 
+const send = (browserWindow, command) => browserWindow.webContents.send(command)
+
 /*
   Undo/Redo:
   By default, respective roles are dispatched to webcontents only.
@@ -25,7 +27,7 @@ export default async options => {
         accelerator: 'CmdOrCtrl+Z',
         click: dispatch(browserWindow => {
           browserWindow.webContents.undo()
-          browserWindow.send('EDIT_UNDO')
+          send(browserWindow, 'EDIT_UNDO')
         })
       },
       {
@@ -33,7 +35,7 @@ export default async options => {
         accelerator: 'CmdOrCtrl+Shift+Z',
         click: dispatch(browserWindow => {
           browserWindow.webContents.redo()
-          browserWindow.send('EDIT_REDO')
+          send(browserWindow, 'EDIT_REDO')
         })
       },
       { type: 'separator' },
@@ -44,7 +46,14 @@ export default async options => {
         ? [
             { role: 'pasteAndMatchStyle' },
             { role: 'delete' },
-            { role: 'selectAll' },
+            {
+              label: 'Select All',
+              accelerator: 'CmdOrCtrl+A',
+              click: dispatch(browserWindow => {
+                browserWindow.webContents.selectAll()
+                send(browserWindow, 'EDIT_SELECT_ALL')
+              })
+            },
             { type: 'separator' },
             {
               label: 'Speech',
