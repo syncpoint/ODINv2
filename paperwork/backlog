@@ -3,15 +3,15 @@ dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - bb9a8802-fcbe-4866-a422-a93396165ab1 - style: custom line string geometries
+DEH - 398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
 
 OPEN
+109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL: DOSE RATE CONTOUR LINES
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - G*G*GLB---: BOUNDARIES
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
-398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
 dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering
   NOTE: style functions based on ODIN
   DEPENDS: bb9a8802-fcbe-4866-a422-a93396165ab1
@@ -35,11 +35,12 @@ da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy sig
 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 - project database: remove unnecessary `properties` scope
 9297ff3a-993d-481f-a194-02d979add9c4 - list/multiselect: support SHIFT+CLICK
 022c181d-e5a0-4ab4-b749-1068b4a95865 - feature properties: move to another layer
-04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE
-d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE
-c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST
-2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS
-109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL
+04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.*: AVIATION LINES
+d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE: INFILTRATION LANE
+c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST:
+2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.*: WIRE OBSTACLE
+18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE: TASKS / SEIZE
+0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR: OBSTACLE EFFECT TURN
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -68,3 +69,4 @@ DEH - 4903a227-f838-4e61-8ced-bad912f7d146 - G*M*OAW---: ANTITANK WALL
 DEH - 3be30670-dcb1-41b7-a37b-ea587238448c - G*M*OAR---: ANTITANK DITCH REINFORCED WITH ANTITANK MINES
 DEH - e1df31d5-7879-4e72-a562-b5f5433666d4 - G*M*OS____: ABATIS
 DEH - 8e2b0d2a-c32d-4914-9f10-a11111f8fbb6 - G*M*SL----: FORTIFIED LINE
+DEH - bb9a8802-fcbe-4866-a422-a93396165ab1 - style: custom line string geometries

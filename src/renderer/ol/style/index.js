@@ -4,6 +4,7 @@ import './point'
 import './linestring'
 import './polygon'
 import './corridor'
+import './multipoint'
 
 /**
  *
@@ -14,7 +15,9 @@ export const featureStyle = selection => {
   return (feature, resolution) => {
     try {
       const geometry = feature.getGeometry()
-      const style = (styles[geometryType(geometry)] || styles.DEFAULT)({
+      const key = geometryType(geometry)
+      if (!styles[key]) console.log(key)
+      const style = (styles[key] || styles.DEFAULT)({
         cache,
         feature,
         resolution,
