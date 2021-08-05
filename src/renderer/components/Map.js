@@ -4,14 +4,13 @@ import * as ol from 'ol'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
-import { defaults as defaultInteractions, Select } from 'ol/interaction'
-import { click } from 'ol/events/condition'
+import { defaults as defaultInteractions } from 'ol/interaction'
 import ScaleLine from 'ol/control/ScaleLine'
 import '../epsg'
 import { useServices } from './services'
 import { featureStyle } from '../ol/style'
-import * as MILSTD from '../2525c'
-
+import { Partition } from '../ol/source/Partition'
+import select from '../ol/interaction/select'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -32,11 +31,6 @@ export const Map = () => {
   } = useServices()
 
   React.useEffect(async () => {
-
-    const hitTolerance = 3
-    const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
-    const noAltKey = ({ originalEvent }) => originalEvent.altKey !== true // macOS: option key
-
     const target = 'map'
     const controls = [
       new Rotate(), // macOS: OPTION + SHIFT + DRAG
@@ -47,26 +41,24 @@ export const Map = () => {
     const view = new ol.View({ ...viewport })
 
     const features = await sources.getFeatureSource()
-    const featureLayer = new VectorLayer({ source: features, style: featureStyle(selection) })
+    const partition = new Partition(features, selection)
+
+    const featureLayer = new VectorLayer({ source: partition.getDeselected(), style: featureStyle(selection) })
+    const selectedLayer = new VectorLayer({ source: partition.getSelected(), style: featureStyle(selection) })
     const layers = [
       new TileLayer({ source: new OSM() }),
-      featureLayer
+      featureLayer,
+      selectedLayer
     ]
 
-    const select = new Select({
-      hitTolerance,
-      layers: [featureLayer],
-      style: featureStyle(selection),
-      condition: conjunction(click, noAltKey)
-    })
-
-    select.on('select', event => {
-      const sidc = event.selected.map(feature => MILSTD.parameterized(feature.get('sidc')))
-      console.log('[select]', sidc)
+    const selectInteraction = select({
+      selection,
+      selectedLayer,
+      deselectedLayer: featureLayer
     })
 
     const interactions = defaultInteractions({ doubleClickZoom: false }).extend(
-      [select]
+      [selectInteraction]
     )
 
     view.on('change', ({ target: view }) => {
@@ -132,8 +124,12 @@ export const Map = () => {
 
     map.once('rendercomplete', ({ target }) => sendPreview(target))
 
-    // Setup Drag'n Drop.
+    // Dim feature layer when we have a selection:
+    selection.on('selection', ({ selected }) => {
+      featureLayer.setOpacity(selected.length ? 0.35 : 1)
+    })
 
+    // Setup Drag'n Drop.
     ;(() => {
       // Note: Neither dragstart nor dragend events are fired when dragging
       // a file into the browser from the OS.

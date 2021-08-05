@@ -3,9 +3,11 @@ CURRENT FOCUS
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 02f37f2d-fbd7-4919-a580-a0edcd662ab6 - draw interaction
+DEH - 5ab0836e-dad2-456c-a7bb-732b5da31797 - select interaction, incl. select all and range select
 
 OPEN
+02f37f2d-fbd7-4919-a580-a0edcd662ab6 - draw interaction
+  DEPENDS: 5ab0836e-dad2-456c-a7bb-732b5da31797
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
