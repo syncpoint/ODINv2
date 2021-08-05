@@ -1,7 +1,8 @@
 import * as MILSTD from '../../../2525c'
 import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
-import './G_M_SP____'
+import './G_G_GAY' // LIMITED ACCESS AREA
+import './G_M_SP' // STRONG POINT
 
 const C = text => [{ text, position: 'center' }]
 const T = text => [{ text, position: 'top' }]
