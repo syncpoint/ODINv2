@@ -2,29 +2,32 @@ import * as MILSTD from '../../../2525c'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import { LineStringLabels } from '../labels'
-import './G_F_LT____' // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
-import './G_G_GLC___' // LINE OF CONTACT
-import './G_G_GLF___' // FORWARD LINE OF OWN TROOPS (FLOT)
-import './G_G_OLKA__' // DIRECTION OF ATTACK / AVIATION
-import './G_G_OLKGM_' // DIRECTION OF ATTACK / MAIN ATTACK
-import './G_G_OLKGS_' // DIRECTION OF ATTACK / SUPPORTING ATTACK
-import './G_G_PF____' // DIRECTION OF ATTACK FOR FEINT
-import './G_M_BCF___' // FERRY
-import './G_M_BCL___' // LANE
-import './G_M_BCR___' // RAFT SITE
-import './G_M_OADx__' // ANTITANK DITCH / UNDER CONSTRUCTION and ... COMPLETE
-import './G_M_OAR___' // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
-import './G_M_OEF___' // OBSTACLE EFFECT / FIX
-import './G_M_OGL___' // OBSTACLES / GENERAL / LINE and ANTITANK WALL
-import './G_M_OS____' // ABATIS
-import './G_M_SL____' // FORTIFIED LINE
-import './G_M_SW____' // FOXHOLE, EMPLACEMENT OR WEAPON SITE
-import './G_O_HN____' // HAZARD / NAVIGATIONAL
-import './G_S_LCH___' // HALTED CONVOY
-import './G_S_LCM___' // MOVING CONVOY
-import './G_T_A_____' // FOLLOW AND ASSUME
-import './G_T_AS____' // FOLLOW AND SUPPORT
-import './G_T_F_____' // TASKS / FIX
+
+/* eslint-disable no-multi-spaces */
+import './G_F_LT'    // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
+import './G_G_GLC'   // LINE OF CONTACT
+import './G_G_GLF'   // FORWARD LINE OF OWN TROOPS (FLOT)
+import './G_G_OLKA'  // DIRECTION OF ATTACK / AVIATION
+import './G_G_OLKGM' // DIRECTION OF ATTACK / MAIN ATTACK
+import './G_G_OLKGS' // DIRECTION OF ATTACK / SUPPORTING ATTACK
+import './G_G_PF'    // DIRECTION OF ATTACK FOR FEINT
+import './G_M_BCF'   // FERRY
+import './G_M_BCL'   // LANE
+import './G_M_BCR'   // RAFT SITE
+import './G_M_OADx'  // ANTITANK DITCH / UNDER CONSTRUCTION and ... COMPLETE
+import './G_M_OAR'   // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
+import './G_M_OEF'   // OBSTACLE EFFECT / FIX
+import './G_M_OGL'   // OBSTACLES / GENERAL / LINE and ANTITANK WALL
+import './G_M_OS'    // ABATIS
+import './G_M_SL'    // FORTIFIED LINE
+import './G_M_SW'    // FOXHOLE, EMPLACEMENT OR WEAPON SITE
+import './G_O_HN'    // HAZARD / NAVIGATIONAL
+import './G_S_LCH'   // HALTED CONVOY
+import './G_S_LCM'   // MOVING CONVOY
+import './G_T_A'     // FOLLOW AND ASSUME
+import './G_T_AS'    // FOLLOW AND SUPPORT
+import './G_T_F'     // TASKS / FIX
+/* eslint-enable no-multi-spaces */
 
 const MT = text => [{ text, textAlign: 0.5, verticalAlign: 'top' }]
 const MB = text => [{ text, textAlign: 0.5, verticalAlign: 'bottom' }]
