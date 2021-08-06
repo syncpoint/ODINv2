@@ -99,8 +99,12 @@ styles.LineString = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
-  const handles = featureStyles.handles(geometry)
-  const labels = new LineStringLabels(geometry, feature.getProperties())
+  const simplified = geometry.getCoordinates().length > 100
+    ? geometry.simplify(resolution)
+    : geometry
+
+  const handles = featureStyles.handles(simplified)
+  const labels = new LineStringLabels(simplified, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
@@ -111,7 +115,7 @@ styles.LineString = ({ feature, resolution, mode }) => {
       resolution,
       styles: featureStyles
     })
-    : featureStyles.defaultStroke(geometry)
+    : featureStyles.defaultStroke(simplified)
 
   return [...style, ...texts, ...handles]
 }

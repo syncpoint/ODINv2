@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import * as MILSTD from '../../../2525c'
 import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
@@ -95,15 +96,20 @@ styles.Polygon = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
-  const handles = featureStyles.handles(geometry)
-  const labels = new PolygonLabels(geometry, feature.getProperties())
+  const simplified = geometry.getCoordinates()[0].length > 50
+    ? geometry.simplify(resolution)
+    : geometry
+
+  const handles = featureStyles.handles(simplified)
+  const labels = new PolygonLabels(simplified, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
+    .filter(R.identity)
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
   const style = styles[key]
     ? styles[key]({ feature, resolution, styles: featureStyles })
-    : featureStyles.defaultStroke(geometry)
+    : featureStyles.defaultStroke(simplified)
 
   return [...style, ...texts, ...handles]
 }

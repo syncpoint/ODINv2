@@ -10,28 +10,38 @@ import './multipoint'
  *
  */
 export const featureStyle = selection => {
+  let currentResolution
   const cache = new StyleCache()
 
   return (feature, resolution) => {
-    try {
-      const geometry = feature.getGeometry()
-      const key = geometryType(geometry)
 
+    // Reset cache on resolution change:
+    if (resolution !== currentResolution) {
+      currentResolution = resolution
+      cache.clear()
+    }
+
+    try {
       const mode = selection.selected().length > 1
         ? 'multiple'
         : selection.isSelected(feature.getId())
           ? 'selected'
           : 'default'
 
-      const style = (styles[key] || styles.DEFAULT)({
-        cache,
-        feature,
-        resolution,
-        mode
-      })
+      const style = () => {
+        const styleKey = geometryType(feature.getGeometry())
+        const style = (styles[styleKey] || styles.DEFAULT)({
+          feature,
+          resolution,
+          mode
+        })
 
-      if (!style) return
-      return Array.isArray(style) ? style.flat() : style
+        if (!style) return
+        return Array.isArray(style) ? style.flat() : style
+      }
+
+      const cacheKey = `${feature.getRevision()}:${mode}:${feature.getId()}`
+      return cache.entry(cacheKey, style)
     } catch (err) {
       console.error('[style]', err)
     }

@@ -137,7 +137,7 @@ export const Map = () => {
 
     // Dim feature layer when we have a selection:
     selection.on('selection', ({ selected }) => {
-      featureLayer.setOpacity(selected.length ? 0.35 : 1)
+      featureLayer.setOpacity(selected.length ? 0.5 : 1)
     })
 
     // Setup Drag'n Drop.

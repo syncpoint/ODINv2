@@ -42,6 +42,18 @@ export const styles = {}
 
 styles.DEFAULT = () => STYLE_OL
 
+// TODO: think about general stroke cache
+
+const STROKE_WHITE_2 = new Stroke({ color: 'white', width: 2 })
+const STROKE_WHITE_3 = new Stroke({ color: 'white', width: 3 })
+const MULTI_SELECT_HANDLE = regularShape({
+  fill: fill({ color: 'white' }),
+  stroke: stroke({ color: 'black', width: 1 }),
+  radius: 6,
+  points: 4,
+  angle: Math.PI / 4
+})
+
 export const makeStyles = (sidcLike, mode = 'default') => {
   if (!sidcLike) return null
   if (sidcLike instanceof Feature) return makeStyles(sidcLike.get('sidc'), mode)
@@ -131,7 +143,7 @@ export const makeStyles = (sidcLike, mode = 'default') => {
       text: text({
         ...options,
         font: `${fontSize} ${fontFamily}`,
-        stroke: new Stroke({ color: 'white', width: 2 }),
+        stroke: STROKE_WHITE_2,
         textAlign,
         rotation,
         offsetX
@@ -144,20 +156,14 @@ export const makeStyles = (sidcLike, mode = 'default') => {
         geometry,
         image: circle({
           fill: fill({ color: options.color || 'rgba(255,0,0,0.6)' }),
-          stroke: stroke({ color: 'white', width: 3 }),
+          stroke: STROKE_WHITE_3,
           radius: 7
         })
       })]
     : mode === 'multiple'
       ? [style({
           geometry: new geom.Point(geometry.getFirstCoordinate()),
-          image: regularShape({
-            fill: fill({ color: 'white' }),
-            stroke: stroke({ color: 'black', width: 1 }),
-            radius: 6,
-            points: 4,
-            angle: Math.PI / 4
-          })
+          image: MULTI_SELECT_HANDLE
         })]
       : []
 
