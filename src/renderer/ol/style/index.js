@@ -22,11 +22,11 @@ export const featureStyle = selection => {
     }
 
     try {
-      const mode = selection.selected().length > 1
-        ? 'multiple'
-        : selection.isSelected(feature.getId())
-          ? 'selected'
-          : 'default'
+      const mode = selection.isSelected(feature.getId())
+        ? selection.selected().length > 1
+          ? 'multiple'
+          : 'selected'
+        : 'default'
 
       const style = () => {
         const styleKey = geometryType(feature.getGeometry())

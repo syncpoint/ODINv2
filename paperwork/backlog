@@ -3,11 +3,9 @@ CURRENT FOCUS
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 5ab0836e-dad2-456c-a7bb-732b5da31797 - select interaction, incl. select all and range select
+DEH - 02f37f2d-fbd7-4919-a580-a0edcd662ab6 - draw interaction
 
 OPEN
-02f37f2d-fbd7-4919-a580-a0edcd662ab6 - draw interaction
-  DEPENDS: 5ab0836e-dad2-456c-a7bb-732b5da31797
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
@@ -41,6 +39,8 @@ c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST:
 18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE: TASKS / SEIZE
 0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR: OBSTACLE EFFECT TURN
 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
+1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simpliy styles while panning/zooming (custom PointerInteraction)
+1c5bc388-59ef-474b-ae41-f253803871ec - range/box select
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -71,3 +71,4 @@ DEH - e1df31d5-7879-4e72-a562-b5f5433666d4 - G*M*OS____: ABATIS
 DEH - 8e2b0d2a-c32d-4914-9f10-a11111f8fbb6 - G*M*SL----: FORTIFIED LINE
 DEH - bb9a8802-fcbe-4866-a422-a93396165ab1 - style: custom line string geometries
 DEH - dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering (WIP)
+DEH - 5ab0836e-dad2-456c-a7bb-732b5da31797 - select interaction, incl. select all
