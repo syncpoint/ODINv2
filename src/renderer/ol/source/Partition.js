@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import VectorSource from 'ol/source/Vector'
 
 export function Partition (source, selection) {
@@ -9,29 +10,22 @@ export function Partition (source, selection) {
   source.on('addfeature', ({ feature }) => this.addFeature(feature))
   source.on('removefeature', ({ feature }) => this.removeFeature(feature))
 
-  const featureById = this.featureById.bind(this)
   const movetoSelected = Partition.moveFeature(this.deselected_, this.selected_)
   const movetoDeselected = Partition.moveFeature(this.selected_, this.deselected_)
 
   selection.on('selection', ({ selected, deselected }) => {
-    selected.map(featureById).forEach(movetoSelected)
-    deselected.map(featureById).forEach(movetoDeselected)
+    deselected.map(id => this.selected_.getFeatureById(id)).forEach(movetoDeselected)
+    selected.map(id => this.deselected_.getFeatureById(id)).forEach(movetoSelected)
   })
 
   // Pull features from original source:
-  source.getFeatures().forEach(this.addFeature.bind(this))
+  this.addFeatures(source.getFeatures())
 }
 
 Partition.moveFeature = (from, to) => feature => {
   if (!feature) return
-  if (from.hasFeature(feature)) from.removeFeature(feature)
-  if (!to.hasFeature(feature)) to.addFeature(feature)
-}
-
-Partition.prototype.featureById = function (id) {
-  return this.sources_.reduce((acc, source) => {
-    return acc || source.getFeatureById(id)
-  }, null)
+  from.removeFeature(feature)
+  to.addFeature(feature)
 }
 
 Partition.prototype.getDeselected = function () {
@@ -45,12 +39,25 @@ Partition.prototype.getSelected = function () {
 /**
  * @private
  */
+Partition.prototype.addFeatures = function (features) {
+  const isSelected = feature => this.selection_.isSelected(feature.getId())
+  const [selected, deselected] = R.partition(isSelected, features)
+  this.selected_.addFeatures(selected)
+  this.deselected_.addFeatures(deselected)
+}
+
+/**
+ * @private
+ */
 Partition.prototype.addFeature = function (feature) {
   this.selection_.isSelected(feature.getId())
     ? this.selected_.addFeature(feature)
     : this.deselected_.addFeature(feature)
 }
 
+/**
+ * @private
+ */
 Partition.prototype.removeFeature = function (feature) {
   this.selection_.isSelected(feature.getId())
     ? this.selected_.removeFeature(feature)

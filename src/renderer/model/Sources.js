@@ -60,15 +60,8 @@ Sources.prototype.storeBatch_ = function (operations) {
 
 Sources.prototype.getFeatureSource = async function () {
   if (this.featureSource) return this.featureSource
-
-  console.time('load')
   const json = await this.layerStore.getFeatures()
-  console.timeEnd('load')
-
-  console.time('read')
   const features = readFeatures(json)
   this.featureSource = new VectorSource({ features })
-  console.timeEnd('read')
-
   return this.featureSource
 }

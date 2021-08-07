@@ -11,6 +11,7 @@ import { useServices } from './services'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import select from '../ol/interaction/select'
+import ModifyInteraction from '../ol/interaction/Modify'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -68,8 +69,14 @@ export const Map = () => {
       deselectedLayer: featureLayer
     })
 
+    const modifyInteraction = new ModifyInteraction({
+      source: partition.getSelected(),
+      hitDetection: false,
+      snapToPointer: false
+    })
+
     const interactions = defaultInteractions({ doubleClickZoom: false }).extend(
-      [selectInteraction]
+      [selectInteraction, modifyInteraction]
     )
 
     view.on('change', ({ target: view }) => {
