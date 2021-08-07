@@ -11,7 +11,7 @@ import { useServices } from './services'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import select from '../ol/interaction/select'
-import ModifyInteraction from '../ol/interaction/Modify'
+import Modify from '../ol/interaction/Modify'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -69,9 +69,8 @@ export const Map = () => {
       deselectedLayer: featureLayer
     })
 
-    const modifyInteraction = new ModifyInteraction({
+    const modifyInteraction = new Modify({
       source: partition.getSelected(),
-      hitDetection: false,
       snapToPointer: false
     })
 
@@ -87,7 +86,6 @@ export const Map = () => {
       })
     })
 
-    /* eslint-disable no-new */
     const map = new ol.Map({
       target,
       controls,

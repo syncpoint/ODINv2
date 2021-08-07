@@ -10,39 +10,14 @@ import VectorSource from 'ol/source/Vector'
 import { createEditingStyle } from 'ol/style/Style'
 import GeometryType from 'ol/geom/GeometryType'
 import RBush from 'ol/structs/RBush'
-import { equals, includes } from 'ol/array'
+import { equals as arrayEquals } from 'ol/array'
 import { getUid } from 'ol/util'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point'
-
-
-import {
-  altKeyOnly,
-  primaryAction,
-  singleClick,
-  always
-} from 'ol/events/condition'
-
-import {
-  boundingExtent,
-  buffer as bufferExtent,
-  createOrUpdateFromCoordinate as createExtent
-} from 'ol/extent'
-
-import {
-  squaredDistanceToSegment,
-  closestOnSegment,
-  distance as coordinateDistance,
-  squaredDistance as squaredCoordinateDistance,
-  equals as coordinatesEqual
-} from 'ol/coordinate'
-
-import {
-  fromUserCoordinate,
-  fromUserExtent,
-  toUserCoordinate,
-  toUserExtent
-} from 'ol/proj'
+import * as Condition from 'ol/events/condition'
+import * as Extent from 'ol/extent'
+import * as Coordinate from 'ol/coordinate'
+import * as Proj from 'ol/proj'
 
 const tempExtent = [0, 0, 0, 0]
 const tempSegment = []
@@ -61,7 +36,7 @@ export class ModifyEvent extends Event {
 }
 
 const defaultDeleteCondition = function (mapBrowserEvent) {
-  return altKeyOnly(mapBrowserEvent) && singleClick(mapBrowserEvent)
+  return Condition.altKeyOnly(mapBrowserEvent) && Condition.singleClick(mapBrowserEvent)
 }
 
 function getDefaultStyleFunction () {
@@ -71,156 +46,23 @@ function getDefaultStyleFunction () {
   }
 }
 
-const R_BUSH = (() => {
-  const writers = {}
-
-  writers.Point = (rBush, feature, geometry) => {
-    const coordinates = geometry.getCoordinates()
-
-    const segmentData = {
-      feature: feature,
-      geometry: geometry,
-      segment: [coordinates, coordinates]
-    }
-
-    rBush.insert(geometry.getExtent(), segmentData)
-  }
-
-  writers.MultiPoint = (rBush, feature, geometry) => {
-    const points = geometry.getCoordinates()
-    for (let i = 0, ii = points.length; i < ii; ++i) {
-      const coordinates = points[i]
-
-      const segmentData = {
-        feature: feature,
-        geometry: geometry,
-        depth: [i],
-        index: i,
-        segment: [coordinates, coordinates]
-      }
-
-      rBush.insert(geometry.getExtent(), segmentData)
-    }
-  }
-
-  writers.LineString = (rBush, feature, geometry) => {
-    const coordinates = geometry.getCoordinates()
-    for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
-      const segment = coordinates.slice(i, i + 2)
-
-      const segmentData = {
-        feature: feature,
-        geometry: geometry,
-        index: i,
-        segment: segment
-      }
-
-      rBush.insert(boundingExtent(segment), segmentData)
-    }
-  }
-
-  writers.MultiLineString = (rBush, feature, geometry) => {
-    const lines = geometry.getCoordinates()
-    for (let j = 0, jj = lines.length; j < jj; ++j) {
-      const coordinates = lines[j]
-      for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
-        const segment = coordinates.slice(i, i + 2)
-
-        const segmentData = {
-          feature: feature,
-          geometry: geometry,
-          depth: [j],
-          index: i,
-          segment: segment
-        }
-
-        rBush.insert(boundingExtent(segment), segmentData)
-      }
-    }
-  }
-
-  writers.Polygon = (rBush, feature, geometry) => {
-    const rings = geometry.getCoordinates()
-    for (let j = 0, jj = rings.length; j < jj; ++j) {
-      const coordinates = rings[j]
-      for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
-        const segment = coordinates.slice(i, i + 2)
-
-        const segmentData = {
-          feature: feature,
-          geometry: geometry,
-          depth: [j],
-          index: i,
-          segment: segment
-        }
-
-        rBush.insert(boundingExtent(segment), segmentData)
-      }
-    }
-  }
-
-  writers.MultiPolygon = (rBush, feature, geometry) => {
-    const polygons = geometry.getCoordinates()
-    for (let k = 0, kk = polygons.length; k < kk; ++k) {
-      const rings = polygons[k]
-      for (let j = 0, jj = rings.length; j < jj; ++j) {
-        const coordinates = rings[j]
-        for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
-          const segment = coordinates.slice(i, i + 2)
-
-          const segmentData = {
-            feature: feature,
-            geometry: geometry,
-            depth: [j, k],
-            index: i,
-            segment: segment
-          }
-
-          rBush.insert(boundingExtent(segment), segmentData)
-        }
-      }
-    }
-  }
-
-  writers.GeometryCollection = (rBush, feature, geometry) => {
-    const geometries = geometry.getGeometriesArray()
-    for (let i = 0; i < geometries.length; ++i) {
-      const geometry = geometries[i]
-      const writer = writers[geometry.getType()]
-      writer(rBush, feature, geometry)
-    }
-  }
-
-  const insert = (rBush, feature) => {
-    const geometry = feature.getGeometry()
-    if (!geometry) return
-    const writer = writers[geometry.getType()]
-    if (writer) writer(rBush, feature, geometry)
-  }
-
-  return {
-    insert
-  }
-})()
-
-
 function projectedDistanceToSegmentDataSquared (
   pointCoordinates,
   segmentData,
   projection
 ) {
-  const coordinate = fromUserCoordinate(pointCoordinates, projection)
-  tempSegment[0] = fromUserCoordinate(segmentData.segment[0], projection)
-  tempSegment[1] = fromUserCoordinate(segmentData.segment[1], projection)
-  return squaredDistanceToSegment(coordinate, tempSegment)
+  const coordinate = Proj.fromUserCoordinate(pointCoordinates, projection)
+  tempSegment[0] = Proj.fromUserCoordinate(segmentData.segment[0], projection)
+  tempSegment[1] = Proj.fromUserCoordinate(segmentData.segment[1], projection)
+  return Coordinate.squaredDistanceToSegment(coordinate, tempSegment)
 }
 
 function closestOnSegmentData (pointCoordinates, segmentData, projection) {
-  const coordinate = fromUserCoordinate(pointCoordinates, projection)
-  tempSegment[0] = fromUserCoordinate(segmentData.segment[0], projection)
-  tempSegment[1] = fromUserCoordinate(segmentData.segment[1], projection)
-  return toUserCoordinate(
-    closestOnSegment(coordinate, tempSegment),
+  const coordinate = Proj.fromUserCoordinate(pointCoordinates, projection)
+  tempSegment[0] = Proj.fromUserCoordinate(segmentData.segment[0], projection)
+  tempSegment[1] = Proj.fromUserCoordinate(segmentData.segment[1], projection)
+  return Proj.toUserCoordinate(
+    Coordinate.closestOnSegment(coordinate, tempSegment),
     projection
   )
 }
@@ -250,9 +92,9 @@ class Modify extends PointerInteraction {
     /* eslint-enable no-unused-expressions */
 
     this.boundHandleFeatureChange_ = this.handleFeatureChange_.bind(this)
-    this.condition_ = options.condition ? options.condition : primaryAction
+    this.condition_ = options.condition ? options.condition : Condition.primaryAction
     this.deleteCondition_ = options.deleteCondition ? options.deleteCondition : defaultDeleteCondition
-    this.insertVertexCondition_ = options.insertVertexCondition ? options.insertVertexCondition : always
+    this.insertVertexCondition_ = options.insertVertexCondition ? options.insertVertexCondition : Condition.always
     this.vertexFeature_ = null
     this.vertexSegments_ = null
     this.lastPixel_ = [0, 0]
@@ -290,7 +132,7 @@ class Modify extends PointerInteraction {
     this.features_.addEventListener(CollectionEventType.ADD, this.handleFeatureAdd_.bind(this))
     this.features_.addEventListener(CollectionEventType.REMOVE, this.handleFeatureRemove_.bind(this))
 
-    // FIXME: possible source event listener leaks
+    // FIXME: possible source event listener leaks (move to setMap())
     source.addEventListener(VectorEventType.REMOVEFEATURE, this.handleSourceRemove_.bind(this))
     source.addEventListener(VectorEventType.ADDFEATURE, event => {
       if (source.getFeatures().length === 1) this.handleSourceAdd_(event)
@@ -332,7 +174,10 @@ class Modify extends PointerInteraction {
   addFeature_ (feature) {
     // TODO: get feature geometries (callback)
     // TODO: index geometries (RBush per geometry)
-    R_BUSH.insert(this.rBush_, feature)
+    const geometry = feature.getGeometry()
+    if (!geometry) return
+    const writer = indexWriters[geometry.getType()]
+    if (writer) writer(this.rBush_, feature, geometry)
 
     const map = this.getMap()
     if (map && map.isRendered() && this.getActive()) {
@@ -402,11 +247,11 @@ class Modify extends PointerInteraction {
    * Function handling "down" events.
    * If the function returns true then a drag sequence is started.
    */
-  handleDownEvent (evt) {
-    if (!this.condition_(evt)) return false
+  handleDownEvent (event) {
+    if (!this.condition_(event)) return false
 
-    const pixelCoordinate = evt.coordinate
-    this.handlePointerAtPixel_(evt.pixel, evt.map, pixelCoordinate)
+    const pixelCoordinate = event.coordinate
+    this.handlePointerAtPixel_(event.pixel, event.map, pixelCoordinate)
     this.dragSegments_.length = 0
     this.featuresBeingModified_ = null
     const vertexFeature = this.vertexFeature_
@@ -414,7 +259,7 @@ class Modify extends PointerInteraction {
     if (vertexFeature) {
       const insertVertices = []
       const vertex = vertexFeature.getGeometry().getCoordinates()
-      const vertexExtent = boundingExtent([vertex])
+      const vertexExtent = Extent.boundingExtent([vertex])
       const segmentDataMatches = this.rBush_.getInExtent(vertexExtent)
       const componentSegments = {}
       segmentDataMatches.sort(compareIndexes)
@@ -435,7 +280,7 @@ class Modify extends PointerInteraction {
         }
 
         if (
-          coordinatesEqual(segment[0], vertex) &&
+          Coordinate.equals(segment[0], vertex) &&
           !componentSegments[uid][0]
         ) {
           this.dragSegments_.push([segmentDataMatch, 0])
@@ -444,7 +289,7 @@ class Modify extends PointerInteraction {
         }
 
         if (
-          coordinatesEqual(segment[1], vertex) &&
+          Coordinate.equals(segment[1], vertex) &&
           !componentSegments[uid][1]
         ) {
           // prevent dragging closed linestrings by the connecting node
@@ -467,14 +312,14 @@ class Modify extends PointerInteraction {
           getUid(segment) in this.vertexSegments_ &&
           !componentSegments[uid][0] &&
           !componentSegments[uid][1] &&
-          this.insertVertexCondition_(evt)
+          this.insertVertexCondition_(event)
         ) {
           insertVertices.push(segmentDataMatch)
         }
       }
 
       if (insertVertices.length) {
-        this.willModifyFeatures_(evt, [insertVertices])
+        this.willModifyFeatures_(event, [insertVertices])
       }
 
       for (let j = insertVertices.length - 1; j >= 0; --j) {
@@ -490,20 +335,18 @@ class Modify extends PointerInteraction {
    * Function handling "up" events.
    * If the function returns false then the current drag sequence is stopped.
    */
-  handleUpEvent (evt) {
+  handleUpEvent (event) {
     for (let i = this.dragSegments_.length - 1; i >= 0; --i) {
       const segmentData = this.dragSegments_[i][0]
-      this.rBush_.update(boundingExtent(segmentData.segment), segmentData)
+      this.rBush_.update(Extent.boundingExtent(segmentData.segment), segmentData)
     }
 
     if (this.featuresBeingModified_) {
-      const event = new ModifyEvent(
+      this.dispatchEvent(new ModifyEvent(
         ModifyEventType.MODIFYEND,
         this.featuresBeingModified_,
-        evt
-      )
-
-      this.dispatchEvent(event)
+        event
+      ))
       this.featuresBeingModified_ = null
     }
 
@@ -515,13 +358,13 @@ class Modify extends PointerInteraction {
    * Function handling "drag" events.
    * This function is called on "move" events during a drag sequence.
    */
-  handleDragEvent (evt) {
+  handleDragEvent (event) {
     this.ignoreNextSingleClick_ = false
-    this.willModifyFeatures_(evt, this.dragSegments_)
+    this.willModifyFeatures_(event, this.dragSegments_)
 
     const vertex = [
-      evt.coordinate[0] + this.delta_[0],
-      evt.coordinate[1] + this.delta_[1]
+      event.coordinate[0] + this.delta_[0],
+      event.coordinate[1] + this.delta_[1]
     ]
 
     const features = []
@@ -590,7 +433,7 @@ class Modify extends PointerInteraction {
       }
     }
 
-    this.createOrUpdateVertexFeature_(vertex, features, geometries)
+    this.createOrUpdateVertexFeature_(vertex)
   }
 
 
@@ -601,37 +444,33 @@ class Modify extends PointerInteraction {
    * of the event to other interactions in the map's interactions
    * chain.
    */
-  handleEvent (mapBrowserEvent) {
-    if (!mapBrowserEvent.originalEvent) return true
-    this.lastPointerEvent_ = mapBrowserEvent
+  handleEvent (event) {
+    if (!event.originalEvent) return true
+    this.lastPointerEvent_ = event
 
-    const isInteracting = mapBrowserEvent.map.getView().getInteracting()
-    const isPointerMove = mapBrowserEvent.type === MapBrowserEventType.POINTERMOVE
-    const isSingleClick = mapBrowserEvent.type === MapBrowserEventType.SINGLECLICK
-    const notIsSingleClick = mapBrowserEvent.type !== MapBrowserEventType.SINGLECLICK
-    const hasVertexFeature = this.vertexFeature_
-    const isDeleteCondition = this.deleteCondition_(mapBrowserEvent)
-    const notIgnoreNextSingleClick = !this.ignoreNextSingleClick_
-    const shouldHandlePointerMove = !isInteracting && isPointerMove
+    const isInteracting = event.map.getView().getInteracting()
+    const isPointerMove = event.type === MapBrowserEventType.POINTERMOVE
+    const isSingleClick = event.type === MapBrowserEventType.SINGLECLICK
+    const isDeleteCondition = this.deleteCondition_(event)
+    const ignoreNextSingleClick = this.ignoreNextSingleClick_
+    const isHandlingUpDownSequence = this.handlingDownUpSequence // super
+    const handlePointerMove = !isInteracting && isPointerMove && !isHandlingUpDownSequence
 
-    // TODO: transform: isSingleClick && ignoreNextSingleClick
-    const shouldRemovePoint = notIsSingleClick || notIgnoreNextSingleClick
-
-    if (shouldHandlePointerMove) this.handlePointerMove_(mapBrowserEvent)
+    if (handlePointerMove) this.handlePointerMove_(event)
 
     let handled
-    if (hasVertexFeature && isDeleteCondition) {
-      if (shouldRemovePoint) handled = this.removePoint()
+    if (this.vertexFeature_ && isDeleteCondition) {
+      if (!isSingleClick || !ignoreNextSingleClick) handled = this.removePoint()
       else handled = true
     }
 
     if (isSingleClick) this.ignoreNextSingleClick_ = false
 
-    return super.handleEvent(mapBrowserEvent) && !handled
+    return super.handleEvent(event) && !handled
   }
 
 
-  willModifyFeatures_ (evt, segments) {
+  willModifyFeatures_ (event, segments) {
     if (!this.featuresBeingModified_) {
       this.featuresBeingModified_ = new Collection()
       const features = this.featuresBeingModified_.getArray()
@@ -649,13 +488,11 @@ class Modify extends PointerInteraction {
       if (this.featuresBeingModified_.getLength() === 0) {
         this.featuresBeingModified_ = null
       } else {
-        const event = new ModifyEvent(
+        this.dispatchEvent(new ModifyEvent(
           ModifyEventType.MODIFYSTART,
           this.featuresBeingModified_,
-          evt
-        )
-
-        this.dispatchEvent(event)
+          event
+        ))
       }
     }
   }
@@ -707,7 +544,7 @@ class Modify extends PointerInteraction {
       index: index
     }
 
-    rTree.insert(boundingExtent(newSegmentData.segment), newSegmentData)
+    rTree.insert(Extent.boundingExtent(newSegmentData.segment), newSegmentData)
     this.dragSegments_.push([newSegmentData, 1])
 
     const newSegmentData2 = {
@@ -718,7 +555,7 @@ class Modify extends PointerInteraction {
       index: index + 1
     }
 
-    rTree.insert(boundingExtent(newSegmentData2.segment), newSegmentData2)
+    rTree.insert(Extent.boundingExtent(newSegmentData2.segment), newSegmentData2)
     this.dragSegments_.push([newSegmentData2, 0])
     this.ignoreNextSingleClick_ = true
   }
@@ -832,7 +669,7 @@ class Modify extends PointerInteraction {
           }
 
           this.rBush_.insert(
-            boundingExtent(newSegmentData.segment),
+            Extent.boundingExtent(newSegmentData.segment),
             newSegmentData
           )
         }
@@ -857,6 +694,7 @@ class Modify extends PointerInteraction {
     this.changingFeature_ = false
   }
 
+
   updateSegmentIndices_ (geometry, index, depth, delta) {
     this.rBush_.forEachInExtent(
       geometry.getExtent(),
@@ -865,7 +703,7 @@ class Modify extends PointerInteraction {
           segmentDataMatch.geometry === geometry &&
           (depth === undefined ||
             segmentDataMatch.depth === undefined ||
-            equals(segmentDataMatch.depth, depth)) &&
+            arrayEquals(segmentDataMatch.depth, depth)) &&
           segmentDataMatch.index > index
         ) {
           segmentDataMatch.index += delta
@@ -880,14 +718,14 @@ class Modify extends PointerInteraction {
       this.lastPointerEvent_ &&
       this.lastPointerEvent_.type !== MapBrowserEventType.POINTERDRAG
     ) {
-      const evt = this.lastPointerEvent_
-      this.willModifyFeatures_(evt, this.dragSegments_)
+      const event = this.lastPointerEvent_
+      this.willModifyFeatures_(event, this.dragSegments_)
       const removed = this.removeVertex_()
       this.dispatchEvent(
         new ModifyEvent(
           ModifyEventType.MODIFYEND,
           this.featuresBeingModified_,
-          evt
+          event
         )
       )
 
@@ -899,15 +737,14 @@ class Modify extends PointerInteraction {
   }
 
 
-  handlePointerMove_ (evt) {
-    this.lastPixel_ = evt.pixel
-    this.handlePointerAtPixel_(evt.pixel, evt.map, evt.coordinate)
+  handlePointerMove_ (event) {
+    this.lastPixel_ = event.pixel
+    this.handlePointerAtPixel_(event.pixel, event.map, event.coordinate)
   }
 
 
-  /* eslint-disable camelcase */
-  handlePointerAtPixel_ (pixel, map, opt_coordinate) {
-    const pixelCoordinate = opt_coordinate || map.getCoordinateFromPixel(pixel)
+  handlePointerAtPixel_ (pixel, map, coordinate) {
+    const pixelCoordinate = coordinate || map.getCoordinateFromPixel(pixel)
     const projection = map.getView().getProjection()
     const sortByDistance = function (a, b) {
       return (
@@ -916,119 +753,83 @@ class Modify extends PointerInteraction {
       )
     }
 
-    let nodes
-    let hitPointGeometry
+    const viewExtent = Proj.fromUserExtent(
+      Extent.createOrUpdateFromCoordinate(pixelCoordinate, tempExtent),
+      projection
+    )
+    const buffer = map.getView().getResolution() * this.pixelTolerance_
+    const box = Proj.toUserExtent(
+      Extent.buffer(viewExtent, buffer, tempExtent),
+      projection
+    )
 
-    if (this.hitDetection_) {
-      const layerFilter = typeof this.hitDetection_ === 'object'
-        ? (layer) => layer === this.hitDetection_
-        : undefined
+    const nodes = this.rBush_.getInExtent(box)
+    console.log(nodes)
 
-      map.forEachFeatureAtPixel(
-        pixel,
-        (feature, layer, geometry) => {
-          geometry = geometry || feature.getGeometry()
-
-          if (
-            geometry.getType() === GeometryType.POINT &&
-            includes(this.features_.getArray(), feature)
-          ) {
-            hitPointGeometry = geometry
-            const coordinate = geometry.getFlatCoordinates().slice(0, 2)
-            nodes = [{
-              feature,
-              geometry,
-              segment: [coordinate, coordinate]
-            }]
-          }
-
-          return true
-        },
-        { layerFilter }
-      )
-    }
-
-    if (!nodes) {
-      const viewExtent = fromUserExtent(
-        createExtent(pixelCoordinate, tempExtent),
-        projection
-      )
-      const buffer = map.getView().getResolution() * this.pixelTolerance_
-      const box = toUserExtent(
-        bufferExtent(viewExtent, buffer, tempExtent),
-        projection
-      )
-
-      nodes = this.rBush_.getInExtent(box)
-    }
-
-    if (nodes && nodes.length > 0) {
-      const node = nodes.sort(sortByDistance)[0]
-      const closestSegment = node.segment
-      let vertex = closestOnSegmentData(pixelCoordinate, node, projection)
-      const vertexPixel = map.getPixelFromCoordinate(vertex)
-      let dist = coordinateDistance(pixel, vertexPixel)
-      if (hitPointGeometry || dist <= this.pixelTolerance_) {
-        const vertexSegments = {}
-        vertexSegments[getUid(closestSegment)] = true
-
-        if (!this.snapToPointer_) {
-          this.delta_[0] = vertex[0] - pixelCoordinate[0]
-          this.delta_[1] = vertex[1] - pixelCoordinate[1]
-        }
-
-        const pixel1 = map.getPixelFromCoordinate(closestSegment[0])
-        const pixel2 = map.getPixelFromCoordinate(closestSegment[1])
-        const squaredDist1 = squaredCoordinateDistance(vertexPixel, pixel1)
-        const squaredDist2 = squaredCoordinateDistance(vertexPixel, pixel2)
-        dist = Math.sqrt(Math.min(squaredDist1, squaredDist2))
-        this.snappedToVertex_ = dist <= this.pixelTolerance_
-
-        if (this.snappedToVertex_) {
-          vertex = squaredDist1 > squaredDist2
-            ? closestSegment[1]
-            : closestSegment[0]
-        }
-
-        this.createOrUpdateVertexFeature_(
-          vertex,
-          [node.feature],
-          [node.geometry]
-        )
-
-        const geometries = {}
-        geometries[getUid(node.geometry)] = true
-        for (let i = 1, ii = nodes.length; i < ii; ++i) {
-          const segment = nodes[i].segment
-          if (
-            (coordinatesEqual(closestSegment[0], segment[0]) &&
-              coordinatesEqual(closestSegment[1], segment[1])) ||
-            (coordinatesEqual(closestSegment[0], segment[1]) &&
-              coordinatesEqual(closestSegment[1], segment[0]))
-          ) {
-            const geometryUid = getUid(nodes[i].geometry)
-            if (!(geometryUid in geometries)) {
-              geometries[geometryUid] = true
-              vertexSegments[getUid(segment)] = true
-            }
-          } else {
-            break
-          }
-        }
-
-        this.vertexSegments_ = vertexSegments
-        return
-      }
-
+    if (!nodes.length) {
       if (this.vertexFeature_) {
         this.overlay_.getSource().removeFeature(this.vertexFeature_)
         this.vertexFeature_ = null
       }
+
+      return
+    }
+
+    const node = nodes.sort(sortByDistance)[0]
+    const closestSegment = node.segment
+    let vertex = closestOnSegmentData(pixelCoordinate, node, projection)
+    const vertexPixel = map.getPixelFromCoordinate(vertex)
+    let dist = Coordinate.distance(pixel, vertexPixel)
+
+    if (dist <= this.pixelTolerance_) {
+      const vertexSegments = {}
+      vertexSegments[getUid(closestSegment)] = true
+
+      if (!this.snapToPointer_) {
+        this.delta_[0] = vertex[0] - pixelCoordinate[0]
+        this.delta_[1] = vertex[1] - pixelCoordinate[1]
+      }
+
+      const pixel1 = map.getPixelFromCoordinate(closestSegment[0])
+      const pixel2 = map.getPixelFromCoordinate(closestSegment[1])
+      const squaredDist1 = Coordinate.squaredDistance(vertexPixel, pixel1)
+      const squaredDist2 = Coordinate.squaredDistance(vertexPixel, pixel2)
+      dist = Math.sqrt(Math.min(squaredDist1, squaredDist2))
+      this.snappedToVertex_ = dist <= this.pixelTolerance_
+
+      if (this.snappedToVertex_) {
+        vertex = squaredDist1 > squaredDist2
+          ? closestSegment[1]
+          : closestSegment[0]
+      }
+
+      this.createOrUpdateVertexFeature_(vertex)
+
+      const geometries = {}
+      geometries[getUid(node.geometry)] = true
+      for (let i = 1, ii = nodes.length; i < ii; ++i) {
+        const segment = nodes[i].segment
+        if (
+          (Coordinate.equals(closestSegment[0], segment[0]) &&
+            Coordinate.equals(closestSegment[1], segment[1])) ||
+          (Coordinate.equals(closestSegment[0], segment[1]) &&
+            Coordinate.equals(closestSegment[1], segment[0]))
+        ) {
+          const geometryUid = getUid(nodes[i].geometry)
+          if (!(geometryUid in geometries)) {
+            geometries[geometryUid] = true
+            vertexSegments[getUid(segment)] = true
+          }
+        } else {
+          break // FIXME: why?
+        }
+      }
+
+      this.vertexSegments_ = vertexSegments
     }
   }
-  /* eslint-disable camelcase */
 
-  createOrUpdateVertexFeature_ (coordinates, features, geometries) {
+  createOrUpdateVertexFeature_ (coordinates) {
     let vertexFeature = this.vertexFeature_
     if (!vertexFeature) {
       vertexFeature = new Feature(new Point(coordinates))
@@ -1038,10 +839,126 @@ class Modify extends PointerInteraction {
       const geometry = vertexFeature.getGeometry()
       geometry.setCoordinates(coordinates)
     }
-    vertexFeature.set('features', features)
-    vertexFeature.set('geometries', geometries)
-    return vertexFeature
   }
 }
 
 export default Modify
+
+const indexWriters = {}
+
+indexWriters.Point = (rBush, feature, geometry) => {
+  const coordinates = geometry.getCoordinates()
+
+  const segmentData = {
+    feature: feature,
+    geometry: geometry,
+    segment: [coordinates, coordinates]
+  }
+
+  rBush.insert(geometry.getExtent(), segmentData)
+}
+
+indexWriters.MultiPoint = (rBush, feature, geometry) => {
+  const points = geometry.getCoordinates()
+  for (let i = 0, ii = points.length; i < ii; ++i) {
+    const coordinates = points[i]
+
+    const segmentData = {
+      feature: feature,
+      geometry: geometry,
+      depth: [i],
+      index: i,
+      segment: [coordinates, coordinates]
+    }
+
+    rBush.insert(geometry.getExtent(), segmentData)
+  }
+}
+
+indexWriters.LineString = (rBush, feature, geometry) => {
+  const coordinates = geometry.getCoordinates()
+  for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+    const segment = coordinates.slice(i, i + 2)
+
+    const segmentData = {
+      feature: feature,
+      geometry: geometry,
+      index: i,
+      segment: segment
+    }
+
+    rBush.insert(Extent.boundingExtent(segment), segmentData)
+  }
+}
+
+indexWriters.MultiLineString = (rBush, feature, geometry) => {
+  const lines = geometry.getCoordinates()
+  for (let j = 0, jj = lines.length; j < jj; ++j) {
+    const coordinates = lines[j]
+    for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+      const segment = coordinates.slice(i, i + 2)
+
+      const segmentData = {
+        feature: feature,
+        geometry: geometry,
+        depth: [j],
+        index: i,
+        segment: segment
+      }
+
+      rBush.insert(Extent.boundingExtent(segment), segmentData)
+    }
+  }
+}
+
+indexWriters.Polygon = (rBush, feature, geometry) => {
+  const rings = geometry.getCoordinates()
+  for (let j = 0, jj = rings.length; j < jj; ++j) {
+    const coordinates = rings[j]
+    for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+      const segment = coordinates.slice(i, i + 2)
+
+      const segmentData = {
+        feature: feature,
+        geometry: geometry,
+        depth: [j],
+        index: i,
+        segment: segment
+      }
+
+      rBush.insert(Extent.boundingExtent(segment), segmentData)
+    }
+  }
+}
+
+indexWriters.MultiPolygon = (rBush, feature, geometry) => {
+  const polygons = geometry.getCoordinates()
+  for (let k = 0, kk = polygons.length; k < kk; ++k) {
+    const rings = polygons[k]
+    for (let j = 0, jj = rings.length; j < jj; ++j) {
+      const coordinates = rings[j]
+      for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+        const segment = coordinates.slice(i, i + 2)
+
+        const segmentData = {
+          feature: feature,
+          geometry: geometry,
+          depth: [j, k],
+          index: i,
+          segment: segment
+        }
+
+        rBush.insert(Extent.boundingExtent(segment), segmentData)
+      }
+    }
+  }
+}
+
+indexWriters.GeometryCollection = (rBush, feature, geometry) => {
+  const geometries = geometry.getGeometriesArray()
+  for (let i = 0; i < geometries.length; ++i) {
+    const geometry = geometries[i]
+    const writer = indexWriters[geometry.getType()]
+    writer(rBush, feature, geometry)
+  }
+}
