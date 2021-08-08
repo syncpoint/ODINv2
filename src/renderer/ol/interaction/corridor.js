@@ -55,7 +55,7 @@ export default (feature, descriptor) => {
     return write(TS.point(projected)).getFirstCoordinate()
   }
 
-  const updateCoordinates = (role, coordinates) => {
+  const updateCoordinates = (role, _, coordinates) => {
     geometries[role].setCoordinates(coordinates)
 
     if (role === 'CENTER') {
@@ -74,9 +74,14 @@ export default (feature, descriptor) => {
     }
   }
 
+  const suppressVertexFeature = role => {
+    return role === 'CENTER' && descriptor.maxPoints === 2
+  }
+
   return {
     capture,
     updateCoordinates,
+    suppressVertexFeature,
     roles: () => Object.keys(geometries),
     geometry: role => geometries[role]
   }

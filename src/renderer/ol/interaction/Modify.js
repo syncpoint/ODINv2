@@ -369,7 +369,7 @@ class Modify extends PointerInteraction {
 
       if (segmentUpdaters[geometry.getType()]) {
         const coordinates = segmentUpdaters[geometry.getType()](vertex, dragSegment)
-        this.setGeometryCoordinates_(role, feature, coordinates)
+        this.setGeometryCoordinates_(role, geometry, feature, coordinates)
       }
     }
 
@@ -472,7 +472,7 @@ class Modify extends PointerInteraction {
         return
     }
 
-    this.setGeometryCoordinates_(role, feature, coordinates)
+    this.setGeometryCoordinates_(role, geometry, feature, coordinates)
     this.index_.remove(segmentData)
     this.updateSegmentIndices_(geometry, index, depth, 1)
 
@@ -504,6 +504,9 @@ class Modify extends PointerInteraction {
 
 
   removeVertex_ () {
+
+    // TODO: ugly - clean up!
+
     const dragSegments = this.dragSegments_
     const segmentsByFeature = {}
     let deleted = false
@@ -590,7 +593,7 @@ class Modify extends PointerInteraction {
 
       if (deleted) {
 
-        this.setGeometryCoordinates_(segmentData.role, segmentData.feature, coordinates)
+        this.setGeometryCoordinates_(segmentData.role, geometry, segmentData.feature, coordinates)
         const segments = []
 
         if (left !== undefined) {
@@ -633,10 +636,10 @@ class Modify extends PointerInteraction {
   }
 
 
-  setGeometryCoordinates_ (role, feature, coordinates) {
+  setGeometryCoordinates_ (role, geometry, feature, coordinates) {
 
     this.changingFeature_ = true
-    const roles = this.special_.updateCoordinates(role, coordinates) || []
+    const roles = this.special_.updateCoordinates(role, geometry, coordinates) || []
 
     // Re-index geometries for given roles:
     roles.forEach(role => {
@@ -715,24 +718,17 @@ class Modify extends PointerInteraction {
       )
     }
 
-    const viewExtent = Proj.fromUserExtent(
-      Extent.createOrUpdateFromCoordinate(pixelCoordinate, tempExtent),
-      projection
-    )
-    const buffer = map.getView().getResolution() * this.pixelTolerance_
-    const box = Proj.toUserExtent(
-      Extent.buffer(viewExtent, buffer, tempExtent),
-      projection
-    )
-
+    const userExtent = Extent.createOrUpdateFromCoordinate(pixelCoordinate, tempExtent)
+    const viewExtent = Proj.fromUserExtent(userExtent, projection)
+    const bufferValue = map.getView().getResolution() * this.pixelTolerance_
+    const buffer = Extent.buffer(viewExtent, bufferValue, tempExtent)
+    const box = Proj.toUserExtent(buffer, projection)
     const nodes = this.index_.getInExtent(box)
 
     if (!nodes.length) {
-      if (this.vertexFeature_) {
-        this.overlay_.getSource().removeFeature(this.vertexFeature_)
-        this.vertexFeature_ = null
-      }
-
+      if (!this.vertexFeature_) return
+      this.overlay_.getSource().removeFeature(this.vertexFeature_)
+      this.vertexFeature_ = null
       return
     }
 
@@ -760,12 +756,19 @@ class Modify extends PointerInteraction {
     this.snappedToVertex_ = dist <= this.pixelTolerance_
 
     if (this.snappedToVertex_) {
-      vertex = squaredDist1 > squaredDist2
-        ? closestSegment[1]
-        : closestSegment[0]
-    }
+      vertex = squaredDist1 > squaredDist2 ? closestSegment[1] : closestSegment[0]
 
-    this.createOrUpdateVertexFeature_(vertex)
+      // Always show when snapped.
+      this.createOrUpdateVertexFeature_(vertex)
+    } else {
+      // Show only when not suppressed explicitly.
+      if ((
+        this.special_.suppressVertexFeature &&
+        this.special_.suppressVertexFeature(node.role)
+      )) {
+        if (this.vertexFeature_) this.overlay_.getSource().hasFeature(this.vertexFeature_)
+      } else this.createOrUpdateVertexFeature_(vertex)
+    }
 
     const geometries = {}
     geometries[getUid(node.geometry)] = true
