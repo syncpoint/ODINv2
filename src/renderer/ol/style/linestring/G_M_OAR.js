@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
 styles['G*M*OAR---'] = ({ styles, resolution, lineString }) => {

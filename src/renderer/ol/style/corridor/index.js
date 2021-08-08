@@ -1,3 +1,4 @@
+import * as geom from 'ol/geom'
 import * as MILSTD from '../../../2525c'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
@@ -21,7 +22,10 @@ styles['LineString:Point'] = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
-  const handles = featureStyles.handles(geometry.getGeometries()[0])
+  const handles = featureStyles.handles(new geom.MultiPoint([
+    geometry.getGeometries()[1].getCoordinates(),
+    ...geometry.getGeometries()[0].getCoordinates()
+  ]))
 
   const style = transform(styles[key])({
     feature,

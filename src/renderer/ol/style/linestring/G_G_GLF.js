@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // FORWARD LINE OF OWN TROOPS (FLOT)
 styles['G*G*GLF---'] = ({ styles, resolution, lineString }) => {

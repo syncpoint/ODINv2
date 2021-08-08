@@ -18,6 +18,7 @@ import * as Condition from 'ol/events/condition'
 import * as Extent from 'ol/extent'
 import * as Coordinate from 'ol/coordinate'
 import * as Proj from 'ol/proj'
+import { special } from './special-sauce'
 
 const tempExtent = [0, 0, 0, 0]
 const tempSegment = []
@@ -100,7 +101,7 @@ class Modify extends PointerInteraction {
     this.lastPixel_ = [0, 0]
     this.ignoreNextSingleClick_ = false
     this.featuresBeingModified_ = null
-    this.rBush_ = new RBush() // TODO: use geometry-instance specific rbush
+    this.index_ = new RBush() // TODO: use geometry-instance specific rbush
     this.pixelTolerance_ = options.pixelTolerance !== undefined ? options.pixelTolerance : 10
     this.snappedToVertex_ = false
     this.changingFeature_ = false
@@ -140,26 +141,10 @@ class Modify extends PointerInteraction {
     })
   }
 
-
-  handleSourceAdd_ ({ feature }) {
-    if (feature) {
-      this.features_.push(feature)
-    }
-  }
-
-  handleSourceRemove_ ({ feature }) {
-    if (feature) {
-      this.features_.remove(feature)
-    }
-  }
-
-  handleFeatureAdd_ ({ element }) {
-    this.addFeature_(element)
-  }
-
-  handleFeatureRemove_ ({ element }) {
-    this.removeFeature_(element)
-  }
+  handleSourceAdd_ ({ feature }) { this.features_.push(feature) }
+  handleSourceRemove_ ({ feature }) { this.features_.remove(feature) }
+  handleFeatureAdd_ ({ element }) { this.addFeature_(element) }
+  handleFeatureRemove_ ({ element }) { this.removeFeature_(element) }
 
   handleFeatureChange_ ({ target }) {
     // Note: This is triggered also when a feature is moved between sources,
@@ -174,10 +159,13 @@ class Modify extends PointerInteraction {
   addFeature_ (feature) {
     // TODO: get feature geometries (callback)
     // TODO: index geometries (RBush per geometry)
-    const geometry = feature.getGeometry()
-    if (!geometry) return
-    const writer = indexWriters[geometry.getType()]
-    if (writer) writer(this.rBush_, feature, geometry)
+
+    this.special_ = special(feature)
+    this.special_.roles().forEach(role => {
+      const geometry = this.special_.geometry(role)
+      const writer = indexWriters[geometry.getType()]
+      if (writer) writer(this.index_, feature, geometry, role)
+    })
 
     const map = this.getMap()
     if (map && map.isRendered() && this.getActive()) {
@@ -205,24 +193,22 @@ class Modify extends PointerInteraction {
 
 
   removeFeatureSegmentData_ (feature) {
-    const rBush = this.rBush_
-    const acc = []
+    const nodes = []
 
-    rBush.forEach(function (node) {
+    this.index_.forEach(function (node) {
       if (feature === node.feature) {
-        acc.push(node)
+        nodes.push(node)
       }
     })
 
-    for (let i = acc.length - 1; i >= 0; --i) {
-      const nodeToRemove = acc[i]
+    for (let i = nodes.length - 1; i >= 0; --i) {
       for (let j = this.dragSegments_.length - 1; j >= 0; --j) {
-        if (this.dragSegments_[j][0] === nodeToRemove) {
+        if (this.dragSegments_[j][0] === nodes[i]) {
           this.dragSegments_.splice(j, 1)
         }
       }
 
-      rBush.remove(nodeToRemove)
+      this.index_.remove(nodes[i])
     }
   }
 
@@ -260,7 +246,7 @@ class Modify extends PointerInteraction {
       const insertVertices = []
       const vertex = vertexFeature.getGeometry().getCoordinates()
       const vertexExtent = Extent.boundingExtent([vertex])
-      const segmentDataMatches = this.rBush_.getInExtent(vertexExtent)
+      const segmentDataMatches = this.index_.getInExtent(vertexExtent)
       const componentSegments = {}
       segmentDataMatches.sort(compareIndexes)
 
@@ -319,6 +305,7 @@ class Modify extends PointerInteraction {
       }
 
       if (insertVertices.length) {
+        console.log('insertVertices', insertVertices.length)
         this.willModifyFeatures_(event, [insertVertices])
       }
 
@@ -338,7 +325,7 @@ class Modify extends PointerInteraction {
   handleUpEvent (event) {
     for (let i = this.dragSegments_.length - 1; i >= 0; --i) {
       const segmentData = this.dragSegments_[i][0]
-      this.rBush_.update(Extent.boundingExtent(segmentData.segment), segmentData)
+      this.index_.update(Extent.boundingExtent(segmentData.segment), segmentData)
     }
 
     if (this.featuresBeingModified_) {
@@ -362,75 +349,44 @@ class Modify extends PointerInteraction {
     this.ignoreNextSingleClick_ = false
     this.willModifyFeatures_(event, this.dragSegments_)
 
-    const vertex = [
+    const vertex = this.special_.capture([
       event.coordinate[0] + this.delta_[0],
       event.coordinate[1] + this.delta_[1]
-    ]
-
-    const features = []
-    const geometries = []
+    ], this.dragSegments_)
 
     for (let i = 0, ii = this.dragSegments_.length; i < ii; ++i) {
       const dragSegment = this.dragSegments_[i]
       const segmentData = dragSegment[0]
-      const feature = segmentData.feature
-      if (features.indexOf(feature) === -1) {
-        features.push(feature)
-      }
-
       const geometry = segmentData.geometry
-      if (geometries.indexOf(geometry) === -1) {
-        geometries.push(geometry)
-      }
-
-      const depth = segmentData.depth
-      let coordinates
       const segment = segmentData.segment
       const index = dragSegment[1]
 
       while (vertex.length < geometry.getStride()) {
         vertex.push(segment[index][vertex.length])
       }
+    }
 
-      switch (geometry.getType()) {
-        case GeometryType.POINT:
-          coordinates = vertex
-          segment[0] = vertex
-          segment[1] = vertex
-          break
-        case GeometryType.MULTI_POINT:
-          coordinates = geometry.getCoordinates()
-          coordinates[segmentData.index] = vertex
-          segment[0] = vertex
-          segment[1] = vertex
-          break
-        case GeometryType.LINE_STRING:
-          coordinates = geometry.getCoordinates()
-          coordinates[segmentData.index + index] = vertex
-          segment[index] = vertex
-          break
-        case GeometryType.MULTI_LINE_STRING:
-          coordinates = geometry.getCoordinates()
-          coordinates[depth[0]][segmentData.index + index] = vertex
-          segment[index] = vertex
-          break
-        case GeometryType.POLYGON:
-          coordinates = geometry.getCoordinates()
-          coordinates[depth[0]][segmentData.index + index] = vertex
-          segment[index] = vertex
-          break
-        case GeometryType.MULTI_POLYGON:
-          coordinates = geometry.getCoordinates()
-          coordinates[depth[1]][depth[0]][segmentData.index + index] = vertex
-          segment[index] = vertex
-          break
-        default:
-        // pass
-      }
+    for (let i = 0, ii = this.dragSegments_.length; i < ii; ++i) {
+      const feature = this.dragSegments_[i][0].feature
+      this.changingFeature_ = true
+      const roles = this.special_.updateSegment(vertex, this.dragSegments_[i]) || []
 
-      if (coordinates) {
-        this.setGeometryCoordinates_(geometry, coordinates)
-      }
+      // Re-index geometries for given roles:
+      roles.forEach(role => {
+        const nodes = []
+        this.index_.forEach(function (node) {
+          if (role === node.role) {
+            nodes.push(node)
+          }
+        })
+
+        nodes.forEach(node => this.index_.remove(node))
+        const geometry = this.special_.geometry(role)
+        const writer = indexWriters[geometry.getType()]
+        if (writer) writer(this.index_, feature, geometry, role)
+      })
+
+      this.changingFeature_ = false
     }
 
     this.createOrUpdateVertexFeature_(vertex)
@@ -499,6 +455,8 @@ class Modify extends PointerInteraction {
 
 
   insertVertex_ (segmentData, vertex) {
+    console.log('[insertVertex_]', segmentData, vertex)
+    const role = segmentData.role
     const segment = segmentData.segment
     const feature = segmentData.feature
     const geometry = segmentData.geometry
@@ -531,12 +489,15 @@ class Modify extends PointerInteraction {
         return
     }
 
-    this.setGeometryCoordinates_(geometry, coordinates)
-    const rTree = this.rBush_
-    rTree.remove(segmentData)
+    this.changingFeature_ = true
+    this.special_.updateCoordinates(role, coordinates)
+    this.changingFeature_ = false
+
+    this.index_.remove(segmentData)
     this.updateSegmentIndices_(geometry, index, depth, 1)
 
-    const newSegmentData = {
+    const segmentDataA = {
+      role,
       segment: [segment[0], vertex],
       feature: feature,
       geometry: geometry,
@@ -544,10 +505,11 @@ class Modify extends PointerInteraction {
       index: index
     }
 
-    rTree.insert(Extent.boundingExtent(newSegmentData.segment), newSegmentData)
-    this.dragSegments_.push([newSegmentData, 1])
+    this.index_.insert(Extent.boundingExtent(segmentDataA.segment), segmentDataA)
+    this.dragSegments_.push([segmentDataA, 1])
 
-    const newSegmentData2 = {
+    const segmentDataB = {
+      role,
       segment: [vertex, segment[1]],
       feature: feature,
       geometry: geometry,
@@ -555,8 +517,8 @@ class Modify extends PointerInteraction {
       index: index + 1
     }
 
-    rTree.insert(Extent.boundingExtent(newSegmentData2.segment), newSegmentData2)
-    this.dragSegments_.push([newSegmentData2, 0])
+    this.index_.insert(Extent.boundingExtent(segmentDataB.segment), segmentDataB)
+    this.dragSegments_.push([segmentDataB, 0])
     this.ignoreNextSingleClick_ = true
   }
 
@@ -609,6 +571,7 @@ class Modify extends PointerInteraction {
       coordinates = geometry.getCoordinates()
       component = coordinates
       deleted = false
+
       switch (geometry.getType()) {
         case GeometryType.MULTI_LINE_STRING:
           if (coordinates[segmentData.depth[0]].length > 2) {
@@ -646,21 +609,41 @@ class Modify extends PointerInteraction {
       }
 
       if (deleted) {
-        this.setGeometryCoordinates_(geometry, coordinates)
+
+        this.changingFeature_ = true
+        const roles = this.special_.updateCoordinates(segmentData.role, coordinates) || []
+        // Re-index geometries for given roles:
+        roles.forEach(role => {
+          const nodes = []
+          this.index_.forEach(function (node) {
+            if (role === node.role) {
+              nodes.push(node)
+            }
+          })
+
+          nodes.forEach(node => this.index_.remove(node))
+          const geometry = this.special_.geometry(role)
+          const writer = indexWriters[geometry.getType()]
+          if (writer) writer(this.index_, segmentData.feature, geometry, role)
+        })
+        this.changingFeature_ = false
+
+
         const segments = []
 
         if (left !== undefined) {
-          this.rBush_.remove(left)
+          this.index_.remove(left)
           segments.push(left.segment[0])
         }
 
         if (right !== undefined) {
-          this.rBush_.remove(right)
+          this.index_.remove(right)
           segments.push(right.segment[1])
         }
 
         if (left !== undefined && right !== undefined) {
-          const newSegmentData = {
+          const segmentDataA = {
+            role: segmentData.role,
             depth: segmentData.depth,
             feature: segmentData.feature,
             geometry: segmentData.geometry,
@@ -668,9 +651,9 @@ class Modify extends PointerInteraction {
             segment: segments
           }
 
-          this.rBush_.insert(
-            Extent.boundingExtent(newSegmentData.segment),
-            newSegmentData
+          this.index_.insert(
+            Extent.boundingExtent(segmentDataA.segment),
+            segmentDataA
           )
         }
 
@@ -696,7 +679,7 @@ class Modify extends PointerInteraction {
 
 
   updateSegmentIndices_ (geometry, index, depth, delta) {
-    this.rBush_.forEachInExtent(
+    this.index_.forEachInExtent(
       geometry.getExtent(),
       function (segmentDataMatch) {
         if (
@@ -763,8 +746,7 @@ class Modify extends PointerInteraction {
       projection
     )
 
-    const nodes = this.rBush_.getInExtent(box)
-    console.log(nodes)
+    const nodes = this.index_.getInExtent(box)
 
     if (!nodes.length) {
       if (this.vertexFeature_) {
@@ -781,52 +763,52 @@ class Modify extends PointerInteraction {
     const vertexPixel = map.getPixelFromCoordinate(vertex)
     let dist = Coordinate.distance(pixel, vertexPixel)
 
-    if (dist <= this.pixelTolerance_) {
-      const vertexSegments = {}
-      vertexSegments[getUid(closestSegment)] = true
+    if (dist > this.pixelTolerance_) return /* nothing to do */
 
-      if (!this.snapToPointer_) {
-        this.delta_[0] = vertex[0] - pixelCoordinate[0]
-        this.delta_[1] = vertex[1] - pixelCoordinate[1]
-      }
+    const vertexSegments = {}
+    vertexSegments[getUid(closestSegment)] = true
 
-      const pixel1 = map.getPixelFromCoordinate(closestSegment[0])
-      const pixel2 = map.getPixelFromCoordinate(closestSegment[1])
-      const squaredDist1 = Coordinate.squaredDistance(vertexPixel, pixel1)
-      const squaredDist2 = Coordinate.squaredDistance(vertexPixel, pixel2)
-      dist = Math.sqrt(Math.min(squaredDist1, squaredDist2))
-      this.snappedToVertex_ = dist <= this.pixelTolerance_
-
-      if (this.snappedToVertex_) {
-        vertex = squaredDist1 > squaredDist2
-          ? closestSegment[1]
-          : closestSegment[0]
-      }
-
-      this.createOrUpdateVertexFeature_(vertex)
-
-      const geometries = {}
-      geometries[getUid(node.geometry)] = true
-      for (let i = 1, ii = nodes.length; i < ii; ++i) {
-        const segment = nodes[i].segment
-        if (
-          (Coordinate.equals(closestSegment[0], segment[0]) &&
-            Coordinate.equals(closestSegment[1], segment[1])) ||
-          (Coordinate.equals(closestSegment[0], segment[1]) &&
-            Coordinate.equals(closestSegment[1], segment[0]))
-        ) {
-          const geometryUid = getUid(nodes[i].geometry)
-          if (!(geometryUid in geometries)) {
-            geometries[geometryUid] = true
-            vertexSegments[getUid(segment)] = true
-          }
-        } else {
-          break // FIXME: why?
-        }
-      }
-
-      this.vertexSegments_ = vertexSegments
+    if (!this.snapToPointer_) {
+      this.delta_[0] = vertex[0] - pixelCoordinate[0]
+      this.delta_[1] = vertex[1] - pixelCoordinate[1]
     }
+
+    const pixel1 = map.getPixelFromCoordinate(closestSegment[0])
+    const pixel2 = map.getPixelFromCoordinate(closestSegment[1])
+    const squaredDist1 = Coordinate.squaredDistance(vertexPixel, pixel1)
+    const squaredDist2 = Coordinate.squaredDistance(vertexPixel, pixel2)
+    dist = Math.sqrt(Math.min(squaredDist1, squaredDist2))
+    this.snappedToVertex_ = dist <= this.pixelTolerance_
+
+    if (this.snappedToVertex_) {
+      vertex = squaredDist1 > squaredDist2
+        ? closestSegment[1]
+        : closestSegment[0]
+    }
+
+    this.createOrUpdateVertexFeature_(vertex)
+
+    const geometries = {}
+    geometries[getUid(node.geometry)] = true
+    for (let i = 1, ii = nodes.length; i < ii; ++i) {
+      const segment = nodes[i].segment
+      if (
+        (Coordinate.equals(closestSegment[0], segment[0]) &&
+          Coordinate.equals(closestSegment[1], segment[1])) ||
+        (Coordinate.equals(closestSegment[0], segment[1]) &&
+          Coordinate.equals(closestSegment[1], segment[0]))
+      ) {
+        const geometryUid = getUid(nodes[i].geometry)
+        if (!(geometryUid in geometries)) {
+          geometries[geometryUid] = true
+          vertexSegments[getUid(segment)] = true
+        }
+      } else {
+        break
+      }
+    }
+
+    this.vertexSegments_ = vertexSegments
   }
 
   createOrUpdateVertexFeature_ (coordinates) {
@@ -846,24 +828,26 @@ export default Modify
 
 const indexWriters = {}
 
-indexWriters.Point = (rBush, feature, geometry) => {
+indexWriters.Point = (index, feature, geometry, role) => {
   const coordinates = geometry.getCoordinates()
 
   const segmentData = {
+    role,
     feature: feature,
     geometry: geometry,
     segment: [coordinates, coordinates]
   }
 
-  rBush.insert(geometry.getExtent(), segmentData)
+  index.insert(geometry.getExtent(), segmentData)
 }
 
-indexWriters.MultiPoint = (rBush, feature, geometry) => {
+indexWriters.MultiPoint = (index, feature, geometry, role) => {
   const points = geometry.getCoordinates()
   for (let i = 0, ii = points.length; i < ii; ++i) {
     const coordinates = points[i]
 
     const segmentData = {
+      role,
       feature: feature,
       geometry: geometry,
       depth: [i],
@@ -871,27 +855,28 @@ indexWriters.MultiPoint = (rBush, feature, geometry) => {
       segment: [coordinates, coordinates]
     }
 
-    rBush.insert(geometry.getExtent(), segmentData)
+    index.insert(geometry.getExtent(), segmentData)
   }
 }
 
-indexWriters.LineString = (rBush, feature, geometry) => {
+indexWriters.LineString = (index, feature, geometry, role) => {
   const coordinates = geometry.getCoordinates()
   for (let i = 0, ii = coordinates.length - 1; i < ii; ++i) {
     const segment = coordinates.slice(i, i + 2)
 
     const segmentData = {
+      role,
       feature: feature,
       geometry: geometry,
       index: i,
       segment: segment
     }
 
-    rBush.insert(Extent.boundingExtent(segment), segmentData)
+    index.insert(Extent.boundingExtent(segment), segmentData)
   }
 }
 
-indexWriters.MultiLineString = (rBush, feature, geometry) => {
+indexWriters.MultiLineString = (index, feature, geometry, role) => {
   const lines = geometry.getCoordinates()
   for (let j = 0, jj = lines.length; j < jj; ++j) {
     const coordinates = lines[j]
@@ -899,6 +884,7 @@ indexWriters.MultiLineString = (rBush, feature, geometry) => {
       const segment = coordinates.slice(i, i + 2)
 
       const segmentData = {
+        role,
         feature: feature,
         geometry: geometry,
         depth: [j],
@@ -906,12 +892,12 @@ indexWriters.MultiLineString = (rBush, feature, geometry) => {
         segment: segment
       }
 
-      rBush.insert(Extent.boundingExtent(segment), segmentData)
+      index.insert(Extent.boundingExtent(segment), segmentData)
     }
   }
 }
 
-indexWriters.Polygon = (rBush, feature, geometry) => {
+indexWriters.Polygon = (index, feature, geometry, role) => {
   const rings = geometry.getCoordinates()
   for (let j = 0, jj = rings.length; j < jj; ++j) {
     const coordinates = rings[j]
@@ -919,6 +905,7 @@ indexWriters.Polygon = (rBush, feature, geometry) => {
       const segment = coordinates.slice(i, i + 2)
 
       const segmentData = {
+        role,
         feature: feature,
         geometry: geometry,
         depth: [j],
@@ -926,12 +913,12 @@ indexWriters.Polygon = (rBush, feature, geometry) => {
         segment: segment
       }
 
-      rBush.insert(Extent.boundingExtent(segment), segmentData)
+      index.insert(Extent.boundingExtent(segment), segmentData)
     }
   }
 }
 
-indexWriters.MultiPolygon = (rBush, feature, geometry) => {
+indexWriters.MultiPolygon = (index, feature, geometry, role) => {
   const polygons = geometry.getCoordinates()
   for (let k = 0, kk = polygons.length; k < kk; ++k) {
     const rings = polygons[k]
@@ -941,6 +928,7 @@ indexWriters.MultiPolygon = (rBush, feature, geometry) => {
         const segment = coordinates.slice(i, i + 2)
 
         const segmentData = {
+          role,
           feature: feature,
           geometry: geometry,
           depth: [j, k],
@@ -948,17 +936,17 @@ indexWriters.MultiPolygon = (rBush, feature, geometry) => {
           segment: segment
         }
 
-        rBush.insert(Extent.boundingExtent(segment), segmentData)
+        index.insert(Extent.boundingExtent(segment), segmentData)
       }
     }
   }
 }
 
-indexWriters.GeometryCollection = (rBush, feature, geometry) => {
+indexWriters.GeometryCollection = (index, feature, geometry, role) => {
   const geometries = geometry.getGeometriesArray()
   for (let i = 0; i < geometries.length; ++i) {
     const geometry = geometries[i]
     const writer = indexWriters[geometry.getType()]
-    writer(rBush, feature, geometry)
+    writer(index, feature, geometry, role)
   }
 }

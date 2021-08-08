@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
 import { deg2rad, quads, arcText } from './commons'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // TASKS / RETAIN
 styles['G*T*Q-----'] = ({ styles, points, resolution }) => {

@@ -117,7 +117,6 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     })
   ])
 
-  // TODO: flip arguments
   styles.text = (geometry, options) => {
     const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
     const textAlign = options.flip
@@ -151,21 +150,23 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     })
   }
 
-  styles.handles = (geometry, options = {}) => mode === 'selected'
-    ? [style({
-        geometry,
-        image: circle({
-          fill: fill({ color: options.color || 'rgba(255,0,0,0.6)' }),
-          stroke: STROKE_WHITE_3,
-          radius: 7
-        })
-      })]
-    : mode === 'multiple'
+  styles.handles = (geometry, options = {}) => {
+    return mode === 'selected'
       ? [style({
-          geometry: new geom.Point(geometry.getFirstCoordinate()),
-          image: MULTI_SELECT_HANDLE
+          geometry,
+          image: circle({
+            fill: fill({ color: options.color || 'rgba(255,0,0,0.6)' }),
+            stroke: STROKE_WHITE_3,
+            radius: 7
+          })
         })]
-      : []
+      : mode === 'multiple'
+        ? [style({
+            geometry: new geom.Point(geometry.getFirstCoordinate()),
+            image: MULTI_SELECT_HANDLE
+          })]
+        : []
+  }
 
   return styles
 }

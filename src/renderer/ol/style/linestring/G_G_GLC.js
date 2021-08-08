@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // LINE OF CONTACT
 styles['G*G*GLC---'] = ({ styles, resolution, lineString }) => {

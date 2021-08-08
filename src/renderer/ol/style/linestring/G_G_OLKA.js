@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // DIRECTION OF ATTACK / AVIATION
 styles['G*G*OLKA--'] = ({ styles, lineString }) => {

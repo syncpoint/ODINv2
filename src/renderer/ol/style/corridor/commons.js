@@ -1,6 +1,6 @@
 import * as R from 'ramda'
-import * as TS from '../ts'
-import { codeUTM } from '../../../epsg'
+import * as TS from '../../ts'
+import { codeUTM, toUTM, fromUTM } from '../../../epsg'
 
 // TODO: replace with TS.projectCoordinate
 export const arrowCoordinates = (width, line, offset = 1) => {
@@ -36,7 +36,7 @@ export const closedArrow = (resolution, angle, point) =>
 export const transform = fn => args => {
   const geometry = args.feature.getGeometry()
   const code = codeUTM(geometry)
-  const clone = geometry.clone().transform('EPSG:3857', code)
+  const clone = toUTM(code, geometry)
   const [lineString, point] = TS.geometries(TS.read(clone))
   const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
 
@@ -44,7 +44,7 @@ export const transform = fn => args => {
     .flat()
     .map(style => {
       const geometry = TS.write(style.getGeometry())
-      style.setGeometry(geometry.transform(code, 'EPSG:3857'))
+      style.setGeometry(fromUTM(code, geometry))
       return style
     })
 }

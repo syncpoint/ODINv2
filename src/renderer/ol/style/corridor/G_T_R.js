@@ -1,5 +1,5 @@
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 import { openArrow } from './commons'
 
 // TASKS / RELIEF IN PLACE (RIP)

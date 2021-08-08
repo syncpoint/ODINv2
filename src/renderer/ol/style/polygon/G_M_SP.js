@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import Polygon from 'ol/geom/Polygon'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 import { styles } from '../styles'
 
 // STRONG POINT

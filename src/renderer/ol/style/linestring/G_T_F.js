@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // TASKS / FIX
 styles['G*T*F-----'] = ({ styles, resolution, lineString }) => {

@@ -1,5 +1,5 @@
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 const fanLike = label => options => {
   const { resolution, styles, points } = options

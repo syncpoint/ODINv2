@@ -22,17 +22,20 @@ register(proj4)
 
 const WEB_MERCATOR_TO_WGS84 = proj4('EPSG:3857', 'EPSG:4326')
 
+export const toUTM = (code, geometry) => geometry.clone().transform('EPSG:3857', code)
+export const fromUTM = (code, geometry) => geometry.transform(code, 'EPSG:3857')
+
 /**
  *
  * @param {ol/Feature|ol/Geometry} arg
  */
-export const codeUTM = arg => {
-  if (arg instanceof Feature) return codeUTM(arg.getGeometry())
-  else if (arg instanceof GeometryCollection) return codeUTM(arg.getGeometries()[0])
-  else if (arg instanceof Geometry) return codeUTM(arg.getFirstCoordinate())
+export const codeUTM = geometryLike => {
+  if (geometryLike instanceof Feature) return codeUTM(geometryLike.getGeometry())
+  else if (geometryLike instanceof GeometryCollection) return codeUTM(geometryLike.getGeometries()[0])
+  else if (geometryLike instanceof Geometry) return codeUTM(geometryLike.getFirstCoordinate())
 
   // Here, we should have a coordinate.
-  const coordinate = arg
+  const coordinate = geometryLike
   const [longitude, latitude] = WEB_MERCATOR_TO_WGS84.forward(coordinate)
   const zone = Math.ceil((longitude + 180) / 6)
   const south = latitude < 0

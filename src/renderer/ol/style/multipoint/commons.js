@@ -1,5 +1,5 @@
 import { codeUTM } from '../../../epsg'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 /**
  * Decorate existing style function with these cross-cutting concerns:

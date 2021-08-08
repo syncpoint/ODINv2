@@ -1,5 +1,5 @@
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // TASKS / BLOCK
 styles['G*T*B-----'] = ({ styles, lineString, width }) => {

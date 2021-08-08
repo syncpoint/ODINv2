@@ -1,5 +1,5 @@
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 
 // MINIMUM SAFE DISTANCE ZONES
 styles['G*M*NM----'] = ({ styles, feature, points }) => {

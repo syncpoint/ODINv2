@@ -1,3 +1,6 @@
+import * as R from 'ramda'
+import descriptors from './2525c.json'
+
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
 const STANDARD_IDENTITY = 1
@@ -51,4 +54,24 @@ export const MODIFIERS = {
   y: 'location',
   z: 'speed',
   w: 'dtg'
+}
+
+const index = descriptors.reduce((acc, descriptor) => {
+  const sidc = parameterized(descriptor.sidc)
+  acc[sidc] = {
+    sidc,
+    hierarchy: R.drop(1, descriptor.hierarchy).join(', '),
+    geometry: {
+      type: descriptor.geometry,
+      ...descriptor.parameters
+    }
+  }
+
+  return acc
+}, {})
+
+export const geometry = sidc => {
+  if (!sidc) return
+  const feature = index[parameterized(sidc)]
+  return feature && feature.geometry
 }

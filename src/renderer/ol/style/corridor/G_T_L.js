@@ -1,5 +1,5 @@
 import { styles } from '../styles'
-import * as TS from '../ts'
+import * as TS from '../../ts'
 import { openArrow } from './commons'
 
 const withdrawLike = text => ({ styles, point, lineString, width, resolution }) => {
