@@ -9,6 +9,8 @@ export default (feature, descriptor) => {
   const code = EPSG.codeUTM(feature)
   const toUTM = geometry => EPSG.toUTM(code, geometry)
   const fromUTM = geometry => EPSG.fromUTM(code, geometry)
+  const read = R.compose(TS.read, toUTM)
+  const write = R.compose(fromUTM, TS.write)
 
   const geometries = {
     CENTER: lineString,
@@ -16,8 +18,8 @@ export default (feature, descriptor) => {
   }
 
   const params = () => {
-    const center = TS.read(toUTM(geometries.CENTER))
-    const point = TS.read(toUTM(geometries.POINT))
+    const center = read(geometries.CENTER)
+    const point = read(geometries.POINT)
     const coords = [TS.startPoint(center), point].map(TS.coordinate)
     const [A, B] = R.take(2, TS.coordinates([center]))
     const segment = TS.segment(A, B)
@@ -34,8 +36,8 @@ export default (feature, descriptor) => {
     const copy = properties => create({ ...params, ...properties })
     const geometry = new geom.GeometryCollection([geometries.CENTER, geometries.POINT])
 
-    geometries.CENTER.setCoordinates(fromUTM(TS.write(center)).getCoordinates())
-    geometries.POINT.setCoordinates(fromUTM(TS.write(point)).getCoordinates())
+    geometries.CENTER.setCoordinates(write(center).getCoordinates())
+    geometries.POINT.setCoordinates(write(point).getCoordinates())
 
     return { copy, center, point, geometry }
   })(params())
@@ -45,47 +47,24 @@ export default (feature, descriptor) => {
     if (segments[0][0].role !== 'POINT') return vertex
 
     // Project point onto normal vector of first segment:
-    const coordinate = TS.coordinate(TS.read(toUTM(new geom.Point(vertex))))
+    const coordinate = TS.coordinate(read(new geom.Point(vertex)))
     const [A, B] = R.take(2, TS.coordinates([frame.center]))
     const P = new TS.Coordinate(A.x - (B.y - A.y), A.y + (B.x - A.x))
     const segmentAP = TS.segment([A, P])
     const projected = segmentAP.project(coordinate)
-    return fromUTM(TS.write(TS.point(projected))).getFirstCoordinate()
+    return write(TS.point(projected)).getFirstCoordinate()
   }
 
-  const segmentUpdaters = {
-    Point: (vertex, [segmentData]) => {
-      const segment = segmentData.segment
-      const coordinates = vertex
-      segment[0] = vertex
-      segment[1] = vertex
-      return coordinates
-    },
-    LineString: (vertex, [segmentData, index]) => {
-      const segment = segmentData.segment
-      const geometry = segmentData.geometry
-      const coordinates = geometry.getCoordinates()
-      coordinates[segmentData.index + index] = vertex
-      segment[index] = vertex
-      return coordinates
-    }
-  }
-
-  const updateSegment = (vertex, dragSegment) => {
-    const geometry = dragSegment[0].geometry
-    const role = dragSegment[0].role
-    if (!segmentUpdaters[geometry.getType()]) return
-
-    const coordinates = segmentUpdaters[geometry.getType()](vertex, dragSegment)
-    geometry.setCoordinates(coordinates)
+  const updateCoordinates = (role, coordinates) => {
+    geometries[role].setCoordinates(coordinates)
 
     if (role === 'CENTER') {
-      const center = TS.read(toUTM(geometry))
+      const center = read(geometries[role])
       frame = frame.copy({ center })
       feature.setGeometry(frame.geometry)
-      return ['POINT']
+      return ['POINT'] // reindex POINT geometry
     } else if (role === 'POINT') {
-      const point = TS.read(toUTM(geometry))
+      const point = read(geometries[role])
       const segment = TS.segment(R.take(2, TS.coordinates([frame.center])))
       const coords = [TS.startPoint(frame.center), point].map(TS.coordinate)
       const orientation = segment.orientationIndex(TS.coordinate(point))
@@ -95,21 +74,8 @@ export default (feature, descriptor) => {
     }
   }
 
-  const updateCoordinates = (role, coordinates) => {
-    console.log('[updateCoordinates]', role, coordinates)
-    geometries[role].setCoordinates(coordinates)
-
-    if (role === 'CENTER') {
-      const center = TS.read(toUTM(geometries[role]))
-      frame = frame.copy({ center })
-      feature.setGeometry(frame.geometry)
-      return ['POINT']
-    }
-  }
-
   return {
     capture,
-    updateSegment,
     updateCoordinates,
     roles: () => Object.keys(geometries),
     geometry: role => geometries[role]

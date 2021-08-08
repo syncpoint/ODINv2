@@ -357,6 +357,8 @@ class Modify extends PointerInteraction {
     for (let i = 0, ii = this.dragSegments_.length; i < ii; ++i) {
       const dragSegment = this.dragSegments_[i]
       const segmentData = dragSegment[0]
+      const role = segmentData.role
+      const feature = segmentData.feature
       const geometry = segmentData.geometry
       const segment = segmentData.segment
       const index = dragSegment[1]
@@ -364,29 +366,11 @@ class Modify extends PointerInteraction {
       while (vertex.length < geometry.getStride()) {
         vertex.push(segment[index][vertex.length])
       }
-    }
 
-    for (let i = 0, ii = this.dragSegments_.length; i < ii; ++i) {
-      const feature = this.dragSegments_[i][0].feature
-      this.changingFeature_ = true
-      const roles = this.special_.updateSegment(vertex, this.dragSegments_[i]) || []
-
-      // Re-index geometries for given roles:
-      roles.forEach(role => {
-        const nodes = []
-        this.index_.forEach(function (node) {
-          if (role === node.role) {
-            nodes.push(node)
-          }
-        })
-
-        nodes.forEach(node => this.index_.remove(node))
-        const geometry = this.special_.geometry(role)
-        const writer = indexWriters[geometry.getType()]
-        if (writer) writer(this.index_, feature, geometry, role)
-      })
-
-      this.changingFeature_ = false
+      if (segmentUpdaters[geometry.getType()]) {
+        const coordinates = segmentUpdaters[geometry.getType()](vertex, dragSegment)
+        this.setGeometryCoordinates_(role, feature, coordinates)
+      }
     }
 
     this.createOrUpdateVertexFeature_(vertex)
@@ -455,7 +439,6 @@ class Modify extends PointerInteraction {
 
 
   insertVertex_ (segmentData, vertex) {
-    console.log('[insertVertex_]', segmentData, vertex)
     const role = segmentData.role
     const segment = segmentData.segment
     const feature = segmentData.feature
@@ -489,10 +472,7 @@ class Modify extends PointerInteraction {
         return
     }
 
-    this.changingFeature_ = true
-    this.special_.updateCoordinates(role, coordinates)
-    this.changingFeature_ = false
-
+    this.setGeometryCoordinates_(role, feature, coordinates)
     this.index_.remove(segmentData)
     this.updateSegmentIndices_(geometry, index, depth, 1)
 
@@ -610,25 +590,7 @@ class Modify extends PointerInteraction {
 
       if (deleted) {
 
-        this.changingFeature_ = true
-        const roles = this.special_.updateCoordinates(segmentData.role, coordinates) || []
-        // Re-index geometries for given roles:
-        roles.forEach(role => {
-          const nodes = []
-          this.index_.forEach(function (node) {
-            if (role === node.role) {
-              nodes.push(node)
-            }
-          })
-
-          nodes.forEach(node => this.index_.remove(node))
-          const geometry = this.special_.geometry(role)
-          const writer = indexWriters[geometry.getType()]
-          if (writer) writer(this.index_, segmentData.feature, geometry, role)
-        })
-        this.changingFeature_ = false
-
-
+        this.setGeometryCoordinates_(segmentData.role, segmentData.feature, coordinates)
         const segments = []
 
         if (left !== undefined) {
@@ -671,9 +633,26 @@ class Modify extends PointerInteraction {
   }
 
 
-  setGeometryCoordinates_ (geometry, coordinates) {
+  setGeometryCoordinates_ (role, feature, coordinates) {
+
     this.changingFeature_ = true
-    geometry.setCoordinates(coordinates)
+    const roles = this.special_.updateCoordinates(role, coordinates) || []
+
+    // Re-index geometries for given roles:
+    roles.forEach(role => {
+      const nodes = []
+      this.index_.forEach(function (node) {
+        if (role === node.role) {
+          nodes.push(node)
+        }
+      })
+
+      nodes.forEach(node => this.index_.remove(node))
+      const geometry = this.special_.geometry(role)
+      const writer = indexWriters[geometry.getType()]
+      if (writer) writer(this.index_, feature, geometry, role)
+    })
+
     this.changingFeature_ = false
   }
 
@@ -948,5 +927,59 @@ indexWriters.GeometryCollection = (index, feature, geometry, role) => {
     const geometry = geometries[i]
     const writer = indexWriters[geometry.getType()]
     writer(index, feature, geometry, role)
+  }
+}
+
+const segmentUpdaters = {
+  Point: (vertex, [segmentData]) => {
+    const segment = segmentData.segment
+    const coordinates = vertex
+    segment[0] = vertex
+    segment[1] = vertex
+    return coordinates
+  },
+  MultiPoint: (vertex, [segmentData]) => {
+    const segment = segmentData.segment
+    const geometry = segmentData.geometry
+    const coordinates = geometry.getCoordinates()
+    coordinates[segmentData.index] = vertex
+    segment[0] = vertex
+    segment[1] = vertex
+    return coordinates
+  },
+  LineString: (vertex, [segmentData, index]) => {
+    const segment = segmentData.segment
+    const geometry = segmentData.geometry
+    const coordinates = geometry.getCoordinates()
+    coordinates[segmentData.index + index] = vertex
+    segment[index] = vertex
+    return coordinates
+  },
+  MultiLineString: (vertex, [segmentData, index]) => {
+    const segment = segmentData.segment
+    const geometry = segmentData.geometry
+    const depth = segmentData.depth
+    const coordinates = geometry.getCoordinates()
+    coordinates[depth[0]][segmentData.index + index] = vertex
+    segment[index] = vertex
+    return coordinates
+  },
+  Polygon: (vertex, [segmentData, index]) => {
+    const segment = segmentData.segment
+    const depth = segmentData.depth
+    const geometry = segmentData.geometry
+    const coordinates = geometry.getCoordinates()
+    coordinates[depth[0]][segmentData.index + index] = vertex
+    segment[index] = vertex
+    return coordinates
+  },
+  MultiPolygon: (vertex, [segmentData, index]) => {
+    const segment = segmentData.segment
+    const depth = segmentData.depth
+    const geometry = segmentData.geometry
+    const coordinates = geometry.getCoordinates()
+    coordinates[depth[1]][depth[0]][segmentData.index + index] = vertex
+    segment[index] = vertex
+    return coordinates
   }
 }
