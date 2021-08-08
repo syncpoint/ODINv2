@@ -1,6 +1,7 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
 import { tuplePartition, geometryPartition } from '../../shared/stores'
+import { writeGeometryObject } from './format'
 
 
 /**
@@ -42,6 +43,13 @@ export function LayerStore (db) {
     return {
       apply: () => this.deleteLayer(layerId),
       inverse: () => this.commands.putLayer(layer)
+    }
+  }
+
+  this.commands.updateGeometries = (oldGeometries, newGeometries) => {
+    return {
+      apply: () => this.updateGeometries(newGeometries),
+      inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
     }
   }
 }
@@ -152,4 +160,12 @@ LayerStore.prototype.deleteLayer = async function (layerId) {
   await this.propertiesStore.batch(operations)
   await this.geometryStore.batch(operations)
   this.emit('batch', { operations })
+}
+
+LayerStore.prototype.updateGeometries = async function (geometries) {
+  const ops = Object.entries(geometries)
+    .map(([key, value]) => [key, writeGeometryObject(value)])
+    .map(([key, value]) => ({ type: 'put', key, value }))
+  this.emit('geometries', { operations: ops })
+  return this.geometryStore.batch(ops)
 }

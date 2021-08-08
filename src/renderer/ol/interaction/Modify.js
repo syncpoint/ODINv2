@@ -305,7 +305,6 @@ class Modify extends PointerInteraction {
       }
 
       if (insertVertices.length) {
-        console.log('insertVertices', insertVertices.length)
         this.willModifyFeatures_(event, [insertVertices])
       }
 

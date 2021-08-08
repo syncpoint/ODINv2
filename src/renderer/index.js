@@ -70,13 +70,13 @@ const project = () => {
   services.master = levelup(new IPCDownClient(ipcRenderer))
   services.sessionStore = new SessionStore(services.master, page)
   services.undo = undo
-
   services.sources = new Sources(layerStore)
 
   // TODO: 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 
   services.selection = new Selection()
   services.dragAndDrop = dragAndDrop
+  services.layerStore = layerStore
 
   return (
     <ServiceProvider { ...services }>

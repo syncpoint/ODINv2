@@ -1,22 +1,9 @@
 import util from 'util'
-import GeoJSON from 'ol/format/GeoJSON'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
 import { isFeature } from '../ids'
-
-const format = new GeoJSON({
-  dataProjection: 'EPSG:4326', // WGS84
-  featureProjection: 'EPSG:3857' // Web-Mercator
-})
-
-const readFeature = source => format.readFeature(source)
-const readFeatures = source => format.readFeatures(source)
-// const readGeometry = source => format.readGeometry(source)
-// const writeGeometry = geometry => format.writeGeometry(geometry)
-// const writeGeometryObject = geometry => format.writeGeometryObject(geometry)
-// const writeFeaturesObject = features => format.writeFeaturesObject(features)
-// const writeFeatureObject = feature => format.writeFeatureObject(feature)
+import { readFeature, readFeatures, readGeometry } from '../store/format'
 
 
 /**
@@ -43,6 +30,7 @@ export function Sources (layerStore) {
   this.featureSource = null
 
   layerStore.on('batch', ({ operations }) => this.storeBatch_(operations))
+  layerStore.on('geometries', ({ operations }) => this.updateGeometries(operations))
 }
 
 util.inherits(Sources, Emitter)
@@ -64,4 +52,13 @@ Sources.prototype.getFeatureSource = async function () {
   const features = readFeatures(json)
   this.featureSource = new VectorSource({ features })
   return this.featureSource
+}
+
+Sources.prototype.updateGeometries = function (operations) {
+  operations
+    .map(({ key, value }) => ({ key, geometry: readGeometry(value) }))
+    .forEach(({ key, geometry }) => {
+      const feature = this.featureSource.getFeatureById(key)
+      feature.setGeometry(geometry)
+    })
 }

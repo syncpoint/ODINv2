@@ -28,7 +28,9 @@ export const Map = () => {
     ipcRenderer,
     sources,
     selection,
-    dragAndDrop
+    dragAndDrop,
+    layerStore,
+    undo
   } = useServices()
 
   React.useEffect(async () => {
@@ -69,13 +71,36 @@ export const Map = () => {
       deselectedLayer: featureLayer
     })
 
-    const modifyInteraction = new Modify({
-      source: partition.getSelected(),
-      snapToPointer: false
-    })
+    const modify = (() => {
+      let oldGeometries = {} // Cloned geometries BEFORE modify.
+
+      const interaction = new Modify({
+        source: partition.getSelected(),
+        snapToPointer: false
+      })
+
+      interaction.on('modifystart', ({ features }) => {
+        oldGeometries = features.getArray().reduce((acc, feature) => {
+          acc[feature.getId()] = feature.getGeometry().clone()
+          return acc
+        }, {})
+      })
+
+      interaction.on('modifyend', ({ features }) => {
+        const newGeometries = features.getArray().reduce((acc, feature) => {
+          acc[feature.getId()] = feature.getGeometry()
+          return acc
+        }, {})
+
+        const command = layerStore.commands.updateGeometries(oldGeometries, newGeometries)
+        undo.apply(command)
+      })
+
+      return interaction
+    })()
 
     const interactions = defaultInteractions({ doubleClickZoom: false }).extend(
-      [selectInteraction, modifyInteraction]
+      [selectInteraction, modify]
     )
 
     view.on('change', ({ target: view }) => {

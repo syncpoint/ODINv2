@@ -3,10 +3,9 @@ CURRENT FOCUS
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 97f54be5-7993-43f5-be67-5ed3107e4c38 - Modify: integrate persistence and undo/redo
+DEH - 19286105-c878-4deb-bcda-1f29a00b2e09 - Modify: support orbit area
 
 OPEN
-19286105-c878-4deb-bcda-1f29a00b2e09 - Modify: support orbit area
 0e2f5c6d-025f-4667-bbf2-44e96ca6830c - style/selected: show fixed handles for 2-point line strings
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
@@ -79,3 +78,4 @@ DEH - 9d859be3-d2a1-4ddc-8138-0ab143b28066 - Modify: bug - vertex feature is not
 DEH - 3ba90390-2de4-4e9f-819b-2d20982b1cd7 - Modify: support corridor (constraints, derived geometry)
 DEH - 3ba90390-2de4-4e9f-819b-2d20982b1cd7 - Modify: disable add/remove point for 2-point line strings
 DEH - 87649363-ab57-4ce1-bb37-d4f44d57de76 - Modify: default behavior should support geometry collection
+DEH - 97f54be5-7993-43f5-be67-5ed3107e4c38 - Modify: integrate persistence and undo/redo
