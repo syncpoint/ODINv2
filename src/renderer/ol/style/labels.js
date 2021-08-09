@@ -119,6 +119,7 @@ PolygonLabels.prototype.label = function (text) {
   return {
     geometry: this[text.position],
     options: {
+      ...text,
       text: lines,
       textAlign: text.align || 'center',
       offsetX: text.offsetX,
@@ -225,6 +226,7 @@ LineStringLabels.prototype.label = function (text) {
   return {
     geometry: new geom.Point(this.point(text)),
     options: {
+      ...text,
       text: lines,
       flip: true,
       rotation: α,

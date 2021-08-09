@@ -5,12 +5,13 @@ import { PolygonLabels } from '../labels'
 import './G_G_GAY' // LIMITED ACCESS AREA
 import './G_M_SP' // STRONG POINT
 
+const textStrokeWidth = 3
 const C = text => [{ text, position: 'center' }]
-const T = text => [{ text, position: 'top' }]
-const B = text => [{ text, position: 'bottom' }]
+const T = text => [{ text, position: 'top', textStrokeWidth }]
+const B = text => [{ text, position: 'bottom', textStrokeWidth }]
 const F = text => [{ text, position: 'footer', offsetY: 20 }]
-const LR = text => ['left', 'right'].map(position => ({ text, position }))
-const TLBR = text => ['top', 'left', 'bottom', 'right'].map(position => ({ text, position }))
+const LR = text => ['left', 'right'].map(position => ({ text, position, textStrokeWidth }))
+const TLBR = text => ['top', 'left', 'bottom', 'right'].map(position => ({ text, position, textStrokeWidth }))
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
@@ -103,7 +104,7 @@ styles.Polygon = ({ feature, resolution, mode }) => {
   const handles = featureStyles.handles(simplified)
   const labels = new PolygonLabels(simplified, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
-    .map(labels.label.bind(labels))
+    .map(text => ({ ...labels.label(text), ...text }))
     .filter(R.identity)
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 

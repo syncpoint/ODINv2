@@ -23,7 +23,7 @@ const withdrawLike = text => ({ styles, point, lineString, width, resolution }) 
       openArrow(resolution, angle, coords[1]),
       arc
     ])),
-    styles.text(TS.point(segment.midPoint()), {
+    styles.outlinedText(TS.point(segment.midPoint()), {
       text,
       flip: true,
       rotation: Math.PI - angle

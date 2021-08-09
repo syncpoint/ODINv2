@@ -23,7 +23,7 @@ const fanLike = label => options => {
     TS.projectCoordinates(segmentB.getLength(), angleB, B)(arrowOffsets)
   ]
 
-  const text = segment => styles.text(TS.point(segment.pointAlong(0.3)), {
+  const text = segment => styles.outlinedText(TS.point(segment.pointAlong(0.3)), {
     rotation: Math.PI - segment.angle(),
     text: label,
     flip: true

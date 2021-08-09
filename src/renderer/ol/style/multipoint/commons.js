@@ -29,7 +29,7 @@ export const transform = fn => args => {
 export const quads = 64
 export const deg2rad = Math.PI / 180
 
-export const arcText = styles => (anchor, angle, text) => styles.text(anchor, {
+export const arcText = styles => (anchor, angle, text) => styles.outlinedText(anchor, {
   text,
   flip: true,
   textAlign: () => 'center',

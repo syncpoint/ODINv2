@@ -29,9 +29,10 @@ import './G_T_AS'    // FOLLOW AND SUPPORT
 import './G_T_F'     // TASKS / FIX
 /* eslint-enable no-multi-spaces */
 
+const textStrokeWidth = 3
 const MT = text => [{ text, textAlign: 0.5, verticalAlign: 'top' }]
 const MB = text => [{ text, textAlign: 0.5, verticalAlign: 'bottom' }]
-const MM = text => [{ text, textAlign: 0.5 }]
+const MM = text => [{ text, textAlign: 0.5, textStrokeWidth }]
 const SE = text => ['start', 'end'].map(textAlign => ({ text, textAlign }))
 const PL = title => ['start', 'end'].map(textAlign => ({ text: [`"${title}"`, 't ? "(PL " + t + ")" : null'], textAlign }))
 
@@ -54,7 +55,7 @@ const RFL = [
 ]
 
 const MFP = [
-  { text: '"MFP"', textAlign: 0.5 },
+  { text: '"MFP"', textAlign: 0.5, textStrokeWidth },
   { text: ['w', 'w1'], textAlign: 'left', verticalAlign: 'bottom' }
 ]
 

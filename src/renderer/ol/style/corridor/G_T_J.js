@@ -33,7 +33,7 @@ styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
       ...spikes,
       openArrow(resolution, angle, coords[1])
     ])),
-    styles.text(TS.point(p1), {
+    styles.outlinedText(TS.point(p1), {
       text: 'C',
       flip: true,
       rotation

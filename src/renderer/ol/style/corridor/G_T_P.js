@@ -14,7 +14,7 @@ styles['G*T*P-----'] = ({ styles, lineString, width, resolution }) => {
       openArrow(resolution, angle, coords[1]),
       TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])([[0, 1], [0, -1]]))
     ])),
-    styles.text(TS.point(segment.midPoint()), {
+    styles.outlinedText(TS.point(segment.midPoint()), {
       text: 'P',
       flip: true,
       rotation: Math.PI - angle

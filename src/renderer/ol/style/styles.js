@@ -44,7 +44,6 @@ styles.DEFAULT = () => STYLE_OL
 
 // TODO: think about general stroke cache
 
-const STROKE_WHITE_2 = new Stroke({ color: 'white', width: 2 })
 const STROKE_WHITE_3 = new Stroke({ color: 'white', width: 3 })
 const MULTI_SELECT_HANDLE = regularShape({
   fill: fill({ color: 'white' }),
@@ -67,7 +66,13 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     strokeColor: Colors.stroke(standardIdentity),
     strokeFillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
     lineDash: status === 'A' ? LINE_DASH_DEFAULT : null,
-    fillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity)
+    fillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
+    fontWeight: 'normal',
+    fontSize: '12px',
+    fontFamily: 'sans-serif',
+    textFillColor: '#333',
+    textStrokeWidth: 3,
+    textStrokeColor: 'white'
   }
 
   const styles = {}
@@ -134,18 +139,71 @@ export const makeStyles = (sidcLike, mode = 'default') => {
       : options.offsetX
 
     // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-    const fontSize = options.fontSize || '10pt'
-    const fontFamily = 'sans-serif'
+
+    const fontWeight = options.fontWeight || props.fontWeight
+    const fontSize = options.fontSize || props.fontSize
+    const fontFamily = options.fontFamily || props.fontFamily
+    const font = options.font || `${fontWeight} ${fontSize} ${fontFamily}`
+    const textFillColor = options.textFillColor || props.textFillColor
+    const textStrokeColor = options.textStrokeColor || props.textStrokeColor
+
+    // Text stroke is optional:
+    const textStroke = options.textStrokeWidth
+      ? stroke({ width: options.textStrokeWidth, color: textStrokeColor })
+      : null
 
     return style({
       geometry,
       text: text({
         ...options,
-        font: `${fontSize} ${fontFamily}`,
-        stroke: STROKE_WHITE_2,
+        font,
+        stroke: textStroke,
+        fill: fill({ color: textFillColor }),
         textAlign,
         rotation,
-        offsetX
+        offsetX,
+        overflow: true
+      })
+    })
+  }
+
+  styles.outlinedText = (geometry, options) => {
+    const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
+    const textAlign = options.flip
+      ? options.textAlign && options.textAlign(flip(options.rotation))
+      : options.textAlign
+
+    const rotation = options.flip
+      ? flip(options.rotation)
+        ? options.rotation - Math.PI
+        : options.rotation
+      : options.rotation
+
+    const offsetX = options.flip
+      ? options.offsetX && options.offsetX(flip(options.rotation))
+      : options.offsetX
+
+    // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
+
+    const fontWeight = options.fontWeight || props.fontWeight
+    const fontSize = options.fontSize || props.fontSize
+    const fontFamily = options.fontFamily || props.fontFamily
+    const font = options.font || `${fontWeight} ${fontSize} ${fontFamily}`
+    const textStrokeWidth = options.textStrokeWidth || props.textStrokeWidth
+    const textStrokeColor = options.textStrokeColor || props.textStrokeColor
+    const textFillColor = options.textFillColor || props.textFillColor
+
+    return style({
+      geometry,
+      text: text({
+        ...options,
+        font,
+        stroke: stroke({ width: textStrokeWidth, color: textStrokeColor }),
+        fill: fill({ color: textFillColor }),
+        textAlign,
+        rotation,
+        offsetX,
+        overflow: true
       })
     })
   }

@@ -9,7 +9,10 @@ styles['G*M*NM----'] = ({ styles, feature, points }) => {
   return [
     styles.defaultStroke(TS.pointBuffer(TS.point(C))(segment.getLength())),
     feature.get('t')
-      ? styles.text(TS.point(A), { text: feature.get('t'), flip: false })
+      ? styles.outlinedText(TS.point(A), {
+        text: feature.get('t'),
+        flip: false
+      })
       : []
   ]
 }

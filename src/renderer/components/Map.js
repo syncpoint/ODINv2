@@ -57,8 +57,18 @@ export const Map = () => {
       selection.select(ids)
     })
 
-    const featureLayer = new VectorLayer({ source: partition.getDeselected(), style: featureStyle(selection) })
-    const selectedLayer = new VectorLayer({ source: partition.getSelected(), style: featureStyle(selection) })
+    const featureLayer = new VectorLayer({
+      source: partition.getDeselected(),
+      style: featureStyle(selection),
+      declutter: true
+    })
+
+    const selectedLayer = new VectorLayer({
+      source: partition.getSelected(),
+      style: featureStyle(selection),
+      declutter: true
+    })
+
     const layers = [
       new TileLayer({ source: new OSM() }),
       featureLayer,

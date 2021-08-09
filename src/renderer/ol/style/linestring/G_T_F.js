@@ -33,7 +33,7 @@ styles['G*T*F-----'] = ({ styles, resolution, lineString }) => {
       TS.lineString([p1, coords[1]]),
       TS.lineString([xs[0], xs[1], xs[2]])
     ])),
-    styles.text(TS.point(xs[3]), {
+    styles.outlinedText(TS.point(xs[3]), {
       text: 'F',
       flip: true,
       rotation: Math.PI - segment.angle(),

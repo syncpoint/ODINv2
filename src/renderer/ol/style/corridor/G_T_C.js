@@ -21,7 +21,7 @@ styles['G*T*C-----'] = ({ styles, lineString, width, resolution }) => {
       TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p0)([[-1, -1], [1, 1]]))),
       TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, 1], [1, -1]])))
     ])),
-    styles.text(TS.startPoint(lineString), {
+    styles.outlinedText(TS.startPoint(lineString), {
       text: 'C',
       flip: true,
       rotation: Math.PI - angle

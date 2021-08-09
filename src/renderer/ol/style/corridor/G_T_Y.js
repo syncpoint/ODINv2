@@ -20,7 +20,7 @@ styles['G*T*Y-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(geometry),
-    styles.text(TS.startPoint(lineString), {
+    styles.outlinedText(TS.startPoint(lineString), {
       text: 'B',
       flip: true,
       rotation: Math.PI - angle

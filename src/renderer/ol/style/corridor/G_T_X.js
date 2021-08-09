@@ -23,7 +23,7 @@ styles['G*T*X-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(geometry),
-    styles.text(TS.point(segment.midPoint()), {
+    styles.outlinedText(TS.point(segment.midPoint()), {
       text: 'C',
       flip: true,
       rotation: Math.PI - angle

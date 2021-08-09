@@ -13,7 +13,7 @@ styles['G*T*B-----'] = ({ styles, lineString, width }) => {
       lineString,
       TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
     ])),
-    styles.text(TS.point(segment.midPoint()), {
+    styles.outlinedText(TS.point(segment.midPoint()), {
       text: 'B',
       flip: true,
       rotation: Math.PI - angle

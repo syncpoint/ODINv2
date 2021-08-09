@@ -28,7 +28,7 @@ styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(geometry),
-    styles.text(TS.point(segment.midPoint()), {
+    styles.outlinedText(TS.point(segment.midPoint()), {
       text: 'RIP',
       flip: true,
       rotation: Math.PI - angle
