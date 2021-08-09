@@ -65,9 +65,11 @@ export const Map = () => {
       selectedLayer
     ]
 
+    const hitTolerance = 3
     const selectInteraction = select({
       selection,
       selectedLayer,
+      hitTolerance,
       deselectedLayer: featureLayer
     })
 
@@ -76,7 +78,8 @@ export const Map = () => {
 
       const interaction = new Modify({
         source: partition.getSelected(),
-        snapToPointer: false
+        snapToPointer: false,
+        hitTolerance
       })
 
       interaction.on('modifystart', ({ features }) => {

@@ -75,7 +75,9 @@ export default (feature, descriptor) => {
   }
 
   const suppressVertexFeature = role => {
-    return role === 'CENTER' && descriptor.maxPoints === 2
+    if (descriptor.layout === 'orbit') return true
+    else if (role === 'CENTER' && descriptor.maxPoints === 2) return true
+    else return false
   }
 
   return {
