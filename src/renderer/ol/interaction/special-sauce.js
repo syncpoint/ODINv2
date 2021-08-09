@@ -1,7 +1,8 @@
 import * as MILSTD from '../../2525c'
 import corridor from './corridor'
+import fan from './fan'
 
-const layouts = { corridor, orbit: corridor }
+const layouts = { corridor, orbit: corridor, fan }
 
 const defaultBehavior = (feature, descriptor) => ({
   capture: vertex => vertex,
