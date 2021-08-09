@@ -4,20 +4,19 @@ import * as ol from 'ol'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
-import { defaults as defaultInteractions } from 'ol/interaction'
 import ScaleLine from 'ol/control/ScaleLine'
 import '../epsg'
 import { useServices } from './services'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
-import select from '../ol/interaction/select'
-import Modify from '../ol/interaction/Modify'
+import defaultInteractions from '../ol/interaction'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
   resolution: 612,
   rotation: 0
 }
+
 
 /**
  *
@@ -42,32 +41,13 @@ export const Map = () => {
 
     const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
     const view = new ol.View({ ...viewport })
-
     const features = await sources.getFeatureSource()
     const partition = new Partition(features, selection)
-
-    ipcRenderer.on('EDIT_SELECT_ALL', () => {
-      const element = document.activeElement
-      const isBody = element => element.nodeName.toLowerCase() === 'body'
-      const isMap = element => element.id === 'map'
-      if (!element) return
-      if (!isBody(element) && !isMap(element)) return
-
-      const ids = partition.getDeselected().getFeatures().map(feature => feature.getId())
-      selection.select(ids)
-    })
-
-    const featureLayer = new VectorLayer({
-      source: partition.getDeselected(),
-      style: featureStyle(selection),
-      declutter: true
-    })
-
-    const selectedLayer = new VectorLayer({
-      source: partition.getSelected(),
-      style: featureStyle(selection),
-      declutter: true
-    })
+    const style = featureStyle(selection)
+    const declutter = true
+    const vectorLayer = source => new VectorLayer({ style, source, declutter })
+    const featureLayer = vectorLayer(partition.getDeselected())
+    const selectedLayer = vectorLayer(partition.getSelected())
 
     const layers = [
       new TileLayer({ source: new OSM() }),
@@ -75,45 +55,13 @@ export const Map = () => {
       selectedLayer
     ]
 
-    const hitTolerance = 3
-    const selectInteraction = select({
+    const interactions = defaultInteractions(
       selection,
-      selectedLayer,
-      hitTolerance,
-      deselectedLayer: featureLayer
-    })
-
-    const modify = (() => {
-      let oldGeometries = {} // Cloned geometries BEFORE modify.
-
-      const interaction = new Modify({
-        source: partition.getSelected(),
-        snapToPointer: false,
-        hitTolerance
-      })
-
-      interaction.on('modifystart', ({ features }) => {
-        oldGeometries = features.getArray().reduce((acc, feature) => {
-          acc[feature.getId()] = feature.getGeometry().clone()
-          return acc
-        }, {})
-      })
-
-      interaction.on('modifyend', ({ features }) => {
-        const newGeometries = features.getArray().reduce((acc, feature) => {
-          acc[feature.getId()] = feature.getGeometry()
-          return acc
-        }, {})
-
-        const command = layerStore.commands.updateGeometries(oldGeometries, newGeometries)
-        undo.apply(command)
-      })
-
-      return interaction
-    })()
-
-    const interactions = defaultInteractions({ doubleClickZoom: false }).extend(
-      [selectInteraction, modify]
+      layerStore,
+      undo,
+      partition,
+      featureLayer,
+      selectedLayer
     )
 
     view.on('change', ({ target: view }) => {
@@ -181,6 +129,17 @@ export const Map = () => {
     // Dim feature layer when we have a selection:
     selection.on('selection', ({ selected }) => {
       featureLayer.setOpacity(selected.length ? 0.5 : 1)
+    })
+
+    ipcRenderer.on('EDIT_SELECT_ALL', () => {
+      const element = document.activeElement
+      const isBody = element => element.nodeName.toLowerCase() === 'body'
+      const isMap = element => element.id === 'map'
+      if (!element) return
+      if (!isBody(element) && !isMap(element)) return
+
+      const ids = features.getFeatures().map(feature => feature.getId())
+      selection.select(ids)
     })
 
     // Setup Drag'n Drop.
