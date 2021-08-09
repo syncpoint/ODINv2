@@ -122,6 +122,18 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     })
   ])
 
+  styles.waspStroke = geometry => ([
+    style({
+      geometry,
+      stroke: stroke({ color: 'black', width: 3 })
+    }),
+    style({
+      geometry,
+      stroke: stroke({ color: 'yellow', width: 2, lineDash: [10, 10] })
+    })
+  ])
+
+
   styles.text = (geometry, options) => {
     const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
     const textAlign = options.flip

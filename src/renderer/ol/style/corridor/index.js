@@ -1,5 +1,7 @@
+import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as MILSTD from '../../../2525c'
+import * as TS from '../../ts'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import './G_T_B' // TASKS / BLOCK
@@ -27,11 +29,28 @@ styles['LineString:Point'] = ({ feature, resolution, mode }) => {
     ...geometry.getGeometries()[0].getCoordinates()
   ]))
 
-  const style = transform(styles[key])({
+  const tryer = () => transform(styles[key])({
     feature,
     resolution,
     styles: featureStyles
   })
 
-  return [...style, ...handles]
+  const catcher = err => {
+    return transform(({ lineString, width }) => {
+      // Get longest segment to place error message:
+      const segments = TS.segments(lineString).sort((a, b) => b.getLength() - a.getLength())
+      return [
+        featureStyles.waspStroke(TS.lineBuffer(lineString)(width / 2)),
+        featureStyles.outlinedText(TS.point(segments[0].midPoint()), {
+          text: `invalid geometry\n${err.message}`.toUpperCase(),
+          textFillColor: 'red',
+          flip: true,
+          textAlign: () => 'center',
+          rotation: Math.PI - segments[0].angle()
+        })
+      ]
+    })({ feature })
+  }
+
+  return [...R.tryCatch(tryer, catcher)(), ...handles]
 }
