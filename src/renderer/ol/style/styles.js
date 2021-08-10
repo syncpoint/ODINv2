@@ -134,7 +134,7 @@ export const makeStyles = (sidcLike, mode = 'default') => {
   ])
 
 
-  styles.text = (geometry, options) => {
+  styles.text = (geometry, options = {}) => {
     const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
     const textAlign = options.flip
       ? options.textAlign && options.textAlign(flip(options.rotation))
@@ -179,7 +179,7 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     })
   }
 
-  styles.outlinedText = (geometry, options) => {
+  styles.outlinedText = (geometry, options = {}) => {
     const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
     const textAlign = options.flip
       ? options.textAlign && options.textAlign(flip(options.rotation))
