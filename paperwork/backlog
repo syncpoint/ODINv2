@@ -3,7 +3,6 @@ CURRENT FOCUS
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
 
 OPEN
 7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator
@@ -89,3 +88,4 @@ DEH - 0e2f5c6d-025f-4667-bbf2-44e96ca6830c - style/selected: show fixed handles 
 DEH - 19286105-c878-4deb-bcda-1f29a00b2e09 - Modify: support orbit area (as corridor)
 DEH - a270598e-1c6d-4ae9-970c-c2e368fa9bc7 - Modify: support fan area
 DEH - 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 - project database: remove unnecessary `properties` scope
+DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*

@@ -34,6 +34,7 @@ const selectInteraction = (
   interaction.on('select', () => {
     // Propagate to global selection.
     // NOTE: selected, deselected are deltas/changes.
+    console.log('[Select]', interaction.getFeatures().getArray())
     const ids = features => features.map(feature => feature.getId())
     selection.set(ids(interaction.getFeatures().getArray()))
   })
