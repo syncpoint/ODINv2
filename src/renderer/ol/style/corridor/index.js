@@ -4,6 +4,13 @@ import * as MILSTD from '../../../2525c'
 import * as TS from '../../ts'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
+import './G_G_OAF' // ATTACK BY FIRE POSITION
+import './G_G_OLAA' // AXIS OF ADVANCE / AIRBORNE
+import './G_G_OLAGM' // AXIS OF ADVANCE / MAIN ATTACK
+import './G_G_OLAGS' // AXIS OF ADVANCE / SUPPORTING ATTACK
+import './G_G_OLAR' // AXIS OF ADVANCE / ATTACK, ROTARY WING
+import './G_G_OLAV' // AXIS OF ADVANCE / AVIATION
+import './G_G_PA' // AXIS OF ADVANCE FOR FEINT
 import './G_T_B' // TASKS / BLOCK
 import './G_T_C' // TASKS / CANALIZE
 import './G_T_H' // TASKS / BREACH

@@ -3,10 +3,9 @@ CURRENT FOCUS
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH -
+DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
 
 OPEN
-6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
 7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - G*G*GLB---: BOUNDARIES
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center
@@ -41,6 +40,14 @@ c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST:
 18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE: TASKS / SEIZE
 0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR: OBSTACLE EFFECT TURN
 1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simplfy styles while panning/zooming (custom PointerInteraction)
+c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
+6336f041-9d00-49b8-89f6-61fe8df3b5c3 - TACGRP.C2GM.GNL.ARS.FTFDAR - FORTIFIED AREA
+c36a4c6f-f980-4cee-95d4-5f1ad4dbc727 - TACGRP.C2GM.SPL.ARA.ENCMT - ENCIRCLEMENT
+14ecd341-3b8f-420c-b9b5-2a79827a132e - TACGRP.MOBSU.OBST.GNL.BLT - BELT
+d535d14b-6794-4319-b7cc-a63de28a9ce2 - TACGRP.MOBSU.OBST.GNL.Z - ZONE
+a20f5036-55bd-482d-8a05-f212be3eed7b - TACGRP.MOBSU.OBST.GNL.OFA - OBSTACLE FREE AREA
+b0975c24-70e4-4b79-a182-ff1282f9f6bd - TACGRP.MOBSU.OBST.GNL.ORA - OBSTACLE RESTRICTED AREA
+efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
