@@ -23,6 +23,87 @@ div {
   touch-action: none;
 }
 
+.panel-container {
+  z-index: 20;
+  pointer-events: none;
+
+  /*
+    Give WebKit a chance to calculate explicit height.
+    This is necessary to stretch children to desired height.
+  */
+  height: calc(100vh - 4em);
+
+  padding-top: 1em;
+  padding-bottom: 2em;
+  padding-left: 1em;
+  padding-right: 1em;
+
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: 26em auto 26em;
+  grid-template-rows: 10em auto;
+  grid-template-areas:
+    "T T T"
+    "L . R";
+
+}
+
+.panel {
+  pointer-events: auto;
+  user-select: none;
+  background-color: white;
+  box-shadow:
+    0px 2px 4px -1px rgba(0,0,0,0.2),
+    0px 4px 5px 0px rgba(0,0,0,0.14),
+    0px 1px 10px 0px rgba(0,0,0,0.12);
+}
+
+.panel-left {
+  grid-area: L;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-right {
+  grid-area: R;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-top {
+  grid-area: T;
+  display: flex;
+  flex-direction: column;
+}
+
+.osd {
+  border-width: 2px;
+  border-style: dashed;
+}
+
+.palette-container {
+  z-index: 30;
+  pointer-events: none;
+  padding-top: 1em;
+
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 40em;
+  grid-template-areas:
+    ". P .";
+}
+
+.palette {
+  pointer-events: auto;
+  user-select: none;
+  grid-area: P;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 40em;
+}
+
 /* Project-List / Card */
 
 .list {
