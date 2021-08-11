@@ -1,18 +1,33 @@
-CURRENT FOCUS
-02f37f2d-fbd7-4919-a580-a0edcd662ab6 - custom modify interaction
+CURRENT FOCUS - implement missing features
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
+DEH - 398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
 
 OPEN
-7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator
-64fc1894-3cdf-4f34-b39b-e893bdcbb949 - G*G*GLB---: BOUNDARIES
+d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE - INFILTRATION LANE
+c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
+2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE OBSTACLE
+18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE - TASKS / SEIZE
+0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR - OBSTACLE EFFECT TURN
+c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
+6336f041-9d00-49b8-89f6-61fe8df3b5c3 - TACGRP.C2GM.GNL.ARS.FTFDAR - FORTIFIED AREA
+c36a4c6f-f980-4cee-95d4-5f1ad4dbc727 - TACGRP.C2GM.SPL.ARA.ENCMT - ENCIRCLEMENT
+14ecd341-3b8f-420c-b9b5-2a79827a132e - TACGRP.MOBSU.OBST.GNL.BLT - BELT
+d535d14b-6794-4319-b7cc-a63de28a9ce2 - TACGRP.MOBSU.OBST.GNL.Z - ZONE
+a20f5036-55bd-482d-8a05-f212be3eed7b - TACGRP.MOBSU.OBST.GNL.OFA - OBSTACLE FREE AREA
+b0975c24-70e4-4b79-a182-ff1282f9f6bd - TACGRP.MOBSU.OBST.GNL.ORA - OBSTACLE RESTRICTED AREA
+efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
+04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
+da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
+5acbe7e0-f943-4176-9775-95073a792379 - command palette
+7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
+64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES
+27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   NOTE: polygon orientation is relevant for some features such as STRONG POINT
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
-27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
-ab740c4c-76df-4e03-b3c6-3244734c464d - LineString: simplify geometry depending on point count and resolution
 c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: ESM, upgrade to v9.x
 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
@@ -22,31 +37,14 @@ e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
   NOTE: graphics only
   DEPENDS: 6a932e7a-bd4b-49dc-b96a-7c36b749fbd1
 8cbb6c2e-7637-4603-9d2c-dd59b8252ea4 - preferences/project: color scheme (dark, medium, light)
-da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
-45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
 81c8e77a-3181-421f-8a64-8bb5590c2d34 - main: show project selection on activation (macOS)
 8ece194d-b5f3-4d6c-9746-6cc96018cd06 - menu/Window: list open projects
 9297ff3a-993d-481f-a194-02d979add9c4 - list/multiselect: support SHIFT+CLICK
 022c181d-e5a0-4ab4-b749-1068b4a95865 - feature properties: 'move to another layer'
-398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
-109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL: DOSE RATE CONTOUR LINES
-7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
-04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.*: AVIATION LINES
-d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE: INFILTRATION LANE
-c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST:
-2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.*: WIRE OBSTACLE
-18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE: TASKS / SEIZE
-0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR: OBSTACLE EFFECT TURN
 1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simplfy styles while panning/zooming (custom PointerInteraction)
-c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
-6336f041-9d00-49b8-89f6-61fe8df3b5c3 - TACGRP.C2GM.GNL.ARS.FTFDAR - FORTIFIED AREA
-c36a4c6f-f980-4cee-95d4-5f1ad4dbc727 - TACGRP.C2GM.SPL.ARA.ENCMT - ENCIRCLEMENT
-14ecd341-3b8f-420c-b9b5-2a79827a132e - TACGRP.MOBSU.OBST.GNL.BLT - BELT
-d535d14b-6794-4319-b7cc-a63de28a9ce2 - TACGRP.MOBSU.OBST.GNL.Z - ZONE
-a20f5036-55bd-482d-8a05-f212be3eed7b - TACGRP.MOBSU.OBST.GNL.OFA - OBSTACLE FREE AREA
-b0975c24-70e4-4b79-a182-ff1282f9f6bd - TACGRP.MOBSU.OBST.GNL.ORA - OBSTACLE RESTRICTED AREA
-efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
+7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator
+45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -89,3 +87,5 @@ DEH - 19286105-c878-4deb-bcda-1f29a00b2e09 - Modify: support orbit area (as corr
 DEH - a270598e-1c6d-4ae9-970c-c2e368fa9bc7 - Modify: support fan area
 DEH - 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 - project database: remove unnecessary `properties` scope
 DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
+DEH - ab740c4c-76df-4e03-b3c6-3244734c464d - LineString: simplify geometry depending on point count and resolution
+DEH - 109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL: DOSE RATE CONTOUR LINES

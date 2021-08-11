@@ -59,6 +59,7 @@ styles['TEXTS:G*M*OGR---'] = styles['TEXTS:POLYGON'] // OBSTACLE RESTRICTED AREA
 styles['TEXTS:G*M*OFA---'] = TLBR('"M"') // MINED AREA
 styles['TEXTS:G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
 styles['TEXTS:G*M*SP----'] = C('t') // STRONG POINT
+styles['TEXTS:G*M*NL----'] = T('t') // DOSE RATE CONTOUR LINES
 styles['TEXTS:G*F*AT----'] = styles['TEXTS:POLYGON'] // AREA TARGET
 // TODO: G*F*ATR--- : RECTANGULAR TARGET
 styles['TEXTS:G*F*ATG---'] = T('t') // SERIES OR GROUP OF TARGETS
