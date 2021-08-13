@@ -43,7 +43,7 @@ export const featureStyle = selection => {
       const cacheKey = `${feature.getRevision()}:${mode}:${feature.getId()}`
       return cache.entry(cacheKey, style)
     } catch (err) {
-      console.error('[style]', err)
+      console.error('[style]', err, feature)
     }
   }
 }

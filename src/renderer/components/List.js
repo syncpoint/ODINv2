@@ -1,5 +1,49 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { indexOf } from './selection'
+
+/**
+ *
+ */
+export const useListStore = options => {
+  const [state, setState] = React.useState({
+    /** entries :: [[id, entry]] */
+    entries: [],
+
+    /** focusId :: id || null */
+    focusId: null,
+
+    focusIndex: -1,
+
+    /** selected :: [id] */
+    selected: [],
+    scroll: 'smooth',
+    filter: null
+  })
+
+  const fetch = async focusId => {
+    const entries = await options.fetch(state.filter)
+    if (focusId) {
+      const focusIndex = indexOf(entries, focusId)
+      setState({ ...state, entries, focusId, focusIndex, scroll: 'smooth' })
+    } else {
+      const focusIndex = Math.min(entries.length - 1, state.focusIndex)
+      const focusId = focusIndex !== -1
+        ? entries[focusIndex][0]
+        : null
+      setState({ ...state, entries, focusId, focusIndex, scroll: 'smooth' })
+    }
+  }
+
+  React.useEffect(() => fetch(), [state.filter])
+
+  const dispatch = event => {
+    const handler = options.strategy[event.path]
+    if (handler) setState(handler(state, event))
+  }
+
+  return { state, dispatch, fetch }
+}
 
 /**
  *

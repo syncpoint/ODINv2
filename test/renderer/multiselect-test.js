@@ -1,7 +1,7 @@
 import assert from 'assert'
-import { multiselect } from '../../src/renderer/components/list/multiselect'
+import { multiselect } from '../../src/renderer/components/multiselect'
 
-describe('List-multiselect', function () {
+describe('multiselect', function () {
 
   it('filter', function () {
     const state = {}
@@ -74,21 +74,21 @@ describe('List-multiselect', function () {
     it('focus first option', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
-      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'smooth' }
+      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'auto' }
       assert.deepStrictEqual(actual, expected)
     })
 
     it('focus next option, clear selection', function () {
       const state = { entries, selected: ['x'], focusId: 'x', focusIndex: 0, scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
-      const expected = { entries, selected: [], focusId: 'y', focusIndex: 1, scroll: 'smooth' }
+      const expected = { entries, selected: [], focusId: 'y', focusIndex: 1, scroll: 'auto' }
       assert.deepStrictEqual(actual, expected)
     })
 
     it('retain focus, clear selection (EOL)', function () {
       const state = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
-      const expected = { entries, selected: [], focusId: 'y', focusIndex: 1, scroll: 'smooth' }
+      const expected = { entries, selected: [], focusId: 'y', focusIndex: 1, scroll: 'auto' }
       assert.deepStrictEqual(actual, expected)
     })
 
@@ -105,21 +105,21 @@ describe('List-multiselect', function () {
     it('focus first option', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
-      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'smooth' }
+      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'auto' }
       assert.deepStrictEqual(actual, expected)
     })
 
     it('focus previous option, clear selection', function () {
       const state = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
-      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'smooth' }
+      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'auto' }
       assert.deepStrictEqual(actual, expected)
     })
 
     it('retain focus, clear selection (BOL)', function () {
       const state = { entries, selected: ['x'], focusId: 'x', focusIndex: 0, scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
-      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'smooth' }
+      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0, scroll: 'auto' }
       assert.deepStrictEqual(actual, expected)
     })
 

@@ -66,9 +66,9 @@ div {
   padding: 8px;
 }
 
-.project[aria-selected="true"] {
+/* .project[aria-selected="true"] {
   background-color: lightyellow;
-}
+} */
 
 .cardcontent {
   display: flex;

@@ -5,6 +5,7 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 DEH - 398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
 
 OPEN
+98de035c-8289-4dd4-9854-6137a0716868 - check CAN GeoJSON layers for possible errors
 d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE - INFILTRATION LANE
 c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE OBSTACLE
