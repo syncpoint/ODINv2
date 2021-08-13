@@ -11,7 +11,7 @@ import { readFeature, readFeatures, readGeometry } from '../store/format'
  */
 const removeFeature = source => x => {
   if (x instanceof Feature) source.removeFeature(x)
-  else if (x.type === 'Feature') removeFeature(x.id)
+  else if (x.type === 'Feature') source.removeFeature(source.getFeatureById(x.id))
   else if (typeof x === 'string') source.removeFeature(source.getFeatureById(x))
 }
 
@@ -55,6 +55,7 @@ Sources.prototype.getFeatureSource = async function () {
 }
 
 Sources.prototype.updateGeometries = function (operations) {
+  console.log('[Sources] updateGeometries', operations)
   operations
     .map(({ key, value }) => ({ key, geometry: readGeometry(value) }))
     .forEach(({ key, geometry }) => {
