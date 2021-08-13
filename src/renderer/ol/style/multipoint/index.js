@@ -17,8 +17,8 @@ styles.MultiPoint = ({ feature, resolution, mode }) => {
   const geometry = feature.getGeometry()
   const handles = featureStyles.handles(geometry)
 
-  const style = styles[key]
-    ? transform(styles[key])({
+  const style = styles[`MultiPoint:${key}`]
+    ? transform(styles[`MultiPoint:${key}`])({
       feature,
       resolution,
       styles: featureStyles
