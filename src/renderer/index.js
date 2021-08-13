@@ -17,6 +17,9 @@ import { LayerStore } from './store/LayerStore'
 import { Sources } from './model/Sources'
 import { DragAndDrop } from './DragAndDrop'
 import { Undo } from './Undo'
+import { CommandRegistry } from './commands/CommandRegistry'
+import EventEmitter from '../shared/emitter'
+import { PaletteEntries } from './model/PaletteEntries'
 
 process.traceProcessWarnings = true
 
@@ -66,6 +69,7 @@ const project = () => {
   })
 
   const services = {}
+  services.emitter = new EventEmitter()
   services.ipcRenderer = ipcRenderer
   services.master = levelup(new IPCDownClient(ipcRenderer))
   services.sessionStore = new SessionStore(services.master, page)
@@ -77,6 +81,10 @@ const project = () => {
   services.selection = new Selection()
   services.dragAndDrop = dragAndDrop
   services.layerStore = layerStore
+  services.commandRegistry = new CommandRegistry(services)
+  services.paletteEntries = new PaletteEntries(services.selection, layerStore)
+
+  services.emitter.on('command:open-command-palette', event => console.log(event.path))
 
   return (
     <ServiceProvider { ...services }>

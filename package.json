@@ -55,6 +55,7 @@
     "luxon": "^2.0.1",
     "mathjs": "^9.4.4",
     "milsymbol": "^2.0.0",
+    "mousetrap": "^1.6.5",
     "ol": "^6.6.1",
     "path-to-regexp": "^6.2.0",
     "proj4": "^2.7.4",
