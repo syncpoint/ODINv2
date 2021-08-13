@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import descriptors from './2525c.json'
+import raw from './2525c.json'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
@@ -56,11 +56,13 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
-const index = descriptors.reduce((acc, descriptor) => {
+export const descriptors = raw.reduce((acc, descriptor) => {
   const sidc = parameterized(descriptor.sidc)
   acc[sidc] = {
     sidc,
-    hierarchy: R.drop(1, descriptor.hierarchy).join(', '),
+    hierarchy: R.drop(1, descriptor.hierarchy),
+    dimension: descriptor.dimension,
+    scope: descriptor.scope,
     geometry: {
       type: descriptor.geometry,
       ...descriptor.parameters
@@ -72,6 +74,12 @@ const index = descriptors.reduce((acc, descriptor) => {
 
 export const geometry = sidc => {
   if (!sidc) return
-  const feature = index[parameterized(sidc)]
+  const feature = descriptors[parameterized(sidc)]
   return feature && feature.geometry
+}
+
+export const geometryType = sidc => {
+  if (!sidc) return
+  const feature = descriptors[parameterized(sidc)]
+  return feature && feature.geometry && feature.geometry.type
 }
