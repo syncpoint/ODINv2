@@ -137,6 +137,10 @@ LayerStore.prototype.getFeatures = async function (layerId) {
   return { type: 'FeatureCollection', features }
 }
 
+LayerStore.prototype.getFeatureProperties = async function (featureId) {
+  return this.propertiesStore.get(featureId)
+}
+
 LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
   await this.propertiesStore.put(id, { name, id })
