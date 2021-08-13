@@ -60,6 +60,12 @@ const scrollIntoView = (refs, index, behavior) =>
  *
  */
 export const List = React.forwardRef((props, ref) => {
+  const { renderEntry, focusId, selected } = props
+  const entries = props.entries.reduce((acc, [id, value]) => {
+    acc[id] = value
+    return acc
+  }, {})
+
   const cardrefs = props.entries.map(_ => React.createRef())
 
   React.useEffect(() => {
@@ -76,10 +82,12 @@ export const List = React.forwardRef((props, ref) => {
     // Prevent native select/all:
     if (metaKey && key === 'a') event.preventDefault()
 
-    if (metaKey && props.focusId !== null) {
-      if (props.onOpen && key === 'ArrowDown') props.onOpen(props.focusId)
-      if (props.onBack && key === 'ArrowUp') props.onBack(props.focusId)
+    if (metaKey && focusId !== null) {
+      if (props.onOpen && key === 'ArrowDown') props.onOpen(entries[focusId])
+      if (props.onBack && key === 'ArrowUp') props.onBack(entries[focusId])
     }
+
+    if (props.onEnter && key === 'Enter') props.onEnter(entries[focusId])
 
     props.dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
   }
@@ -88,30 +96,19 @@ export const List = React.forwardRef((props, ref) => {
     props.dispatch({ path: 'click', id, shiftKey, metaKey })
   }
 
-  const handleFocus = () => {
-    props.dispatch({ path: 'focus' })
-  }
+  const handleFocus = () => props.dispatch({ path: 'focus' })
 
-  const card = (entry, index) => {
-    const id = entry[0]
-    const focused = props.focusId === id
-    const selected = props.selected.includes(id)
+  const card = ([id, entry], index) => {
+    const props = {
+      id,
+      entry,
+      focused: focusId === id,
+      selected: selected.includes(id),
+      ref: cardrefs[index],
+      handleClick: event => handleClick(id, event)
+    }
 
-    const className = focused
-      ? 'card-container focus'
-      : 'card-container'
-
-    return (
-      <div
-        className={className}
-        key={id}
-        ref={cardrefs[index]}
-        role='option'
-        onClick={event => handleClick(id, event)}
-      >
-        { props.renderEntry(entry, { focused, selected }) }
-      </div>
-    )
+    return renderEntry(props)
   }
 
   return (
@@ -138,6 +135,7 @@ List.propTypes = {
   scroll: PropTypes.string.isRequired,
   onOpen: PropTypes.func,
   onBack: PropTypes.func,
+  onEnter: PropTypes.func,
   onFocus: PropTypes.func,
   onSelect: PropTypes.func
 }

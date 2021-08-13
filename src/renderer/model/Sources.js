@@ -55,7 +55,6 @@ Sources.prototype.getFeatureSource = async function () {
 }
 
 Sources.prototype.updateGeometries = function (operations) {
-  console.log('[Sources] updateGeometries', operations)
   operations
     .map(({ key, value }) => ({ key, geometry: readGeometry(value) }))
     .forEach(({ key, geometry }) => {

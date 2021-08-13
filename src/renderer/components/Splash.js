@@ -110,7 +110,7 @@ ButtonBar.propTypes = {
 /**
  *
  */
-const Project = props => {
+const Project = React.forwardRef((props, ref) => {
   // TODO: remove dependencies on ipc and store if possible
   const { ipcRenderer, projectStore } = useServices()
   const { id, project, selected } = props
@@ -123,9 +123,14 @@ const Project = props => {
     ? props.project.tags.includes('OPEN')
     : false
 
+  const className = props.focused
+    ? 'project card-container focus'
+    : 'project card-container'
+
   return (
     <div
-      className='project'
+      ref={ref}
+      className={className}
       tabIndex={0}
       aria-selected={selected}
     >
@@ -148,7 +153,7 @@ const Project = props => {
       <Media loadPreview={loadPreview}/>
     </div>
   )
-}
+})
 
 Project.propTypes = {
   id: PropTypes.string.isRequired,
@@ -193,16 +198,24 @@ export const Splash = () => {
   const handleCreate = () => projectStore.createProject()
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
   const handleFocusList = () => ref.current.focus()
-  const handleOpen = id => console.log('onOpen', id)
-  const handleBack = id => console.log('onBack', id)
+  const handleOpen = project => console.log('onOpen', project)
+  const handleBack = project => console.log('onBack', project)
+  const handleEnter = project => console.log('onEnter', project)
+
   const handleFocus = id => console.log('onFocus', id)
   const handleSelect = id => console.log('onSelect', id)
 
-  const renderEntry = ([id, project], props) => <Project
-    id={id}
-    project={project}
+  /* eslint-disable react/prop-types */
+  const renderEntry = props => <Project
+    key={props.id}
+    ref={props.ref}
+    role='option'
+    id={props.id}
+    project={props.entry}
+    onClick={props.handleClick}
     { ...props }
   />
+  /* eslint-enable react/prop-types */
 
   return (
     <div
@@ -225,6 +238,7 @@ export const Splash = () => {
         renderEntry={renderEntry}
         onOpen={handleOpen}
         onBack={handleBack}
+        onEnter={handleEnter}
         onFocus={handleFocus}
         onSelect={handleSelect}
         dispatch={dispatch}
