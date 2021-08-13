@@ -13,6 +13,7 @@ export const circle = options => new Circle(options)
 export const fill = options => new Fill(options)
 export const regularShape = options => new RegularShape(options)
 
+// TODO: move up one level (ol/)
 export const geometryType = arg => {
   if (arg instanceof Feature) return geometryType(arg.getGeometry())
   else if (arg instanceof GeometryCollection) return arg.getGeometries().map(geometryType).join(':')

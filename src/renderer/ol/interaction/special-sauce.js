@@ -1,8 +1,12 @@
 import * as MILSTD from '../../2525c'
 import corridor from './corridor'
 import fan from './fan'
+import { geometryType } from '../style/styles'
 
-const layouts = { corridor, orbit: corridor, fan }
+const layouts = {
+  'LineString:Point': corridor,
+  MultiPoint: fan
+}
 
 const defaultBehavior = (feature, descriptor) => ({
   capture: vertex => vertex,
@@ -18,9 +22,10 @@ const defaultBehavior = (feature, descriptor) => ({
 
 export const special = feature => {
   const descriptor = MILSTD.geometry(feature.get('sidc'))
-  if (!descriptor || !descriptor.layout) return defaultBehavior(feature, descriptor)
+  if (!descriptor) return defaultBehavior(feature, descriptor)
+  const key = geometryType(feature)
 
-  return layouts[descriptor.layout]
-    ? layouts[descriptor.layout](feature, descriptor)
+  return layouts[key]
+    ? layouts[key](feature, descriptor)
     : defaultBehavior(feature, descriptor)
 }
