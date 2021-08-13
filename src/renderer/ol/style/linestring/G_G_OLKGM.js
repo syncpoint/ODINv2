@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // DIRECTION OF ATTACK / MAIN ATTACK
-styles['G*G*OLKGM-'] = ({ styles, lineString }) => {
+styles['LineString:G*G*OLKGM-'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()

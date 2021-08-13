@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // ABATIS
-styles['G*M*OS----'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*M*OS----'] = ({ styles, resolution, lineString }) => {
   const width = resolution * 10
   const line = TS.lengthIndexedLine(lineString)
   const firstSegment = line.extractLine(0, width)

@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FERRY
-styles['G*M*BCF---'] = ({ styles, lineString }) => {
+styles['LineString:G*M*BCF---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const length = segment.getLength()

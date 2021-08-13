@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // LINE OF CONTACT
-styles['G*G*GLC---'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*G*GLC---'] = ({ styles, resolution, lineString }) => {
   const line = TS.lengthIndexedLine(lineString)
   const length = line.getEndIndex()
   const width = resolution * 15
