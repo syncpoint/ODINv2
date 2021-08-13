@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FOXHOLE, EMPLACEMENT OR WEAPON SITE
-styles['G*M*SW----'] = ({ styles, lineString }) => {
+styles['LineString:G*M*SW----'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()

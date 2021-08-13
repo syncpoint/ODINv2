@@ -2,7 +2,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // MINIMUM SAFE DISTANCE ZONES
-styles['G*M*NM----'] = ({ styles, feature, points }) => {
+styles['MultiPoint:G*M*NM----'] = ({ styles, feature, points }) => {
   const [C, A] = TS.coordinates(points)
   const segment = TS.segment([C, A])
 

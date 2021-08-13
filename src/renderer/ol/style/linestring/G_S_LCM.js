@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // MOVING CONVOY
-styles['G*S*LCM---'] = ({ styles, lineString }) => {
+styles['LineString:G*S*LCM---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const fractions = [[0, -0.1], [0.8, -0.1], [0.8, -0.16], [1, 0], [0.8, 0.16], [0.8, 0.1], [0, 0.1]]

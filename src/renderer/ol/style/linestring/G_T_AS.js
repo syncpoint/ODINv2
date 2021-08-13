@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FOLLOW AND SUPPORT
-styles['G*T*AS----'] = ({ styles, lineString }) => {
+styles['LineString:G*T*AS----'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
 

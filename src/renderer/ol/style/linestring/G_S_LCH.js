@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // HALTED CONVOY
-styles['G*S*LCH---'] = ({ styles, lineString }) => {
+styles['LineString:G*S*LCH---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const xs = TS.projectCoordinates(segment.getLength(), segment.angle(), coords[0])([

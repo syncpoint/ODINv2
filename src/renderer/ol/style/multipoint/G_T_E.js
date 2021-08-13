@@ -4,7 +4,7 @@ import { deg2rad, quads, arcText } from './commons'
 import * as TS from '../../ts'
 
 // TASKS / ISOLATE
-styles['G*T*E-----'] = ({ styles, points, resolution }) => {
+styles['MultiPoint:G*T*E-----'] = ({ styles, points, resolution }) => {
   const delta = 330 * deg2rad
   const coords = TS.coordinates(points)
   const segment = TS.segment(coords)

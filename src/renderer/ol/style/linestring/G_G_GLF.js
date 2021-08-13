@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FORWARD LINE OF OWN TROOPS (FLOT)
-styles['G*G*GLF---'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*G*GLF---'] = ({ styles, resolution, lineString }) => {
   const line = TS.lengthIndexedLine(lineString)
   const length = line.getEndIndex()
   const width = resolution * 15

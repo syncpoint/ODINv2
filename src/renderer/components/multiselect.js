@@ -7,13 +7,13 @@ import { toggleSelection, indexOf, firstId, lastId } from './selection'
  */
 
 /**
- * Selection does not follow focus:
- *   If an option would automatically be selected with focus,
- *   this would be reflected immediately in the entire application.
- *   Specifically, in feature list, feature properties would pop up each and
- *   every time, a feature gets focus. This is something we do not want.
+ * Selection does not follow focus.
  */
 export const multiselect = {
+
+  /**
+   * Apply string to filter list entries.
+   */
   filter: (state, { filter }) => ({ ...state, filter }),
 
   /** Focus clicked entry, optionally selecting it. */
@@ -73,7 +73,7 @@ export const multiselect = {
       focusId,
       focusIndex,
       selected,
-      scroll: 'smooth'
+      scroll: 'auto'
     }
   },
 
@@ -95,7 +95,7 @@ export const multiselect = {
       focusId,
       focusIndex,
       selected,
-      scroll: 'smooth'
+      scroll: 'auto'
     }
   },
 

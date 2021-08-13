@@ -17,7 +17,7 @@ const teeth = (lineString, resolution) => {
 }
 
 // ANTITANK DITCH / UNDER CONSTRUCTION
-styles['G*M*OADU--'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*M*OADU--'] = ({ styles, resolution, lineString }) => {
   return styles.solidStroke(TS.collect([
     lineString,
     ...teeth(lineString, resolution)])
@@ -25,7 +25,7 @@ styles['G*M*OADU--'] = ({ styles, resolution, lineString }) => {
 }
 
 // ANTITANK DITCH / COMPLETE
-styles['G*M*OADC--'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*M*OADC--'] = ({ styles, resolution, lineString }) => {
   return styles.filledStroke(TS.collect([
     lineString,
     ...teeth(lineString, resolution)])

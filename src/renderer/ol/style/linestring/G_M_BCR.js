@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // RAFT SITE
-styles['G*M*BCR---'] = ({ styles, lineString }) => {
+styles['LineString:G*M*BCR---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()

@@ -39,7 +39,7 @@ const fanLike = label => options => {
   ]
 }
 
-styles['G*T*US----'] = fanLike('S') // TASKS / SCREEN
-styles['G*T*UG----'] = fanLike('G') // TASKS / GUARD
-styles['G*T*UC----'] = fanLike('C') // TASKS / COVER
-styles['G*G*GAS---'] = fanLike(null) // SEARCH AREA/RECONNAISSANCE AREA
+styles['MultiPoint:G*T*US----'] = fanLike('S') // TASKS / SCREEN
+styles['MultiPoint:G*T*UG----'] = fanLike('G') // TASKS / GUARD
+styles['MultiPoint:G*T*UC----'] = fanLike('C') // TASKS / COVER
+styles['MultiPoint:G*G*GAS---'] = fanLike(null) // SEARCH AREA/RECONNAISSANCE AREA

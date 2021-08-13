@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TASKS / FIX
-styles['G*T*F-----'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()

@@ -1,53 +1,165 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Button } from 'antd'
 import { useServices } from './services'
-import { List } from './list/List'
-import { multiselect } from './list/multiselect'
+import { List, useListStore } from './List'
+import { singleselect } from './singleselect'
 import { Search } from './Search'
-import { Project } from './project/Project'
-import { indexOf } from './list/selection'
+import { militaryFormat } from '../../shared/datetime'
+
 
 /**
  *
  */
-const useListStore = options => {
-  const [state, setState] = React.useState({
-    /** entries :: [[id, entry]] */
-    entries: [],
+const Title = props => {
+  const [value, setValue] = React.useState(props.value)
+  const handleChange = ({ target }) => setValue(target.value)
+  const handleBlur = () => props.onChange(value)
 
-    /** focusId :: id || null */
-    focusId: null,
+  // Don't let event bubble up to list.
+  // This is mainly for capturing META-A (multiselect) right here.
+  const handleKeyDown = event => event.stopPropagation()
 
-    focusIndex: -1,
+  return <input
+    className='cardtitle'
+    value={value}
+    onChange={handleChange}
+    onBlur={handleBlur}
+    onKeyDown={handleKeyDown}
+  />
+}
 
-    /** selected :: [id] */
-    selected: [],
-    scroll: 'smooth',
-    filter: null
-  })
+Title.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired
+}
 
-  const fetch = async focusId => {
-    const entries = await options.fetch(state.filter)
-    if (focusId) {
-      const focusIndex = indexOf(entries, focusId)
-      setState({ ...state, entries, focusId, focusIndex, scroll: 'smooth' })
-    } else {
-      const focusIndex = Math.min(entries.length - 1, state.focusIndex)
-      const focusId = focusIndex !== -1
-        ? entries[focusIndex][0]
-        : null
-      setState({ ...state, entries, focusId, focusIndex, scroll: 'smooth' })
-    }
-  }
+/**
+ *
+ */
+const Media = props => {
+  const scale = 0.5
+  const width = `${320 * scale}px`
+  const height = `${240 * scale}px`
+  const [source, setSource] = React.useState(undefined)
 
-  React.useEffect(() => fetch(), [state.filter])
+  React.useEffect(async () => {
+    const source = await props.loadPreview()
+    setSource(source)
+  }, [])
 
-  const dispatch = event => {
-    const handler = options.strategy[event.path]
-    if (handler) setState(handler(state, event))
-  }
+  const placeholder = (text = null) => (
+    <div className='placeholder' style={{ width, height }}>
+      { text }
+    </div>
+  )
 
-  return { state, dispatch, fetch }
+  return source === undefined
+    ? placeholder()
+    : source === null
+      ? placeholder('Preview not available')
+      : <img src={source} width={width} height={height}/>
+}
+
+Media.propTypes = {
+  loadPreview: PropTypes.func.isRequired
+}
+
+
+/**
+ *
+ */
+const CustomButton = props => (
+  <Button
+    danger={props.danger}
+    onClick={props.onClick}
+    disabled={props.disabled}
+    style={{ ...props.style, background: 'inherit' }}
+  >
+    {props.text}
+  </Button>
+)
+
+CustomButton.propTypes = {
+  danger: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
+  style: PropTypes.object,
+  text: PropTypes.string.isRequired,
+  disabled: PropTypes.bool
+}
+
+
+/**
+ *
+ */
+const ButtonBar = props => (
+  <div style={{
+    display: 'flex',
+    marginTop: 'auto',
+    gap: '8px'
+  }}>
+    {props.children}
+  </div>
+)
+
+ButtonBar.propTypes = {
+  children: PropTypes.array.isRequired
+}
+
+
+/**
+ *
+ */
+const Project = React.forwardRef((props, ref) => {
+  // TODO: remove dependencies on ipc and store if possible
+  const { ipcRenderer, projectStore } = useServices()
+  const { id, project, selected } = props
+  const send = message => () => ipcRenderer.send(message, id)
+  const loadPreview = () => projectStore.getPreview(id)
+  const handleRename = name => projectStore.updateProject(id, { ...project, name })
+  const handleDelete = () => projectStore.deleteProject(id)
+
+  const isOpen = props.project.tags
+    ? props.project.tags.includes('OPEN')
+    : false
+
+  const className = props.focused
+    ? 'project card-container focus'
+    : 'project card-container'
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      tabIndex={0}
+      aria-selected={selected}
+    >
+      <div className='cardcontent'>
+        <Title value={project.name} onChange={handleRename}/>
+        <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
+
+        <ButtonBar>
+          <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
+          <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
+          <CustomButton
+            danger
+            onClick={handleDelete}
+            style={{ marginLeft: 'auto' }}
+            text='Delete'
+            disabled={isOpen}
+          />
+        </ButtonBar>
+      </div>
+      <Media loadPreview={loadPreview}/>
+    </div>
+  )
+})
+
+Project.propTypes = {
+  id: PropTypes.string.isRequired,
+  project: PropTypes.object.isRequired,
+  focused: PropTypes.bool.isRequired,
+  selected: PropTypes.bool.isRequired
 }
 
 
@@ -59,7 +171,7 @@ export const Splash = () => {
   const ref = React.useRef()
 
   const { state, dispatch, fetch } = useListStore({
-    strategy: multiselect,
+    strategy: singleselect,
     fetch: filter => projectStore.getProjects(filter)
   })
 
@@ -86,16 +198,24 @@ export const Splash = () => {
   const handleCreate = () => projectStore.createProject()
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
   const handleFocusList = () => ref.current.focus()
-  const handleOpen = id => console.log('onOpen', id)
-  const handleBack = id => console.log('onBack', id)
+  const handleOpen = project => console.log('onOpen', project)
+  const handleBack = project => console.log('onBack', project)
+  const handleEnter = project => console.log('onEnter', project)
+
   const handleFocus = id => console.log('onFocus', id)
   const handleSelect = id => console.log('onSelect', id)
 
-  const renderEntry = ([id, project], props) => <Project
-    id={id}
-    project={project}
+  /* eslint-disable react/prop-types */
+  const renderEntry = props => <Project
+    key={props.id}
+    ref={props.ref}
+    role='option'
+    id={props.id}
+    project={props.entry}
+    onClick={props.handleClick}
     { ...props }
   />
+  /* eslint-enable react/prop-types */
 
   return (
     <div
@@ -114,10 +234,11 @@ export const Splash = () => {
       </div>
       <List
         ref={ref}
-        multiselect={true}
+        multiselect={false}
         renderEntry={renderEntry}
         onOpen={handleOpen}
         onBack={handleBack}
+        onEnter={handleEnter}
         onFocus={handleFocus}
         onSelect={handleSelect}
         dispatch={dispatch}

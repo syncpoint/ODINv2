@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FOLLOW AND ASSUME
-styles['G*T*A-----'] = ({ styles, lineString }) => {
+styles['LineString:G*T*A-----'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()

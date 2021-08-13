@@ -110,8 +110,8 @@ styles.LineString = ({ feature, resolution, mode }) => {
     .map(labels.label.bind(labels))
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
-  const style = styles[key]
-    ? transform(styles[key])({
+  const style = styles[`LineString:${key}`]
+    ? transform(styles[`LineString:${key}`])({
       feature,
       resolution,
       styles: featureStyles

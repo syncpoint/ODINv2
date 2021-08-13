@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // DIRECTION OF ATTACK FOR FEINT
-styles['G*G*PF----'] = ({ styles, lineString }) => {
+styles['LineString:G*G*PF----'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = R.last(TS.segments(lineString))
   const angle = segment.angle()
