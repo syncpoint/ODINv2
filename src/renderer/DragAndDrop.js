@@ -2,6 +2,7 @@ import util from 'util'
 import { promises as fs } from 'fs'
 import path from 'path'
 import uuid from 'uuid-random'
+import { reproject } from 'reproject'
 import Emitter from '../shared/emitter'
 
 const readJSON = async path => {
@@ -44,6 +45,7 @@ DragAndDrop.prototype.drop = async function (event) {
       geoJSON.features = geoJSON.features.map(feature => {
         delete feature.title // legacy
         feature.id = `feature:${layerUUID}/${uuid()}`
+        feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
         return feature
       })
 

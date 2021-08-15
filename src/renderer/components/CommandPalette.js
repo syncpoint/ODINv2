@@ -13,12 +13,11 @@ export const CommandPalette = props => {
     fetch: (filter) => {
       return paletteEntries.entries()
         .filter(command => !filter || command.description().toLowerCase().includes(filter.toLowerCase()))
-        .map(command => [command.id(), command])
     }
   })
 
-  const commands = state.entries.reduce((acc, [id, value]) => {
-    acc[id] = value
+  const commands = state.entries.reduce((acc, entry) => {
+    acc[entry.id] = entry
     return acc
   }, {})
 
@@ -56,19 +55,17 @@ export const CommandPalette = props => {
   }
 
   /* eslint-disable react/prop-types */
-  const entry = props => {
-    return (
-      <div
-        key={props.key}
-        ref={props.ref}
-        role='option'
-        onClick={props.handleClick}
-        style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
-      >
-        <span>{props.value.description()}</span>
-      </div>
-    )
-  }
+  const entry = props => (
+    <div
+      key={props.entry.id}
+      ref={props.ref}
+      role='option'
+      onClick={props.handleClick}
+      style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
+    >
+      <span>{props.entry.description()}</span>
+    </div>
+  )
   /* eslint-enable react/prop-types */
 
   return (

@@ -17,7 +17,7 @@ export function CommandRegistry (services) {
     shortcut('close-command-palette', null, 'Open command palette'),
     shortcut('key-escape', 'escape', 'Escape key')
   ].reduce((acc, command) => {
-    acc[command.id()] = command
+    acc[command.id] = command
     return acc
   }, {})
 

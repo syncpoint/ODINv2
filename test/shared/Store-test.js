@@ -93,6 +93,32 @@ describe('Store', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
+  it('values :: () -> Promise([value])', async function () {
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const store = new Store(db)
+
+    await db.put('prefix-a', 0)
+    await db.put('prefix-b', 1)
+    await db.put('c', 2)
+
+    const expected = [2, 0, 1]
+    const actual = await store.values()
+    assert.deepStrictEqual(actual, expected)
+  })
+
+  it('values :: String -> Promise([value])', async function () {
+    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const store = new Store(db)
+
+    await db.put('prefix-a', 0)
+    await db.put('prefix-b', 1)
+    await db.put('c', 2)
+
+    const expected = [0, 1]
+    const actual = await store.values('prefix')
+    assert.deepStrictEqual(actual, expected)
+  })
+
   it('list :: () -> Promise([{ key, ...value }])', async function () {
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new Store(db)

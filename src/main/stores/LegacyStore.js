@@ -32,12 +32,14 @@ LegacyStore.prototype.transferSources = function (sources) {
  * Copy projects metadata to master database.
  */
 LegacyStore.prototype.transferMetadata = async function (projects) {
-  const entries = Object.entries(projects).map(([id, project]) => {
-    return [id, {
+  const entries = projects.map(project => {
+    return [project.id, {
+      id: project.id,
       ...project.metadata,
       viewport: project.preferences.viewport
     }]
   })
+
   await this.store.put(LEGACY.TRANSFERRED, true)
   return this.store.put(Object.fromEntries(entries))
 }

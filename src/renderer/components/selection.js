@@ -11,14 +11,14 @@ export const toggleSelection = (selected, id) => id
 /**
  *
  */
-export const indexOf = (entries, id) => entries.findIndex(entry => entry[0] === id)
+export const indexOf = (entries, id) => entries.findIndex(entry => entry.id === id)
 
 
 /**
  *
  */
 export const firstId = entries => entries.length
-  ? entries[0][0]
+  ? entries[0].id
   : null
 
 
@@ -26,5 +26,5 @@ export const firstId = entries => entries.length
  *
  */
 export const lastId = entries => entries.length
-  ? entries[entries.length - 1][0]
+  ? entries[entries.length - 1].id
   : null

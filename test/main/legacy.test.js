@@ -20,16 +20,17 @@ describe('legacy', async function () {
     }, {})
 
     // Read back data and compare.
-    const acc = { layers: {}, features: {}, geometries: {} }
+    const acc = { layers: [], features: [], geometries: [] }
     const actual = await Object.values(databases).reduce(async (acc, db) => {
       const tupleStore = new Store(tuplePartition(db))
       const geometryStore = new Store(geometryPartition(db))
       const entries = await acc
-      return {
-        layers: { ...entries.layers, ...await tupleStore.entries('layer:') },
-        features: { ...entries.features, ...await tupleStore.entries('feature:') },
-        geometries: { ...entries.geometries, ...await geometryStore.entries('feature:') }
-      }
+
+      entries.layers.push(...await tupleStore.values('layer:'))
+      entries.features.push(...await tupleStore.values('feature:'))
+      entries.geometries.push(...await geometryStore.values('feature:'))
+
+      return entries
     }, acc)
 
     const expected = await readJSON('./test/data/projects.json')

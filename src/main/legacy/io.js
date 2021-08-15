@@ -3,8 +3,8 @@ import path from 'path'
 import * as R from 'ramda'
 import proj4 from 'proj4'
 import uuid from 'uuid-random'
+import { reproject } from 'reproject'
 import * as paths from '../paths'
-
 
 /**
  * Read JSON file.
@@ -170,12 +170,14 @@ export const readLayer = async (location, projectUUID, layer) => {
     ? R.head(layerIds)
     : `layer:${uuid()}` // no features or layer id is ambiguous
 
-  const features = json.features.reduce((acc, feature) => {
-    const id = feature.id
+  const features = json.features.map(feature => {
+    feature.properties.id = feature.id
     delete feature.id
-    acc[id] = feature
-    return acc
-  }, {})
+
+    // Reproject geometry to Web Mercator:
+    feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
+    return feature
+  })
 
   return { id: layerId, name: layer, features }
 }

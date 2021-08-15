@@ -14,7 +14,6 @@ export const strategy = {
  */
 export const useListStore = options => {
   const [state, setState] = React.useState({
-    /** entries :: [[id, entry]] */
     entries: [],
 
     /** focusId :: id || null */
@@ -84,13 +83,12 @@ export const List = React.forwardRef((props, ref) => {
     if (event.metaKey && event.key === 'a') event.preventDefault()
   }
 
-  const card = ([key, value], index) => entry({
-    key,
-    value,
-    focused: focusId === key,
-    selected: selected.includes(key),
+  const card = (value, index) => entry({
+    entry: value,
+    focused: focusId === value.id,
+    selected: selected.includes(value.id),
     ref: cardrefs[index],
-    handleClick: event => handleClick(key, event)
+    handleClick: event => handleClick(value.id, event)
   })
 
   return (

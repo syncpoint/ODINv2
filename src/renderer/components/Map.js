@@ -50,7 +50,7 @@ export const Map = () => {
     const selectedLayer = vectorLayer(partition.getSelected())
 
     const layers = [
-      // new TileLayer({ source: new OSM() }),
+      new TileLayer({ source: new OSM() }),
       featureLayer,
       selectedLayer
     ]

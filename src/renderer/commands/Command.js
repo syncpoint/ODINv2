@@ -12,14 +12,10 @@
  */
 export class Command {
   constructor (options) {
-    this.id_ = options.id
+    this.id = options.id
     this.description_ = options.description
     this.binding_ = options.binding
     this.body_ = options.body
-  }
-
-  id () {
-    return this.id_
   }
 
   binding () {

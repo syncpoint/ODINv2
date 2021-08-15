@@ -24,8 +24,12 @@ Store.prototype.put = function (...args) {
   if (args.length === 2) return this.db.put(args[0], args[1]) // key/value
   else if (args.length === 1) {
     const ops = xs => xs.map(([key, value]) => ({ type: 'put', key, value }))
-    if (Array.isArray(args[0])) return this.db.batch(ops(args[0])) // [[key/value]]
-    else return this.db.batch(ops(Object.entries(args[0])))
+
+    const batch = Array.isArray(args[0])
+      ? ops(args[0]) // [[key/value]]
+      : ops(Object.entries(args[0]))
+
+    return this.db.batch(batch)
   }
 }
 
@@ -63,6 +67,25 @@ Store.prototype.entries = function (prefix) {
   return new Promise((resolve, reject) => {
     this.db.createReadStream(options)
       .on('data', ({ key, value }) => (acc[key] = value))
+      .on('error', reject)
+      .on('end', () => resolve(acc))
+  })
+}
+
+
+/**
+ * values :: () -> Promise([value])
+ * values :: String -> Promise([value])
+ */
+Store.prototype.values = function (prefix) {
+  const options = prefix
+    ? { keys: false, values: true, gte: prefix, lte: prefix + '\xff' }
+    : { keys: false, values: true }
+
+  const acc = []
+  return new Promise((resolve, reject) => {
+    this.db.createReadStream(options)
+      .on('data', value => acc.push(value))
       .on('error', reject)
       .on('end', () => resolve(acc))
   })

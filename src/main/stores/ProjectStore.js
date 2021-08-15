@@ -1,8 +1,14 @@
 import * as R from 'ramda'
 import Store from '../../shared/level/Store'
 
-const PROJECT = 'project:'
 const PREVIEW = key => `preview:${key}`
+
+/**
+ * @typedef {object} Project
+ * @property {string} id - `project:${uuid}`
+ * @property {string} name - Project name or title.
+ * @property {string} lastAccess - ISO date/time.
+ */
 
 /**
  * @constructor
@@ -12,15 +18,15 @@ function ProjectStore (db) {
 }
 
 ProjectStore.prototype.getProjects = function () {
-  return this.store.list(PROJECT)
+  return this.store.values('project:')
 }
 
 ProjectStore.prototype.getProject = function (id) {
   return this.store.get(id)
 }
 
-ProjectStore.prototype.putProject = function (id, value) {
-  return this.store.put(id, value)
+ProjectStore.prototype.putProject = function (project) {
+  return this.store.put(project.id, project)
 }
 
 ProjectStore.prototype.deleteProject = function (id) {

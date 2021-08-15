@@ -11,7 +11,7 @@ describe('singleselect', function () {
   })
 
   describe('click', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('focus option', function () {
       const state = { entries, selected: [], focusIndex: 1 }
@@ -22,7 +22,7 @@ describe('singleselect', function () {
   })
 
   describe('focus', function () {
-    const entries = [['x', 0], ['y', 1], ['z', 2]]
+    const entries = [{ id: 'x' }, { id: 'y' }, { id: 'z' }]
 
     it('retain focus', function () {
       const state = { entries, selected: ['x'], focusId: 'x', focusIndex: 0 }
@@ -52,7 +52,7 @@ describe('singleselect', function () {
   })
 
   describe('keydown/ArrowDown', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('focus first option', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
@@ -83,7 +83,7 @@ describe('singleselect', function () {
   })
 
   describe('keydown/ArrowUp', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('focus first option', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
@@ -121,13 +121,14 @@ describe('singleselect', function () {
     })
 
     it('noop (no focus)', function () {
-      const state = { entries: [['x'], 0], selected: [], focusIndex: -1, scroll: 'none' }
+      const entries = [{ id: 'x' }]
+      const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
       const actual = singleselect['keydown/Home'](state)
       assert.deepStrictEqual(actual, state)
     })
 
     it('focus first option', function () {
-      const entries = [['x', 0], ['y', 1]]
+      const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'none' }
       const actual = singleselect['keydown/Home'](state)
       const expected = { entries, selected: ['x'], focusId: 'x', focusIndex: 0, scroll: 'auto' }
@@ -143,13 +144,14 @@ describe('singleselect', function () {
     })
 
     it('noop (no focus)', function () {
-      const state = { entries: [['x'], 0], selected: [], focusIndex: -1, scroll: 'none' }
+      const entries = [{ id: 'x' }]
+      const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
       const actual = singleselect['keydown/End'](state)
       assert.deepStrictEqual(actual, state)
     })
 
     it('focus last option', function () {
-      const entries = [['x', 0], ['y', 1]]
+      const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['x'], focusId: 'x', focusIndex: 0, scroll: 'none' }
       const actual = singleselect['keydown/End'](state)
       const expected = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'auto' }

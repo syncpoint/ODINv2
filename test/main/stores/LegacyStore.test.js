@@ -21,7 +21,7 @@ describe('LegacyStore', async function () {
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new LegacyStore(db)
     await store.transferMetadata(projects)
-    const actual = await store.store.list('project:')
+    const actual = await store.store.values('project:')
     const expected = await readJSON('./test/data/metadata.json')
     assert.deepStrictEqual(actual, expected)
   })
