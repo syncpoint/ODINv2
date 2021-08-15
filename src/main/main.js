@@ -1,7 +1,3 @@
-import path from 'path'
-import { promises as fs } from 'fs'
-import levelup from 'levelup'
-import leveldown from 'leveldown'
 import { app, ipcMain } from 'electron'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
@@ -11,6 +7,7 @@ import { Session } from './Session'
 import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore } from './stores'
+import { ipc } from './ipc'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -32,6 +29,7 @@ const ready = async () => {
   const projectStore = new ProjectStore(db)
   const sessionStore = new SessionStore(db)
   const legacyStore = new LegacyStore(db)
+  ipc(databases, ipcMain, projectStore)
 
   // Transfer legacy data if not already done.
   if (await legacyStore.getTransferred() === false) {
@@ -42,39 +40,6 @@ const ready = async () => {
   const windowManager = new WindowManager()
   const session = new Session({ sessionStore, projectStore, windowManager })
   const menu = new ApplicationMenu(sessionStore)
-
-  // Forward renderer requests.
-
-  ipcMain.handle('ipc:get:projects', () => {
-    return projectStore.getProjects()
-  })
-
-  ipcMain.handle('ipc:get:project/preview', (_, id) => {
-    return projectStore.getPreview(id)
-  })
-
-  ipcMain.handle('ipc:put:project', (_, id, project) => {
-    return projectStore.putProject(id, project)
-  })
-
-  ipcMain.handle('ipc:post:project', async (_, id, project) => {
-    // Create and close projejct database:
-    const uuid = id.split(':')[1]
-    const location = path.join(databases, uuid)
-    const db = levelup(leveldown(location))
-    await db.close()
-
-    return await projectStore.putProject(id, project)
-  })
-
-  ipcMain.handle('ipc:delete:project', async (_, id) => {
-    // Delete project database:
-    const uuid = id.split(':')[1]
-    const location = path.join(databases, uuid)
-    await fs.rmdir(location, { recursive: true })
-
-    return projectStore.deleteProject(id)
-  })
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())

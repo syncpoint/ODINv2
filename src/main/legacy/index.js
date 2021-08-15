@@ -15,51 +15,49 @@ import { tuplePartition, geometryPartition } from '../../shared/stores'
  * @param {*} project project to transfer
  */
 export const transferProject = async (db, project) => {
-  const put = ([key, value]) => ({ type: 'put', key, value })
   const { layers } = project
   const properties = tuplePartition(db)
   const geometries = geometryPartition(db)
 
-  // [layerId -> { name: layerName }]
-  await properties.batch(Object.entries(layers)
-    .map(([id, { name }]) => [id, { name }])
-    .map(put)
-  )
+  {
+    const op = layer => ({ type: 'put', key: layer.id, value: { id: layer.id, name: layer.name } })
+    const batch = layers.map(op)
+    // console.log('layer', batch)
+    await properties.batch(batch)
+  }
 
-  // [featureId -> { properties }]
-  await properties.batch(Object.values(layers)
-    .flatMap(({ features }) => Object.entries(features))
-    .map(([id, feature]) => [id, { ...feature.properties }])
-    .map(put)
-  )
+  {
+    const op = feature => ({ type: 'put', key: feature.properties.id, value: feature.properties })
+    const batch = layers.flatMap(({ features }) => features).map(op)
+    // console.log('feature', batch)
+    await properties.batch(batch)
+  }
 
-  // [featureId -> geometry (WKB)]
-  await geometries.batch(Object.values(layers)
-    .flatMap(({ features }) => Object.entries(features))
-    .map(([id, feature]) => [id, feature.geometry])
-    .map(put)
-  )
+  {
+    const op = feature => ({ type: 'put', key: feature.properties.id, value: feature.geometry })
+    const batch = layers.flatMap(({ features }) => features).map(op)
+    // console.log('geometry', batch)
+    await geometries.batch(batch)
+  }
 }
+
 
 
 /**
  * @param {String} location directory for legacy data (ODIN_HOME)
- * @param {Master} master master/main database
+ * @param {Master} legacyStore master/main database
  * @param {String} databases directory to store project databases
  */
-export const transferLegacy = async (location, master, databases) => {
-  await master.transferSources(await readSources(location))
+export const transferLegacy = async (location, legacyStore, databases) => {
+  await legacyStore.transferSources(await readSources(location))
   const projects = await readProjects(location)
-  await master.transferMetadata(projects)
+  await legacyStore.transferMetadata(projects)
 
-  const entries = Object.entries(projects)
-  const promises = await entries.map(async ([id, project]) => {
-    const uuid = id.split(':')[1]
+  await Promise.all(projects.map(async project => {
+    const uuid = project.id.split(':')[1]
     const location = path.join(databases, uuid)
     const db = levelup(leveldown(location))
     await transferProject(db, project)
     return db.close()
-  }, {})
-
-  await Promise.all(promises)
+  }))
 }

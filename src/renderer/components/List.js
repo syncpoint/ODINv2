@@ -7,7 +7,6 @@ import { indexOf } from './selection'
  */
 export const useListStore = options => {
   const [state, setState] = React.useState({
-    /** entries :: [[id, entry]] */
     entries: [],
 
     /** focusId :: id || null */
@@ -61,8 +60,8 @@ const scrollIntoView = (refs, index, behavior) =>
  */
 export const List = React.forwardRef((props, ref) => {
   const { renderEntry, focusId, selected } = props
-  const entries = props.entries.reduce((acc, [id, value]) => {
-    acc[id] = value
+  const entries = props.entries.reduce((acc, entry) => {
+    acc[entry.id] = entry
     return acc
   }, {})
 
@@ -98,14 +97,13 @@ export const List = React.forwardRef((props, ref) => {
 
   const handleFocus = () => props.dispatch({ path: 'focus' })
 
-  const card = ([id, entry], index) => {
+  const card = (entry, index) => {
     const props = {
-      id,
       entry,
-      focused: focusId === id,
-      selected: selected.includes(id),
+      focused: focusId === entry.id,
+      selected: selected.includes(entry.id),
       ref: cardrefs[index],
-      handleClick: event => handleClick(id, event)
+      handleClick: event => handleClick(entry.id, event)
     }
 
     return renderEntry(props)

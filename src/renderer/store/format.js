@@ -1,8 +1,8 @@
 import GeoJSON from 'ol/format/GeoJSON'
 
 const format = new GeoJSON({
-  dataProjection: 'EPSG:4326', // WGS84
-  featureProjection: 'EPSG:3857' // Web-Mercator
+  dataProjection: 'EPSG:3857',
+  featureProjection: 'EPSG:3857'
 })
 
 export const readFeature = source => format.readFeature(source)

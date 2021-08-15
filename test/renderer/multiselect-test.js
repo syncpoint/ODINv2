@@ -11,7 +11,7 @@ describe('multiselect', function () {
   })
 
   describe('click', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('focus option', function () {
       const state = { entries, selected: [], focusIndex: 1 }
@@ -36,7 +36,7 @@ describe('multiselect', function () {
   })
 
   describe('focus', function () {
-    const entries = [['x', 0], ['y', 1], ['z', 2]]
+    const entries = [{ id: 'x' }, { id: 'y' }, { id: 'z' }]
 
     it('retain focus', function () {
       const state = { entries, selected: [], focusId: 'x', focusIndex: 0 }
@@ -69,7 +69,7 @@ describe('multiselect', function () {
 
 
   describe('keydown/ArrowDown', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('focus first option', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
@@ -100,7 +100,7 @@ describe('multiselect', function () {
   })
 
   describe('keydown/ArrowUp', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('focus first option', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
@@ -138,13 +138,14 @@ describe('multiselect', function () {
     })
 
     it('noop (no focus)', function () {
-      const state = { entries: [['x'], 0], selected: [], focusIndex: -1, scroll: 'none' }
+      const entries = [{ id: 'x' }]
+      const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
       const actual = multiselect['keydown/Home'](state)
       assert.deepStrictEqual(actual, state)
     })
 
     it('focus first option, retain selection', function () {
-      const entries = [['x', 0], ['y', 1]]
+      const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'none' }
       const actual = multiselect['keydown/Home'](state)
       const expected = { entries, selected: ['y'], focusId: 'x', focusIndex: 0, scroll: 'auto' }
@@ -160,13 +161,14 @@ describe('multiselect', function () {
     })
 
     it('noop (no focus)', function () {
-      const state = { entries: [['x'], 0], selected: [], focusIndex: -1, scroll: 'none' }
+      const entries = [{ id: 'x' }]
+      const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
       const actual = multiselect['keydown/End'](state)
       assert.deepStrictEqual(actual, state)
     })
 
     it('focus last option, retain selection', function () {
-      const entries = [['x', 0], ['y', 1]]
+      const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['x'], focusId: 'x', focusIndex: 0, scroll: 'none' }
       const actual = multiselect['keydown/End'](state)
       const expected = { entries, selected: ['x'], focusId: 'y', focusIndex: 1, scroll: 'auto' }
@@ -175,7 +177,7 @@ describe('multiselect', function () {
   })
 
   describe('keydown/a', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('noop (no meta)', function () {
       const state = { entries, selected: ['x'], focusId: 'x', focusIndex: 0, scroll: 'none' }
@@ -192,7 +194,7 @@ describe('multiselect', function () {
   })
 
   describe('keydown/(space) ', function () {
-    const entries = [['x', 0], ['y', 1]]
+    const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('noop (no focus)', function () {
       const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }

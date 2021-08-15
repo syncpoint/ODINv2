@@ -51,7 +51,7 @@ export const multiselect = {
       .sort()
 
     const focusIndex = selectedIndexes.length ? selectedIndexes[0] : 0
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
     return { ...state, focusIndex, focusId }
   },
 
@@ -60,7 +60,7 @@ export const multiselect = {
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.min(state.entries.length - 1, index + 1)
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
 
     const selected = shiftKey
       ? state.selected.includes(focusId)
@@ -82,7 +82,7 @@ export const multiselect = {
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.max(0, index - 1)
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
 
     const selected = shiftKey
       ? state.selected.includes(focusId)
@@ -117,7 +117,7 @@ export const multiselect = {
     if (!metaKey) return state
     const focusId = lastId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
-    const selected = [...state.entries.map(entry => entry[0])]
+    const selected = [...state.entries.map(entry => entry.id)]
     return { ...state, selected, focusId, focusIndex, scroll: 'none' }
   },
 

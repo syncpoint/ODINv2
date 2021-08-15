@@ -44,8 +44,9 @@ e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
 022c181d-e5a0-4ab4-b749-1068b4a95865 - feature properties: 'move to another layer'
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simplfy styles while panning/zooming (custom PointerInteraction)
-7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator
 45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
+0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
+079aa0be-78a4-4330-8912-e906f7d27180 - ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -91,3 +92,4 @@ DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP
 DEH - ab740c4c-76df-4e03-b3c6-3244734c464d - LineString: simplify geometry depending on point count and resolution
 DEH - 109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL: DOSE RATE CONTOUR LINES
 DEH - 98de035c-8289-4dd4-9854-6137a0716868 - check CAN GeoJSON layers for possible errors
+DEH - 7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator

@@ -145,14 +145,25 @@ LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
   await this.propertiesStore.put(id, { name, id })
 
-  const propertiesOp = feature => ({ type: 'put', key: feature.id, value: feature.properties })
-  await this.propertiesStore.batch(features.map(propertiesOp))
+  await this.propertiesStore.batch(features.map(feature => ({
+    type: 'put',
+    key: feature.id,
+    value: { id: feature.id, ...feature.properties }
+  })))
 
-  const geometryOp = feature => ({ type: 'put', key: feature.id, value: feature.geometry })
-  await this.geometryStore.batch(features.map(geometryOp))
+  await this.geometryStore.batch(features.map(feature => ({
+    type: 'put',
+    key: feature.id,
+    value: feature.geometry
+  })))
 
-  const op = feature => ({ type: 'put', key: feature.properties.id, value: feature })
-  this.emit('batch', { operations: features.map(op) })
+  const operations = features.map(feature => ({
+    type: 'put',
+    key: feature.properties.id,
+    value: feature
+  }))
+
+  this.emit('batch', { operations })
 }
 
 LayerStore.prototype.deleteLayer = async function (layerId) {

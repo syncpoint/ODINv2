@@ -42,7 +42,7 @@ export const singleselect = {
       .sort()
 
     const focusIndex = selectedIndexes.length ? selectedIndexes[0] : 0
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
     return { ...state, focusIndex, focusId, selected: [focusId] }
   },
 
@@ -52,7 +52,7 @@ export const singleselect = {
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.min(state.entries.length - 1, index + 1)
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
 
     return {
       ...state,
@@ -68,7 +68,7 @@ export const singleselect = {
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.max(0, index - 1)
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
 
     return {
       ...state,

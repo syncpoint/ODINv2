@@ -113,11 +113,11 @@ ButtonBar.propTypes = {
 const Project = React.forwardRef((props, ref) => {
   // TODO: remove dependencies on ipc and store if possible
   const { ipcRenderer, projectStore } = useServices()
-  const { id, project, selected } = props
-  const send = message => () => ipcRenderer.send(message, id)
-  const loadPreview = () => projectStore.getPreview(id)
-  const handleRename = name => projectStore.updateProject(id, { ...project, name })
-  const handleDelete = () => projectStore.deleteProject(id)
+  const { project, selected } = props
+  const send = message => () => ipcRenderer.send(message, project.id)
+  const loadPreview = () => projectStore.getPreview(project.id)
+  const handleRename = name => projectStore.updateProject({ ...project, name })
+  const handleDelete = () => projectStore.deleteProject(project.id)
 
   const isOpen = props.project.tags
     ? props.project.tags.includes('OPEN')
@@ -156,7 +156,6 @@ const Project = React.forwardRef((props, ref) => {
 })
 
 Project.propTypes = {
-  id: PropTypes.string.isRequired,
   project: PropTypes.object.isRequired,
   focused: PropTypes.bool.isRequired,
   selected: PropTypes.bool.isRequired
@@ -207,10 +206,9 @@ export const Splash = () => {
 
   /* eslint-disable react/prop-types */
   const renderEntry = props => <Project
-    key={props.id}
+    key={props.entry.id}
     ref={props.ref}
     role='option'
-    id={props.id}
     project={props.entry}
     onClick={props.handleClick}
     { ...props }

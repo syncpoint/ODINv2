@@ -1,8 +1,19 @@
+/**
+ * @module renderer/store/ProjectStore
+ */
+
 import util from 'util'
 import { DateTime } from 'luxon'
 import uuid from 'uuid-random'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
+
+/**
+ * @typedef {object} Project
+ * @property {string} id - `project:${uuid}`
+ * @property {string} name - Project name or title.
+ * @property {string} lastAccess - ISO date/time.
+ */
 
 const split = s =>
   s.replace(/[()-]/gi, ' ')
@@ -31,9 +42,9 @@ const filterProjects = tokens =>
 
 /**
  * @constructor
- * @fires updated { id, project }
- * @fires created { id, project }
- * @fired deleted { id }
+ * @fires ProjectStore#updated {Project}
+ * @fires ProjectStore#created {Project}
+ * @fired ProjectStore#deleted {id}
  */
 export function ProjectStore (ipcRenderer) {
   Emitter.call(this)
@@ -56,9 +67,10 @@ ProjectStore.prototype.getProjects = async function (filter) {
     .filter(({ token }) => token.length)
 
   const projects = await this.ipcRenderer.invoke('ipc:get:projects')
+  console.log('projectStore', projects)
   projects.sort((a, b) =>
-    a[1].name.localeCompare(b[1].name) ||
-    a[1].lastAccess.localeCompare(b[1].lastAccess)
+    a.name.localeCompare(b.name) ||
+    a.lastAccess.localeCompare(b.lastAccess)
   )
 
   return filterProjects(tokens)(projects)
@@ -68,9 +80,9 @@ ProjectStore.prototype.getProjects = async function (filter) {
 /**
  * @async
  */
-ProjectStore.prototype.updateProject = async function (id, project) {
-  await this.ipcRenderer.invoke('ipc:put:project', id, project)
-  this.emit('updated', { id, project })
+ProjectStore.prototype.updateProject = async function (project) {
+  await this.ipcRenderer.invoke('ipc:put:project', project)
+  this.emit('updated', { project })
 }
 
 
@@ -79,9 +91,9 @@ ProjectStore.prototype.updateProject = async function (id, project) {
  */
 ProjectStore.prototype.createProject = async function () {
   const id = `project:${uuid()}`
-  const project = { name: 'New Project', lastAccess: DateTime.local().toISO() }
-  await this.ipcRenderer.invoke('ipc:post:project', id, project)
-  this.emit('created', { id, project })
+  const project = { id, name: 'New Project', lastAccess: DateTime.local().toISO() }
+  await this.ipcRenderer.invoke('ipc:post:project', project)
+  this.emit('created', { project })
 }
 
 
@@ -89,7 +101,6 @@ ProjectStore.prototype.createProject = async function () {
  * @async
  */
 ProjectStore.prototype.deleteProject = async function (id) {
-  console.log('deleteProject', id)
   await this.ipcRenderer.invoke('ipc:delete:project', id)
   this.emit('deleted', { id })
 }
