@@ -31,6 +31,7 @@ export function Sources (layerStore) {
 
   layerStore.on('batch', ({ operations }) => this.storeBatch_(operations))
   layerStore.on('geometries', ({ operations }) => this.updateGeometries(operations))
+  layerStore.on('properties', ({ operations }) => this.updateProperties(operations))
 }
 
 util.inherits(Sources, Emitter)
@@ -60,5 +61,15 @@ Sources.prototype.updateGeometries = function (operations) {
     .forEach(({ key, geometry }) => {
       const feature = this.featureSource.getFeatureById(key)
       feature.setGeometry(geometry)
+    })
+}
+
+Sources.prototype.updateProperties = function (operations) {
+  operations
+    .forEach(({ key, value }) => {
+      const feature = this.featureSource.getFeatureById(key)
+      // Note: Does not increase revision counter
+      feature.setProperties(value, true)
+      feature.changed()
     })
 }

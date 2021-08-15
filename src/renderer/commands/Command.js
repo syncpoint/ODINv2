@@ -1,5 +1,3 @@
-import uuid from 'uuid-random'
-
 /**
  * Command options.
  * @typedef {object} Command~Options
@@ -14,7 +12,7 @@ import uuid from 'uuid-random'
  */
 export class Command {
   constructor (options) {
-    this.id_ = uuid()
+    this.id_ = options.id
     this.description_ = options.description
     this.binding_ = options.binding
     this.body_ = options.body

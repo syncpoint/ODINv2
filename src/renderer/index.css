@@ -100,8 +100,8 @@ div {
   grid-area: P;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   max-width: 40em;
+  height: 100%;
 }
 
 /* Project-List / Card */

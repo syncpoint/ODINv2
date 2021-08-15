@@ -41,7 +41,12 @@ export const singleselect = {
       .map(id => indexOf(state.entries, id))
       .sort()
 
-    const focusIndex = selectedIndexes.length ? selectedIndexes[0] : 0
+    const focusIndex = selectedIndexes.length
+      ? selectedIndexes[0] !== -1
+        ? selectedIndexes[0]
+        : 0
+      : 0
+
     const focusId = state.entries[focusIndex][0]
     return { ...state, focusIndex, focusId, selected: [focusId] }
   },

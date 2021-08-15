@@ -1,24 +1,30 @@
-import * as R from 'ramda'
 import React from 'react'
+import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, useListStore } from './List'
+import { List, useListStore, strategy } from './List'
 import { Search } from './Search'
-import { multiselect } from './multiselect'
 
-export const CommandPalette = () => {
-  const { emitter, paletteEntries } = useServices()
-  const [visible, setVisible] = React.useState(false)
+export const CommandPalette = props => {
+  const { paletteEntries, featureSnapshot } = useServices()
   const ref = React.useRef()
 
   const { state, dispatch, fetch } = useListStore({
-    strategy: multiselect,
+    strategy: strategy.singleselect,
     fetch: (filter) => {
-      const xs = paletteEntries.entries()
-        .map(command => [command.id(), command.description()])
-        .filter(([_, description]) => !filter || description.toLowerCase().includes(filter.toLowerCase()))
-      return xs
+      return paletteEntries.entries()
+        .filter(command => !filter || command.description().toLowerCase().includes(filter.toLowerCase()))
+        .map(command => [command.id(), command])
     }
   })
+
+  const commands = state.entries.reduce((acc, [id, value]) => {
+    acc[id] = value
+    return acc
+  }, {})
+
+  if (state.focusId) {
+    commands[state.focusId].invoke()
+  }
 
   React.useEffect(() => {
     const handler = () => fetch()
@@ -27,69 +33,74 @@ export const CommandPalette = () => {
   }, [dispatch])
 
 
-  React.useEffect(() => {
-    const handleCommand = event => {
-      switch (event.type) {
-        case 'open-command-palette': return setVisible(true)
-        case 'escape': return setVisible(false)
-      }
-    }
-
-    emitter.on('command/:type', handleCommand)
-    return () => emitter.off('command/:type', handleCommand)
-  }, [])
-
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
-  const handleFocusList = () => ref.current.focus()
   const handleOpen = command => console.log('onOpen', command)
   const handleEnter = command => console.log('onEnter', command)
-  const handleFocus = command => console.log('onFocus', command)
+  const handleFocus = () => dispatch({ path: 'focus' })
+  const handleBlur = ({ currentTarget, relatedTarget }) => {
+    if (currentTarget.contains(relatedTarget)) return
+    props.onBlur()
+  }
 
   const handleKeyDown = event => {
-    if (event.key === 'Escape') return setVisible(false)
+    const { key, shiftKey, metaKey } = event
+
+    // Prevent native scroll:
+    if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
+
+    if (state.focusId && key === 'Enter') handleEnter(commands[state.focusId])
+    if (key === 'Escape') featureSnapshot.restore()
+
+    dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
+    props.onKeyDown(event)
   }
 
   /* eslint-disable react/prop-types */
-  const renderEntry = props => {
+  const entry = props => {
     return (
       <div
-        key={props.id}
+        key={props.key}
         ref={props.ref}
         role='option'
         onClick={props.handleClick}
         style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
       >
-        <span>{props.entry}</span>
+        <span>{props.value.description()}</span>
       </div>
     )
   }
   /* eslint-enable react/prop-types */
 
-  return visible
-    ? <div className='palette-container fullscreen'>
+  return (
+    <div
+      className='palette-container fullscreen'
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    >
+      <div
+        className='palette panel'
+        onKeyDown={handleKeyDown}
+    >
         <div
-          className='palette panel'
-          onKeyDown={handleKeyDown}
+          style={{ display: 'flex', gap: '8px', padding: '8px' }}
         >
-          <div
-           style={{ display: 'flex', gap: '8px', padding: '8px' }}
-          >
-            <Search onSearch={handleSearch} onFocusList={handleFocusList}/>
-          </div>
-          <List
-            ref={ref}
-            multiselect={true}
-            renderEntry={renderEntry}
-            onFocus={handleFocus}
-            onOpen={handleOpen}
-            onEnter={handleEnter}
-            // onBack={handleBack}
-            // onSelect={handleSelect}
-            dispatch={dispatch}
-            style={{ height: '100%' }}
-            { ...state }
-          />
+          <Search onSearch={handleSearch}/>
         </div>
+        <List
+          ref={ref}
+          multiselect={true}
+          entry={entry}
+          onOpen={handleOpen}
+          onEnter={handleEnter}
+          dispatch={dispatch}
+          { ...state }
+        />
       </div>
-    : null
+    </div>
+  )
+}
+
+CommandPalette.propTypes = {
+  onBlur: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func.isRequired
 }

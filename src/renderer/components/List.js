@@ -1,6 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { indexOf } from './selection'
+import { singleselect } from './list-singleselect'
+import { multiselect } from './list-multiselect'
+
+export const strategy = {
+  singleselect,
+  multiselect
+}
 
 /**
  *
@@ -60,12 +67,7 @@ const scrollIntoView = (refs, index, behavior) =>
  *
  */
 export const List = React.forwardRef((props, ref) => {
-  const { renderEntry, focusId, selected } = props
-  const entries = props.entries.reduce((acc, [id, value]) => {
-    acc[id] = value
-    return acc
-  }, {})
-
+  const { entry, focusId, selected } = props
   const cardrefs = props.entries.map(_ => React.createRef())
 
   React.useEffect(() => {
@@ -73,52 +75,31 @@ export const List = React.forwardRef((props, ref) => {
     scrollIntoView(cardrefs, props.focusIndex, props.scroll)
   })
 
-  const handleKeyDown = event => {
-    const { key, shiftKey, metaKey } = event
-
-    // Prevent native scroll:
-    if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
-
-    // Prevent native select/all:
-    if (metaKey && key === 'a') event.preventDefault()
-
-    if (metaKey && focusId !== null) {
-      if (props.onOpen && key === 'ArrowDown') props.onOpen(entries[focusId])
-      if (props.onBack && key === 'ArrowUp') props.onBack(entries[focusId])
-    }
-
-    if (props.onEnter && key === 'Enter') props.onEnter(entries[focusId])
-
-    props.dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
-  }
-
   const handleClick = (id, { metaKey, shiftKey }) => {
     props.dispatch({ path: 'click', id, shiftKey, metaKey })
   }
 
-  const handleFocus = () => props.dispatch({ path: 'focus' })
-
-  const card = ([id, entry], index) => {
-    const props = {
-      id,
-      entry,
-      focused: focusId === id,
-      selected: selected.includes(id),
-      ref: cardrefs[index],
-      handleClick: event => handleClick(id, event)
-    }
-
-    return renderEntry(props)
+  const handleKeyDown = event => {
+    console.log('<List/>', event)
+    if (event.metaKey && event.key === 'a') event.preventDefault()
   }
+
+  const card = ([key, value], index) => entry({
+    key,
+    value,
+    focused: focusId === key,
+    selected: selected.includes(key),
+    ref: cardrefs[index],
+    handleClick: event => handleClick(key, event)
+  })
 
   return (
     <ul
       ref={ref}
       role='listbox'
       className='list'
-      onKeyDown={handleKeyDown}
-      onFocus={handleFocus}
       tabIndex={0}
+      onKeyDown={handleKeyDown}
     >
       { props.entries.map(card) }
     </ul>
@@ -127,15 +108,10 @@ export const List = React.forwardRef((props, ref) => {
 
 List.propTypes = {
   entries: PropTypes.array.isRequired,
-  renderEntry: PropTypes.func.isRequired,
+  entry: PropTypes.func.isRequired,
   focusId: PropTypes.string,
   focusIndex: PropTypes.number,
   selected: PropTypes.array.isRequired,
   dispatch: PropTypes.func,
-  scroll: PropTypes.string.isRequired,
-  onOpen: PropTypes.func,
-  onBack: PropTypes.func,
-  onEnter: PropTypes.func,
-  onFocus: PropTypes.func,
-  onSelect: PropTypes.func
+  scroll: PropTypes.string.isRequired
 }

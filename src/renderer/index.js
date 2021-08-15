@@ -19,7 +19,8 @@ import { DragAndDrop } from './DragAndDrop'
 import { Undo } from './Undo'
 import { CommandRegistry } from './commands/CommandRegistry'
 import EventEmitter from '../shared/emitter'
-import { PaletteEntries } from './model/PaletteEntries'
+import { PaletteCommands } from './model/PaletteCommands'
+import { FeatureSnapshot } from './model/FeatureSnapshot'
 
 process.traceProcessWarnings = true
 
@@ -82,7 +83,8 @@ const project = () => {
   services.dragAndDrop = dragAndDrop
   services.layerStore = layerStore
   services.commandRegistry = new CommandRegistry(services)
-  services.paletteEntries = new PaletteEntries(services.selection, layerStore)
+  services.paletteEntries = new PaletteCommands(services.selection, layerStore)
+  services.featureSnapshot = new FeatureSnapshot(services.selection, layerStore)
 
   services.emitter.on('command:open-command-palette', event => console.log(event.path))
 

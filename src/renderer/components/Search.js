@@ -11,16 +11,17 @@ export const Search = props => {
   }
 
   const handleKeyDown = event => {
-    const { key } = event
-    if (key === 'ArrowUp') event.preventDefault()
-    if (key === 'ArrowDown') event.preventDefault()
-    if (key === 'ArrowDown') props.onFocusList()
-
-    if (key === 'Escape') {
+    const { key, metaKey } = event
+    if (key === 'Home') event.preventDefault()
+    else if (key === 'End') event.preventDefault()
+    else if (key === 'Escape') {
       if (value === '') return
       setValue('')
       props.onSearch('')
     }
+
+    // Prevent native select/all:
+    if (metaKey && key === 'a') event.stopPropagation()
   }
 
   return (
@@ -37,6 +38,5 @@ export const Search = props => {
 }
 
 Search.propTypes = {
-  onSearch: PropTypes.func.isRequired,
-  onFocusList: PropTypes.func.isRequired
+  onSearch: PropTypes.func.isRequired
 }

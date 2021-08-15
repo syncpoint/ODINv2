@@ -4,8 +4,9 @@ import raw from './2525c.json'
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
 const STANDARD_IDENTITY = 1
-const BATTLEDIMENSION = 2
+const BATTLE_DIMENSION = 2
 const STATUS = 3
+const FUNCTION_ID = 4
 const MODIFIER = 10
 const MOBILITY = 10
 const INSTALLATION = 10
@@ -17,6 +18,14 @@ export const parameterized = sidc => sidc
   ? `${sidc[0]}*${sidc[2]}*${sidc.substring(4, 10)}`
   : null
 
+export const schema = sidc => sidc
+  ? sidc[SCHEMA]
+  : null
+
+export const battleDimension = sidc => sidc
+  ? sidc[BATTLE_DIMENSION]
+  : null
+
 // Standard Identity (ex. Affiliation)
 export const standardIdentity = sidc => sidc
   ? sidc[STANDARD_IDENTITY]
@@ -26,6 +35,20 @@ export const standardIdentity = sidc => sidc
 export const status = sidc => sidc
   ? sidc[STATUS]
   : 'P'
+
+export const functionId = sidc => sidc
+  ? sidc.substring(FUNCTION_ID, FUNCTION_ID + 6)
+  : null
+
+export const format = (sidc, options) => {
+  if (!sidc) return null
+
+  let formatted = sidc
+  if (options.schema) formatted = options.schema + formatted.substring(SCHEMA + 1)
+  if (options.battleDimension) formatted = formatted.substring(0, BATTLE_DIMENSION) + options.battleDimension + formatted.substring(BATTLE_DIMENSION + 1)
+  if (options.functionId) formatted = formatted.substring(0, FUNCTION_ID) + options.functionId + formatted.substring(FUNCTION_ID + 6)
+  return formatted
+}
 
 export const MODIFIERS = {
   aa: 'specialHeadquarters',
@@ -56,10 +79,11 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
-export const descriptors = raw.reduce((acc, descriptor) => {
+export const index = raw.reduce((acc, descriptor) => {
   const sidc = parameterized(descriptor.sidc)
   acc[sidc] = {
-    sidc,
+    parameterized: sidc,
+    sidc: descriptor.sidc,
     hierarchy: R.drop(1, descriptor.hierarchy),
     dimension: descriptor.dimension,
     scope: descriptor.scope,
@@ -74,12 +98,12 @@ export const descriptors = raw.reduce((acc, descriptor) => {
 
 export const geometry = sidc => {
   if (!sidc) return
-  const feature = descriptors[parameterized(sidc)]
+  const feature = index[parameterized(sidc)]
   return feature && feature.geometry
 }
 
 export const geometryType = sidc => {
   if (!sidc) return
-  const feature = descriptors[parameterized(sidc)]
+  const feature = index[parameterized(sidc)]
   return feature && feature.geometry && feature.geometry.type
 }

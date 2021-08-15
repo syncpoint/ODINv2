@@ -2,8 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'antd'
 import { useServices } from './services'
-import { List, useListStore } from './List'
-import { singleselect } from './singleselect'
+import { List, useListStore, strategy } from './List'
 import { Search } from './Search'
 import { militaryFormat } from '../../shared/datetime'
 
@@ -131,8 +130,9 @@ const Project = React.forwardRef((props, ref) => {
     <div
       ref={ref}
       className={className}
-      tabIndex={0}
       aria-selected={selected}
+      onClick={event => props.onClick && props.onClick(event)}
+      onDoubleClick={event => props.onDoubleClick && props.onDoubleClick(event)}
     >
       <div className='cardcontent'>
         <Title value={project.name} onChange={handleRename}/>
@@ -158,8 +158,10 @@ const Project = React.forwardRef((props, ref) => {
 Project.propTypes = {
   id: PropTypes.string.isRequired,
   project: PropTypes.object.isRequired,
-  focused: PropTypes.bool.isRequired,
-  selected: PropTypes.bool.isRequired
+  focused: PropTypes.bool,
+  selected: PropTypes.bool,
+  onClick: PropTypes.func,
+  onDoubleClick: PropTypes.func
 }
 
 
@@ -168,10 +170,10 @@ Project.propTypes = {
  */
 export const Splash = () => {
   const { projectStore, ipcRenderer } = useServices()
-  const ref = React.useRef()
+  const listRef = React.useRef()
 
   const { state, dispatch, fetch } = useListStore({
-    strategy: singleselect,
+    strategy: strategy.singleselect,
     fetch: filter => projectStore.getProjects(filter)
   })
 
@@ -195,30 +197,39 @@ export const Splash = () => {
     return () => ipcRenderer.off(channel, handleClosed)
   }, [])
 
+  const handleKeyDown = event => {
+    console.log('<Splash/>', event)
+    const { key, shiftKey, metaKey } = event
+
+    // Prevent native scroll:
+    if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
+
+    if (state.focusId && key === 'Enter') {
+      console.log(key)
+    }
+
+    dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
+  }
+
   const handleCreate = () => projectStore.createProject()
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
-  const handleFocusList = () => ref.current.focus()
-  const handleOpen = project => console.log('onOpen', project)
-  const handleBack = project => console.log('onBack', project)
-  const handleEnter = project => console.log('onEnter', project)
-
-  const handleFocus = id => console.log('onFocus', id)
-  const handleSelect = id => console.log('onSelect', id)
+  const handleFocus = () => dispatch({ path: 'focus' })
 
   /* eslint-disable react/prop-types */
-  const renderEntry = props => <Project
-    key={props.id}
+  const entry = props => <Project
+    key={props.key}
     ref={props.ref}
     role='option'
-    id={props.id}
-    project={props.entry}
-    onClick={props.handleClick}
-    { ...props }
+    id={props.key}
+    project={props.value}
+    // { ...props } // TODO: clean-up
   />
   /* eslint-enable react/prop-types */
 
   return (
     <div
+      onKeyDown={handleKeyDown}
+      onFocus={handleFocus}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -228,19 +239,14 @@ export const Splash = () => {
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >
-        <Search onSearch={handleSearch} onFocusList={handleFocusList}/>
+        <Search onSearch={handleSearch}/>
         <Button onClick={handleCreate}>New</Button>
         <Button>Import</Button>
       </div>
       <List
-        ref={ref}
+        ref={listRef}
         multiselect={false}
-        renderEntry={renderEntry}
-        onOpen={handleOpen}
-        onBack={handleBack}
-        onEnter={handleEnter}
-        onFocus={handleFocus}
-        onSelect={handleSelect}
+        entry={entry}
         dispatch={dispatch}
         { ...state }
       />

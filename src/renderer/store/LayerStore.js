@@ -173,3 +173,9 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
   this.emit('geometries', { operations: ops })
   return this.geometryStore.batch(ops)
 }
+
+LayerStore.prototype.updateProperties = async function (features) {
+  const operations = features.map(feature => ({ type: 'put', key: feature.id, value: feature }))
+  await this.propertiesStore.batch(operations)
+  this.emit('properties', { operations })
+}
