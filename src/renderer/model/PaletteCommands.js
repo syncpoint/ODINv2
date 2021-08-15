@@ -16,11 +16,15 @@ const types = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) =>
 })
 
 
-export function PaletteCommands (selection, layerStore) {
+/**
+ * @constructor
+ */
+export function PaletteCommands (selection, layerStore, undo) {
   Emitter.call(this)
 
   this.selection_ = selection
   this.layerStore_ = layerStore
+  this.undo_ = undo
   this.entries_ = []
 
   selection.on('selection', this.handleSelection_.bind(this))
@@ -64,11 +68,13 @@ PaletteCommands.prototype.handleSelection_ = async function () {
               sidc: MIL_STD.format(properties.sidc, options)
             }))
 
-            this.layerStore_.updateProperties(newProperties)
+            const command = this.layerStore_.commands.updateProperties(oldProperties, newProperties)
+            this.undo_.apply(command)
           }
         })
       })
   }
 
+  this.entries_.sort((a, b) => a.description().localeCompare(b.description()))
   this.emit('palette/entries', this.entries_)
 }

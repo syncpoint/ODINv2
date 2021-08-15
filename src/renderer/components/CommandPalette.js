@@ -5,13 +5,13 @@ import { List, useListStore, strategy } from './List'
 import { Search } from './Search'
 
 export const CommandPalette = props => {
-  const { paletteEntries, featureSnapshot } = useServices()
+  const { paletteCommands, featureSnapshot } = useServices()
   const ref = React.useRef()
 
   const { state, dispatch, fetch } = useListStore({
     strategy: strategy.singleselect,
     fetch: (filter) => {
-      return paletteEntries.entries()
+      return paletteCommands.entries()
         .filter(command => !filter || command.description().toLowerCase().includes(filter.toLowerCase()))
     }
   })
@@ -27,14 +27,12 @@ export const CommandPalette = props => {
 
   React.useEffect(() => {
     const handler = () => fetch()
-    paletteEntries.on('palette/entries', handler)
-    return () => paletteEntries.off('palette/entries', handler)
+    paletteCommands.on('palette/entries', handler)
+    return () => paletteCommands.off('palette/entries', handler)
   }, [dispatch])
 
 
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
-  const handleOpen = command => console.log('onOpen', command)
-  const handleEnter = command => console.log('onEnter', command)
   const handleFocus = () => dispatch({ path: 'focus' })
   const handleBlur = ({ currentTarget, relatedTarget }) => {
     if (currentTarget.contains(relatedTarget)) return
@@ -46,8 +44,6 @@ export const CommandPalette = props => {
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
-
-    if (state.focusId && key === 'Enter') handleEnter(commands[state.focusId])
     if (key === 'Escape') featureSnapshot.restore()
 
     dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
@@ -87,8 +83,6 @@ export const CommandPalette = props => {
           ref={ref}
           multiselect={true}
           entry={entry}
-          onOpen={handleOpen}
-          onEnter={handleEnter}
           dispatch={dispatch}
           { ...state }
         />

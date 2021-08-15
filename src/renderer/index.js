@@ -83,10 +83,8 @@ const project = () => {
   services.dragAndDrop = dragAndDrop
   services.layerStore = layerStore
   services.commandRegistry = new CommandRegistry(services)
-  services.paletteEntries = new PaletteCommands(services.selection, layerStore)
+  services.paletteCommands = new PaletteCommands(services.selection, layerStore, undo)
   services.featureSnapshot = new FeatureSnapshot(services.selection, layerStore)
-
-  services.emitter.on('command:open-command-palette', event => console.log(event.path))
 
   return (
     <ServiceProvider { ...services }>

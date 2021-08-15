@@ -52,6 +52,13 @@ export function LayerStore (db) {
       inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
     }
   }
+
+  this.commands.updateProperties = (oldProperties, newProperties) => {
+    return {
+      apply: () => this.updateProperties(newProperties),
+      inverse: () => this.commands.updateProperties(newProperties, oldProperties)
+    }
+  }
 }
 
 util.inherits(LayerStore, Emitter)
