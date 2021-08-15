@@ -31,7 +31,7 @@ const tags = project =>
 const filterProjects = tokens =>
   tokens.length
     ? projects =>
-      projects.filter(([_, project]) =>
+      projects.filter(project =>
         tokens.every(({ tag, token }) => {
           const xs = tag ? tags(project) : tokenizeName(project)
           return xs.some(x => x.startsWith(token))
@@ -67,7 +67,6 @@ ProjectStore.prototype.getProjects = async function (filter) {
     .filter(({ token }) => token.length)
 
   const projects = await this.ipcRenderer.invoke('ipc:get:projects')
-  console.log('projectStore', projects)
   projects.sort((a, b) =>
     a.name.localeCompare(b.name) ||
     a.lastAccess.localeCompare(b.lastAccess)

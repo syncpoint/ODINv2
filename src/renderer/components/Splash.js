@@ -197,15 +197,10 @@ export const Splash = () => {
   }, [])
 
   const handleKeyDown = event => {
-    console.log('<Splash/>', event)
     const { key, shiftKey, metaKey } = event
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
-
-    if (state.focusId && key === 'Enter') {
-      console.log(key)
-    }
 
     dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
   }

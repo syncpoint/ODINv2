@@ -79,12 +79,19 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
+const capitalize = s => {
+  const capitalizeFirst = s => s ? s[0].toUpperCase() + s.substring(1) : ''
+  return s.replace(/([^()]+)(\(.*\))?/g, (match, p1, p2) => {
+    return p1.toLowerCase().split(' ').map(capitalizeFirst).join(' ') + (p2 || '')
+  })
+}
+
 export const index = raw.reduce((acc, descriptor) => {
   const sidc = parameterized(descriptor.sidc)
   acc[sidc] = {
     parameterized: sidc,
     sidc: descriptor.sidc,
-    hierarchy: R.drop(1, descriptor.hierarchy),
+    hierarchy: R.drop(1, descriptor.hierarchy).map(capitalize),
     dimension: descriptor.dimension,
     scope: descriptor.scope,
     geometry: {

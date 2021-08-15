@@ -5,18 +5,13 @@ import { isFeatureId } from './ids'
 import { Command } from '../commands/Command'
 import Emitter from '../../shared/emitter'
 
-const capitalize = s => s.toLowerCase()
-  .split(' ')
-  .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-  .join(' ')
-
 
 const types = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
   return {
     parameterized,
     sidc: descriptor.sidc,
     geometry: descriptor.geometry.type,
-    text: capitalize(R.last(descriptor.hierarchy))
+    text: R.last(descriptor.hierarchy)
   }
 })
 
