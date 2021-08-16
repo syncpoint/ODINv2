@@ -66,7 +66,7 @@ const scrollIntoView = (refs, index, behavior) =>
  *
  */
 export const List = React.forwardRef((props, ref) => {
-  const { entry, focusId, selected } = props
+  const { child, focusId, selected } = props
   const cardrefs = props.entries.map(_ => React.createRef())
 
   React.useEffect(() => {
@@ -74,21 +74,17 @@ export const List = React.forwardRef((props, ref) => {
     scrollIntoView(cardrefs, props.focusIndex, props.scroll)
   })
 
-  const handleClick = (id, { metaKey, shiftKey }) => {
-    props.dispatch({ path: 'click', id, shiftKey, metaKey })
-  }
 
   const handleKeyDown = event => {
-    console.log('<List/>', event)
     if (event.metaKey && event.key === 'a') event.preventDefault()
   }
 
-  const card = (value, index) => entry({
-    entry: value,
-    focused: focusId === value.id,
-    selected: selected.includes(value.id),
-    ref: cardrefs[index],
-    handleClick: event => handleClick(value.id, event)
+  const card = (entry, index) => child({
+    entry,
+    id: entry.id,
+    focused: focusId === entry.id,
+    selected: selected.includes(entry.id),
+    ref: cardrefs[index]
   })
 
   return (
@@ -105,11 +101,10 @@ export const List = React.forwardRef((props, ref) => {
 })
 
 List.propTypes = {
+  child: PropTypes.func.isRequired,
   entries: PropTypes.array.isRequired,
-  entry: PropTypes.func.isRequired,
   focusId: PropTypes.string,
   focusIndex: PropTypes.number,
   selected: PropTypes.array.isRequired,
-  dispatch: PropTypes.func,
   scroll: PropTypes.string.isRequired
 }

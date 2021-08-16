@@ -208,14 +208,19 @@ export const Splash = () => {
   const handleCreate = () => projectStore.createProject()
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
   const handleFocus = () => dispatch({ path: 'focus' })
+  const handleClick = id => ({ metaKey, shiftKey }) => {
+    dispatch({ path: 'click', id, shiftKey, metaKey })
+  }
 
   /* eslint-disable react/prop-types */
-  const entry = props => <Project
-    key={props.entry.id}
+  const child = props => <Project
+    key={props.id}
     ref={props.ref}
     role='option'
     project={props.entry}
-    // { ...props } // TODO: clean-up
+    onClick={handleClick(props.id)}
+    focused={props.focused}
+    selected={props.selected}
   />
   /* eslint-enable react/prop-types */
 
@@ -238,9 +243,7 @@ export const Splash = () => {
       </div>
       <List
         ref={listRef}
-        multiselect={false}
-        entry={entry}
-        dispatch={dispatch}
+        child={child}
         { ...state }
       />
     </div>

@@ -47,10 +47,9 @@ export const singleselect = {
         : 0
       : 0
 
-    const focusId = state.entries[focusIndex][0]
+    const focusId = state.entries[focusIndex].id
     return { ...state, focusIndex, focusId, selected: [focusId] }
   },
-
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
     if (metaKey) return state // not handled here.

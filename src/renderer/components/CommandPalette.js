@@ -34,9 +34,14 @@ export const CommandPalette = props => {
 
   const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
   const handleFocus = () => dispatch({ path: 'focus' })
+
   const handleBlur = ({ currentTarget, relatedTarget }) => {
     if (currentTarget.contains(relatedTarget)) return
     props.onBlur()
+  }
+
+  const handleClick = id => ({ metaKey, shiftKey }) => {
+    dispatch({ path: 'click', id, shiftKey, metaKey })
   }
 
   const handleKeyDown = event => {
@@ -51,12 +56,12 @@ export const CommandPalette = props => {
   }
 
   /* eslint-disable react/prop-types */
-  const entry = props => (
+  const child = props => (
     <div
-      key={props.entry.id}
+      key={props.id}
       ref={props.ref}
       role='option'
-      onClick={props.handleClick}
+      onClick={handleClick(props.id)}
       style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
     >
       <span>{props.entry.description()}</span>
@@ -81,9 +86,7 @@ export const CommandPalette = props => {
         </div>
         <List
           ref={ref}
-          multiselect={true}
-          entry={entry}
-          dispatch={dispatch}
+          child={child}
           { ...state }
         />
       </div>
