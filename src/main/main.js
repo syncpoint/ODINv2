@@ -16,6 +16,7 @@ const ready = async () => {
 
   // Open/create master database.
   const databases = paths.databases(app)
+  console.log('databases directory:', databases)
   paths.mkdir(databases)
   const db = jsonStore(paths.master(app))
 

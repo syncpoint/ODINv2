@@ -2,8 +2,11 @@ import Mousetrap from 'mousetrap'
 import { Command } from './Command'
 
 
-
 export function CommandRegistry (services) {
+
+  const cmdOrCtrl = key => process.platform === 'darwin'
+    ? `command+${key}`
+    : `ctrl+${key}`
 
   const shortcut = (id, binding, description) => new Command({
     id,
@@ -13,14 +16,13 @@ export function CommandRegistry (services) {
   })
 
   this.commands_ = [
-    shortcut('open-command-palette', 'meta+p', 'Open command palette'),
+    shortcut('open-command-palette', cmdOrCtrl('p'), 'Open command palette'),
     shortcut('close-command-palette', null, 'Open command palette'),
     shortcut('key-escape', 'escape', 'Escape key')
   ].reduce((acc, command) => {
     acc[command.id] = command
     return acc
   }, {})
-
 
   Object.values(this.commands_)
     .filter(command => command.binding())
