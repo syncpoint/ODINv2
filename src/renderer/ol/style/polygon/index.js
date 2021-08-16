@@ -4,6 +4,7 @@ import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_GAY' // LIMITED ACCESS AREA
+import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
 import './G_M_OGF' // OBSTACLE FREE AREA
 import './G_M_OGR' // OBSTACLE RESTRICTED AREA
