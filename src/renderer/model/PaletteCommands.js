@@ -98,11 +98,8 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
  *
  */
 PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
-  const geometries = R.uniq(properties.map(({ sidc }) => MIL_STD.geometryType(sidc)))
-  console.log(geometries)
-
+  // TODO: check precondition (lineString, polygon)
   const update = this.layerStore_.commands.updateProperties.bind(this.layerStore_)
-
   const command = enabled => new Command({
     id: `style.smooth.${enabled}`,
     description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),

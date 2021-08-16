@@ -4,6 +4,10 @@ import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_GAY' // LIMITED ACCESS AREA
+import './G_M_OGB' // OBSTACLES / GENERAL / BELT
+import './G_M_OGF' // OBSTACLE FREE AREA
+import './G_M_OGR' // OBSTACLE RESTRICTED AREA
+import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
 import { smooth } from '../chaikin'
 
@@ -125,12 +129,11 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     .filter(R.identity)
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
-  const fillPattern = styles[`FILL:${key}`] && styles[`FILL:${key}`]
-
+  const fillPattern = styles[`FILL:${key}`]
   const guides = featureStyles.guideStroke(simplifiedGeometry)
   const style = styles[key]
     ? styles[key]({ feature, resolution, styles: featureStyles, geometry: smoothedGeometry })
-    : featureStyles.defaultStroke(smoothedGeometry, { fillPattern: fillPattern })
+    : featureStyles.defaultStroke(smoothedGeometry, { fillPattern })
 
   return [...style, ...texts, ...handles, ...guides]
 }

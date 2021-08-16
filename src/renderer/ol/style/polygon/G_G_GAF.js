@@ -30,6 +30,5 @@ styles['G*G*GAF---'] = ({ styles, resolution, geometry }) => {
   }, [])
 
   points.push(points[0])
-
-  return styles.solidStroke(TS.write(TS.lineString(points)))
+  return styles.solidStroke(TS.write(TS.polygon(points)))
 }
