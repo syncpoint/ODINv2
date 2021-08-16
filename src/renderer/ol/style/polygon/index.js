@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as MILSTD from '../../../2525c'
 import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
+import './G_G_GAF' // FORTIFIED AREA
 import './G_G_GAY' // LIMITED ACCESS AREA
 import './G_M_SP' // STRONG POINT
 import { smooth } from '../chaikin'

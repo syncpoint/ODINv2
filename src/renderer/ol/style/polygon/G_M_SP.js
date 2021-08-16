@@ -1,16 +1,16 @@
 import * as R from 'ramda'
-import Polygon from 'ol/geom/Polygon'
+import * as geom from 'ol/geom'
 import * as TS from '../../ts'
 import { styles } from '../styles'
 
 // STRONG POINT
-styles['G*M*SP----'] = ({ styles, feature, resolution, geometry }) => {
+styles['G*M*SP----'] = ({ styles, resolution, geometry }) => {
 
   // TODO: 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   const coordinates = geometry.getCoordinates(true)
 
   // Note: We are still (and remain) in Web Mercator (not UTM).
-  const lineString = TS.lineString(TS.coordinates(TS.read(new Polygon(coordinates))))
+  const lineString = TS.read(new geom.LineString(coordinates[0]))
   const indexedLine = TS.lengthIndexedLine(lineString)
   const endIndex = indexedLine.getEndIndex()
   const delta = resolution * 20
