@@ -6,7 +6,7 @@ import './G_G_GAY' // LIMITED ACCESS AREA
 import './G_M_SP' // STRONG POINT
 
 const textStrokeWidth = 3
-const C = text => [{ text, position: 'center' }]
+const C = (text, textStrokeWidth) => [{ text, position: 'center', textStrokeWidth }]
 const T = text => [{ text, position: 'top', textStrokeWidth }]
 const B = text => [{ text, position: 'bottom', textStrokeWidth }]
 const F = text => [{ text, position: 'footer', offsetY: 20 }]
@@ -27,7 +27,7 @@ styles['TEXTS:G*G*GAD---'] = C(ALL_LINES('DZ')) // DROP ZONE
 styles['TEXTS:G*G*GAX---'] = C(ALL_LINES('EZ')) // EXTRACTION ZONE (EZ)
 styles['TEXTS:G*G*GAL---'] = C(ALL_LINES('LZ')) // LANDING ZONE (LZ)
 styles['TEXTS:G*G*GAP---'] = C(ALL_LINES('PZ')) // PICKUP ZONE (PZ)
-styles['TEXTS:G*G*GAY---'] = C('h') // LIMITED ACCESS AREA
+styles['TEXTS:G*G*GAY---'] = C('h', textStrokeWidth) // LIMITED ACCESS AREA
 // TODO: G*G*GAZ--- : AIRFIELD ZONE
 styles['TEXTS:G*G*AAR---'] = C(ALL_LINES('ROZ')) // RESTRICTED OPERATIONS ZONE (ROZ)
 styles['TEXTS:G*G*AAF---'] = C(ALL_LINES('SHORADEZ')) // SHORT-RANGE AIR DEFENSE ENGAGEMENT ZONE (SHORADEZ)
@@ -54,7 +54,7 @@ styles['TEXTS:G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (T
 styles['TEXTS:G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
 styles['TEXTS:G*M*OGZ---'] = styles['TEXTS:POLYGON'] // GENERAL ZONE (OBSTACLES)
 styles['TEXTS:G*M*OGF---'] = C(ALL_LINES('FREE')) // OBSTACLE FREE AREA
-styles['TEXTS:G*M*OGR---'] = styles['TEXTS:POLYGON'] // OBSTACLE RESTRICTED AREA
+styles['TEXTS:G*M*OGR---'] = C(ALL_LINES(), textStrokeWidth) // OBSTACLE RESTRICTED AREA
 // TODO: G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
 styles['TEXTS:G*M*OFA---'] = TLBR('"M"') // MINED AREA
 styles['TEXTS:G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
@@ -81,8 +81,8 @@ styles['TEXTS:G*F*AZII--'] = C(ALL_LINES('ATI ZONE')) // ARTILLERY TARGET INTELL
 styles['TEXTS:G*F*AZXI--'] = C(ALL_LINES('CFF ZONE')) // CALL FOR FIRE ZONE (CFFZ)
 styles['TEXTS:G*F*AZCI--'] = C(ALL_LINES('CENSOR ZONE')) // CENSOR ZONE
 styles['TEXTS:G*F*AZFI--'] = C(ALL_LINES('CF ZONE')) // CRITICAL FRIENDLY ZONE (CFZ)
-styles['TEXTS:G*F*AKBI--'] = C(ALL_LINES('BKB')) // KILL BOX / BLUE
-styles['TEXTS:G*F*AKPI--'] = C(ALL_LINES('PKB')) // KILL BOX / PURPLE
+styles['TEXTS:G*F*AKBI--'] = C(ALL_LINES('BKB'), textStrokeWidth) // KILL BOX / BLUE
+styles['TEXTS:G*F*AKPI--'] = C(ALL_LINES('PKB'), textStrokeWidth) // KILL BOX / PURPLE
 styles['TEXTS:G*S*AD----'] = C(ALL_LINES('DETAINEE\nHOLDING\nAREA')) // DETAINEE HOLDING AREA
 styles['TEXTS:G*S*AE----'] = C(ALL_LINES('EPW\nHOLDING\nAREA')) // ENEMY PRISONER OF WAR (EPW) HOLDING AREA
 styles['TEXTS:G*S*AR----'] = C(ALL_LINES('FARP')) // FORWARD ARMING AND REFUELING AREA (FARP)
@@ -90,6 +90,15 @@ styles['TEXTS:G*S*AH----'] = C(ALL_LINES('REFUGEE\nHOLDING\nAREA')) // REFUGEE H
 styles['TEXTS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA)
 styles['TEXTS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
+
+styles['FILL:HATCH'] = { pattern: 'hatch', angle: 45, size: 2, spacing: 12 }
+styles['FILL:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
+styles['FILL:G*M*OGR---'] = styles['FILL:HATCH'] // OBSTACLE RESTRICTED AREA
+styles['FILL:G*M*NB----'] = styles['FILL:HATCH'] // BIOLOGICALLY CONTAMINATED AREA
+styles['FILL:G*M*NC----'] = styles['FILL:HATCH'] // CHEMICALLY CONTAMINATED AREA
+styles['FILL:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
+styles['FILL:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
+styles['FILL:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
 
 styles.Polygon = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
@@ -109,9 +118,11 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     .filter(R.identity)
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
+  const fillPattern = styles[`FILL:${key}`] && styles[`FILL:${key}`]
+
   const style = styles[key]
     ? styles[key]({ feature, resolution, styles: featureStyles })
-    : featureStyles.defaultStroke(simplified)
+    : featureStyles.defaultStroke(simplified, { fillPattern: fillPattern })
 
   return [...style, ...texts, ...handles]
 }

@@ -1,3 +1,4 @@
+import { DEVICE_PIXEL_RATIO } from 'ol/has'
 import * as geom from 'ol/geom'
 import Feature from 'ol/Feature'
 import Geometry from 'ol/geom/Geometry'
@@ -12,6 +13,96 @@ export const text = options => new Text(options)
 export const circle = options => new Circle(options)
 export const fill = options => new Fill(options)
 export const regularShape = options => new RegularShape(options)
+
+
+const patterns = {
+  hatch: {
+    width: 5,
+    height: 5,
+    lines: [[0, 2.5, 5, 2.5]]
+  },
+  cross: {
+    width: 7,
+    height: 7,
+    lines: [[0, 3, 10, 3], [3, 0, 3, 10]]
+  }
+}
+
+const patternDescriptor = options => {
+  const d = Math.round(options.spacing) || 10
+  const pattern = patterns[options.pattern]
+
+  let a = Math.round(((options.angle || 0) - 90) % 360)
+  if (a > 180) a -= 360
+  a *= Math.PI / 180
+  const cos = Math.cos(a)
+  const sin = Math.sin(a)
+  if (Math.abs(sin) < 0.0001) {
+    pattern.width = pattern.height = d
+    pattern.lines = [[0, 0.5, d, 0.5]]
+    pattern.repeat = [[0, 0], [0, d]]
+  } else if (Math.abs(cos) < 0.0001) {
+    pattern.width = pattern.height = d
+    pattern.lines = [[0.5, 0, 0.5, d]]
+    pattern.repeat = [[0, 0], [d, 0]]
+    if (options.pattern === 'cross') {
+      pattern.lines.push([0, 0.5, d, 0.5])
+      pattern.repeat.push([0, d])
+    }
+  } else {
+    const w = pattern.width = Math.round(Math.abs(d / sin)) || 1
+    const h = pattern.height = Math.round(Math.abs(d / cos)) || 1
+    if (options.pattern === 'cross') {
+      pattern.lines = [[-w, -h, 2 * w, 2 * h], [2 * w, -h, -w, 2 * h]]
+      pattern.repeat = [[0, 0]]
+    } else if (cos * sin > 0) {
+      pattern.lines = [[-w, -h, 2 * w, 2 * h]]
+      pattern.repeat = [[0, 0], [w, 0], [0, h]]
+    } else {
+      pattern.lines = [[2 * w, -h, -w, 2 * h]]
+      pattern.repeat = [[0, 0], [-w, 0], [0, h]]
+    }
+  }
+  pattern.stroke = options.size === 0 ? 0 : options.size || 4
+  return pattern
+}
+
+const fillPattern = options => {
+  const canvas = document.createElement('canvas')
+  const context = canvas.getContext('2d')
+  const descriptor = patternDescriptor(options)
+
+  canvas.width = Math.round(descriptor.width * DEVICE_PIXEL_RATIO)
+  canvas.height = Math.round(descriptor.height * DEVICE_PIXEL_RATIO)
+  context.scale(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO)
+  context.lineCap = 'round'
+
+  ;[
+    [options.strokeColor, options.strokeWidth],
+    [options.strokeFillColor, options.strokeFillWidth]
+  ].forEach(([strokeStyle, lineWidth]) => {
+    context.lineWidth = lineWidth
+    context.strokeStyle = strokeStyle
+    const repeat = descriptor.repeat || [[0, 0]]
+
+    if (descriptor.lines) {
+      for (let i = 0; i < descriptor.lines.length; i++) {
+        for (let r = 0; r < repeat.length; r++) {
+          const line = descriptor.lines[i]
+          context.beginPath()
+          context.moveTo(line[0] + repeat[r][0], line[1] + repeat[r][1])
+          for (let k = 2; k < line.length; k += 2) {
+            context.lineTo(line[k] + repeat[r][0], line[k + 1] + repeat[r][1])
+          }
+          context.stroke()
+        }
+      }
+    }
+  })
+
+  return context.createPattern(canvas, 'repeat')
+}
+
 
 // TODO: move up one level (ol/)
 export const geometryType = arg => {
@@ -73,30 +164,45 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     fontFamily: 'sans-serif',
     textFillColor: '#333',
     textStrokeWidth: 3,
-    textStrokeColor: 'white'
+    textStrokeColor: 'white',
+    strokeWidth: 3,
+    strokeFillWidth: 2
   }
 
   const styles = {}
 
-  styles.defaultStroke = geometry => ([
-    style({
-      geometry,
-      stroke: stroke({ color: props.strokeColor, width: 3, lineDash: props.lineDash })
-    }),
-    style({
-      geometry,
-      stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: props.lineDash })
-    })
-  ])
+  styles.defaultStroke = (geometry, options = {}) => {
+    const pattern = options.fillPattern && fillPattern({ ...props, ...options.fillPattern })
+
+    return [
+      style({
+        geometry,
+        stroke: stroke({
+          color: props.strokeColor,
+          width: props.strokeWidth,
+          lineDash: props.lineDash
+        })
+      }),
+      style({
+        geometry,
+        stroke: stroke({
+          color: props.strokeFillColor,
+          width: props.strokeFillWidth,
+          lineDash: props.lineDash
+        }),
+        fill: pattern && fill({ color: pattern })
+      })
+    ]
+  }
 
   styles.filledStroke = geometry => ([
     style({
       geometry,
-      stroke: stroke({ color: props.strokeColor, width: 3 })
+      stroke: stroke({ color: props.strokeColor, width: props.strokeWidth })
     }),
     style({
       geometry,
-      stroke: stroke({ color: props.strokeFillColor, width: 2 }),
+      stroke: stroke({ color: props.strokeFillColor, width: props.strokeFillWidth }),
       fill: fill({ color: props.fillColor })
     })
   ])
@@ -104,33 +210,33 @@ export const makeStyles = (sidcLike, mode = 'default') => {
   styles.dashedStroke = geometry => ([
     style({
       geometry,
-      stroke: stroke({ color: props.strokeColor, width: 3, lineDash: [8, 8] })
+      stroke: stroke({ color: props.strokeColor, width: props.strokeWidth, lineDash: [8, 8] })
     }),
     style({
       geometry,
-      stroke: stroke({ color: props.strokeFillColor, width: 2, lineDash: [8, 8] })
+      stroke: stroke({ color: props.strokeFillColor, width: props.strokeFillWidth, lineDash: [8, 8] })
     })
   ])
 
   styles.solidStroke = geometry => ([
     style({
       geometry,
-      stroke: stroke({ color: props.strokeColor, width: 3 })
+      stroke: stroke({ color: props.strokeColor, width: props.strokeWidth })
     }),
     style({
       geometry,
-      stroke: stroke({ color: props.strokeFillColor, width: 2 })
+      stroke: stroke({ color: props.strokeFillColor, width: props.strokeFillWidth })
     })
   ])
 
   styles.waspStroke = geometry => ([
     style({
       geometry,
-      stroke: stroke({ color: 'black', width: 3 })
+      stroke: stroke({ color: 'black', width: props.strokeWidth })
     }),
     style({
       geometry,
-      stroke: stroke({ color: 'yellow', width: 2, lineDash: [10, 10] })
+      stroke: stroke({ color: 'yellow', width: props.strokeFillWidth, lineDash: [10, 10] })
     })
   ])
 
