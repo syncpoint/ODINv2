@@ -6,7 +6,7 @@ import { Command } from '../commands/Command'
 import Emitter from '../../shared/emitter'
 
 
-const types = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
+const ALL_TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
   return {
     parameterized,
     sidc: descriptor.sidc,
@@ -33,10 +33,17 @@ export function PaletteCommands (selection, layerStore, undo) {
 util.inherits(PaletteCommands, Emitter)
 
 
+/**
+ *
+ */
 PaletteCommands.prototype.entries = function () {
   return this.entries_
 }
 
+
+/**
+ *
+ */
 PaletteCommands.prototype.handleSelection_ = async function () {
   const properties = await Promise.all(
     this.selection_.selected()
@@ -44,37 +51,71 @@ PaletteCommands.prototype.handleSelection_ = async function () {
       .map(id => this.layerStore_.getFeatureProperties(id))
   )
 
-  const oldProperties = this.selection_.selected().map((id, index) => ({ id, ...properties[index] }))
-  const geometries = R.uniq(properties.map(({ sidc }) => MIL_STD.geometryType(sidc)))
-
-  if (geometries.length !== 1) this.entries_ = []
-  else {
-    const geometry = geometries[0]
-    this.entries_ = types
-      .filter(type => type.geometry === geometry)
-      .map(type => {
-        const options = {
-          schema: MIL_STD.schema(type.sidc),
-          battleDimension: MIL_STD.battleDimension(type.sidc),
-          functionId: MIL_STD.functionId(type.sidc)
-        }
-
-        return new Command({
-          id: type.sidc,
-          description: type.text,
-          body: () => {
-            const newProperties = oldProperties.map(properties => ({
-              ...properties,
-              sidc: MIL_STD.format(properties.sidc, options)
-            }))
-
-            const command = this.layerStore_.commands.updateProperties(oldProperties, newProperties)
-            this.undo_.apply(command)
-          }
-        })
-      })
-  }
+  this.entries_ = []
+  this.entries_.push(...this.typeCommands_(properties))
+  this.entries_.push(...this.styleSmoothCommands_(properties))
 
   this.entries_.sort((a, b) => a.description().localeCompare(b.description()))
   this.emit('palette/entries', this.entries_)
+}
+
+
+/**
+ *
+ */
+PaletteCommands.prototype.typeCommands_ = function (properties) {
+  const geometries = R.uniq(properties.map(({ sidc }) => MIL_STD.geometryType(sidc)))
+  if (geometries.length !== 1) return []
+
+
+  const command = type => {
+    const update = this.layerStore_.commands.updateProperties.bind(this.layerStore_)
+    const options = {
+      schema: MIL_STD.schema(type.sidc),
+      battleDimension: MIL_STD.battleDimension(type.sidc),
+      functionId: MIL_STD.functionId(type.sidc)
+    }
+
+    return new Command({
+      id: type.sidc,
+      description: type.text,
+      body: () => {
+        this.undo_.apply(update(properties, properties.map(properties => ({
+          ...properties,
+          sidc: MIL_STD.format(properties.sidc, options)
+        }))))
+      }
+    })
+  }
+
+  return ALL_TYPES
+    .filter(type => type.geometry === geometries[0])
+    .map(type => command(type))
+}
+
+
+/**
+ *
+ */
+PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
+  const geometries = R.uniq(properties.map(({ sidc }) => MIL_STD.geometryType(sidc)))
+  console.log(geometries)
+
+  const update = this.layerStore_.commands.updateProperties.bind(this.layerStore_)
+
+  const command = enabled => new Command({
+    id: `style.smooth.${enabled}`,
+    description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),
+    body: () => {
+      this.undo_.apply(update(properties, properties.map(properties => ({
+        ...properties,
+        style: {
+          ...properties.style,
+          smooth: enabled
+        }
+      }))))
+    }
+  })
+
+  return [command(true), command(false)]
 }

@@ -12,7 +12,7 @@ import * as TS from '../../ts'
  * @param {function} fn original style function
  */
 export const transform = fn => args => {
-  const geometry = args.feature.getGeometry()
+  const geometry = args.geometry || args.feature.getGeometry()
   const code = codeUTM(geometry)
   const clone = geometry.clone().transform('EPSG:3857', code)
   const styles = fn({ ...args, lineString: TS.read(clone) })

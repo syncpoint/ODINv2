@@ -2,6 +2,7 @@ import * as MILSTD from '../../../2525c'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import { LineStringLabels } from '../labels'
+import { smooth } from '../chaikin'
 
 /* eslint-disable no-multi-spaces */
 import './G_F_LT'    // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
@@ -100,23 +101,30 @@ styles.LineString = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
-  const simplified = geometry.getCoordinates().length > 100
+
+  const simplifiedGeometry = geometry.getCoordinates().length > 100
     ? geometry.simplify(resolution)
     : geometry
 
-  const handles = featureStyles.handles(simplified)
-  const labels = new LineStringLabels(simplified, feature.getProperties())
+  const smoothedGeometry = feature.get('style') && feature.get('style').smooth
+    ? smooth(simplifiedGeometry)
+    : simplifiedGeometry
+
+  const handles = featureStyles.handles(simplifiedGeometry)
+  const labels = new LineStringLabels(smoothedGeometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(labels.label.bind(labels))
     .map(({ geometry, options }) => featureStyles.text(geometry, options))
 
+  const guides = featureStyles.guideStroke(simplifiedGeometry)
   const style = styles[`LineString:${key}`]
     ? transform(styles[`LineString:${key}`])({
       feature,
+      geometry: smoothedGeometry,
       resolution,
       styles: featureStyles
     })
-    : featureStyles.defaultStroke(simplified)
+    : featureStyles.defaultStroke(smoothedGeometry)
 
-  return [...style, ...texts, ...handles]
+  return [...style, ...texts, ...handles, ...guides]
 }

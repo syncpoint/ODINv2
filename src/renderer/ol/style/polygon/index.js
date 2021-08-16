@@ -4,6 +4,7 @@ import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_G_GAY' // LIMITED ACCESS AREA
 import './G_M_SP' // STRONG POINT
+import { smooth } from '../chaikin'
 
 const textStrokeWidth = 3
 const C = (text, textStrokeWidth) => [{ text, position: 'center', textStrokeWidth }]
@@ -107,12 +108,17 @@ styles.Polygon = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
-  const simplified = geometry.getCoordinates()[0].length > 50
+
+  const simplifiedGeometry = geometry.getCoordinates()[0].length > 50
     ? geometry.simplify(resolution)
     : geometry
 
-  const handles = featureStyles.handles(simplified)
-  const labels = new PolygonLabels(simplified, feature.getProperties())
+  const smoothedGeometry = feature.get('style') && feature.get('style').smooth
+    ? smooth(simplifiedGeometry)
+    : simplifiedGeometry
+
+  const handles = featureStyles.handles(simplifiedGeometry)
+  const labels = new PolygonLabels(smoothedGeometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
     .map(text => ({ ...labels.label(text), ...text }))
     .filter(R.identity)
@@ -120,9 +126,10 @@ styles.Polygon = ({ feature, resolution, mode }) => {
 
   const fillPattern = styles[`FILL:${key}`] && styles[`FILL:${key}`]
 
+  const guides = featureStyles.guideStroke(simplifiedGeometry)
   const style = styles[key]
-    ? styles[key]({ feature, resolution, styles: featureStyles })
-    : featureStyles.defaultStroke(simplified, { fillPattern: fillPattern })
+    ? styles[key]({ feature, resolution, styles: featureStyles, geometry: smoothedGeometry })
+    : featureStyles.defaultStroke(smoothedGeometry, { fillPattern: fillPattern })
 
-  return [...style, ...texts, ...handles]
+  return [...style, ...texts, ...handles, ...guides]
 }

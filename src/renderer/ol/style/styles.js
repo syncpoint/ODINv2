@@ -240,6 +240,15 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     })
   ])
 
+  styles.guideStroke = geometry => mode === 'selected'
+    ? [
+        style({
+          geometry,
+          stroke: stroke({ color: 'red', width: 1.5, lineDash: [20, 8, 2, 8] })
+        })
+      ]
+    : []
+
 
   styles.text = (geometry, options = {}) => {
     const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
