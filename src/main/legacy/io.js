@@ -171,9 +171,6 @@ export const readLayer = async (location, projectUUID, layer) => {
     : `layer:${uuid()}` // no features or layer id is ambiguous
 
   const features = json.features.map(feature => {
-    feature.properties.id = feature.id
-    delete feature.id
-
     // Reproject geometry to Web Mercator:
     feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
     return feature

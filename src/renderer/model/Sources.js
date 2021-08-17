@@ -1,4 +1,5 @@
 import util from 'util'
+import * as R from 'ramda'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
@@ -7,19 +8,8 @@ import { readFeature, readFeatures, readGeometry } from '../store/format'
 
 
 /**
- * removeFeature :: ol/Feature | string -> unit
+ * @constructor
  */
-const removeFeature = source => x => {
-  if (x instanceof Feature) source.removeFeature(x)
-  else if (x.type === 'Feature') removeFeature(source)(x.id)
-  else if (typeof x === 'string') source.removeFeature(source.getFeatureById(x))
-}
-
-const addFeature = source => x => {
-  if (!x || x.hidden || !isFeature(x.id)) return
-  source.addFeature(readFeature(x))
-}
-
 export function Sources (layerStore) {
   Emitter.call(this)
   this.layerStore = layerStore
@@ -27,49 +17,95 @@ export function Sources (layerStore) {
   // For now, hold all features in a single source.
   // This might change in the future, especially for 'external' features/sources.
   // Note: Source is mutable. Changes reflect more or less immediately in map.
-  this.featureSource = null
+  this.source_ = null
 
   layerStore.on('batch', ({ operations }) => this.storeBatch_(operations))
-  layerStore.on('geometries', ({ operations }) => this.updateGeometries(operations))
-  layerStore.on('properties', ({ operations }) => this.updateProperties(operations))
+  layerStore.on('geometries', ({ operations }) => this.updateGeometries_(operations))
+  layerStore.on('properties', ({ operations }) => this.updateProperties_(operations))
 }
 
 util.inherits(Sources, Emitter)
 
+
+/**
+ * removeFeature :: ol/Feature | GeoJSON/Feature | string -> unit
+ * NOTE: Must not be called for features not contained in source.
+ * @private
+ */
+Sources.prototype.removeFeature_ = function (featureLike) {
+  console.log('[removeFeature_]', featureLike)
+  if (featureLike instanceof Feature) this.source_.removeFeature(featureLike)
+  else if (featureLike.type === 'Feature') this.removeFeature_(featureLike.id)
+  else if (typeof x === 'string') this.removeFeature_(this.source_.getFeatureById(featureLike))
+}
+
+
+/**
+ * @private
+ */
+Sources.prototype.addFeature_ = function (feature) {
+  if (!feature || feature.hidden || !isFeature(feature.id)) return
+  this.source_.addFeature(readFeature(feature))
+}
+
+
+/**
+ * @private
+ */
 Sources.prototype.storeBatch_ = function (operations) {
-  if (!this.featureSource) this.featureSource = new VectorSource({ features: [] })
+  if (!this.source_) this.source_ = new VectorSource({ features: [] })
 
   const removals = operations.filter(op => op.type === 'del').map(op => op.key)
   const additions = operations.filter(op => op.type === 'put').map(op => op.value)
 
-  removals.forEach(removeFeature(this.featureSource))
-  additions.forEach(removeFeature(this.featureSource))
-  additions.forEach(addFeature(this.featureSource)) // TODO: bulk - addFeatures()
+  const removeFeature = this.removeFeature_.bind(this)
+  const addFeature = this.addFeature_.bind(this)
+
+  removals.forEach(removeFeature)
+  additions
+    .map(feature => this.source_.getFeatureById(feature.id))
+    .filter(R.identity) // may already exist or not
+    .forEach(removeFeature)
+
+  additions.forEach(addFeature)
 }
 
-Sources.prototype.getFeatureSource = async function () {
-  if (this.featureSource) return this.featureSource
-  const json = await this.layerStore.getFeatures()
-  const features = readFeatures(json)
-  this.featureSource = new VectorSource({ features })
-  return this.featureSource
-}
 
-Sources.prototype.updateGeometries = function (operations) {
+/**
+ * @private
+ */
+Sources.prototype.updateGeometries_ = function (operations) {
   operations
     .map(({ key, value }) => ({ key, geometry: readGeometry(value) }))
     .forEach(({ key, geometry }) => {
-      const feature = this.featureSource.getFeatureById(key)
+      const feature = this.source_.getFeatureById(key)
       feature.setGeometry(geometry)
     })
 }
 
-Sources.prototype.updateProperties = function (operations) {
+
+/**
+ * @private
+ */
+Sources.prototype.updateProperties_ = function (operations) {
   operations
     .forEach(({ key, value }) => {
-      const feature = this.featureSource.getFeatureById(key)
+      const feature = this.source_.getFeatureById(key)
       // Note: Does not increase revision counter
       feature.setProperties(value, true)
       feature.changed()
     })
+}
+
+
+/**
+ * @returns ol/VectorSource
+ * NOTE: Source is laziliy loaded.
+ */
+Sources.prototype.getFeatureSource = async function () {
+  if (this.source_) return this.source_
+  const json = await this.layerStore.getFeatures()
+  const features = readFeatures(json)
+  this.source_ = new VectorSource({ features })
+  return this.source_
 }

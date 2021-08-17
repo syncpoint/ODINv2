@@ -67,8 +67,11 @@ util.inherits(LayerStore, Emitter)
  * @private
  * @param {String} layerId optional
  * @returns Feature properties for given layer or all features.
+ *
+ * NOTE: Not only `properties` are stored, but also `id` on the same level,
+ *       i.e. { id, properties }
  */
-LayerStore.prototype.properties = function (layerId) {
+LayerStore.prototype.featureProperties = function (layerId) {
   return new Promise((resolve, reject) => {
     const acc = {}
 
@@ -93,7 +96,7 @@ LayerStore.prototype.properties = function (layerId) {
  * @param {String} layerId optional
  * @returns Feature geometries for given layer or all features.
  */
-LayerStore.prototype.geometries = function (layerId) {
+LayerStore.prototype.featuerGeometries = function (layerId) {
   return new Promise((resolve, reject) => {
     const acc = {}
 
@@ -132,13 +135,12 @@ LayerStore.prototype.keys = function (store, prefix) {
  * @returns GeoJSON FeatureCollection, i.e. Features for given layer or all features.
  */
 LayerStore.prototype.getFeatures = async function (layerId) {
-  const properties = await this.properties(layerId)
-  const geometries = await this.geometries(layerId)
-  const features = Object.entries(properties).map(([id, properties]) => ({
+  const properties = await this.featureProperties(layerId)
+  const geometries = await this.featuerGeometries(layerId)
+  const features = Object.values(properties).map(feature => ({
     type: 'Feature',
-    id,
-    properties,
-    geometry: geometries[id]
+    ...feature,
+    geometry: geometries[feature.id]
   }))
 
   return { type: 'FeatureCollection', features }
@@ -155,7 +157,7 @@ LayerStore.prototype.putLayer = async function (layer) {
   await this.propertiesStore.batch(features.map(feature => ({
     type: 'put',
     key: feature.id,
-    value: { id: feature.id, ...feature.properties }
+    value: feature
   })))
 
   await this.geometryStore.batch(features.map(feature => ({
@@ -164,13 +166,13 @@ LayerStore.prototype.putLayer = async function (layer) {
     value: feature.geometry
   })))
 
-  const operations = features.map(feature => ({
-    type: 'put',
-    key: feature.properties.id,
-    value: feature
-  }))
-
-  this.emit('batch', { operations })
+  this.emit('batch', {
+    operations: features.map(feature => ({
+      type: 'put',
+      key: feature.id,
+      value: feature
+    }))
+  })
 }
 
 LayerStore.prototype.deleteLayer = async function (layerId) {
@@ -188,12 +190,18 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
   const ops = Object.entries(geometries)
     .map(([key, value]) => [key, writeGeometryObject(value)])
     .map(([key, value]) => ({ type: 'put', key, value }))
+
   this.emit('geometries', { operations: ops })
   return this.geometryStore.batch(ops)
 }
 
 LayerStore.prototype.updateProperties = async function (features) {
-  const operations = features.map(feature => ({ type: 'put', key: feature.id, value: feature }))
+  const operations = features.map(feature => ({
+    type: 'put',
+    key: feature.id,
+    value: feature
+  }))
+
   await this.propertiesStore.batch(operations)
   this.emit('properties', { operations })
 }

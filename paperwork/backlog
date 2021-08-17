@@ -4,12 +4,6 @@ IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN
-[MILESTONE - I/O]
-  ca7a1a2f-7506-403c-bc79-946a42cccc00 - persistence/feature: re-introduce properties scope, id goes top-level, reverts 0ea1f9be-03b9-49c5-bd1b-ada9c9261792
-  0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
-  0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
-  079aa0be-78a4-4330-8912-e906f7d27180 - ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
-  45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
 
 c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE OBSTACLE
@@ -40,6 +34,10 @@ e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
 022c181d-e5a0-4ab4-b749-1068b4a95865 - command palette: 'move to layer'
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simplfy styles while panning/zooming (custom PointerInteraction)
+0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
+0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
+079aa0be-78a4-4330-8912-e906f7d27180 - ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
+45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -95,3 +93,4 @@ DEH - 14ecd341-3b8f-420c-b9b5-2a79827a132e - TACGRP.MOBSU.OBST.GNL.BLT - BELT
 DEH - d535d14b-6794-4319-b7cc-a63de28a9ce2 - TACGRP.MOBSU.OBST.GNL.Z - ZONE
 DEH - c36a4c6f-f980-4cee-95d4-5f1ad4dbc727 - TACGRP.C2GM.SPL.ARA.ENCMT - ENCIRCLEMENT
 DEH - d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE - INFILTRATION LANE
+DEH - ca7a1a2f-7506-403c-bc79-946a42cccc00 - persistence/feature: re-introduce properties scope, id goes top-level, reverts 0ea1f9be-03b9-49c5-bd1b-ada9c9261792

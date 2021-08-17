@@ -22,21 +22,28 @@ export const transferProject = async (db, project) => {
   {
     const op = layer => ({ type: 'put', key: layer.id, value: { id: layer.id, name: layer.name } })
     const batch = layers.map(op)
-    // console.log('layer', batch)
     await properties.batch(batch)
   }
 
   {
-    const op = feature => ({ type: 'put', key: feature.properties.id, value: feature.properties })
+    const op = feature => ({
+      type: 'put',
+      key: feature.id,
+      value: { id: feature.id, properties: feature.properties }
+    })
+
     const batch = layers.flatMap(({ features }) => features).map(op)
-    // console.log('feature', batch)
     await properties.batch(batch)
   }
 
   {
-    const op = feature => ({ type: 'put', key: feature.properties.id, value: feature.geometry })
+    const op = feature => ({
+      type: 'put',
+      key: feature.id,
+      value: feature.geometry
+    })
+
     const batch = layers.flatMap(({ features }) => features).map(op)
-    // console.log('geometry', batch)
     await geometries.batch(batch)
   }
 }
