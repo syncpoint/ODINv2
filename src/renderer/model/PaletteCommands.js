@@ -3,7 +3,7 @@ import * as MIL_STD from '../2525c'
 import { Command } from '../commands/Command'
 
 
-const ALL_TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
+const TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
   return {
     parameterized,
     sidc: descriptor.sidc,
@@ -12,6 +12,45 @@ const ALL_TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]
   }
 })
 
+const STANDARD_IDENTITIES = [
+  { code: 'P', name: 'Pending' },
+  { code: 'U', name: 'Unknown' },
+  { code: 'F', name: 'Friend/Own' },
+  { code: 'N', name: 'Neutral' },
+  { code: 'H', name: 'Hostile/Enemy' },
+  { code: 'A', name: 'Assumed Friend' },
+  { code: 'S', name: 'Suspect' },
+  { code: 'J', name: 'Joker' },
+  { code: 'K', name: 'Faker' },
+  { code: '-', name: 'None' }
+]
+
+const STATUS = [
+  { code: 'A', name: 'Anticipated/Planned' },
+  { code: 'P', name: 'Present (Unit only)' },
+  { code: 'C', name: 'Present/Fully Capable' },
+  { code: 'D', name: 'Present/Fully Damaged' },
+  { code: 'X', name: 'Present/Fully Destroyed' },
+  { code: 'F', name: 'Present/Full to Capacity' }
+]
+
+const ECHELON = [
+  { code: '-', name: 'None' },
+  { code: 'A', name: 'Team/Crew' },
+  { code: 'B', name: 'Squad' },
+  { code: 'C', name: 'Section' },
+  { code: 'D', name: 'Platoon/Detachment' },
+  { code: 'E', name: 'Company/Battery/Troop' },
+  { code: 'F', name: 'Battalion/Squadron' },
+  { code: 'G', name: 'Regiment/Group' },
+  { code: 'H', name: 'Brigade' },
+  { code: 'I', name: 'Division' },
+  { code: 'J', name: 'Corps/MEF' },
+  { code: 'K', name: 'Army' },
+  { code: 'L', name: 'Army Group/Front' },
+  { code: 'M', name: 'Region' },
+  { code: 'N', name: 'Command' }
+]
 
 /**
  * @constructor
@@ -32,6 +71,9 @@ PaletteCommands.prototype.getCommands = function (properties) {
 
   entries.push(...this.typeCommands_(properties))
   entries.push(...this.styleSmoothCommands_(properties))
+  entries.push(...this.identityCommands_(properties))
+  entries.push(...this.statusCommands_(properties))
+  entries.push(...this.echelonCommands_(properties))
 
   entries.sort((a, b) => a.description().localeCompare(b.description()))
   return entries
@@ -83,9 +125,83 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
     })
   }
 
-  return ALL_TYPES
+  return TYPES
     .filter(type => type.geometry === geometries[0])
-    .map(type => command(type))
+    .map(command)
+}
+
+
+/**
+ * Standard Identity.
+ */
+PaletteCommands.prototype.identityCommands_ = function (properties) {
+  const command = identity => {
+    const newProperties = Object.entries(properties)
+      .map(([id, properties]) => ({
+        id,
+        properties: {
+          ...properties,
+          sidc: MIL_STD.format(properties.sidc, { identity: identity.code })
+        }
+      }))
+
+    return new Command({
+      id: `identity:${identity.code}`,
+      description: `Identity - ${identity.name}`,
+      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+    })
+  }
+
+  return STANDARD_IDENTITIES.map(command)
+}
+
+
+/**
+ * Status/Operational Condition.
+ */
+PaletteCommands.prototype.statusCommands_ = function (properties) {
+  const command = status => {
+    const newProperties = Object.entries(properties)
+      .map(([id, properties]) => ({
+        id,
+        properties: {
+          ...properties,
+          sidc: MIL_STD.format(properties.sidc, { status: status.code })
+        }
+      }))
+
+    return new Command({
+      id: `status:${status.code}`,
+      description: `Status/Condition - ${status.name}`,
+      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+    })
+  }
+
+  return STATUS.map(command)
+}
+
+/**
+ * Size/Echelon.
+ */
+PaletteCommands.prototype.echelonCommands_ = function (properties) {
+  const command = echelon => {
+    const newProperties = Object.entries(properties)
+      .map(([id, properties]) => ({
+        id,
+        properties: {
+          ...properties,
+          sidc: MIL_STD.format(properties.sidc, { echelon: echelon.code })
+        }
+      }))
+
+    return new Command({
+      id: `size:${echelon.code}`,
+      description: `Echelon/Size - ${echelon.name}`,
+      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+    })
+  }
+
+  return ECHELON.map(command)
 }
 
 

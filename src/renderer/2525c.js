@@ -3,7 +3,7 @@ import raw from './2525c.json'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
-const STANDARD_IDENTITY = 1
+const IDENTITY = 1 // a.k.a Standard Identity
 const BATTLE_DIMENSION = 2
 const STATUS = 3
 const FUNCTION_ID = 4
@@ -28,7 +28,7 @@ export const battleDimension = sidc => sidc
 
 // Standard Identity (ex. Affiliation)
 export const standardIdentity = sidc => sidc
-  ? sidc[STANDARD_IDENTITY]
+  ? sidc[IDENTITY]
   : 'U'
 
 // status or P - PRESENT
@@ -45,7 +45,10 @@ export const format = (sidc, options) => {
 
   let formatted = sidc
   if (options.schema) formatted = options.schema + formatted.substring(SCHEMA + 1)
+  if (options.identity) formatted = formatted.substring(0, IDENTITY) + options.identity + formatted.substring(IDENTITY + 1)
   if (options.battleDimension) formatted = formatted.substring(0, BATTLE_DIMENSION) + options.battleDimension + formatted.substring(BATTLE_DIMENSION + 1)
+  if (options.status) formatted = formatted.substring(0, STATUS) + options.status + formatted.substring(STATUS + 1)
+  if (options.echelon) formatted = formatted.substring(0, ECHELON) + options.echelon + formatted.substring(ECHELON + 1)
   if (options.functionId) formatted = formatted.substring(0, FUNCTION_ID) + options.functionId + formatted.substring(FUNCTION_ID + 6)
   return formatted
 }
