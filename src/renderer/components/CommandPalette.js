@@ -1,47 +1,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, useListStore, strategy } from './List'
+import { List, initialState, reducer } from './List'
+import { singleselect } from './singleselect'
 import { Search } from './Search'
 
+
 export const CommandPalette = props => {
-  const { paletteCommands, featureSnapshot } = useServices()
-  const ref = React.useRef()
-
-  const { state, dispatch, fetch } = useListStore({
-    strategy: strategy.singleselect,
-    fetch: (filter) => {
-      return paletteCommands.entries()
-        .filter(command => !filter || command.description().toLowerCase().includes(filter.toLowerCase()))
-    }
-  })
-
-  const commands = state.entries.reduce((acc, entry) => {
-    acc[entry.id] = entry
-    return acc
-  }, {})
-
-  if (state.focusId) {
-    commands[state.focusId].invoke()
-  }
-
-  React.useEffect(() => {
-    const handler = () => fetch()
-    paletteCommands.on('palette/entries', handler)
-    return () => paletteCommands.off('palette/entries', handler)
-  }, [dispatch])
-
-
-  const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
-  const handleFocus = () => dispatch({ path: 'focus' })
+  const { selection, layerStore, paletteCommands } = useServices()
+  const [featuresSnapshot, setFeaturesSnapshot] = React.useState()
+  const [filter, setFilter] = React.useState('')
+  const [state, dispatch] = React.useReducer(reducer(singleselect), initialState)
 
   const handleBlur = ({ currentTarget, relatedTarget }) => {
     if (currentTarget.contains(relatedTarget)) return
     props.onBlur()
-  }
-
-  const handleClick = id => ({ metaKey, shiftKey }) => {
-    dispatch({ path: 'click', id, shiftKey, metaKey })
   }
 
   const handleKeyDown = event => {
@@ -49,11 +22,60 @@ export const CommandPalette = props => {
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
-    if (key === 'Escape') featureSnapshot.restore()
 
-    dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
+    // On Escape key, reset features to stored snapshot:
+    if (key === 'Escape') {
+      const properties = Object.entries(featuresSnapshot).map(([id, properties]) => ({ id, properties }))
+      layerStore.updateProperties(properties)
+    }
+
+    // On Enter key, apply command for good, i.e. no dry run:
+    if (key === 'Enter' && state.focusIndex !== -1) {
+      state.entries[state.focusIndex].invoke(false)
+    }
+
+    dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
     props.onKeyDown(event)
   }
+
+  const handleClick = id => ({ metaKey, shiftKey }) => {
+    dispatch({ type: 'click', id, shiftKey, metaKey })
+  }
+
+  const handleSearch = value => {
+    setFilter(value.toLowerCase())
+  }
+
+  /**
+   * Store feature properties snapshot of all selected features.
+   * This happens once throughout the lifecycle of palette.
+   */
+  React.useEffect(async () => {
+    // Get properties snapshot of currently selected features:
+    const snapshot = await selection.selected().reduce(async (acc, id) => {
+      const properties = await layerStore.getFeatureProperties(id)
+      const features = await acc
+      features[id] = properties
+      return features
+    }, {})
+
+    setFeaturesSnapshot(snapshot)
+  }, [])
+
+
+  /**
+   * Filter command entries based on features snapshot and current filter.
+   */
+  React.useEffect(async () => {
+    const commands = paletteCommands.getCommands(featuresSnapshot).filter(command => {
+      if (!filter) return true
+      return command.description().toLowerCase().includes(filter)
+    })
+
+    dispatch({ type: 'entries', entries: commands, reset: false })
+  }, [filter, featuresSnapshot])
+
+  const ref = React.useRef()
 
   /* eslint-disable react/prop-types */
   const child = props => (
@@ -69,16 +91,19 @@ export const CommandPalette = props => {
   )
   /* eslint-enable react/prop-types */
 
+  if (state.focusIndex !== -1) {
+    state.entries[state.focusIndex].invoke(true)
+  }
+
   return (
     <div
       className='palette-container fullscreen'
-      onFocus={handleFocus}
       onBlur={handleBlur}
     >
       <div
         className='palette panel'
         onKeyDown={handleKeyDown}
-    >
+      >
         <div
           style={{ display: 'flex', gap: '8px', padding: '8px' }}
         >

@@ -2,7 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'antd'
 import { useServices } from './services'
-import { List, useListStore, strategy } from './List'
+import { List, initialState, reducer } from './List'
+import { singleselect } from './singleselect'
 import { Search } from './Search'
 import { militaryFormat } from '../../shared/datetime'
 
@@ -169,17 +170,30 @@ Project.propTypes = {
  */
 export const Splash = () => {
   const { projectStore, ipcRenderer } = useServices()
-  const listRef = React.useRef()
+  const [filter, setFilter] = React.useState('')
+  const [state, dispatch] = React.useReducer(reducer(singleselect), initialState)
 
-  const { state, dispatch, fetch } = useListStore({
-    strategy: strategy.singleselect,
-    fetch: filter => projectStore.getProjects(filter)
-  })
+  /**
+   * Reload projects from store and update entry list
+   * with optional entry id to focus.
+   * Use current filter to load only projects to display in list.
+   *
+   * @param {*} projectId - optional project id to focus in list next.
+   */
+  const reload = async projectId => {
+    const projects = await projectStore.getProjects(filter)
+    dispatch({ type: 'entries', entries: projects, candidateId: projectId })
+  }
 
+
+  /**
+   * Listen to store events.
+   * Reload/updates projects as appropriate.
+   */
   React.useEffect(() => {
-    const updated = ({ id, project }) => fetch()
-    const created = ({ id, project }) => fetch(id)
-    const deleted = ({ id }) => fetch()
+    const updated = async ({ project }) => reload(project.id)
+    const created = async ({ project }) => reload(project.id)
+    const deleted = async () => reload()
 
     const handlers = { updated, created, deleted }
     Object.entries(handlers).forEach(([event, handler]) => projectStore.on(event, handler))
@@ -189,12 +203,23 @@ export const Splash = () => {
     }
   }, [dispatch])
 
+
+  /**
+   * Listen on project/window close event.
+   * Updates projects as appropriate.
+   */
   React.useEffect(() => {
     const channel = 'ipc:post:project/closed'
-    const handleClosed = () => fetch()
+    const handleClosed = () => reload()
     ipcRenderer.on(channel, handleClosed)
     return () => ipcRenderer.off(channel, handleClosed)
   }, [])
+
+
+  /**
+   * Reload projects whenever search filter changes.
+   */
+  React.useEffect(reload, [filter])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey } = event
@@ -202,14 +227,14 @@ export const Splash = () => {
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
 
-    dispatch({ path: `keydown/${key}`, shiftKey, metaKey })
+    dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
   }
 
+  const handleSearch = value => setFilter(value.toLowerCase())
   const handleCreate = () => projectStore.createProject()
-  const handleSearch = value => dispatch({ path: 'filter', filter: value.toLowerCase() })
-  const handleFocus = () => dispatch({ path: 'focus' })
+  const handleFocus = () => dispatch({ type: 'focus' })
   const handleClick = id => ({ metaKey, shiftKey }) => {
-    dispatch({ path: 'click', id, shiftKey, metaKey })
+    dispatch({ type: 'click', id, shiftKey, metaKey })
   }
 
   /* eslint-disable react/prop-types */
@@ -223,6 +248,9 @@ export const Splash = () => {
     selected={props.selected}
   />
   /* eslint-enable react/prop-types */
+
+
+  const ref = React.useRef()
 
   return (
     <div
@@ -242,7 +270,7 @@ export const Splash = () => {
         <Button>Import</Button>
       </div>
       <List
-        ref={listRef}
+        ref={ref}
         child={child}
         { ...state }
       />

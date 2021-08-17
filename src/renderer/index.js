@@ -20,7 +20,6 @@ import { Undo } from './Undo'
 import { CommandRegistry } from './commands/CommandRegistry'
 import EventEmitter from '../shared/emitter'
 import { PaletteCommands } from './model/PaletteCommands'
-import { FeatureSnapshot } from './model/FeatureSnapshot'
 
 process.traceProcessWarnings = true
 
@@ -51,13 +50,11 @@ const project = () => {
   const layerStore = new LayerStore(db)
 
   ipcRenderer.on('EDIT_UNDO', () => {
-    console.log('EDIT_UNDO')
     // TODO: precondition: check document.activeElement
     if (undo.canUndo()) undo.undo()
   })
 
   ipcRenderer.on('EDIT_REDO', () => {
-    console.log('EDIT_REDO')
     // TODO: precondition: check document.activeElement
     if (undo.canRedo()) undo.redo()
   })
@@ -83,8 +80,7 @@ const project = () => {
   services.dragAndDrop = dragAndDrop
   services.layerStore = layerStore
   services.commandRegistry = new CommandRegistry(services)
-  services.paletteCommands = new PaletteCommands(services.selection, layerStore, undo)
-  services.featureSnapshot = new FeatureSnapshot(services.selection, layerStore)
+  services.paletteCommands = new PaletteCommands(layerStore, undo)
 
   return (
     <ServiceProvider { ...services }>

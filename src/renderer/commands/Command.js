@@ -26,7 +26,7 @@ export class Command {
     return this.description_
   }
 
-  invoke () {
-    this.body_ && this.body_.apply(this)
+  invoke (dryRun) {
+    this.body_ && this.body_(dryRun)
   }
 }

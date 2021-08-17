@@ -1,9 +1,6 @@
-import util from 'util'
 import * as R from 'ramda'
 import * as MIL_STD from '../2525c'
-import { isFeatureId } from './ids'
 import { Command } from '../commands/Command'
-import Emitter from '../../shared/emitter'
 
 
 const ALL_TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
@@ -19,44 +16,39 @@ const ALL_TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]
 /**
  * @constructor
  */
-export function PaletteCommands (selection, layerStore, undo) {
-  Emitter.call(this)
-
-  this.selection_ = selection
+export function PaletteCommands (layerStore, undo) {
   this.layerStore_ = layerStore
   this.undo_ = undo
-  this.entries_ = []
-
-  selection.on('selection', this.handleSelection_.bind(this))
-}
-
-util.inherits(PaletteCommands, Emitter)
-
-
-/**
- *
- */
-PaletteCommands.prototype.entries = function () {
-  return this.entries_
 }
 
 
 /**
  *
  */
-PaletteCommands.prototype.handleSelection_ = async function () {
-  const properties = await Promise.all(
-    this.selection_.selected()
-      .filter(isFeatureId)
-      .map(id => this.layerStore_.getFeatureProperties(id))
-  )
+PaletteCommands.prototype.getCommands = function (properties) {
+  const entries = []
 
-  this.entries_ = []
-  this.entries_.push(...this.typeCommands_(properties))
-  this.entries_.push(...this.styleSmoothCommands_(properties))
+  if (!properties) return entries
 
-  this.entries_.sort((a, b) => a.description().localeCompare(b.description()))
-  this.emit('palette/entries', this.entries_)
+  entries.push(...this.typeCommands_(properties))
+  entries.push(...this.styleSmoothCommands_(properties))
+
+  entries.sort((a, b) => a.description().localeCompare(b.description()))
+  return entries
+}
+
+
+/**
+ *
+ */
+PaletteCommands.prototype.updateProperties_ = function (dryRun, properties, newProperties) {
+  if (dryRun) {
+    this.layerStore_.updateProperties(newProperties)
+  } else {
+    const oldProperties = Object.entries(properties).map(([id, properties]) => ({ id, properties }))
+    const command = this.layerStore_.commands.updateProperties(oldProperties, newProperties)
+    this.undo_.apply(command)
+  }
 }
 
 
@@ -64,32 +56,30 @@ PaletteCommands.prototype.handleSelection_ = async function () {
  *
  */
 PaletteCommands.prototype.typeCommands_ = function (properties) {
-  const geometryType = ({ properties }) => MIL_STD.geometryType(properties.sidc)
-  const geometries = R.uniq(properties.map(geometryType))
+  const geometryType = ([id, properties]) => MIL_STD.geometryType(properties.sidc)
+  const geometries = R.uniq(Object.entries(properties).map(geometryType))
   if (geometries.length !== 1) return []
 
   const command = type => {
-    const update = this.layerStore_.commands.updateProperties.bind(this.layerStore_)
     const options = {
       schema: MIL_STD.schema(type.sidc),
       battleDimension: MIL_STD.battleDimension(type.sidc),
       functionId: MIL_STD.functionId(type.sidc)
     }
 
+    const newProperties = Object.entries(properties)
+      .map(([id, properties]) => ({
+        id,
+        properties: {
+          ...properties,
+          sidc: MIL_STD.format(properties.sidc, options)
+        }
+      }))
+
     return new Command({
       id: type.sidc,
       description: type.text,
-      body: () => {
-        const updatedProperties = properties.map(({ id, properties }) => ({
-          id,
-          properties: {
-            ...properties,
-            sidc: MIL_STD.format(properties.sidc, options)
-          }
-        }))
-
-        this.undo_.apply(update(properties, updatedProperties))
-      }
+      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
     })
   }
 
@@ -104,24 +94,23 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
  */
 PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
   // TODO: check precondition (lineString, polygon)
-  const update = this.layerStore_.commands.updateProperties.bind(this.layerStore_)
+
+  const newProperties = enabled => Object.entries(properties)
+    .map(([id, properties]) => ({
+      id,
+      properties: {
+        ...properties,
+        style: {
+          ...properties.style,
+          smooth: enabled
+        }
+      }
+    }))
+
   const command = enabled => new Command({
     id: `style.smooth.${enabled}`,
     description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),
-    body: () => {
-      const updatedProperties = properties.map(({ id, properties }) => ({
-        id,
-        properties: {
-          ...properties,
-          style: {
-            ...properties.style,
-            smooth: enabled
-          }
-        }
-      }))
-
-      this.undo_.apply(update(properties, updatedProperties))
-    }
+    body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties(enabled))
   })
 
   return [command(true), command(false)]

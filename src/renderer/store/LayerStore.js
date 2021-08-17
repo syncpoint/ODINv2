@@ -146,9 +146,16 @@ LayerStore.prototype.getFeatures = async function (layerId) {
   return { type: 'FeatureCollection', features }
 }
 
+
+/**
+ * @param {string} featureId
+ * @returns Only the feature's properties (not id).
+ */
 LayerStore.prototype.getFeatureProperties = async function (featureId) {
-  return this.propertiesStore.get(featureId)
+  const feature = await this.propertiesStore.get(featureId)
+  return feature.properties
 }
+
 
 LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
@@ -195,6 +202,9 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
   return this.geometryStore.batch(ops)
 }
 
+/**
+ * updateProperties :: [{ id, properties }] -> Promise()
+ */
 LayerStore.prototype.updateProperties = async function (features) {
   const operations = features.map(feature => ({
     type: 'put',

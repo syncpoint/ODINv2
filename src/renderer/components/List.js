@@ -1,8 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { indexOf } from './selection'
-import { singleselect } from './list-singleselect'
-import { multiselect } from './list-multiselect'
+import { singleselect } from './singleselect'
+import { multiselect } from './multiselect'
 
 export const strategy = {
   singleselect,
@@ -12,43 +11,53 @@ export const strategy = {
 /**
  *
  */
-export const useListStore = options => {
-  const [state, setState] = React.useState({
-    entries: [],
+export const initialState = {
 
-    /** focusId :: id || null */
-    focusId: null,
+  /**
+   * entries :: [{ id, ...any }]
+   *
+   * Entry must have public `id` property.
+   */
+  entries: [],
 
-    focusIndex: -1,
+  /**
+   * focusId :: id | null
+   *
+   * Used to remember focused entry between updates of entry list,
+   * where focusIndex may be invalid after update.
+   * if set, focusId has precedence over focusIndex.
+   */
+  focusId: null,
 
-    /** selected :: [id] */
-    selected: [],
-    scroll: 'smooth',
-    filter: null
-  })
+  /**
+   * focusIndex :: int
+   *
+   * Index in entries or -1 for undefined.
+   */
+  focusIndex: -1,
 
-  const fetch = async focusId => {
-    const entries = await options.fetch(state.filter)
-    if (focusId) {
-      const focusIndex = indexOf(entries, focusId)
-      setState({ ...state, entries, focusId, focusIndex, scroll: 'smooth' })
-    } else {
-      const focusIndex = Math.min(entries.length - 1, state.focusIndex)
-      const focusId = focusIndex !== -1
-        ? entries[focusIndex][0]
-        : null
-      setState({ ...state, entries, focusId, focusIndex, scroll: 'smooth' })
-    }
-  }
+  /**
+   * selected :: [id]
+   *
+   * Zero, one or more ids of selected entries.
+   */
+  selected: [],
 
-  React.useEffect(() => fetch(), [state.filter])
+  /**
+   * scroll: 'none' | 'smooth' | 'auto'
+   *
+   * Scroll behavior for element.scrollIntoView().
+   */
+  scroll: 'auto'
+}
 
-  const dispatch = event => {
-    const handler = options.strategy[event.path]
-    if (handler) setState(handler(state, event))
-  }
 
-  return { state, dispatch, fetch }
+/**
+ *
+ */
+export const reducer = strategy => (state, event) => {
+  const handler = strategy[event.type]
+  return handler ? handler(state, event) : state
 }
 
 /**

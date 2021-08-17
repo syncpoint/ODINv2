@@ -11,9 +11,45 @@ import { indexOf, firstId, lastId } from './selection'
 export const singleselect = {
 
   /**
-   * Apply string to filter list entries.
+   *
    */
-  filter: (state, { filter }) => ({ ...state, filter }),
+  entries: (state, { entries, candidateId }) => {
+    if (!entries.length) {
+      return { ...state, entries, focusIndex: -1, focusId: null, selected: [] }
+    }
+
+    if (candidateId) {
+      return {
+        ...state,
+        entries,
+        focusId: candidateId,
+        focusIndex: indexOf(entries, candidateId),
+        selected: [candidateId],
+        scroll: 'smooth'
+      }
+    }
+
+    // Check if focused entry is still available.
+    const index = indexOf(entries, state.focusId)
+
+    const focusIndex = index === -1
+      ? Math.min(entries.length - 1, state.focusIndex)
+      : index
+
+    const focusId = focusIndex !== -1
+      ? entries[focusIndex].id
+      : null
+
+    return {
+      ...state,
+      entries,
+      focusIndex,
+      focusId,
+      selected: [focusId],
+      scroll: 'auto'
+    }
+
+  },
 
   /** Focus and select clicked entry. */
   click: (state, { id, shiftKey, metaKey }) => ({
@@ -22,34 +58,6 @@ export const singleselect = {
     focusIndex: indexOf(state.entries, id),
     selected: [id]
   }),
-
-  /**
-   * When a single-select listbox receives focus:
-   *
-   *   - If none of the options are selected before the listbox receives focus,
-   *     the first option receives focus. Optionally, the first option may be
-   *     automatically selected.
-   *   - If an option is selected before the listbox receives focus,
-   *     focus is set on the selected option.
-   */
-  focus: state => {
-    if (state.focusId) return state
-    if (!state.entries.length) return state
-
-    // Focus first selected entry or first entry if no selection:
-    const selectedIndexes = state.selected
-      .map(id => indexOf(state.entries, id))
-      .sort()
-
-    const focusIndex = selectedIndexes.length
-      ? selectedIndexes[0] !== -1
-        ? selectedIndexes[0]
-        : 0
-      : 0
-
-    const focusId = state.entries[focusIndex].id
-    return { ...state, focusIndex, focusId, selected: [focusId] }
-  },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
     if (metaKey) return state // not handled here.
