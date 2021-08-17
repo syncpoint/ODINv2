@@ -1,14 +1,7 @@
 import assert from 'assert'
-import { multiselect } from '../../src/renderer/components/list-multiselect'
+import { multiselect } from '../../../src/renderer/components/multiselect'
 
 describe('multiselect', function () {
-
-  it('filter', function () {
-    const state = {}
-    const actual = multiselect.filter(state, { filter: 'x' })
-    const expected = { filter: 'x' }
-    assert.deepStrictEqual(actual, expected)
-  })
 
   describe('click', function () {
     const entries = [{ id: 'x' }, { id: 'y' }]
@@ -34,39 +27,6 @@ describe('multiselect', function () {
       assert.deepStrictEqual(actual, expected)
     })
   })
-
-  describe('focus', function () {
-    const entries = [{ id: 'x' }, { id: 'y' }, { id: 'z' }]
-
-    it('retain focus', function () {
-      const state = { entries, selected: [], focusId: 'x', focusIndex: 0 }
-      const actual = multiselect.focus(state)
-      assert.deepStrictEqual(actual, state)
-    })
-
-    it('noop (empty list)', function () {
-      const state = { entries: [], selected: [], focusIndex: -1 }
-      const actual = multiselect.focus(state)
-      assert.deepStrictEqual(actual, state)
-    })
-
-    it('focus first option (no selection)', function () {
-      const state = { entries, selected: [], focusIndex: -1 }
-      const actual = multiselect.focus(state)
-      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0 }
-      assert.deepStrictEqual(actual, expected)
-    })
-
-    it('focus first selected option', function () {
-      const state = { entries, selected: ['z', 'y'], focusIndex: -1 }
-      const actual = multiselect.focus(state)
-
-      // first selected option (by index) -> 'y'
-      const expected = { entries, selected: ['z', 'y'], focusId: 'y', focusIndex: 1 }
-      assert.deepStrictEqual(actual, expected)
-    })
-  })
-
 
   describe('keydown/ArrowDown', function () {
     const entries = [{ id: 'x' }, { id: 'y' }]

@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, initialState, reducer } from './List'
+import { List, reducer } from './List'
+import { initialState } from './list-state'
 import { singleselect } from './singleselect'
 import { Search } from './Search'
 
@@ -105,7 +106,7 @@ export const CommandPalette = props => {
         onKeyDown={handleKeyDown}
       >
         <div
-          style={{ display: 'flex', gap: '8px', padding: '8px' }}
+          style={{ display: 'flex', padding: '6px' }}
         >
           <Search onSearch={handleSearch}/>
         </div>

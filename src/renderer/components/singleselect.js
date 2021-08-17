@@ -1,4 +1,5 @@
 import { indexOf, firstId, lastId } from './selection'
+import { initialState } from './list-state'
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -7,6 +8,14 @@ import { indexOf, firstId, lastId } from './selection'
 
 /**
  * Selection follows focus.
+ *
+ * When a single-select listbox receives focus:
+ *
+ *   - If none of the options are selected before the listbox receives focus,
+ *     the first option receives focus. Optionally, the first option may be
+ *     automatically selected.
+ *   - If an option is selected before the listbox receives focus,
+ *     focus is set on the selected option.
  */
 export const singleselect = {
 
@@ -14,8 +23,10 @@ export const singleselect = {
    *
    */
   entries: (state, { entries, candidateId }) => {
+
     if (!entries.length) {
-      return { ...state, entries, focusIndex: -1, focusId: null, selected: [] }
+      // Back to square one.
+      return initialState
     }
 
     if (candidateId) {
@@ -45,10 +56,9 @@ export const singleselect = {
       entries,
       focusIndex,
       focusId,
-      selected: [focusId],
+      selected: focusId !== null ? [focusId] : [],
       scroll: 'auto'
     }
-
   },
 
   /** Focus and select clicked entry. */

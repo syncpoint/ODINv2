@@ -8,13 +8,18 @@ import { toggleSelection, indexOf, firstId, lastId } from './selection'
 
 /**
  * Selection does not follow focus.
+ *
+ * When a multi-select listbox receives focus:
+ *
+ *   - If none of the options are selected before the listbox receives
+ *     focus, focus is set on the first option and there is no
+ *     automatic change in the selection state.
+ *   - If one or more options are selected before the listbox receives
+ *     focus, focus is set on the first option in the list that is selected.
+ *
+ * Reference: https://www.w3.org/TR/wai-aria-practices-1.1/#listbox_kbd_interaction
  */
 export const multiselect = {
-
-  /**
-   * Apply string to filter list entries.
-   */
-  filter: (state, { filter }) => ({ ...state, filter }),
 
   /** Focus clicked entry, optionally selecting it. */
   click: (state, { id, shiftKey, metaKey }) => {
@@ -28,31 +33,6 @@ export const multiselect = {
       focusIndex: indexOf(state.entries, id),
       selected
     }
-  },
-
-  /**
-   * When a multi-select listbox receives focus:
-   *
-   *   - If none of the options are selected before the listbox receives
-   *     focus, focus is set on the first option and there is no
-   *     automatic change in the selection state.
-   *   - If one or more options are selected before the listbox receives
-   *     focus, focus is set on the first option in the list that is selected.
-   *
-   * Reference: https://www.w3.org/TR/wai-aria-practices-1.1/#listbox_kbd_interaction
-   */
-  focus: state => {
-    if (state.focusId) return state
-    if (!state.entries.length) return state
-
-    // Focus first selected entry or first entry if no selection:
-    const selectedIndexes = state.selected
-      .map(id => indexOf(state.entries, id))
-      .sort()
-
-    const focusIndex = selectedIndexes.length ? selectedIndexes[0] : 0
-    const focusId = state.entries[focusIndex].id
-    return { ...state, focusIndex, focusId }
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
