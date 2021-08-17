@@ -4,7 +4,7 @@ export function FeatureSnapshot (selection, layerStore) {
 
   selection.on('selection', async ({ selected, deselected }) => {
     deselected.forEach(id => delete this.snapshot_[id])
-    const features = await Promise.all(selected.map(id => layerStore.getFeatureProperties(id)))
+    const features = await Promise.all(selected.map(id => this.layerStore_.getFeatureProperties(id)))
     features.forEach(feature => (this.snapshot_[feature.id] = feature))
   })
 }

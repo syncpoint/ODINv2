@@ -64,9 +64,9 @@ PaletteCommands.prototype.handleSelection_ = async function () {
  *
  */
 PaletteCommands.prototype.typeCommands_ = function (properties) {
-  const geometries = R.uniq(properties.map(({ sidc }) => MIL_STD.geometryType(sidc)))
+  const geometryType = ({ properties }) => MIL_STD.geometryType(properties.sidc)
+  const geometries = R.uniq(properties.map(geometryType))
   if (geometries.length !== 1) return []
-
 
   const command = type => {
     const update = this.layerStore_.commands.updateProperties.bind(this.layerStore_)
@@ -80,10 +80,15 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
       id: type.sidc,
       description: type.text,
       body: () => {
-        this.undo_.apply(update(properties, properties.map(properties => ({
-          ...properties,
-          sidc: MIL_STD.format(properties.sidc, options)
-        }))))
+        const updatedProperties = properties.map(({ id, properties }) => ({
+          id,
+          properties: {
+            ...properties,
+            sidc: MIL_STD.format(properties.sidc, options)
+          }
+        }))
+
+        this.undo_.apply(update(properties, updatedProperties))
       }
     })
   }
@@ -104,13 +109,18 @@ PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
     id: `style.smooth.${enabled}`,
     description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),
     body: () => {
-      this.undo_.apply(update(properties, properties.map(properties => ({
-        ...properties,
-        style: {
-          ...properties.style,
-          smooth: enabled
+      const updatedProperties = properties.map(({ id, properties }) => ({
+        id,
+        properties: {
+          ...properties,
+          style: {
+            ...properties.style,
+            smooth: enabled
+          }
         }
-      }))))
+      }))
+
+      this.undo_.apply(update(properties, updatedProperties))
     }
   })
 

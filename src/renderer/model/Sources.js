@@ -33,7 +33,6 @@ util.inherits(Sources, Emitter)
  * @private
  */
 Sources.prototype.removeFeature_ = function (featureLike) {
-  console.log('[removeFeature_]', featureLike)
   if (featureLike instanceof Feature) this.source_.removeFeature(featureLike)
   else if (featureLike.type === 'Feature') this.removeFeature_(featureLike.id)
   else if (typeof x === 'string') this.removeFeature_(this.source_.getFeatureById(featureLike))
@@ -92,7 +91,7 @@ Sources.prototype.updateProperties_ = function (operations) {
     .forEach(({ key, value }) => {
       const feature = this.source_.getFeatureById(key)
       // Note: Does not increase revision counter
-      feature.setProperties(value, true)
+      feature.setProperties(value.properties, true)
       feature.changed()
     })
 }
