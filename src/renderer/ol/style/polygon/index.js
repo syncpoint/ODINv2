@@ -29,7 +29,7 @@ styles['TEXTS:POLYGON'] = C(ALL_LINES())
 styles['TEXTS:G*G*GAG---'] = styles['TEXTS:POLYGON'] // GENERAL AREA
 styles['TEXTS:G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
 styles['TEXTS:G*G*GAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA
-// TODO: G*G*GAF--- : FORTIFIED AREA
+styles['TEXTS:G*G*GAF---'] = C(ALL_LINES('')) // FORTIFIED AREA
 styles['TEXTS:G*G*GAD---'] = C(ALL_LINES('DZ')) // DROP ZONE
 styles['TEXTS:G*G*GAX---'] = C(ALL_LINES('EZ')) // EXTRACTION ZONE (EZ)
 styles['TEXTS:G*G*GAL---'] = C(ALL_LINES('LZ')) // LANDING ZONE (LZ)
@@ -55,7 +55,7 @@ styles['TEXTS:G*G*OAO---'] = C(ALL_LINES('OBJ')) // OBJECTIVE (OFFENSE)
 styles['TEXTS:G*G*OAP---'] = [] // PENETRATION BOX
 styles['TEXTS:G*G*SAO---'] = C(ALL_LINES('AO')) // AREA OF OPERATIONS (AO)
 styles['TEXTS:G*G*SAA---'] = F(['"AIRHEAD LINE"', 't ? "(PL " + t + ")" : null']) // AIRHEAD
-// TODO: G*G*SAE--- : ENCIRCLEMENT
+styles['TEXTS:G*G*SAE---'] = C(ALL_LINES()) // ENCIRCLEMENT
 styles['TEXTS:G*G*SAN---'] = C(ALL_LINES('NAI')) // NAMED AREA OF INTEREST (NAI)
 styles['TEXTS:G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (TAI)
 styles['TEXTS:G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
