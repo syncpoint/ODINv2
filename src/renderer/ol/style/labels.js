@@ -111,13 +111,26 @@ PolygonLabels.prototype.evaluate = function (position) {
 PolygonLabels.prototype.label = function (text) {
   if (!this[text.position]) this.evaluate(text.position)
   if (!this[text.position]) return null
+  const geometry = this[text.position]
+
+  if (text.symbol) {
+    return {
+      geometry,
+      options: {
+        ...text,
+        textAlign: text.align || 'center',
+        offsetX: text.offsetX,
+        offsetY: text.offsetY
+      }
+    }
+  }
 
   const lines = Array.isArray(text.text)
     ? text.text.map(text => jexl.evalSync(text, this.properties)).filter(R.identity).join('\n')
     : jexl.evalSync(text.text, this.properties)
 
   return {
-    geometry: this[text.position],
+    geometry,
     options: {
       ...text,
       text: lines,

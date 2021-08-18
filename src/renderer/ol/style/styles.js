@@ -3,16 +3,18 @@ import * as geom from 'ol/geom'
 import Feature from 'ol/Feature'
 import Geometry from 'ol/geom/Geometry'
 import GeometryCollection from 'ol/geom/GeometryCollection'
-import { Fill, Stroke, Circle, Style, Text, RegularShape } from 'ol/style'
+import * as Style from 'ol/style'
+import ms from 'milsymbol'
 import * as Colors from './color-schemes'
 import * as MILSTD from '../../2525c'
 
-export const stroke = options => new Stroke(options)
-export const style = options => new Style(options)
-export const text = options => new Text(options)
-export const circle = options => new Circle(options)
-export const fill = options => new Fill(options)
-export const regularShape = options => new RegularShape(options)
+export const stroke = options => new Style.Stroke(options)
+export const style = options => new Style.Style(options)
+export const text = options => new Style.Text(options)
+export const circle = options => new Style.Circle(options)
+export const fill = options => new Style.Fill(options)
+export const regularShape = options => new Style.RegularShape(options)
+export const icon = options => new Style.Icon(options)
 
 
 const patterns = {
@@ -136,7 +138,7 @@ styles.DEFAULT = () => STYLE_OL
 
 // TODO: think about general stroke cache
 
-const STROKE_WHITE_3 = new Stroke({ color: 'white', width: 3 })
+const STROKE_WHITE_3 = stroke({ color: 'white', width: 3 })
 const MULTI_SELECT_HANDLE = regularShape({
   fill: fill({ color: 'white' }),
   stroke: stroke({ color: 'black', width: 1 }),
@@ -251,6 +253,21 @@ export const makeStyles = (sidcLike, mode = 'default') => {
 
 
   styles.text = (geometry, options = {}) => {
+
+    if (options.symbol) {
+      return styles.symbol(geometry, {
+        symbol: {
+          sidc: options.symbol,
+          size: 60,
+          infoFields: true,
+          infoColor: 'black',
+          outlineWidth: 4,
+          outlineColor: 'white'
+        },
+        icon: { scale: 0.5 }
+      })
+    }
+
     const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
     const textAlign = options.flip
       ? options.textAlign && options.textAlign(flip(options.rotation))
@@ -334,6 +351,21 @@ export const makeStyles = (sidcLike, mode = 'default') => {
         overflow: true
       })
     })
+  }
+
+  styles.symbol = (geometry, options) => {
+    const symbol = new ms.Symbol(sidc, options.symbol)
+    const size = symbol.getSize()
+    const image = icon({
+      anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
+      imgSize: [Math.floor(size.width), Math.floor(size.height)],
+      img: symbol.asCanvas(),
+      anchorXUnits: 'pixels',
+      anchorYUnits: 'pixels',
+      ...options.icon
+    })
+
+    return style({ geometry, image })
   }
 
   styles.handles = (geometry, options = {}) => {

@@ -97,7 +97,9 @@ styles['TEXTS:G*S*AH----'] = C(ALL_LINES('REFUGEE\nHOLDING\nAREA')) // REFUGEE H
 styles['TEXTS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA)
 styles['TEXTS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['TEXTS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
-
+styles['TEXTS:G*M*NR----'] = [{ symbol: 'GFMPNZ----', position: 'center' }] // RADIOACTIVE AREA
+styles['TEXTS:G*M*NB----'] = [{ symbol: 'GFMPNEB---', position: 'center' }] // BIOLOGICALLY CONTAMINATED AREA
+styles['TEXTS:G*M*NC----'] = [{ symbol: 'GFMPNEC---', position: 'center' }] // CHEMICALLY CONTAMINATED AREA
 styles['FILL:HATCH'] = { pattern: 'hatch', angle: 45, size: 2, spacing: 12 }
 styles['FILL:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
 styles['FILL:G*M*OGR---'] = styles['FILL:HATCH'] // OBSTACLE RESTRICTED AREA
