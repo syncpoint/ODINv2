@@ -256,15 +256,11 @@ export const makeStyles = (sidcLike, mode = 'default') => {
 
     if (options.symbol) {
       return styles.symbol(geometry, {
-        symbol: {
-          sidc: options.symbol,
-          size: 60,
-          infoFields: true,
-          infoColor: 'black',
-          outlineWidth: 4,
-          outlineColor: 'white'
-        },
-        icon: { scale: 0.5 }
+        sidc: options.symbol,
+        infoFields: true,
+        infoColor: 'black',
+        outlineWidth: 4,
+        outlineColor: 'white'
       })
     }
 
@@ -354,7 +350,7 @@ export const makeStyles = (sidcLike, mode = 'default') => {
   }
 
   styles.symbol = (geometry, options) => {
-    const symbol = new ms.Symbol(sidc, options.symbol)
+    const symbol = new ms.Symbol(sidc, { ...options, size: 60 })
     const size = symbol.getSize()
     const image = icon({
       anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
@@ -362,7 +358,7 @@ export const makeStyles = (sidcLike, mode = 'default') => {
       img: symbol.asCanvas(),
       anchorXUnits: 'pixels',
       anchorYUnits: 'pixels',
-      ...options.icon
+      scale: 0.5
     })
 
     return style({ geometry, image })

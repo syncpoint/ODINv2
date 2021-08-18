@@ -1,5 +1,5 @@
 import { click, primaryAction, platformModifierKeyOnly } from 'ol/events/condition'
-import { defaults as defaultInteractions, Translate, Select } from 'ol/interaction'
+import { defaults as defaultInteractions, Translate, Select, Snap } from 'ol/interaction'
 import { featureStyle } from '../style'
 import Modify from './Modify'
 
@@ -133,18 +133,32 @@ const modifyInteraction = (
   return interaction
 }
 
+
+/**
+ *
+ */
+const snapInteraction = (
+  features
+) => {
+  return new Snap({
+    source: features
+  })
+}
+
 export default (
   selection,
   layerStore,
   undo,
   partition,
   featureLayer,
-  selectedLayer
+  selectedLayer,
+  features
 ) => {
   const select = selectInteraction(selection, partition, featureLayer, selectedLayer)
   const translate = translateInteraction(layerStore, undo, select)
   const modify = modifyInteraction(layerStore, undo, partition)
+  const snap = snapInteraction(features)
   return defaultInteractions({ doubleClickZoom: false }).extend(
-    [select, translate, modify]
+    [select, translate, modify, snap]
   )
 }

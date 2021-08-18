@@ -3526,7 +3526,7 @@
     "sidc": "G*G*ALC---*****",
     "class": "L",
     "scope": "CONTROL",
-    "geometry": "GeometryCollection",
+    "geometry": "LineString",
     "dimension": "C2",
     "hierarchy": [
       "TACTICAL GRAPHICS",
@@ -3534,16 +3534,13 @@
       "AVIATION",
       "LINES",
       "AIR CORRIDOR"
-    ],
-    "parameters": {
-      "layout": "corridor"
-    }
+    ]
   },
   {
     "sidc": "G*G*ALL---*****",
     "class": "L",
     "scope": "CONTROL",
-    "geometry": "GeometryCollection",
+    "geometry": "LineString",
     "dimension": "C2",
     "hierarchy": [
       "TACTICAL GRAPHICS",
@@ -3551,16 +3548,13 @@
       "AVIATION",
       "LINES",
       "LOW LEVEL TRANSIT ROUTE (LLTR)"
-    ],
-    "parameters": {
-      "layout": "corridor"
-    }
+    ]
   },
   {
     "sidc": "G*G*ALM---*****",
     "class": "L",
     "scope": "CONTROL",
-    "geometry": "GeometryCollection",
+    "geometry": "LineString",
     "dimension": "C2",
     "hierarchy": [
       "TACTICAL GRAPHICS",
@@ -3568,16 +3562,13 @@
       "AVIATION",
       "LINES",
       "MINIMUM RISK ROUTE (MRR)"
-    ],
-    "parameters": {
-      "layout": "corridor"
-    }
+    ]
   },
   {
     "sidc": "G*G*ALS---*****",
     "class": "L",
     "scope": "CONTROL",
-    "geometry": "GeometryCollection",
+    "geometry": "LineString",
     "dimension": "C2",
     "hierarchy": [
       "TACTICAL GRAPHICS",
@@ -3585,16 +3576,13 @@
       "AVIATION",
       "LINES",
       "STANDARD-USE ARMY AIRCRAFT FLIGHT ROUTE (SAAFR)"
-    ],
-    "parameters": {
-      "layout": "corridor"
-    }
+    ]
   },
   {
     "sidc": "G*G*ALU---*****",
     "class": "L",
     "scope": "CONTROL",
-    "geometry": "GeometryCollection",
+    "geometry": "LineString",
     "dimension": "C2",
     "hierarchy": [
       "TACTICAL GRAPHICS",
@@ -3602,10 +3590,7 @@
       "AVIATION",
       "LINES",
       "UNMANNED AIRCRAFT (UA) ROUTE"
-    ],
-    "parameters": {
-      "layout": "corridor"
-    }
+    ]
   },
   {
     "sidc": "G*G*APC---*****",

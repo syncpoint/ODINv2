@@ -10,18 +10,10 @@ styles.Point = ({ feature, mode }) => {
   // TODO: e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
   const featureStyles = makeStyles(feature, mode)
   const { sidc, ...properties } = feature.getProperties()
-
-  const symbol = {
+  return featureStyles.symbol(feature.getGeometry(), {
     sidc,
-    size: 60,
-    modifiers: modifiers(properties),
-    outlineWidth: 4,
-    outlineColor: 'white'
-  }
-
-  const icon = {
-    scale: 0.5
-  }
-
-  return featureStyles.symbol(feature.getGeometry(), { symbol, icon })
+    // outlineWidth: 4,
+    // outlineColor: 'white',
+    ...modifiers(properties)
+  })
 }
