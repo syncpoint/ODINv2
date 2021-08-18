@@ -86,6 +86,8 @@ export const buffer = (opts = {}) => geometry => distance => {
     opts.mitreLimit || BufferParameters.DEFAULT_MITRE_LIMIT
   )
 
+  if (opts.singleSided) params.setSingleSided(true)
+
   return BufferOp.bufferOp(geometry, distance, params)
 }
 
@@ -93,6 +95,12 @@ export const pointBuffer = buffer()
 export const lineBuffer = buffer({
   joinStyle: BufferParameters.JOIN_ROUND,
   endCapStyle: BufferParameters.CAP_FLAT
+})
+
+export const singleSidedLineBuffer = buffer({
+  joinStyle: BufferParameters.JOIN_ROUND,
+  endCapStyle: BufferParameters.CAP_FLAT,
+  singleSided: true
 })
 
 export const polygon = coordinates => geometryFactory.createPolygon(coordinates)

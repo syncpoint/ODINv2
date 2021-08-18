@@ -20,6 +20,15 @@ import './G_M_OAR'   // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
 import './G_M_OEF'   // OBSTACLE EFFECT / FIX
 import './G_M_OGL'   // OBSTACLES / GENERAL / LINE and ANTITANK WALL
 import './G_M_OS'    // ABATIS
+import './G_M_OWA'   // DOUBLE APRON FENCE
+import './G_M_OWCD'  // DOUBLE STRAND CONCERTINA
+import './G_M_OWCS'  // SINGLE CONCERTINA
+import './G_M_OWCT'  // TRIPLE STRAND CONCERTINA
+import './G_M_OWD'   // DOUBLE FENCE
+import './G_M_OWH'   // HIGH WIRE FENCE
+import './G_M_OWL'   // LOW WIRE FENCE
+import './G_M_OWS'   // SINGLE FENCE
+import './G_M_OWU'   // UNSPECIFIED FENCE
 import './G_M_SL'    // FORTIFIED LINE
 import './G_M_SW'    // FOXHOLE, EMPLACEMENT OR WEAPON SITE
 import './G_O_HN'    // HAZARD / NAVIGATIONAL
