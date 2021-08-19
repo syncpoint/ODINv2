@@ -1,17 +1,17 @@
-CURRENT FOCUS - Clipboard support
+CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
+DEH - 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 
 OPEN
-
+434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
 46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
 481d485a-83b3-4136-a819-5fcb56a14217 - OSD
+1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting
 e1c55546-1891-4fcd-af5a-1887954e0278 - style: improve cache (feature timestamp/geometry revision)
 7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES
-27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
 c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: ESM, upgrade to v9.x

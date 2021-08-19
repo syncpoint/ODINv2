@@ -226,7 +226,7 @@ export const Splash = () => {
     const { key, shiftKey, metaKey } = event
 
     // Prevent native scroll:
-    if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
+    if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
   }

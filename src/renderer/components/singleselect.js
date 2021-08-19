@@ -71,32 +71,40 @@ export const singleselect = {
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
     if (metaKey) return state // not handled here.
+    if (!state.entries.length) return initialState
 
-    const index = indexOf(state.entries, state.focusId)
-    const focusIndex = Math.min(state.entries.length - 1, index + 1)
-    const focusId = state.entries[focusIndex].id
+    // focusId = null => -1
+    const currentIndex = indexOf(state.entries, state.focusId)
+    const focusIndex = Math.min(state.entries.length - 1, currentIndex + 1)
+    const focusId = focusIndex !== -1
+      ? state.entries[focusIndex].id
+      : null
 
     return {
       ...state,
       focusId,
       focusIndex,
-      selected: [focusId],
+      selected: focusId ? [focusId] : [],
       scroll: 'auto'
     }
   },
 
   'keydown/ArrowUp': (state, { shiftKey, metaKey }) => {
     if (metaKey) return state // not handled here.
+    if (!state.entries.length) return initialState
+    if (!state.focusId) return state
 
-    const index = indexOf(state.entries, state.focusId)
-    const focusIndex = Math.max(0, index - 1)
-    const focusId = state.entries[focusIndex].id
+    const currentIndex = indexOf(state.entries, state.focusId)
+    const focusIndex = Math.max(0, currentIndex - 1)
+    const focusId = focusIndex !== -1
+      ? state.entries[focusIndex].id
+      : null
 
     return {
       ...state,
       focusId,
       focusIndex,
-      selected: [focusId],
+      selected: focusId ? [focusId] : [],
       scroll: 'auto'
     }
   },

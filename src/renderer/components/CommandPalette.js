@@ -22,7 +22,7 @@ export const CommandPalette = props => {
     const { key, shiftKey, metaKey } = event
 
     // Prevent native scroll:
-    if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
+    if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset features to stored snapshot:
     if (key === 'Escape') {

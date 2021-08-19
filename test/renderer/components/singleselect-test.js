@@ -137,24 +137,15 @@ describe('singleselect', function () {
       const actual = singleselect['keydown/ArrowDown'](state, { metaKey: true })
       assert.deepStrictEqual(actual, state)
     })
+
+    it('noop (empty list)', function () {
+      const actual = singleselect['keydown/ArrowDown'](initialState, {})
+      assert.deepStrictEqual(actual, initialState)
+    })
   })
 
   describe('keydown/ArrowUp', function () {
     const entries = [{ id: 'x' }, { id: 'y' }]
-
-    it('focus first option', function () {
-      const state = { entries, selected: [], focusIndex: -1, scroll: 'none' }
-      const actual = singleselect['keydown/ArrowUp'](state, { shiftKey: false })
-      const expected = {
-        entries,
-        focusId: 'x',
-        focusIndex: 0,
-        selected: ['x'],
-        scroll: 'auto'
-      }
-
-      assert.deepStrictEqual(actual, expected)
-    })
 
     it('focus previous option', function () {
       const state = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'none' }
@@ -187,6 +178,17 @@ describe('singleselect', function () {
     it('meta - noop', function () {
       const state = { entries, selected: ['y'], focusId: 'y', focusIndex: 1, scroll: 'smooth' }
       const actual = singleselect['keydown/ArrowUp'](state, { metaKey: true })
+      assert.deepStrictEqual(actual, state)
+    })
+
+    it('noop (empty list)', function () {
+      const actual = singleselect['keydown/ArrowUp'](initialState, {})
+      assert.deepStrictEqual(actual, initialState)
+    })
+
+    it('noop (no focus)', function () {
+      const state = { entries, selected: [], focusId: null, focusIndex: -1, scroll: 'smooth' }
+      const actual = singleselect['keydown/ArrowUp'](state, {})
       assert.deepStrictEqual(actual, state)
     })
   })
