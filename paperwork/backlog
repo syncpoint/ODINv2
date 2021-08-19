@@ -1,22 +1,20 @@
-CURRENT FOCUS - implement missing features
+CURRENT FOCUS - Clipboard support
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
+DEH - 434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
 
 OPEN
-b85099d4-5d96-4a11-9007-7781d97d5383 - bug/Modify Interaction: unintended vertex insertion
-c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
-18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE - TASKS / SEIZE
-0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR - OBSTACLE EFFECT TURN
-c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
-efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
-da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
+1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
+83149333-1e76-4deb-bb1e-4f42daf8cf4b - Map: CMD/CTRL-A - select all
+
+46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
+481d485a-83b3-4136-a819-5fcb56a14217 - OSD
 e1c55546-1891-4fcd-af5a-1887954e0278 - style: improve cache (feature timestamp/geometry revision)
 7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
-3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center
+3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
 c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: ESM, upgrade to v9.x
 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
@@ -37,6 +35,13 @@ b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la Ope
 0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
 079aa0be-78a4-4330-8912-e906f7d27180 - ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
 45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
+
+DEFERRED
+18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE - TASKS / SEIZE
+0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR - OBSTACLE EFFECT TURN
+c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
+efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
+da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -94,3 +99,5 @@ DEH - c36a4c6f-f980-4cee-95d4-5f1ad4dbc727 - TACGRP.C2GM.SPL.ARA.ENCMT - ENCIRCL
 DEH - d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE - INFILTRATION LANE
 DEH - ca7a1a2f-7506-403c-bc79-946a42cccc00 - persistence/feature: re-introduce properties scope, id goes top-level, reverts 0ea1f9be-03b9-49c5-bd1b-ada9c9261792
 DEH - 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE OBSTACLE
+DEH - 04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
+DEH - c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER

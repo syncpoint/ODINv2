@@ -209,16 +209,20 @@ export const makeStyles = (sidcLike, mode = 'default') => {
     })
   ])
 
-  styles.dashedStroke = geometry => ([
-    style({
-      geometry,
-      stroke: stroke({ color: props.strokeColor, width: props.strokeWidth, lineDash: [8, 8] })
-    }),
-    style({
-      geometry,
-      stroke: stroke({ color: props.strokeFillColor, width: props.strokeFillWidth, lineDash: [8, 8] })
-    })
-  ])
+  styles.dashedStroke = (geometry, options = {}) => {
+    const lineDash = options.lineDash || [8, 8]
+
+    return [
+      style({
+        geometry,
+        stroke: stroke({ color: props.strokeColor, width: props.strokeWidth, lineDash })
+      }),
+      style({
+        geometry,
+        stroke: stroke({ color: props.strokeFillColor, width: props.strokeFillWidth, lineDash })
+      })
+    ]
+  }
 
   styles.solidStroke = geometry => ([
     style({
