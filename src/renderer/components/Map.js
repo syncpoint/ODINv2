@@ -81,6 +81,11 @@ export const Map = () => {
       interactions
     })
 
+    // Map-related keys/shortcuts:
+    map.addEventListener('keydown', event => {
+      const { key } = event.originalEvent
+      if (key === 'Escape') selection.set([])
+    }, false)
 
     // Send map preview every 5 minutes to main process.
 

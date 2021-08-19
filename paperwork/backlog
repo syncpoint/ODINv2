@@ -5,8 +5,6 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 DEH - 434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
 
 OPEN
-1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
-83149333-1e76-4deb-bb1e-4f42daf8cf4b - Map: CMD/CTRL-A - select all
 
 46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
 481d485a-83b3-4136-a819-5fcb56a14217 - OSD
@@ -101,3 +99,4 @@ DEH - ca7a1a2f-7506-403c-bc79-946a42cccc00 - persistence/feature: re-introduce p
 DEH - 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE OBSTACLE
 DEH - 04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
 DEH - c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
+DEH - 1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
