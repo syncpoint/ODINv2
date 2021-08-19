@@ -135,6 +135,8 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
  * Standard Identity.
  */
 PaletteCommands.prototype.identityCommands_ = function (properties) {
+  if (Object.keys(properties).length === 0) return []
+
   const command = identity => {
     const newProperties = Object.entries(properties)
       .map(([id, properties]) => ({
@@ -160,6 +162,8 @@ PaletteCommands.prototype.identityCommands_ = function (properties) {
  * Status/Operational Condition.
  */
 PaletteCommands.prototype.statusCommands_ = function (properties) {
+  if (Object.keys(properties).length === 0) return []
+
   const command = status => {
     const newProperties = Object.entries(properties)
       .map(([id, properties]) => ({
@@ -184,6 +188,8 @@ PaletteCommands.prototype.statusCommands_ = function (properties) {
  * Size/Echelon.
  */
 PaletteCommands.prototype.echelonCommands_ = function (properties) {
+  if (Object.keys(properties).length === 0) return []
+
   const command = echelon => {
     const newProperties = Object.entries(properties)
       .map(([id, properties]) => ({
@@ -209,6 +215,7 @@ PaletteCommands.prototype.echelonCommands_ = function (properties) {
  *
  */
 PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
+  if (Object.keys(properties).length === 0) return []
   // TODO: check precondition (lineString, polygon)
 
   const newProperties = enabled => Object.entries(properties)
