@@ -1,6 +1,5 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
-import { tuplePartition, geometryPartition } from '../../shared/stores'
 import { writeGeometryObject } from './format'
 
 
@@ -8,12 +7,12 @@ import { writeGeometryObject } from './format'
  * @constructor
  * @param {*} db project database.
  */
-export function LayerStore (db) {
+export function LayerStore (propertiesStore, geometryStore) {
   Emitter.call(this)
 
   this.commands = {}
-  this.propertiesStore = tuplePartition(db)
-  this.geometryStore = geometryPartition(db)
+  this.propertiesStore_ = propertiesStore
+  this.geometryStore_ = geometryStore
 
   this.commands.composite = async commands => {
     const resolved = await Promise.all(commands)
@@ -37,7 +36,7 @@ export function LayerStore (db) {
   this.commands.deleteLayer = async (layerId) => {
     const layer = {
       ...await this.getFeatures(layerId),
-      ...await this.propertiesStore.get(layerId)
+      ...await this.propertiesStore_.get(layerId)
     }
 
     return {
@@ -83,7 +82,7 @@ LayerStore.prototype.featureProperties = function (layerId) {
       ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
       : { keys: true, values: true }
 
-    this.propertiesStore.createReadStream(options)
+    this.propertiesStore_.createReadStream(options)
       .on('data', ({ key, value }) => (acc[key] = value))
       .on('error', reject)
       .on('end', () => resolve(acc))
@@ -108,7 +107,7 @@ LayerStore.prototype.featuerGeometries = function (layerId) {
       ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
       : { keys: true, values: true }
 
-    this.geometryStore.createReadStream(options)
+    this.geometryStore_.createReadStream(options)
       .on('data', ({ key, value }) => (acc[key] = value))
       .on('error', reject)
       .on('end', () => resolve(acc))
@@ -152,22 +151,22 @@ LayerStore.prototype.getFeatures = async function (layerId) {
  * @returns Only the feature's properties (not id).
  */
 LayerStore.prototype.getFeatureProperties = async function (featureId) {
-  const feature = await this.propertiesStore.get(featureId)
+  const feature = await this.propertiesStore_.get(featureId)
   return feature.properties
 }
 
 
 LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
-  await this.propertiesStore.put(id, { name, id })
+  await this.propertiesStore_.put(id, { name, id })
 
-  await this.propertiesStore.batch(features.map(feature => ({
+  await this.propertiesStore_.batch(features.map(feature => ({
     type: 'put',
     key: feature.id,
     value: feature
   })))
 
-  await this.geometryStore.batch(features.map(feature => ({
+  await this.geometryStore_.batch(features.map(feature => ({
     type: 'put',
     key: feature.id,
     value: feature.geometry
@@ -183,13 +182,13 @@ LayerStore.prototype.putLayer = async function (layer) {
 }
 
 LayerStore.prototype.deleteLayer = async function (layerId) {
-  await this.propertiesStore.del(layerId)
+  await this.propertiesStore_.del(layerId)
   const op = key => ({ type: 'del', key })
   const layerUUID = layerId.split(':')[1]
-  const keys = await this.keys(this.propertiesStore, `feature:${layerUUID}`)
+  const keys = await this.keys(this.propertiesStore_, `feature:${layerUUID}`)
   const operations = keys.map(op)
-  await this.propertiesStore.batch(operations)
-  await this.geometryStore.batch(operations)
+  await this.propertiesStore_.batch(operations)
+  await this.geometryStore_.batch(operations)
   this.emit('batch', { operations })
 }
 
@@ -199,7 +198,7 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
     .map(([key, value]) => ({ type: 'put', key, value }))
 
   this.emit('geometries', { operations: ops })
-  return this.geometryStore.batch(ops)
+  return this.geometryStore_.batch(ops)
 }
 
 /**
@@ -212,6 +211,6 @@ LayerStore.prototype.updateProperties = async function (features) {
     value: feature
   }))
 
-  await this.propertiesStore.batch(operations)
+  await this.propertiesStore_.batch(operations)
   this.emit('properties', { operations })
 }

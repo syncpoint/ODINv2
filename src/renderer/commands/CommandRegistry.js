@@ -12,13 +12,16 @@ export function CommandRegistry (services) {
     id,
     binding,
     description,
-    body: () => services.emitter.emit(`command/${id}`)
+    body: () => {
+      console.log(document.activeElement)
+      services.emitter.emit(`command/${id}`)
+    }
   })
 
   this.commands_ = [
     shortcut('open-command-palette', cmdOrCtrl('p'), 'Open command palette'),
-    shortcut('close-command-palette', null, 'Open command palette'),
-    shortcut('key-escape', 'escape', 'Escape key')
+    shortcut('toggle-sidebar', cmdOrCtrl('b'), 'Toggle sidebar'),
+    shortcut('close-command-palette', null, 'Open command palette')
   ].reduce((acc, command) => {
     acc[command.id] = command
     return acc

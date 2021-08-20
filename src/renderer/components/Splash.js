@@ -1,12 +1,32 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'antd'
-import { useServices } from './services'
+import { ipcRenderer } from 'electron'
+import { useServices, ServiceProvider } from './services'
 import { List, reducer } from './List'
 import { initialState } from './list-state'
 import { singleselect } from './singleselect'
 import { Search } from './Search'
 import { militaryFormat } from '../../shared/datetime'
+import { ProjectStore } from '../store'
+import { Selection } from '../Selection'
+
+
+/**
+ *
+ */
+export const splash = () => {
+  const services = {}
+  services.ipcRenderer = ipcRenderer
+  services.projectStore = new ProjectStore(ipcRenderer)
+  services.selection = new Selection()
+
+  return (
+    <ServiceProvider { ...services }>
+      <Splash/>
+    </ServiceProvider>
+  )
+}
 
 
 /**

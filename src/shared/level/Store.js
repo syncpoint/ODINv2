@@ -91,6 +91,24 @@ Store.prototype.values = function (prefix) {
   })
 }
 
+/**
+ * keys :: () -> Promise([key])
+ * keys :: String -> Promise([key])
+ */
+Store.prototype.keys = function (prefix) {
+  const options = prefix
+    ? { keys: true, values: false, gte: prefix, lte: prefix + '\xff' }
+    : { keys: true, values: false }
+
+  const acc = []
+  return new Promise((resolve, reject) => {
+    this.db.createReadStream(options)
+      .on('data', value => acc.push(value))
+      .on('error', reject)
+      .on('end', () => resolve(acc))
+  })
+}
+
 
 /**
  * list :: () -> Promise([[key, value], ...])

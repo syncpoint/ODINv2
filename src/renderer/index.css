@@ -45,7 +45,6 @@ div {
   grid-template-areas:
     "T T T"
     "L . R";
-
 }
 
 .panel {
