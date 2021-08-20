@@ -103,9 +103,7 @@ export const Workspace = () => {
       switch (event.type) {
         case 'open-command-palette': return setShowing({ ...showing, spotlight: true })
         case 'close-command-palette': return setShowing({ ...showing, spotlight: false })
-        case 'toggle-sidebar':
-          console.log('toggle-sidebar')
-          return setShowing({ ...showing, sidebar: !showing.sidebar })
+        case 'toggle-sidebar': return setShowing({ ...showing, sidebar: !showing.sidebar })
       }
     }
 
