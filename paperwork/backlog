@@ -2,9 +2,10 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 
 OPEN
+6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy: handle feature.properties.references
+27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
 46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
 481d485a-83b3-4136-a819-5fcb56a14217 - OSD
@@ -30,7 +31,6 @@ e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
 b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
 1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simplfy styles while panning/zooming (custom PointerInteraction)
 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
-0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
 079aa0be-78a4-4330-8912-e906f7d27180 - ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
 45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
 
@@ -44,6 +44,9 @@ da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy sig
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
   NOTE: Preference partitions (application, project)
+
+WON'T FIX
+0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
 
 DONE
 DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
@@ -100,3 +103,4 @@ DEH - 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE O
 DEH - 04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
 DEH - c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
 DEH - 1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
+DEH - 35405f37-4175-4527-a4bb-efb90b1ddcd8 - (legacy) import: write feature metadata (scope, dimension, identity, hierarchy)

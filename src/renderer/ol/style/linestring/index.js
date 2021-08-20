@@ -1,4 +1,4 @@
-import * as MILSTD from '../../../2525c'
+import * as MILSTD from '../../../../shared/2525c'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import { LineStringLabels } from '../labels'

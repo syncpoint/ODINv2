@@ -14,7 +14,7 @@ export function SearchIndex (db) {
   this.store_ = new Store(db)
 
   db.on('open', () => console.log('[DB] open'))
-  db.on('put', event => console.log('[DB] open', event))
+  db.on('put', event => console.log('[DB] put', event))
   db.on('del', event => console.log('[DB] del', event))
   db.on('batch', event => console.log('[DB] batch', event))
 

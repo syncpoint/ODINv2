@@ -5,6 +5,7 @@ import proj4 from 'proj4'
 import uuid from 'uuid-random'
 import { reproject } from 'reproject'
 import * as paths from '../paths'
+import * as MILSTD from '../../shared/2525c'
 
 /**
  * Read JSON file.
@@ -173,6 +174,20 @@ export const readLayer = async (location, projectUUID, layer) => {
   const features = json.features.map(feature => {
     // Reproject geometry to Web Mercator:
     feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
+
+    if (feature.properties.locked) { feature.locked = true; delete feature.properties.locked }
+    if (feature.properties.hidden) { feature.hidden = true; delete feature.properties.hidden }
+
+    const sidc = feature.properties.sidc
+    feature.identity = MILSTD.identityText(sidc)
+
+    const descriptor = MILSTD.descriptor(sidc)
+    if (descriptor) {
+      feature.hierarchry = descriptor.text
+      feature.scope = descriptor.scope
+      feature.dimension = descriptor.dimension
+    }
+
     return feature
   })
 

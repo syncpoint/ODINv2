@@ -1,4 +1,4 @@
-import * as MILSTD from '../../2525c'
+import * as MILSTD from '../../../shared/2525c'
 import corridor from './corridor'
 import fan from './fan'
 import { geometryType } from '../style/styles'

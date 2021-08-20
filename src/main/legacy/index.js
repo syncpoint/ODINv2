@@ -3,7 +3,7 @@ import levelup from 'levelup'
 import leveldown from 'leveldown'
 import { readSources } from './io'
 import { readProjects } from './projects'
-import { tuplePartition, geometryPartition } from '../../shared/stores'
+import { propertyPartition, geometryPartition } from '../../shared/stores'
 
 
 /**
@@ -16,7 +16,7 @@ import { tuplePartition, geometryPartition } from '../../shared/stores'
  */
 export const transferProject = async (db, project) => {
   const { layers } = project
-  const properties = tuplePartition(db)
+  const properties = propertyPartition(db)
   const geometries = geometryPartition(db)
 
   {

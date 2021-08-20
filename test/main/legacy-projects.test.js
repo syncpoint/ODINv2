@@ -12,7 +12,6 @@ it('legacy-projects', async function () {
   // reference data.
   const layers = actual[0].layers
   actual[0].layers = layers.filter(layer => layer.name !== 'empty')
-
   const expected = await readJSON('./test/data/legacy-projects.json')
   assert.deepStrictEqual(actual, expected)
 })

@@ -5,7 +5,7 @@ import encode from 'encoding-down'
 import { readJSON } from '../../src/main/legacy/io'
 import { transferProject } from '../../src/main/legacy'
 import Store from '../../src/shared/level/Store'
-import { tuplePartition, geometryPartition } from '../../src/shared/stores'
+import { propertyPartition, geometryPartition } from '../../src/shared/stores'
 
 describe('legacy', async function () {
 
@@ -22,7 +22,7 @@ describe('legacy', async function () {
     // Read back data and compare.
     const acc = { layers: [], features: [], geometries: [] }
     const actual = await Object.values(databases).reduce(async (acc, db) => {
-      const tupleStore = new Store(tuplePartition(db))
+      const tupleStore = new Store(propertyPartition(db))
       const geometryStore = new Store(geometryPartition(db))
       const entries = await acc
 

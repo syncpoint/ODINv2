@@ -37,7 +37,9 @@ export const workspace = projectUUID => {
   const searchIndex = new SearchIndex(propertiesStore)
 
   searchIndex.on(':scope/index/updated', event => {
-    console.log(searchIndex.search(`scope:${event.scope}`))
+    if (event.scope === 'feature') {
+      console.log(searchIndex.search('tags:eny'))
+    }
   })
 
   ipcRenderer.on('EDIT_UNDO', () => {

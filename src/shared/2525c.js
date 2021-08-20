@@ -18,25 +18,32 @@ export const parameterized = sidc => sidc
   ? `${sidc[0]}*${sidc[2]}*${sidc.substring(4, 10)}`
   : null
 
-export const schema = sidc => sidc
+export const schemaCode = sidc => sidc
   ? sidc[SCHEMA]
   : null
 
-export const battleDimension = sidc => sidc
+export const battleDimensionCode = sidc => sidc
   ? sidc[BATTLE_DIMENSION]
   : null
 
 // Standard Identity (ex. Affiliation)
-export const standardIdentity = sidc => sidc
+export const identityCode = sidc => sidc
   ? sidc[IDENTITY]
   : 'U'
 
+export const identityText = sidc => R.cond([
+  [R.equals('F'), R.always(['OWN'])],
+  [R.equals('H'), R.always(['ENY'])],
+  [R.equals('U'), R.always(['UKN'])],
+  [R.T, R.always([])]
+])(sidc ? sidc[IDENTITY] : '')
+
 // status or P - PRESENT
-export const status = sidc => sidc
+export const statusCode = sidc => sidc
   ? sidc[STATUS]
   : 'P'
 
-export const functionId = sidc => sidc
+export const functionIdCode = sidc => sidc
   ? sidc.substring(FUNCTION_ID, FUNCTION_ID + 6)
   : null
 
@@ -95,8 +102,9 @@ export const index = raw.reduce((acc, descriptor) => {
     parameterized: sidc,
     sidc: descriptor.sidc,
     hierarchy: R.drop(1, descriptor.hierarchy).map(capitalize),
-    dimension: descriptor.dimension,
+    text: descriptor.hierarchy.join(', '),
     scope: descriptor.scope,
+    dimension: descriptor.dimension ? [descriptor.dimension] : [],
     geometry: {
       type: descriptor.geometry,
       ...descriptor.parameters
@@ -106,14 +114,19 @@ export const index = raw.reduce((acc, descriptor) => {
   return acc
 }, {})
 
+export const descriptor = sidc => {
+  if (!sidc) return
+  return index[parameterized(sidc)]
+}
+
 export const geometry = sidc => {
   if (!sidc) return
-  const feature = index[parameterized(sidc)]
-  return feature && feature.geometry
+  const descriptor = index[parameterized(sidc)]
+  return descriptor && descriptor.geometry
 }
 
 export const geometryType = sidc => {
   if (!sidc) return
-  const feature = index[parameterized(sidc)]
-  return feature && feature.geometry && feature.geometry.type
+  const descriptor = index[parameterized(sidc)]
+  return descriptor && descriptor.geometry && descriptor.geometry.type
 }

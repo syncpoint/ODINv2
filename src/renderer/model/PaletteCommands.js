@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import * as MIL_STD from '../2525c'
+import * as MIL_STD from '../../shared/2525c'
 import { Command } from '../commands/Command'
 
 
@@ -104,9 +104,9 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
 
   const command = type => {
     const options = {
-      schema: MIL_STD.schema(type.sidc),
-      battleDimension: MIL_STD.battleDimension(type.sidc),
-      functionId: MIL_STD.functionId(type.sidc)
+      schema: MIL_STD.schemaCode(type.sidc),
+      battleDimension: MIL_STD.battleDimensionCode(type.sidc),
+      functionId: MIL_STD.functionIdCode(type.sidc)
     }
 
     const newProperties = Object.entries(properties)
