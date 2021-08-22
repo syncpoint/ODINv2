@@ -22,7 +22,7 @@ export const ServiceProvider = props => {
 }
 
 ServiceProvider.propTypes = {
-  children: PropTypes.object.isRequired
+  children: PropTypes.node.isRequired
 }
 
 

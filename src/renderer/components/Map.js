@@ -32,7 +32,7 @@ export const Map = () => {
     undo
   } = useServices()
 
-  React.useEffect(async () => {
+  const effect = async () => {
     const target = 'map'
     const controls = [
       new Rotate(), // macOS: OPTION + SHIFT + DRAG
@@ -158,7 +158,11 @@ export const Map = () => {
       map.addEventListener('dragover', event => dragAndDrop.dragover(event), false)
       map.addEventListener('drop', event => dragAndDrop.drop(event), false)
     })()
-  }, [])
+  }
+
+  React.useEffect(() => {
+    (async () => effect())()
+  })
 
   return <div
     id='map'

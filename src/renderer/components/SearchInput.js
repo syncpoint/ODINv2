@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Input } from 'antd'
 
-export const Search = props => {
+export const SearchInput = props => {
   const [value, setValue] = React.useState('')
 
   const handleChange = ({ target }) => {
@@ -29,7 +29,8 @@ export const Search = props => {
       autoFocus
       allowClear
       value={value}
-      placeholder="Search project"
+      placeholder={props.placeholder}
+      size={props.size || 'default'}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
     >
@@ -37,6 +38,8 @@ export const Search = props => {
   )
 }
 
-Search.propTypes = {
-  onSearch: PropTypes.func.isRequired
+SearchInput.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  size: PropTypes.string
 }

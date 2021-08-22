@@ -1,12 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, reducer } from './List'
-import { initialState } from './list-state'
-import { singleselect } from './singleselect'
-import { Search } from './Search'
+import { initialState, singleselect } from './list-state'
+import { SearchInput, List, reducer } from '.'
 
 
+/**
+ *
+ */
 export const CommandPalette = props => {
   const { selection, layerStore, paletteCommands } = useServices()
   const [featuresSnapshot, setFeaturesSnapshot] = React.useState()
@@ -92,29 +93,31 @@ export const CommandPalette = props => {
   )
   /* eslint-enable react/prop-types */
 
-  if (state.focusIndex !== -1) {
+  // Invoke command for newly focused entry (state.focusId):
+  React.useEffect(() => {
+    if (state.focusIndex === -1) return
     state.entries[state.focusIndex].invoke(true)
-  }
+  }, [state.focusId])
 
   return (
     <div
-      className='palette-container fullscreen'
+      className='spotlight-container fullscreen'
       onBlur={handleBlur}
     >
       <div
-        className='palette panel'
+        className='spotlight panel'
         onKeyDown={handleKeyDown}
       >
-        <div
-          style={{ display: 'flex', padding: '6px' }}
-        >
-          <Search onSearch={handleSearch}/>
+        <div style={{ display: 'flex', padding: '6px' }}>
+          <SearchInput onSearch={handleSearch}/>
         </div>
-        <List
-          ref={ref}
-          child={child}
-          { ...state }
-        />
+        <div className='list-container'>
+          <List
+            ref={ref}
+            child={child}
+            { ...state }
+          />
+        </div>
       </div>
     </div>
   )

@@ -3,10 +3,8 @@ import PropTypes from 'prop-types'
 import { Button } from 'antd'
 import { ipcRenderer } from 'electron'
 import { useServices, ServiceProvider } from './services'
-import { List, reducer } from './List'
-import { initialState } from './list-state'
-import { singleselect } from './singleselect'
-import { Search } from './Search'
+import { initialState, singleselect } from './list-state'
+import { SearchInput, List, reducer, Card } from '.'
 import { militaryFormat } from '../../shared/datetime'
 import { ProjectStore } from '../store'
 import { Selection } from '../Selection'
@@ -42,7 +40,7 @@ const Title = props => {
   const handleKeyDown = event => event.stopPropagation()
 
   return <input
-    className='cardtitle'
+    className='card-title'
     value={value}
     onChange={handleChange}
     onBlur={handleBlur}
@@ -59,15 +57,18 @@ Title.propTypes = {
  *
  */
 const Media = props => {
+  const { loadPreview } = props
   const scale = 0.5
   const width = `${320 * scale}px`
   const height = `${240 * scale}px`
   const [source, setSource] = React.useState(undefined)
 
-  React.useEffect(async () => {
-    const source = await props.loadPreview()
-    setSource(source)
-  }, [])
+  React.useEffect(() => {
+    (async () => {
+      const source = await loadPreview()
+      setSource(source)
+    })()
+  }, [loadPreview])
 
   const placeholder = (text = null) => (
     <div className='placeholder' style={{ width, height }}>
@@ -145,8 +146,8 @@ const Project = React.forwardRef((props, ref) => {
     : false
 
   const className = props.focused
-    ? 'project card-container focus'
-    : 'project card-container'
+    ? 'card focus'
+    : 'card'
 
   return (
     <div
@@ -156,9 +157,9 @@ const Project = React.forwardRef((props, ref) => {
       onClick={event => props.onClick && props.onClick(event)}
       onDoubleClick={event => props.onDoubleClick && props.onDoubleClick(event)}
     >
-      <div className='cardcontent'>
+      <div className='card-content'>
         <Title value={project.name} onChange={handleRename}/>
-        <span className='cardtext'>{militaryFormat.fromISO(project.lastAccess)}</span>
+        <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
         <ButtonBar>
           <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
@@ -201,10 +202,14 @@ export const Splash = () => {
    *
    * @param {*} projectId - optional project id to focus in list next.
    */
-  const reload = async projectId => {
-    const projects = await projectStore.getProjects(filter)
-    dispatch({ type: 'entries', entries: projects, candidateId: projectId })
-  }
+  const fetch = React.useCallback(projectId => {
+    console.log('[fetch]', projectId)
+    ;(async () => {
+      const projects = await projectStore.getProjects(filter)
+      dispatch({ type: 'entries', entries: projects, candidateId: projectId })
+      if (projectId) dispatch({ type: 'focus', focusId: projectId })
+    })()
+  }, [filter, projectStore])
 
 
   /**
@@ -212,9 +217,9 @@ export const Splash = () => {
    * Reload/updates projects as appropriate.
    */
   React.useEffect(() => {
-    const updated = async ({ project }) => reload(project.id)
-    const created = async ({ project }) => reload(project.id)
-    const deleted = async () => reload()
+    const updated = async ({ project }) => fetch(project.id)
+    const created = async ({ project }) => fetch(project.id)
+    const deleted = async () => fetch()
 
     const handlers = { updated, created, deleted }
     Object.entries(handlers).forEach(([event, handler]) => projectStore.on(event, handler))
@@ -222,7 +227,7 @@ export const Splash = () => {
     return () => {
       Object.entries(handlers).forEach(([event, handler]) => projectStore.off(event, handler))
     }
-  }, [dispatch])
+  }, [projectStore, fetch])
 
 
   /**
@@ -231,16 +236,16 @@ export const Splash = () => {
    */
   React.useEffect(() => {
     const channel = 'ipc:post:project/closed'
-    const handleClosed = () => reload()
+    const handleClosed = () => fetch()
     ipcRenderer.on(channel, handleClosed)
     return () => ipcRenderer.off(channel, handleClosed)
-  }, [])
+  }, [ipcRenderer, fetch])
 
 
   /**
    * Reload projects whenever search filter changes.
    */
-  React.useEffect(reload, [filter])
+  React.useEffect(fetch, [fetch])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey } = event
@@ -253,21 +258,50 @@ export const Splash = () => {
 
   const handleSearch = value => setFilter(value.toLowerCase())
   const handleCreate = () => projectStore.createProject()
-  const handleFocus = () => dispatch({ type: 'focus' })
   const handleClick = id => ({ metaKey, shiftKey }) => {
     dispatch({ type: 'click', id, shiftKey, metaKey })
   }
 
   /* eslint-disable react/prop-types */
-  const child = props => <Project
-    key={props.id}
-    ref={props.ref}
-    role='option'
-    project={props.entry}
-    onClick={handleClick(props.id)}
-    focused={props.focused}
-    selected={props.selected}
-  />
+  const child = props => {
+    const { entry: project } = props
+    const send = message => () => ipcRenderer.send(message, project.id)
+    const loadPreview = () => projectStore.getPreview(project.id)
+    const handleRename = name => projectStore.updateProject({ ...project, name })
+    const handleDelete = () => projectStore.deleteProject(project.id)
+
+    const isOpen = project.tags
+      ? project.tags.includes('OPEN')
+      : false
+
+    return (
+      <Card
+        key={props.id}
+        ref={props.ref}
+        onClick={handleClick(props.id)}
+        focused={props.focused}
+        selected={props.selected}
+      >
+        <div className='card-content'>
+          <Title value={project.name} onChange={handleRename}/>
+          <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
+
+          <ButtonBar>
+            <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
+            <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
+            <CustomButton
+              danger
+              onClick={handleDelete}
+              style={{ marginLeft: 'auto' }}
+              text='Delete'
+              disabled={isOpen}
+            />
+          </ButtonBar>
+        </div>
+        <Media loadPreview={loadPreview}/>
+      </Card>
+    )
+  }
   /* eslint-enable react/prop-types */
 
 
@@ -276,7 +310,6 @@ export const Splash = () => {
   return (
     <div
       onKeyDown={handleKeyDown}
-      onFocus={handleFocus}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -286,15 +319,17 @@ export const Splash = () => {
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >
-        <Search onSearch={handleSearch}/>
+        <SearchInput onSearch={handleSearch}/>
         <Button onClick={handleCreate}>New</Button>
         <Button>Import</Button>
       </div>
-      <List
-        ref={ref}
-        child={child}
-        { ...state }
-      />
+      <div className='list-container'>
+        <List
+          ref={ref}
+          child={child}
+          { ...state }
+        />
+      </div>
     </div>
   )
 }

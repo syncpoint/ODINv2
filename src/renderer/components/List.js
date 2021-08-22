@@ -20,6 +20,7 @@ const scrollIntoView = (refs, index, behavior) =>
     block: 'nearest'
   })
 
+
 /**
  *
  */
@@ -30,11 +31,11 @@ export const List = React.forwardRef((props, ref) => {
   React.useEffect(() => {
     if (props.scroll === 'none') return
     scrollIntoView(cardrefs, props.focusIndex, props.scroll)
-  })
+  }, [cardrefs, props.focusIndex, props.scroll])
 
 
   const handleKeyDown = event => {
-    if (event.metaKey && event.key === 'a') event.preventDefault()
+    // if (event.metaKey && event.key === 'a') event.preventDefault()
   }
 
   const card = (entry, index) => child({

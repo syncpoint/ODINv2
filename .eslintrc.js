@@ -24,12 +24,14 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
-    'react'
+    'react', 'react-hooks'
   ],
   rules: {
     'no-console': 'off',
     'no-multiple-empty-lines': 'off',
     'padded-blocks': 'off',
-    'react/display-name': 'off'
+    'react/display-name': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn'
   }
 }

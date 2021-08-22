@@ -98,13 +98,16 @@ const capitalize = s => {
 
 export const index = raw.reduce((acc, descriptor) => {
   const sidc = parameterized(descriptor.sidc)
+  const dimensions = descriptor.dimensions
+    ? descriptor.dimensions.split(',').map(s => s.trim()).filter(R.identity)
+    : []
+
   acc[sidc] = {
     parameterized: sidc,
     sidc: descriptor.sidc,
-    hierarchy: R.drop(1, descriptor.hierarchy).map(capitalize),
-    text: descriptor.hierarchy.join(', '),
+    hierarchy: descriptor.hierarchy.map(capitalize),
     scope: descriptor.scope,
-    dimension: descriptor.dimension ? [descriptor.dimension] : [],
+    dimensions,
     geometry: {
       type: descriptor.geometry,
       ...descriptor.parameters

@@ -29,7 +29,7 @@ export const transferProject = async (db, project) => {
     const op = feature => ({
       type: 'put',
       key: feature.id,
-      value: { id: feature.id, properties: feature.properties }
+      value: feature
     })
 
     const batch = layers.flatMap(({ features }) => features).map(op)

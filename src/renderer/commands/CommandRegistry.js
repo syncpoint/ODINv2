@@ -12,10 +12,7 @@ export function CommandRegistry (services) {
     id,
     binding,
     description,
-    body: () => {
-      console.log(document.activeElement)
-      services.emitter.emit(`command/${id}`)
-    }
+    body: () => services.emitter.emit(`command/${id}`)
   })
 
   this.commands_ = [

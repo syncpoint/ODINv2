@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
-import { isFeature } from '../ids'
+import { isFeatureId } from '../ids'
 import { readFeature, readFeatures, readGeometry } from '../store/format'
 
 
@@ -43,7 +43,7 @@ Sources.prototype.removeFeature_ = function (featureLike) {
  * @private
  */
 Sources.prototype.addFeature_ = function (feature) {
-  if (!feature || feature.hidden || !isFeature(feature.id)) return
+  if (!feature || feature.hidden || !isFeatureId(feature.id)) return
   this.source_.addFeature(readFeature(feature))
 }
 

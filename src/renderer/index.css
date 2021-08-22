@@ -1,3 +1,7 @@
+/* https://encycolorpedia.com */
+/* Isabelline: #f4f0ec - focus background-color*/
+/* #40a9ff - (antd) hover border-color */
+
 input {
   border: 0;
 }
@@ -33,7 +37,7 @@ div {
   */
   height: calc(100vh - 4em);
 
-  padding-top: 1em;
+  padding-top: 6em;
   padding-bottom: 2em;
   padding-left: 1em;
   padding-right: 1em;
@@ -41,10 +45,22 @@ div {
   display: grid;
   grid-gap: 1em;
   grid-template-columns: 26em auto 26em;
-  grid-template-rows: 10em auto;
+  grid-template-rows: auto;
+  grid-template-areas: "L . R";
+}
+
+.spotlight-container {
+  z-index: 30;
+  pointer-events: none;
+  height: calc(100vh - 4em);
+  padding-top: 0;
+
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 15em;
   grid-template-areas:
-    "T T T"
-    "L . R";
+    ". S .";
 }
 
 .panel {
@@ -69,8 +85,8 @@ div {
   flex-direction: column;
 }
 
-.panel-top {
-  grid-area: T;
+.spotlight {
+  grid-area: S;
   display: flex;
   flex-direction: column;
 }
@@ -80,19 +96,6 @@ div {
   border-style: dashed;
 }
 
-.palette-container {
-  z-index: 30;
-  pointer-events: none;
-  /* padding-top: 1em; */
-
-  display: grid;
-  grid-gap: 1em;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 15em;
-  grid-template-areas:
-    ". P .";
-}
-
 .palette {
   pointer-events: auto;
   user-select: none;
@@ -100,65 +103,56 @@ div {
   display: flex;
   flex-direction: column;
   max-width: 40em;
-  height: 100%;
 }
 
 /* Project-List / Card */
 
-.list {
+.list-container {
   height: 100%;
   overflow: auto;
+}
+
+.list {
+  max-height: 0;
   padding-left: 8px;
   padding-right: 8px;
 }
 
-/* .list-option:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-} */
+.focus {
+  background-color: #f4f0ec;
+}
 
-/* .list-option:focus-within {
-  background-color: lightyellow;
-} */
-
-.card-container {
+.card {
   border: 1px solid #d9d9d9;
   border-radius: 2px;
-  transition: all 0.3s;
-  margin-bottom: 16px;
-  transition: all 0.3s;
-  padding: 2px;
-}
-
-.card-container:hover {
-  border-color: #40a9ff;
-}
-
-.focus {
-  border-color: #40a9ff;
-  border-right-width: 1px !important;
-  outline: 0;
-  box-shadow: 0 0 0 2px rgb(24 144 255 / 20%);
-}
-
-.project {
+  margin-bottom: 8px;
   user-select: none;
   display: flex;
   flex-direction: row;
   padding: 8px;
 }
 
-/* .project[aria-selected="true"] {
-  background-color: lightyellow;
-} */
+.card[aria-selected="true"] {
+  border-color: #cc6666;
+  background-color: #f4f0ec;
+  border-color: #40a9ff;
+  border-width: 2px;
+  outline: 0;
+  padding: 7px;
+}
 
-.cardcontent {
+.card:hover {
+  border-color: #40a9ff;
+}
+
+.card-content {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   padding-right: 16px;
 }
 
-.cardtitle {
+.card-title {
   font-size: 130%;
   margin-bottom: 8px;
   padding: 0;
@@ -166,15 +160,15 @@ div {
   text-align: start;
 }
 
-.cardtitle:hover {
-  color: #1890ff;;
+.card-title:hover {
+  color: #40a9ff;
 }
 
-.cardtitle:focus {
-  color: #1890ff;;
+.card-title:focus {
+  color: #40a9ff;
 }
 
-.cardtext {
+.card-text {
   font-size: 100%;
   color: grey;
 }

@@ -13,7 +13,7 @@ import { Undo } from '../Undo'
 import { Selection } from '../Selection'
 import { CommandRegistry } from '../commands/CommandRegistry'
 import { Map } from './Map'
-import { CommandPalette } from './CommandPalette'
+import { CommandPalette, Layers } from '.'
 import { useServices, ServiceProvider } from './services'
 
 
@@ -35,12 +35,6 @@ export const workspace = projectUUID => {
   const geometryStore = geometryPartition(db)
   const layerStore = new LayerStore(propertiesStore, geometryStore)
   const searchIndex = new SearchIndex(propertiesStore)
-
-  searchIndex.on(':scope/index/updated', event => {
-    if (event.scope === 'feature') {
-      console.log(searchIndex.search('tags:eny'))
-    }
-  })
 
   ipcRenderer.on('EDIT_UNDO', () => {
     // TODO: precondition: check document.activeElement
@@ -91,7 +85,7 @@ export const Workspace = () => {
   const [showing, setShowing] = React.useState({
     spotlight: false,
     properties: false,
-    sidebar: false
+    sidebar: true
   })
 
   const handleCommandPaletteBlur = () => setShowing({ ...showing, spotlight: false })
@@ -119,7 +113,10 @@ export const Workspace = () => {
       onKeyDown={handleCommandPaletteKeyDown}
     />
 
-  const sidebar = showing.sidebar && <div className="panel-left panel"/>
+  const sidebar = showing.sidebar &&
+    <div className="panel-left panel">
+      <Layers/>
+    </div>
 
   return (
     <>

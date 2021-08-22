@@ -183,9 +183,9 @@ export const readLayer = async (location, projectUUID, layer) => {
 
     const descriptor = MILSTD.descriptor(sidc)
     if (descriptor) {
-      feature.hierarchry = descriptor.text
+      feature.hierarchy = descriptor.hierarchy
       feature.scope = descriptor.scope
-      feature.dimension = descriptor.dimension
+      feature.dimensions = descriptor.dimensions
     }
 
     return feature

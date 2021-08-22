@@ -29,17 +29,6 @@ export const singleselect = {
       return initialState
     }
 
-    if (candidateId) {
-      return {
-        ...state,
-        entries,
-        focusId: candidateId,
-        focusIndex: indexOf(entries, candidateId),
-        selected: [candidateId],
-        scroll: 'smooth'
-      }
-    }
-
     // Check if focused entry is still available.
     const index = indexOf(entries, state.focusId)
 
@@ -58,6 +47,26 @@ export const singleselect = {
       focusId,
       selected: focusId !== null ? [focusId] : [],
       scroll: 'auto'
+    }
+  },
+
+  /**
+   * Focus entry with given id.
+   */
+  focus: (state, { focusId: id }) => {
+    if (!id) return state
+    const focusIndex = indexOf(state.entries, id)
+
+    const focusId = focusIndex !== -1
+      ? state.entries[focusIndex].id
+      : null
+
+    return {
+      ...state,
+      focusIndex,
+      focusId,
+      selected: focusId ? [focusId] : [],
+      scroll: 'smooth'
     }
   },
 

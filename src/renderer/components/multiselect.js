@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import { toggleSelection, indexOf, firstId, lastId } from './selection'
+import { initialState } from './list-state'
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -21,6 +22,56 @@ import { toggleSelection, indexOf, firstId, lastId } from './selection'
  */
 export const multiselect = {
 
+  /**
+   *
+   */
+  entries: (state, { entries }) => {
+
+    if (!entries.length) {
+      // Back to square one.
+      return initialState
+    }
+
+    const selected = state.selected.filter(id => indexOf(entries, id) !== -1)
+
+    const focusIndex = state.focusId
+      ? indexOf(entries, state.focusId)
+      : -1
+
+    const focusId = focusIndex !== -1
+      ? entries[focusIndex].id
+      : null
+
+    return {
+      ...state,
+      entries,
+      focusIndex,
+      focusId,
+      selected,
+      scroll: 'auto'
+    }
+  },
+
+  /**
+   * Focus entry with given id.
+   */
+  focus: (state, { focusId: id }) => {
+    if (!id) return state
+    const focusIndex = indexOf(state.entries, id)
+
+    const focusId = focusIndex !== -1
+      ? state.entries[focusIndex].id
+      : null
+
+    return {
+      ...state,
+      focusIndex,
+      focusId,
+      selected: focusId ? [focusId] : [],
+      scroll: 'smooth'
+    }
+  },
+
   /** Focus clicked entry, optionally selecting it. */
   click: (state, { id, shiftKey, metaKey }) => {
     const selected = metaKey
@@ -33,6 +84,18 @@ export const multiselect = {
       focusIndex: indexOf(state.entries, id),
       selected
     }
+  },
+
+  selection: (state, { event }) => {
+
+    // Add selected, remove deselected:
+    const selected = state.selected.concat(event.selected)
+      .filter(id => !event.deselected.includes(id))
+
+    // TODO: check if focusId still exists
+    // TODO: no focus: optionally focus first entry
+
+    return { ...state, selected }
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
@@ -105,5 +168,9 @@ export const multiselect = {
     if (state.focusId === null) return state
     const selected = toggleSelection(state.selected, state.focusId)
     return { ...state, selected }
+  },
+
+  'keydown/Escape': (state) => {
+    return { ...state, selected: [], scroll: 'none' }
   }
 }
