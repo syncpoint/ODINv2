@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useServices } from './services'
 import { initialState, singleselect } from './list-state'
 import { SearchInput, List, reducer } from '.'
+import { isFeatureId } from '../ids'
 
 
 /**
@@ -26,10 +27,7 @@ export const CommandPalette = props => {
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset features to stored snapshot:
-    if (key === 'Escape') {
-      const properties = Object.entries(featuresSnapshot).map(([id, properties]) => ({ id, properties }))
-      layerStore.updateProperties(properties)
-    }
+    if (key === 'Escape') layerStore.updateEntries(featuresSnapshot)
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter' && state.focusIndex !== -1) {
@@ -52,30 +50,34 @@ export const CommandPalette = props => {
    * Store feature properties snapshot of all selected features.
    * This happens once throughout the lifecycle of palette.
    */
-  React.useEffect(async () => {
-    // Get properties snapshot of currently selected features:
-    const snapshot = await selection.selected().reduce(async (acc, id) => {
-      const properties = await layerStore.getFeatureProperties(id)
-      const features = await acc
-      features[id] = properties
-      return features
-    }, {})
+  React.useEffect(() => {
+    (async () => {
+      // Get properties snapshot of currently selected features:
+      const snapshot = await selection.selected().reduce(async (acc, id) => {
+        if (!isFeatureId(id)) return acc
 
-    setFeaturesSnapshot(snapshot)
-  }, [])
+        const feature = await layerStore.getEntry(id)
+        const features = await acc
+        features.push(feature)
+        return features
+      }, [])
+
+      setFeaturesSnapshot(snapshot)
+    })()
+  }, [layerStore, selection])
 
 
   /**
    * Filter command entries based on features snapshot and current filter.
    */
-  React.useEffect(async () => {
+  React.useEffect(() => {
     const commands = paletteCommands.getCommands(featuresSnapshot).filter(command => {
       if (!filter) return true
       return command.description().toLowerCase().includes(filter)
     })
 
     dispatch({ type: 'entries', entries: commands, reset: false })
-  }, [filter, featuresSnapshot])
+  }, [filter, featuresSnapshot, paletteCommands])
 
   const ref = React.useRef()
 
@@ -97,7 +99,7 @@ export const CommandPalette = props => {
   React.useEffect(() => {
     if (state.focusIndex === -1) return
     state.entries[state.focusIndex].invoke(true)
-  }, [state.focusId])
+  }, [state.focusIndex, state.entries])
 
   return (
     <div

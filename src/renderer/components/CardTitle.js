@@ -7,7 +7,11 @@ import PropTypes from 'prop-types'
 export const CardTitle = props => {
   const [value, setValue] = React.useState(props.value)
   const handleChange = ({ target }) => setValue(target.value)
-  const handleBlur = () => props.onChange(value)
+
+  const handleBlur = () => {
+    if (props.value === value) return
+    props.onChange(value)
+  }
 
   // Don't let event bubble up to list.
   // This is mainly for capturing META-A (multiselect) right here.

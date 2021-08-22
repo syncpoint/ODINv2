@@ -35,7 +35,8 @@ export const List = React.forwardRef((props, ref) => {
 
 
   const handleKeyDown = event => {
-    // if (event.metaKey && event.key === 'a') event.preventDefault()
+    const { key } = event
+    if (key === ' ') event.preventDefault()
   }
 
   const card = (entry, index) => child({

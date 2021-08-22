@@ -1,4 +1,6 @@
+import * as R from 'ramda'
 import { layerId } from '../ids'
+
 
 export const options = {}
 
@@ -26,7 +28,7 @@ options.feature = async (feature, cache) => {
   const layer = await cache(layerId(feature.id))
   const { properties } = feature
   const { sidc, t } = properties
-  const hierarchy = feature.hierarchy || ['N/A']
+  const hierarchy = feature.hierarchy ? R.drop(1, feature.hierarchy) : ['N/A']
   const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
 
   return {

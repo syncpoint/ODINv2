@@ -1,9 +1,9 @@
 import * as R from 'ramda'
-import * as MIL_STD from '../../shared/2525c'
+import * as MILSTD from '../../shared/2525c'
 import { Command } from '../commands/Command'
 
 
-const TYPES = Object.entries(MIL_STD.index).map(([parameterized, descriptor]) => {
+const TYPES = Object.entries(MILSTD.index).map(([parameterized, descriptor]) => {
   return {
     parameterized,
     sidc: descriptor.sidc,
@@ -64,31 +64,30 @@ export function PaletteCommands (layerStore, undo) {
 /**
  *
  */
-PaletteCommands.prototype.getCommands = function (properties) {
-  const entries = []
+PaletteCommands.prototype.getCommands = function (entries) {
+  const commands = []
 
-  if (!properties) return entries
+  if (!entries) return commands
 
-  entries.push(...this.typeCommands_(properties))
-  entries.push(...this.styleSmoothCommands_(properties))
-  entries.push(...this.identityCommands_(properties))
-  entries.push(...this.statusCommands_(properties))
-  entries.push(...this.echelonCommands_(properties))
+  // commands.push(...this.typeCommands_(entries))
+  // commands.push(...this.styleSmoothCommands_(entries))
+  // commands.push(...this.identityCommands_(entries))
+  // commands.push(...this.statusCommands_(entries))
+  commands.push(...this.echelonCommands_(entries))
 
-  entries.sort((a, b) => a.description().localeCompare(b.description()))
-  return entries
+  commands.sort((a, b) => a.description().localeCompare(b.description()))
+  return commands
 }
 
 
 /**
  *
  */
-PaletteCommands.prototype.updateProperties_ = function (dryRun, properties, newProperties) {
+PaletteCommands.prototype.updateEntries_ = function (dryRun, entries, updatedEntries) {
   if (dryRun) {
-    this.layerStore_.updateProperties(newProperties)
+    this.layerStore_.updateEntries(updatedEntries)
   } else {
-    const oldProperties = Object.entries(properties).map(([id, properties]) => ({ id, properties }))
-    const command = this.layerStore_.commands.updateProperties(oldProperties, newProperties)
+    const command = this.layerStore_.commands.updateEntries(entries, updatedEntries)
     this.undo_.apply(command)
   }
 }
@@ -97,31 +96,36 @@ PaletteCommands.prototype.updateProperties_ = function (dryRun, properties, newP
 /**
  *
  */
-PaletteCommands.prototype.typeCommands_ = function (properties) {
-  const geometryType = ([id, properties]) => MIL_STD.geometryType(properties.sidc)
-  const geometries = R.uniq(Object.entries(properties).map(geometryType))
+PaletteCommands.prototype.typeCommands_ = function (entries) {
+  const geometryType = ({ properties }) => MILSTD.geometryType(properties.sidc)
+  const geometries = R.uniq(entries.map(geometryType))
   if (geometries.length !== 1) return []
 
   const command = type => {
+    const descriptor = MILSTD.descriptor(type.sidc)
+    console.log(descriptor)
     const options = {
-      schema: MIL_STD.schemaCode(type.sidc),
-      battleDimension: MIL_STD.battleDimensionCode(type.sidc),
-      functionId: MIL_STD.functionIdCode(type.sidc)
+      schema: MILSTD.schemaCode(type.sidc),
+      battleDimension: MILSTD.battleDimensionCode(type.sidc),
+      functionId: MILSTD.functionIdCode(type.sidc)
     }
 
-    const newProperties = Object.entries(properties)
-      .map(([id, properties]) => ({
-        id,
+    const updatedEntries = entries
+      .map(entry => ({
+        ...entry,
+        hierarchy: descriptor.hierarchy || [],
+        scope: descriptor.scope,
+        dimensions: descriptor.dimensions,
         properties: {
-          ...properties,
-          sidc: MIL_STD.format(properties.sidc, options)
+          ...entry.properties,
+          sidc: MILSTD.format(entry.properties.sidc, options)
         }
       }))
 
     return new Command({
       id: type.sidc,
       description: type.text,
-      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
     })
   }
 
@@ -134,23 +138,27 @@ PaletteCommands.prototype.typeCommands_ = function (properties) {
 /**
  * Standard Identity.
  */
-PaletteCommands.prototype.identityCommands_ = function (properties) {
-  if (Object.keys(properties).length === 0) return []
+PaletteCommands.prototype.identityCommands_ = function (entries) {
+  if (Object.keys(entries).length === 0) return []
 
   const command = identity => {
-    const newProperties = Object.entries(properties)
-      .map(([id, properties]) => ({
-        id,
-        properties: {
-          ...properties,
-          sidc: MIL_STD.format(properties.sidc, { identity: identity.code })
+    const updatedEntries = entries
+      .map(entry => {
+        const sidc = MILSTD.format(entry.properties.sidc, { identity: identity.code })
+        return {
+          ...entry,
+          identity: MILSTD.identityText(sidc),
+          properties: {
+            ...entry.properties,
+            sidc
+          }
         }
-      }))
+      })
 
     return new Command({
       id: `identity:${identity.code}`,
       description: `Identity - ${identity.name}`,
-      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
     })
   }
 
@@ -161,23 +169,23 @@ PaletteCommands.prototype.identityCommands_ = function (properties) {
 /**
  * Status/Operational Condition.
  */
-PaletteCommands.prototype.statusCommands_ = function (properties) {
-  if (Object.keys(properties).length === 0) return []
+PaletteCommands.prototype.statusCommands_ = function (entries) {
+  if (Object.keys(entries).length === 0) return []
 
   const command = status => {
-    const newProperties = Object.entries(properties)
-      .map(([id, properties]) => ({
-        id,
+    const updatedEntries = entries
+      .map(entry => ({
+        ...entry,
         properties: {
-          ...properties,
-          sidc: MIL_STD.format(properties.sidc, { status: status.code })
+          ...entry.properties,
+          sidc: MILSTD.format(entry.properties.sidc, { status: status.code })
         }
       }))
 
     return new Command({
       id: `status:${status.code}`,
       description: `Status/Condition - ${status.name}`,
-      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
     })
   }
 
@@ -187,23 +195,26 @@ PaletteCommands.prototype.statusCommands_ = function (properties) {
 /**
  * Size/Echelon.
  */
-PaletteCommands.prototype.echelonCommands_ = function (properties) {
-  if (Object.keys(properties).length === 0) return []
+PaletteCommands.prototype.echelonCommands_ = function (entries) {
+  if (Object.keys(entries).length === 0) return []
 
   const command = echelon => {
-    const newProperties = Object.entries(properties)
-      .map(([id, properties]) => ({
-        id,
-        properties: {
-          ...properties,
-          sidc: MIL_STD.format(properties.sidc, { echelon: echelon.code })
+    const updatedProperties = entries
+      .map(entry => {
+        const sidc = MILSTD.format(entry.properties.sidc, { echelon: echelon.code })
+        return {
+          ...entry,
+          properties: {
+            ...entry.properties,
+            sidc
+          }
         }
-      }))
+      })
 
     return new Command({
       id: `size:${echelon.code}`,
       description: `Echelon/Size - ${echelon.name}`,
-      body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties)
+      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedProperties)
     })
   }
 
@@ -214,17 +225,17 @@ PaletteCommands.prototype.echelonCommands_ = function (properties) {
 /**
  *
  */
-PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
-  if (Object.keys(properties).length === 0) return []
+PaletteCommands.prototype.styleSmoothCommands_ = function (entries) {
+  if (Object.keys(entries).length === 0) return []
   // TODO: check precondition (lineString, polygon)
 
-  const newProperties = enabled => Object.entries(properties)
-    .map(([id, properties]) => ({
-      id,
+  const updatedEntries = enabled => entries
+    .map(entry => ({
+      ...entry,
       properties: {
-        ...properties,
+        ...entry.properties,
         style: {
-          ...properties.style,
+          ...entry.properties.style,
           smooth: enabled
         }
       }
@@ -233,7 +244,7 @@ PaletteCommands.prototype.styleSmoothCommands_ = function (properties) {
   const command = enabled => new Command({
     id: `style.smooth.${enabled}`,
     description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),
-    body: (dryRun) => this.updateProperties_(dryRun, properties, newProperties(enabled))
+    body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries(enabled))
   })
 
   return [command(true), command(false)]

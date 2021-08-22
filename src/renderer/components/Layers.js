@@ -58,8 +58,8 @@ export const Layers = () => {
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey } = event
 
-    // Prevent native scroll and Space key:
-    if (['ArrowDown', 'ArrowUp', ' '].includes(key)) event.preventDefault()
+    // Prevent native scroll:
+    if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
   }

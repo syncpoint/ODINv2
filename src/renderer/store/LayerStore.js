@@ -26,12 +26,10 @@ export function LayerStore (propertiesStore, geometryStore) {
     return this.commands.composite(layers.map(this.commands.putLayer))
   }
 
-  this.commands.putLayer = layer => {
-    return {
-      apply: () => this.putLayer(layer),
-      inverse: () => this.commands.deleteLayer(layer.id)
-    }
-  }
+  this.commands.putLayer = layer => ({
+    apply: () => this.putLayer(layer),
+    inverse: () => this.commands.deleteLayer(layer.id)
+  })
 
   this.commands.deleteLayer = async (layerId) => {
     const layer = {
@@ -45,19 +43,15 @@ export function LayerStore (propertiesStore, geometryStore) {
     }
   }
 
-  this.commands.updateGeometries = (oldGeometries, newGeometries) => {
-    return {
-      apply: () => this.updateGeometries(newGeometries),
-      inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
-    }
-  }
+  this.commands.updateGeometries = (oldGeometries, newGeometries) => ({
+    apply: () => this.updateGeometries(newGeometries),
+    inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
+  })
 
-  this.commands.updateProperties = (oldProperties, newProperties) => {
-    return {
-      apply: () => this.updateProperties(newProperties),
-      inverse: () => this.commands.updateProperties(newProperties, oldProperties)
-    }
-  }
+  this.commands.updateEntries = (entries, updatedEntries) => ({
+    apply: () => this.updateEntries(updatedEntries),
+    inverse: () => this.commands.updateEntries(updatedEntries, entries)
+  })
 }
 
 util.inherits(LayerStore, Emitter)
@@ -147,12 +141,25 @@ LayerStore.prototype.getFeatures = async function (layerId) {
 
 
 /**
- * @param {string} featureId
- * @returns Only the feature's properties (not id).
+ *
  */
-LayerStore.prototype.getFeatureProperties = async function (featureId) {
-  const feature = await this.propertiesStore_.get(featureId)
-  return feature.properties
+LayerStore.prototype.getEntry = function (id) {
+  return this.propertiesStore_.get(id)
+}
+
+
+/**
+ * updateEntries :: [entry] -> Promise()
+ */
+LayerStore.prototype.updateEntries = async function (entries) {
+  const operations = entries.map(entry => ({
+    type: 'put',
+    key: entry.id,
+    value: entry
+  }))
+
+  await this.propertiesStore_.batch(operations)
+  this.emit('properties', { operations })
 }
 
 
@@ -199,18 +206,4 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
 
   this.emit('geometries', { operations: ops })
   return this.geometryStore_.batch(ops)
-}
-
-/**
- * updateProperties :: [{ id, properties }] -> Promise()
- */
-LayerStore.prototype.updateProperties = async function (features) {
-  const operations = features.map(feature => ({
-    type: 'put',
-    key: feature.id,
-    value: feature
-  }))
-
-  await this.propertiesStore_.batch(operations)
-  this.emit('properties', { operations })
 }
