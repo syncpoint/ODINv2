@@ -1,6 +1,7 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
-import { Lunr as Index } from './Lunr'
+// import { Lunr as Index } from './Lunr'
+import { MiniSearchIndex as Index } from './MiniSearch'
 
 
 /**

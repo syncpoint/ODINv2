@@ -44,13 +44,13 @@ export const Map = () => {
     const features = await sources.getFeatureSource()
     const partition = new Partition(features, selection)
     const style = featureStyle(selection)
-    const declutter = true
+    const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
     const featureLayer = vectorLayer(partition.getDeselected())
     const selectedLayer = vectorLayer(partition.getSelected())
 
     const layers = [
-      // new TileLayer({ source: new OSM() }),
+      new TileLayer({ source: new OSM() }),
       featureLayer,
       selectedLayer
     ]

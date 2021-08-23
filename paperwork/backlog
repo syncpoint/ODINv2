@@ -2,16 +2,16 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
+DEH - 558402a9-6227-44b6-9cf1-3444856e0972 - FTS: minisearch index (https://github.com/lucaong/minisearch)
 
 OPEN
 5807cc1f-9348-4397-933b-adffafe2f41f - bug: CMD-B has no effect if search input (or other) has focus
 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy: handle feature.properties.references
-558402a9-6227-44b6-9cf1-3444856e0972 - FTS: minisearch index (https://github.com/lucaong/minisearch)
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
 46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
 481d485a-83b3-4136-a819-5fcb56a14217 - OSD
-1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting
+1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
 e1c55546-1891-4fcd-af5a-1887954e0278 - style: improve cache (feature timestamp/geometry revision)
 7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES

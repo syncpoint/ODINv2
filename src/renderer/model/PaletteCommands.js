@@ -69,10 +69,10 @@ PaletteCommands.prototype.getCommands = function (entries) {
 
   if (!entries) return commands
 
-  // commands.push(...this.typeCommands_(entries))
-  // commands.push(...this.styleSmoothCommands_(entries))
-  // commands.push(...this.identityCommands_(entries))
-  // commands.push(...this.statusCommands_(entries))
+  commands.push(...this.typeCommands_(entries))
+  commands.push(...this.styleSmoothCommands_(entries))
+  commands.push(...this.identityCommands_(entries))
+  commands.push(...this.statusCommands_(entries))
   commands.push(...this.echelonCommands_(entries))
 
   commands.sort((a, b) => a.description().localeCompare(b.description()))
@@ -103,7 +103,6 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
 
   const command = type => {
     const descriptor = MILSTD.descriptor(type.sidc)
-    console.log(descriptor)
     const options = {
       schema: MILSTD.schemaCode(type.sidc),
       battleDimension: MILSTD.battleDimensionCode(type.sidc),

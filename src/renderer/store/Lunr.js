@@ -8,6 +8,7 @@ import { options } from '../model/options'
 
 
 /**
+ * @constructor
  * @fires ready
  * @fires :scope/index/updated (for each scope)
  * @fires index/updated (after all scopes are updated)
@@ -77,6 +78,10 @@ Lunr.prototype.refreshIndex_ = async function (scope) {
   console.timeEnd(`[lunr:${scope}] re-index`)
 }
 
+
+/**
+ *
+ */
 Lunr.prototype.ready = function () {
   return this.ready_
 }
