@@ -1,5 +1,5 @@
 import React from 'react'
-import { SearchInput, List, reducer, Card } from '.'
+import { SearchInput, List, reducer, Card, TagList, Avatar } from '.'
 import { useServices } from './services'
 import { initialState, multiselect } from './list-state'
 
@@ -67,6 +67,7 @@ export const Layers = () => {
   /* eslint-disable react/prop-types */
   const child = props => {
     const { entry } = props
+
     return (
       <Card
         key={props.id}
@@ -75,10 +76,14 @@ export const Layers = () => {
         focused={props.focused}
         selected={props.selected}
       >
-        <Card.Content>
-          <Card.Title value={entry.title} onChange={handleRename}/>
-          <Card.Description value={entry.description}/>
-        </Card.Content>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <Card.Content>
+            <Card.Title value={entry.title} onChange={handleRename}/>
+            <Card.Description value={entry.description}/>
+          </Card.Content>
+          { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
+        </div>
+        <TagList id={props.id} tags={entry.tags} capabilities={entry.capabilities}/>
       </Card>
     )
   }

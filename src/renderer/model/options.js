@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import { layerId } from '../ids'
+import * as MILSTD from '../../shared/2525c'
 
 
 export const options = {}
@@ -35,7 +36,7 @@ options.feature = async (feature, cache) => {
     id: feature.id,
     title: t || 'N/A',
     description,
-    // TODO: url
+    url: MILSTD.url(sidc),
     tags: tags(feature, sidc),
     capabilities: 'RENAME|TAG|DROP|FOLLOW',
     actions: 'PRIMARY:panto'

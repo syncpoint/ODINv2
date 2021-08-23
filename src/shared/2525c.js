@@ -1,5 +1,7 @@
 import * as R from 'ramda'
+import ms from 'milsymbol'
 import raw from './2525c.json'
+import './milsymbol/extension'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
@@ -132,4 +134,20 @@ export const geometryType = sidc => {
   if (!sidc) return
   const descriptor = index[parameterized(sidc)]
   return descriptor && descriptor.geometry && descriptor.geometry.type
+}
+
+const placeholderSymbol = new ms.Symbol('')
+
+const cache = {
+  _: placeholderSymbol.asCanvas().toDataURL()
+}
+
+export const url = sidc => {
+  if (!cache[sidc]) {
+    const symbol = new ms.Symbol(sidc)
+    if (!symbol.isValid()) return cache._
+    cache[sidc] = symbol.asCanvas().toDataURL()
+  }
+
+  return cache[sidc]
 }
