@@ -5,6 +5,7 @@ import Store from '../../shared/level/Store'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
 import { options } from '../model/options'
+import { memoize } from './index-common'
 
 
 /**
@@ -30,6 +31,7 @@ export function Lunr (db) {
   const refresh = scope => this.refreshIndex_(scope)
   const pendingRefresh = Object.keys(this.indexes_).map(refresh)
   Promise.all(pendingRefresh).then(() => {
+    console.log('[Lunr] ready.')
     this.ready_ = true
     this.emit('ready')
   })
@@ -52,30 +54,29 @@ Lunr.prototype.handleBatch_ = function (ops) {
  *
  */
 Lunr.prototype.refreshIndex_ = async function (scope) {
-  console.time(`[lunr:${scope}] re-index`)
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      console.time(`[lunr:${scope}] re-index`)
 
-  const entries = await this.store_.entries(scope)
-  const cache = id => {
-    const hit = entries[id]
-    if (hit) return hit
-    entries[id] = this.store_.get(id)
-    return cache(id)
-  }
+      const entries = await this.store_.entries(scope)
+      const cache = memoize(this.store_.get.bind(this.store_))
+      const docs = await Promise.all(Object.values(entries)
+        .map(item => documents[scope](item, cache))
+      )
 
-  const docs = await Promise.all(Object.values(entries)
-    .map(item => documents[scope](item, cache))
-  )
+      this.indexes_[scope] = lunr(function () {
+        this.pipeline.remove(lunr.stemmer)
+        this.pipeline.remove(lunr.stopWordFilter) // allow words like 'so', 'own', etc.
+        this.searchPipeline.remove(lunr.stemmer)
+        ;['text', 'scope', 'tags'].forEach(field => this.field(field))
+        docs.forEach(doc => this.add(doc))
+      })
 
-  this.indexes_[scope] = lunr(function () {
-    this.pipeline.remove(lunr.stemmer)
-    this.pipeline.remove(lunr.stopWordFilter) // allow words like 'so', 'own', etc.
-    this.searchPipeline.remove(lunr.stemmer)
-    ;['text', 'scope', 'tags'].forEach(field => this.field(field))
-    docs.forEach(doc => this.add(doc))
+      this.emit(`${scope}/index/updated`)
+      console.timeEnd(`[lunr:${scope}] re-index`)
+      resolve()
+    }, 0)
   })
-
-  this.emit(`${scope}/index/updated`)
-  console.timeEnd(`[lunr:${scope}] re-index`)
 }
 
 
@@ -103,22 +104,11 @@ const translateQuery = (value = '') => {
     .join(' ')
 }
 
-
-function memoize (method) {
-  const cache = {}
-  return async function () {
-    const args = JSON.stringify(arguments)
-    cache[args] = cache[args] || method.apply(this, arguments)
-    return cache[args]
-  }
-}
-
 /**
  * search :: string -> Promise([option])
  */
 Lunr.prototype.search = function (query) {
   const terms = translateQuery(query)
-
   const searchIndex = index => R.tryCatch(
     terms => terms.trim() ? index.search(terms.trim()) : [],
     R.always([])

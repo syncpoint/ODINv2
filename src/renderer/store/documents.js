@@ -1,26 +1,46 @@
 import * as R from 'ramda'
 import { layerId } from '../ids'
+import * as MILSTD from '../symbology/2525c'
 
 export const documents = {}
+
+// const sidc = feature.properties.sidc
+// feature.identity = MILSTD.identityText(sidc)
+
+// const descriptor = MILSTD.descriptor(sidc)
+// if (descriptor) {
+//   feature.hierarchy = descriptor.hierarchy
+//   feature.scope = descriptor.scope
+//   feature.dimensions = descriptor.dimensions
+// }
+
+const identity = R.cond([
+  [R.equals('F'), R.always(['OWN'])],
+  [R.equals('H'), R.always(['ENY'])],
+  [R.equals('U'), R.always(['UKN'])],
+  [R.T, R.always([])]
+])
 
 /**
  *
  */
 documents.feature = async (feature, cache) => {
+  const descriptor = MILSTD.descriptor(feature.properties.sidc)
+  const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : []
+  const dimensions = (descriptor && descriptor.dimensions) || []
+  const scope = descriptor.scope ? [descriptor.scope] : []
+
   const layer = await cache(layerId(feature.id))
   const { t } = feature.properties
   const links = feature.links || []
-  const hierarchy = feature.hierarchy
-    ? R.drop(1, feature.hierarchy)
-    : []
 
   const tags = ({ hidden, tags }) => [
     hidden ? 'hidden' : 'visible',
     ...(links.length ? ['link'] : []),
     ...(tags || []),
-    ...(feature.dimensions ? [feature.dimensions] : []),
-    ...(feature.scope ? [feature.scope] : []),
-    ...(feature.identity ? [feature.identity] : [])
+    ...dimensions,
+    ...scope,
+    ...identity(MILSTD.identityCode(feature.properties.sidc))
   ]
 
   return {

@@ -6,7 +6,7 @@ import GeometryCollection from 'ol/geom/GeometryCollection'
 import * as Style from 'ol/style'
 import ms from 'milsymbol'
 import * as Colors from './color-schemes'
-import * as MILSTD from '../../../shared/2525c'
+import * as MILSTD from '../../symbology/2525c'
 
 export const stroke = options => new Style.Stroke(options)
 export const style = options => new Style.Style(options)

@@ -22,6 +22,7 @@ export const SearchInput = props => {
 
     // Prevent native select/all:
     if (metaKey && key === 'a') event.stopPropagation()
+    else if (key === ' ') event.stopPropagation()
   }
 
   return (

@@ -5,22 +5,28 @@ import Store from '../../shared/level/Store'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
 import { options } from '../model/options'
+import { memoize, parseQuery } from './index-common'
 
 /**
  * @constructor
  * @fires ready
- * @fires index/updated (after all scopes are updated)
+ * @fires index/updated
  */
 export function MiniSearchIndex (db) {
+  Emitter.call(this)
   this.store_ = new Store(db)
 
   db.on('put', event => console.log('[DB] put', event))
   db.on('del', event => console.log('[DB] del', event))
   db.on('batch', event => this.handleBatch_(event))
 
+  // Cache indexed documents for removal.
+  this.cache_ = {}
+
   this.index_ = new MiniSearch({
     fields: ['text', 'tags'],
     storeFields: ['text', 'tags'],
+    tokenize: string => string.split(/[ ()]+/),
     extractField: (document, fieldName) => {
       const value = document[fieldName]
       if (value && fieldName === 'tags') return value.flat().filter(R.identity).join(' ')
@@ -42,9 +48,25 @@ util.inherits(MiniSearchIndex, Emitter)
 /**
  *
  */
-MiniSearchIndex.prototype.handleBatch_ = function (ops) {
-  console.log('[MiniSearchIndex] handleBatch_', ops)
-  this.emit('index/updated')
+MiniSearchIndex.prototype.handleBatch_ = async function (ops) {
+  setTimeout(async () => {
+    console.time('[MiniSearch] batch')
+
+    const cache = memoize(this.store_.get.bind(this.store_))
+    await Promise.all(ops.filter(op => op.type === 'put').map(async op => {
+      const scope = op.key.split(':')[0]
+      this.index_.remove(this.cache_[op.key])
+      this.cache_[op.key] = await documents[scope](op.value, cache)
+      this.index_.add(this.cache_[op.key])
+    }))
+
+    ops.filter(op => op.type === 'del').forEach(op => {
+      delete this.cache_[op.key]
+    })
+
+    this.emit('index/updated')
+    console.timeEnd('[MiniSearch] batch')
+  }, 50) // Don't battle with map or whatever about CPU cycles.
 }
 
 
@@ -52,25 +74,22 @@ MiniSearchIndex.prototype.handleBatch_ = function (ops) {
  *
  */
 MiniSearchIndex.prototype.refreshIndex_ = async function () {
-  console.time('[MiniSearch:] re-index')
+  console.time('[MiniSearch] re-index')
 
   const entries = await this.store_.entries()
-  const cache = id => {
-    const hit = entries[id]
-    if (hit) return hit
-    entries[id] = this.store_.get(id)
-    return cache(id)
-  }
-
+  const cache = memoize(this.store_.get.bind(this.store_))
   const docs = await Promise.all(Object.values(entries)
     .map(item => [item.id.split(':')[0], item])
     .map(([scope, item]) => documents[scope](item, cache))
   )
 
+  docs.forEach(doc => (this.cache_[doc.id] = doc))
+
   this.index_.addAll(docs)
   this.emit('index/updated')
-  console.timeEnd('[MiniSearch:] re-index')
+  console.timeEnd('[MiniSearch] re-index')
 }
+
 
 /**
  *
@@ -79,33 +98,26 @@ MiniSearchIndex.prototype.ready = function () {
   return this.ready_
 }
 
-function memoize (method) {
-  const cache = {}
-  return async function () {
-    const args = JSON.stringify(arguments)
-    cache[args] = cache[args] || method.apply(this, arguments)
-    return cache[args]
-  }
-}
-
-const parseQuery = query => {
-  const tokens = (query || '').split(' ')
-  return tokens.reduce((acc, token) => {
-    if (token.startsWith('@')) acc.scope = token.substring(1)
-    else if (token.startsWith('#')) acc.tags.push(token.substring(1))
-    else acc.text.push(token)
-    return acc
-  }, { text: [], tags: [] })
-}
 
 /**
  * search :: string -> Promise([option])
  */
-MiniSearchIndex.prototype.search = function (query) {
+MiniSearchIndex.prototype.search = async function (query) {
   const { scope, text, tags } = parseQuery(query)
   const filter = scope
     ? result => result.id.startsWith(scope)
     : () => true
+
+  if (!text.length && !tags.length) {
+    const items = await this.store_.values(scope)
+    const cache = memoize(this.store_.get.bind(this.store_))
+    return items.reduce(async (acc, item) => {
+      const list = await acc
+      const option = await options[item.id.split(':')[0]](item, cache)
+      list.push(option)
+      return list
+    }, [])
+  }
 
   const A = this.index_.search(text.join(' '), { fields: ['text'], prefix: true, filter, combineWith: 'AND' })
   const B = this.index_.search(tags.join(' '), { fields: ['tags'], prefix: true, filter, combineWith: 'AND' })

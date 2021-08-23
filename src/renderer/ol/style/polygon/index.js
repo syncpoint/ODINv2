@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import * as MILSTD from '../../../../shared/2525c'
+import * as MILSTD from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_G_GAF' // FORTIFIED AREA

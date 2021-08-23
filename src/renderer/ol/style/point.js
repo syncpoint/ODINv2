@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { styles, makeStyles } from './styles'
-import { MODIFIERS } from '../../../shared/2525c'
+import { MODIFIERS } from '../../symbology/2525c'
 
 const modifiers = properties => Object.entries(properties)
   .filter(([key, value]) => MODIFIERS[key] && value)

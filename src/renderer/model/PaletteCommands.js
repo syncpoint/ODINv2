@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import * as MILSTD from '../../shared/2525c'
+import * as MILSTD from '../symbology/2525c'
 import { Command } from '../commands/Command'
 
 
@@ -102,7 +102,6 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
   if (geometries.length !== 1) return []
 
   const command = type => {
-    const descriptor = MILSTD.descriptor(type.sidc)
     const options = {
       schema: MILSTD.schemaCode(type.sidc),
       battleDimension: MILSTD.battleDimensionCode(type.sidc),
@@ -112,9 +111,6 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
     const updatedEntries = entries
       .map(entry => ({
         ...entry,
-        hierarchy: descriptor.hierarchy || [],
-        scope: descriptor.scope,
-        dimensions: descriptor.dimensions,
         properties: {
           ...entry.properties,
           sidc: MILSTD.format(entry.properties.sidc, options)
@@ -146,7 +142,6 @@ PaletteCommands.prototype.identityCommands_ = function (entries) {
         const sidc = MILSTD.format(entry.properties.sidc, { identity: identity.code })
         return {
           ...entry,
-          identity: MILSTD.identityText(sidc),
           properties: {
             ...entry.properties,
             sidc

@@ -1,20 +1,28 @@
 import * as R from 'ramda'
 import { layerId } from '../ids'
-import * as MILSTD from '../../shared/2525c'
-
+import * as MILSTD from '../symbology/2525c'
 
 export const options = {}
+
+const identityTag = R.cond([
+  [R.equals('F'), R.always(['OWN'])],
+  [R.equals('H'), R.always(['ENY'])],
+  [R.equals('U'), R.always(['UKN'])],
+  [R.T, R.always([])]
+])
+
 
 
 /**
  * feature:
  */
 options.feature = async (feature, cache) => {
-  const tags = feature => {
-    const dimensions = feature.dimensions || []
-    const scope = feature.scope ? [feature.scope] : []
-    const identity = feature.identity || []
+  const descriptor = MILSTD.descriptor(feature.properties.sidc)
+  const dimensions = (descriptor && descriptor.dimensions) || []
+  const scope = descriptor.scope ? [descriptor.scope] : []
+  const identity = identityTag(MILSTD.identityCode(feature.properties.sidc))
 
+  const tags = feature => {
     return [
       'SCOPE:FEATURE:identify',
       ...((feature.links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
@@ -29,7 +37,7 @@ options.feature = async (feature, cache) => {
   const layer = await cache(layerId(feature.id))
   const { properties } = feature
   const { sidc, t } = properties
-  const hierarchy = feature.hierarchy ? R.drop(1, feature.hierarchy) : ['N/A']
+  const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
   const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
 
   return {

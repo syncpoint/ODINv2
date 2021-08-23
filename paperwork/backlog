@@ -2,9 +2,9 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 558402a9-6227-44b6-9cf1-3444856e0972 - FTS: minisearch index (https://github.com/lucaong/minisearch)
 
 OPEN
+37e3809e-1e29-4cba-a84a-49bd46b1fe5b - tagging: feature should inherit symbols user tags
 5807cc1f-9348-4397-933b-adffafe2f41f - bug: CMD-B has no effect if search input (or other) has focus
 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy: handle feature.properties.references
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
@@ -85,7 +85,7 @@ DEH - 97f54be5-7993-43f5-be67-5ed3107e4c38 - Modify: integrate persistence and u
 DEH - 0e2f5c6d-025f-4667-bbf2-44e96ca6830c - style/selected: show fixed handles for 2-point line strings
 DEH - 19286105-c878-4deb-bcda-1f29a00b2e09 - Modify: support orbit area (as corridor)
 DEH - a270598e-1c6d-4ae9-970c-c2e368fa9bc7 - Modify: support fan area
-DEH - 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 - project database: remove unnecessary `properties` scope
+DEH - 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 (reverted) - project database: remove unnecessary `properties` scope
 DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
 DEH - ab740c4c-76df-4e03-b3c6-3244734c464d - LineString: simplify geometry depending on point count and resolution
 DEH - 109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL: DOSE RATE CONTOUR LINES
@@ -105,4 +105,5 @@ DEH - 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE O
 DEH - 04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
 DEH - c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
 DEH - 1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
-DEH - 35405f37-4175-4527-a4bb-efb90b1ddcd8 - (legacy) import: write feature metadata (scope, dimension, identity, hierarchy)
+DEH - 35405f37-4175-4527-a4bb-efb90b1ddcd8 (reverted) - (legacy) import: write feature metadata (scope, dimension, identity, hierarchy)
+DEH - 558402a9-6227-44b6-9cf1-3444856e0972 - FTS: minisearch index (https://github.com/lucaong/minisearch)

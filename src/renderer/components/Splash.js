@@ -282,23 +282,25 @@ export const Splash = () => {
         focused={props.focused}
         selected={props.selected}
       >
-        <div className='card-content'>
-          <Title value={project.name} onChange={handleRename}/>
-          <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div className='card-content'>
+            <Title value={project.name} onChange={handleRename}/>
+            <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
-          <ButtonBar>
-            <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
-            <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
-            <CustomButton
-              danger
-              onClick={handleDelete}
-              style={{ marginLeft: 'auto' }}
-              text='Delete'
-              disabled={isOpen}
-            />
-          </ButtonBar>
+            <ButtonBar>
+              <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
+              <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
+              <CustomButton
+                danger
+                onClick={handleDelete}
+                style={{ marginLeft: 'auto' }}
+                text='Delete'
+                disabled={isOpen}
+              />
+            </ButtonBar>
+          </div>
+          <Media loadPreview={loadPreview}/>
         </div>
-        <Media loadPreview={loadPreview}/>
       </Card>
     )
   }

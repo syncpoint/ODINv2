@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import ms from 'milsymbol'
 import raw from './2525c.json'
-import './milsymbol/extension'
+import './extension'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
@@ -32,13 +32,6 @@ export const battleDimensionCode = sidc => sidc
 export const identityCode = sidc => sidc
   ? sidc[IDENTITY]
   : 'U'
-
-export const identityText = sidc => R.cond([
-  [R.equals('F'), R.always(['OWN'])],
-  [R.equals('H'), R.always(['ENY'])],
-  [R.equals('U'), R.always(['UKN'])],
-  [R.T, R.always([])]
-])(sidc ? sidc[IDENTITY] : '')
 
 // status or P - PRESENT
 export const statusCode = sidc => sidc

@@ -4,7 +4,6 @@ import path from 'path'
 import uuid from 'uuid-random'
 import { reproject } from 'reproject'
 import Emitter from '../shared/emitter'
-import * as MILSTD from '../shared/2525c.js'
 
 const readJSON = async path => {
   const content = await fs.readFile(path, 'utf8')
@@ -46,16 +45,6 @@ DragAndDrop.prototype.drop = async function (event) {
       geoJSON.features = geoJSON.features.map(feature => {
         if (feature.properties.locked) { feature.locked = true; delete feature.properties.locked }
         if (feature.properties.hidden) { feature.hidden = true; delete feature.properties.hidden }
-
-        const sidc = feature.properties.sidc
-        feature.identity = MILSTD.identityText(sidc)
-
-        const descriptor = MILSTD.descriptor(sidc)
-        if (descriptor) {
-          feature.hierarchry = descriptor.text
-          feature.scope = descriptor.scope
-          feature.dimension = descriptor.dimension
-        }
 
         delete feature.title // legacy
         feature.id = `feature:${layerUUID}/${uuid()}`

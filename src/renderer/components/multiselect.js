@@ -27,7 +27,7 @@ export const multiselect = {
    */
   entries: (state, { entries }) => {
 
-    if (!entries.length) {
+    if (!entries || !entries.length) {
       // Back to square one.
       return initialState
     }
