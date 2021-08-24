@@ -21,7 +21,7 @@ export const CommandPalette = props => {
   }
 
   const handleKeyDown = event => {
-    const { key, shiftKey, metaKey } = event
+    const { key, shiftKey, metaKey, ctrlKey } = event
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
@@ -34,12 +34,12 @@ export const CommandPalette = props => {
       state.entries[state.focusIndex].invoke(false)
     }
 
-    dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
+    dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
     props.onKeyDown(event)
   }
 
-  const handleClick = id => ({ metaKey, shiftKey }) => {
-    dispatch({ type: 'click', id, shiftKey, metaKey })
+  const handleClick = id => ({ metaKey, shiftKey, ctrlKey }) => {
+    dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
   }
 
   const handleSearch = value => {

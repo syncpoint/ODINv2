@@ -1,5 +1,7 @@
 import { indexOf, firstId, lastId } from './selection'
 import { initialState } from './list-state'
+import { cmdOrCtrl } from '../platform'
+
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -74,15 +76,15 @@ export const singleselect = {
   },
 
   /** Focus and select clicked entry. */
-  click: (state, { id, shiftKey, metaKey }) => ({
+  click: (state, { id }) => ({
     ...state,
     focusId: id,
     focusIndex: indexOf(state.entries, id),
     selected: [id]
   }),
 
-  'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
-    if (metaKey) return state // not handled here.
+  'keydown/ArrowDown': (state, { metaKey, ctrlKey }) => {
+    if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries.length) return initialState
 
     // focusId = null => -1
@@ -101,8 +103,8 @@ export const singleselect = {
     }
   },
 
-  'keydown/ArrowUp': (state, { shiftKey, metaKey }) => {
-    if (metaKey) return state // not handled here.
+  'keydown/ArrowUp': (state, { metaKey, ctrlKey }) => {
+    if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries.length) return initialState
     if (!state.focusId) return state
 

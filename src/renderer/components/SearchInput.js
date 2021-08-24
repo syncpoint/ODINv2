@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Input } from 'antd'
+import { cmdOrCtrl } from '../platform'
 
 export const SearchInput = props => {
   const [value, setValue] = React.useState('')
@@ -11,7 +12,7 @@ export const SearchInput = props => {
   }
 
   const handleKeyDown = event => {
-    const { key, metaKey } = event
+    const { key } = event
     if (key === 'Home') event.preventDefault()
     else if (key === 'End') event.preventDefault()
     else if (key === 'Escape') {
@@ -21,7 +22,7 @@ export const SearchInput = props => {
     }
 
     // Prevent native select/all:
-    if (metaKey && key === 'a') event.stopPropagation()
+    if (cmdOrCtrl(event) && key === 'a') event.stopPropagation()
     else if (key === ' ') event.stopPropagation()
   }
 

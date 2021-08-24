@@ -42,32 +42,15 @@ export default async options => {
       { role: 'cut' },
       { role: 'copy' },
       { role: 'paste' },
-      ...(platform === 'darwin'
-        ? [
-            { role: 'pasteAndMatchStyle' },
-            { role: 'delete' },
-            {
-              label: 'Select All',
-              accelerator: 'CmdOrCtrl+A',
-              click: dispatch(browserWindow => {
-                browserWindow.webContents.selectAll()
-                send(browserWindow, 'EDIT_SELECT_ALL')
-              })
-            },
-            { type: 'separator' },
-            {
-              label: 'Speech',
-              submenu: [
-                { role: 'startSpeaking' },
-                { role: 'stopSpeaking' }
-              ]
-            }
-          ]
-        : [
-            { role: 'delete' },
-            { type: 'separator' },
-            { role: 'selectAll' }
-          ])
+      { role: 'delete' },
+      {
+        label: 'Select All',
+        accelerator: 'CmdOrCtrl+A',
+        click: dispatch(browserWindow => {
+          browserWindow.webContents.selectAll()
+          send(browserWindow, 'EDIT_SELECT_ALL')
+        })
+      }
     ]
   }
 }

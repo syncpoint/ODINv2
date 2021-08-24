@@ -67,12 +67,12 @@ export const Layers = () => {
   const handleRename = value => console.log('handleRename', value)
 
   const handleKeyDown = event => {
-    const { key, shiftKey, metaKey } = event
+    const { key, shiftKey, metaKey, ctrlKey } = event
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
-    dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
+    dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
   /* eslint-disable react/prop-types */

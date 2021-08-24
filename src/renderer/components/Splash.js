@@ -248,12 +248,12 @@ export const Splash = () => {
   React.useEffect(fetch, [fetch])
 
   const handleKeyDown = event => {
-    const { key, shiftKey, metaKey } = event
+    const { key, shiftKey, metaKey, ctrlKey } = event
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
-    dispatch({ type: `keydown/${key}`, shiftKey, metaKey })
+    dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
   const handleSearch = value => setFilter(value.toLowerCase())

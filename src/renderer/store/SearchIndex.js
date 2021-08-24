@@ -1,4 +1,4 @@
-// import { Lunr as Index } from './Lunr'
+//import { Lunr as Index } from './Lunr'
 import { MiniSearchIndex as Index } from './MiniSearch'
 import { DebouncingQueue } from './DebouncingQueue'
 import { Query } from './Query'
@@ -14,11 +14,10 @@ export function SearchIndex (db) {
   this.index_ = new Index(db)
 
   const timeout = 50 // ms
-  const size = 10 // events
+  const size = 32 // events
   this.DQ_ = new DebouncingQueue(timeout, size)
 
   this.DQ_.on('data', ({ data }) => {
-    console.log('data/handleBatch')
     this.index_.handleBatch(data.flat())
   })
 
@@ -32,7 +31,6 @@ export function SearchIndex (db) {
  * FIXME: handleBatch is not re-entrant (rapid sequence of consecutive store updates)
  */
 SearchIndex.prototype.handleBatch_ = function (event) {
-  console.log('pushing event...')
   this.DQ_.push(event)
 }
 

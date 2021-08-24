@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { toggleSelection, indexOf, firstId, lastId } from './selection'
 import { initialState } from './list-state'
+import { cmdOrCtrl } from '../platform'
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -70,8 +71,8 @@ export const multiselect = {
   },
 
   /** Focus clicked entry, optionally selecting it. */
-  click: (state, { id, shiftKey, metaKey }) => {
-    const selected = metaKey
+  click: (state, { id, metaKey, ctrlKey }) => {
+    const selected = cmdOrCtrl({ metaKey, ctrlKey })
       ? toggleSelection(state.selected, id)
       : []
 
@@ -95,8 +96,8 @@ export const multiselect = {
     return { ...state, selected }
   },
 
-  'keydown/ArrowDown': (state, { shiftKey, metaKey }) => {
-    if (metaKey) return state // not handled here.
+  'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
+    if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.min(state.entries.length - 1, index + 1)
@@ -117,8 +118,8 @@ export const multiselect = {
     }
   },
 
-  'keydown/ArrowUp': (state, { shiftKey, metaKey }) => {
-    if (metaKey) return state // not handled here.
+  'keydown/ArrowUp': (state, { shiftKey, metaKey, ctrlKey }) => {
+    if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.max(0, index - 1)
@@ -153,8 +154,8 @@ export const multiselect = {
     return { ...state, focusId, focusIndex, scroll: 'auto' }
   },
 
-  'keydown/a': (state, { metaKey }) => {
-    if (!metaKey) return state
+  'keydown/a': (state, { metaKey, ctrlKey }) => {
+    if (!cmdOrCtrl({ metaKey, ctrlKey })) return state
     const focusId = lastId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
     const selected = [...state.entries.map(entry => entry.id)]
