@@ -1,53 +1,10 @@
-import util from 'util'
-import Emitter from '../../shared/emitter'
 // import { Lunr as Index } from './Lunr'
 import { MiniSearchIndex as Index } from './MiniSearch'
-// import { LevelSI as Index } from './LevelSI'
-// import { FuseIndex as Index } from './FuseIndex'
+import { DebouncingQueue } from './DebouncingQueue'
+import { Query } from './Query'
 
 
-/**
- * @constructor
- * @fires change { result }
- */
-export function Query (index, terms) {
-  Emitter.call(this)
-  this.index_ = index
-  this.terms_ = terms
-  this.updatedHandler_ = this.refresh_.bind(this)
 
-  this.index_.on('index/updated', this.updatedHandler_)
-
-  this.refresh_()
-}
-
-util.inherits(Query, Emitter)
-
-
-/**
- * Refresh query result with updated index and original search terms.
- */
-Query.prototype.refresh_ = async function () {
-  this.result_ = this.index_.search(this.terms_)
-  this.emit('change', { result: this.result_ })
-}
-
-
-/**
- * this.getResult :: () -> Promise([option])
- */
-Query.prototype.getResult = function () {
-  return this.result_
-}
-
-
-/**
- * Dispose this query instance.
- * Note: Failing to dispose query will result in listener leak (index).
- */
-Query.prototype.dispose = function () {
-  this.index_.off('index/updated', this.updatedHandler_)
-}
 
 
 /**
@@ -55,8 +12,29 @@ Query.prototype.dispose = function () {
  */
 export function SearchIndex (db) {
   this.index_ = new Index(db)
+
+  const timeout = 50 // ms
+  const size = 10 // events
+  this.DQ_ = new DebouncingQueue(timeout, size)
+
+  this.DQ_.on('data', ({ data }) => {
+    console.log('data/handleBatch')
+    this.index_.handleBatch(data.flat())
+  })
+
+  db.on('put', event => console.log('[DB] put', event))
+  db.on('del', event => console.log('[DB] del', event))
+  db.on('batch', event => this.handleBatch_(event))
 }
 
+
+/**
+ * FIXME: handleBatch is not re-entrant (rapid sequence of consecutive store updates)
+ */
+SearchIndex.prototype.handleBatch_ = function (event) {
+  console.log('pushing event...')
+  this.DQ_.push(event)
+}
 
 /**
  * query :: string -> Promise(Query)

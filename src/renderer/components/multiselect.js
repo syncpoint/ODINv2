@@ -23,7 +23,7 @@ import { initialState } from './list-state'
 export const multiselect = {
 
   /**
-   *
+   * Note: New set of entries must not change current selection.
    */
   entries: (state, { entries }) => {
 
@@ -31,8 +31,6 @@ export const multiselect = {
       // Back to square one.
       return initialState
     }
-
-    const selected = state.selected.filter(id => indexOf(entries, id) !== -1)
 
     const focusIndex = state.focusId
       ? indexOf(entries, state.focusId)
@@ -47,7 +45,6 @@ export const multiselect = {
       entries,
       focusIndex,
       focusId,
-      selected,
       scroll: 'auto'
     }
   },

@@ -158,6 +158,7 @@ LayerStore.prototype.updateEntries = async function (entries) {
     value: entry
   }))
 
+  // FIXME: does not return sometimes (queue full?)
   await this.propertiesStore_.batch(operations)
   this.emit('properties', { operations })
 }

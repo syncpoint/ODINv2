@@ -22,11 +22,15 @@ export const singleselect = {
   /**
    *
    */
-  entries: (state, { entries, candidateId }) => {
+  entries: (state, { entries }) => {
 
     if (!entries.length) {
-      // Back to square one.
-      return initialState
+      return {
+        ...state,
+        entries: [],
+        focusIndex: -1,
+        focusId: null
+      }
     }
 
     // Check if focused entry is still available.
@@ -45,7 +49,6 @@ export const singleselect = {
       entries,
       focusIndex,
       focusId,
-      selected: focusId !== null ? [focusId] : [],
       scroll: 'auto'
     }
   },

@@ -18,10 +18,6 @@ export function Lunr (db) {
   Emitter.call(this)
   this.store_ = new Store(db)
 
-  db.on('put', event => console.log('[DB] put', event))
-  db.on('del', event => console.log('[DB] del', event))
-  db.on('batch', event => this.handleBatch_(event))
-
   this.indexes_ = {
     layer: null,
     feature: null
@@ -43,9 +39,9 @@ util.inherits(Lunr, Emitter)
 /**
  *
  */
-Lunr.prototype.handleBatch_ = function (ops) {
+Lunr.prototype.handleBatch = async function (ops) {
   const scopes = R.uniq(ops.map(op => op.key.split(':')[0]))
-  scopes.forEach(scope => this.refreshIndex_(scope))
+  await Promise.all(scopes.map(scope => this.refreshIndex_(scope)))
   this.emit('index/updated')
 }
 
@@ -53,7 +49,7 @@ Lunr.prototype.handleBatch_ = function (ops) {
 /**
  *
  */
-Lunr.prototype.refreshIndex_ = async function (scope) {
+Lunr.prototype.refreshIndex_ = function (scope) {
   return new Promise((resolve) => {
     setTimeout(async () => {
       console.time(`[lunr:${scope}] re-index`)

@@ -18,8 +18,8 @@ const identityTag = R.cond([
  */
 options.feature = async (feature, cache) => {
   const descriptor = MILSTD.descriptor(feature.properties.sidc)
-  const dimensions = (descriptor && descriptor.dimensions) || []
-  const scope = descriptor.scope ? [descriptor.scope] : []
+  const dimensions = descriptor ? descriptor.dimensions : []
+  const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
   const identity = identityTag(MILSTD.identityCode(feature.properties.sidc))
 
   const tags = feature => {

@@ -11,30 +11,42 @@ export const Layers = () => {
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = React.useReducer(reducer(multiselect), initialState)
 
-  const handleSearch = value => setFilter(value)
+  const handleFilterChange = value => setFilter(value)
+  const handleClick = id => ({ metaKey, shiftKey }) => dispatch({ type: 'click', id, shiftKey, metaKey })
 
-  const handleChange = React.useCallback(({ result }) => {
+
+  // >>= QUERY/RESULT
+  // Open new query, dispatch result list and listen for
+  // changes on query result list due to search index updates.
+
+  const handleQueryChange = React.useCallback(({ result }) => {
     (async () => {
       const entries = await result
       dispatch({ type: 'entries', entries })
     })()
-  }, [dispatch])
+  }, [])
 
   React.useEffect(() => {
     const pendingQuery = (async () => {
       const query = await searchIndex.query(`@feature ${filter}`)
-      query.on('change', handleChange)
-      const entries = await query.getResult()
-      dispatch({ type: 'entries', entries })
+      dispatch({ type: 'entries', entries: await query.getResult() })
+      query.on('change', handleQueryChange)
       return query
     })()
 
+    // Release listener and free query resoures.
     return async () => {
       const query = await pendingQuery
-      query.off('change', handleChange)
+      query.off('change', handleQueryChange)
       query.dispose()
     }
-  }, [filter, handleChange, searchIndex])
+  }, [filter, handleQueryChange, searchIndex])
+
+  // <<= QUERY/RESULT
+
+
+  // =>> SELECTION
+  // Sync global selection with list state and vice versa.
 
   const handleSelection = React.useCallback(event => {
     dispatch({ type: 'selection', event })
@@ -49,9 +61,8 @@ export const Layers = () => {
     selection.set(state.selected)
   }, [selection, state.selected])
 
-  const handleClick = id => ({ metaKey, shiftKey }) => {
-    dispatch({ type: 'click', id, shiftKey, metaKey })
-  }
+  // <<= SELECTION
+
 
   const handleRename = value => console.log('handleRename', value)
 
@@ -102,7 +113,7 @@ export const Layers = () => {
       }}
     >
       <div style={{ display: 'flex', padding: '6px' }}>
-        <SearchInput size='large' onSearch={handleSearch}/>
+        <SearchInput size='large' onSearch={handleFilterChange}/>
       </div>
       <div className='list-container'>
         <List

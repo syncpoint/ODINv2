@@ -160,14 +160,15 @@ export const Map = () => {
     })()
   }
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {
     (async () => effect())()
-  })
+  }, [])
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   return <div
     id='map'
     className='map fullscreen'
     tabIndex='0'
-  >
-  </div>
+  />
 }

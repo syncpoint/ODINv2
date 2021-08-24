@@ -16,10 +16,6 @@ export function MiniSearchIndex (db) {
   Emitter.call(this)
   this.store_ = new Store(db)
 
-  db.on('put', event => console.log('[DB] put', event))
-  db.on('del', event => console.log('[DB] del', event))
-  db.on('batch', event => this.handleBatch_(event))
-
   // Cache indexed documents for removal.
   this.cache_ = {}
 
@@ -48,25 +44,27 @@ util.inherits(MiniSearchIndex, Emitter)
 /**
  *
  */
-MiniSearchIndex.prototype.handleBatch_ = async function (ops) {
-  setTimeout(async () => {
-    console.time('[MiniSearch] batch')
+MiniSearchIndex.prototype.handleBatch = async function (ops) {
+  console.time('[MiniSearch] batch')
+  const cache = memoize(this.store_.get.bind(this.store_))
 
-    const cache = memoize(this.store_.get.bind(this.store_))
-    await Promise.all(ops.filter(op => op.type === 'put').map(async op => {
-      const scope = op.key.split(':')[0]
-      this.index_.remove(this.cache_[op.key])
-      this.cache_[op.key] = await documents[scope](op.value, cache)
-      this.index_.add(this.cache_[op.key])
-    }))
+  const updates = ops.filter(op => op.type === 'put')
+  const removals = ops.filter(op => op.type === 'del')
 
-    ops.filter(op => op.type === 'del').forEach(op => {
-      delete this.cache_[op.key]
-    })
+  for (const op of updates) {
+    const scope = op.key.split(':')[0]
+    this.index_.remove(this.cache_[op.key])
+    this.cache_[op.key] = await documents[scope](op.value, cache)
+    this.index_.add(this.cache_[op.key])
+  }
 
-    this.emit('index/updated')
-    console.timeEnd('[MiniSearch] batch')
-  }, 50) // Don't battle with map or whatever about CPU cycles.
+  for (const op of removals) {
+    this.index_.remove(this.cache_[op.key])
+    delete this.cache_[op.key]
+  }
+
+  this.emit('index/updated')
+  console.timeEnd('[MiniSearch] batch')
 }
 
 

@@ -76,7 +76,7 @@ export const CommandPalette = props => {
       return command.description().toLowerCase().includes(filter)
     })
 
-    dispatch({ type: 'entries', entries: commands, reset: false })
+    dispatch({ type: 'entries', entries: commands })
   }, [filter, featuresSnapshot, paletteCommands])
 
   const ref = React.useRef()

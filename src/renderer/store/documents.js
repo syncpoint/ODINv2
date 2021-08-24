@@ -27,8 +27,8 @@ const identity = R.cond([
 documents.feature = async (feature, cache) => {
   const descriptor = MILSTD.descriptor(feature.properties.sidc)
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : []
-  const dimensions = (descriptor && descriptor.dimensions) || []
-  const scope = descriptor.scope ? [descriptor.scope] : []
+  const dimensions = descriptor ? descriptor.dimensions : []
+  const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
   const layer = await cache(layerId(feature.id))
   const { t } = feature.properties
