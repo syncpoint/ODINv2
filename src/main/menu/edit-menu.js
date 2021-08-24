@@ -26,7 +26,8 @@ export default async options => {
         label: 'Undo',
         accelerator: 'CmdOrCtrl+Z',
         click: dispatch(browserWindow => {
-          browserWindow.webContents.undo()
+          // FIXME: remove - webContents.undo() should be conditional (renderer)
+          // browserWindow.webContents.undo()
           send(browserWindow, 'EDIT_UNDO')
         })
       },

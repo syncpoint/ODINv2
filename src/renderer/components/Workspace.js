@@ -41,7 +41,12 @@ export const workspace = projectUUID => {
 
   ipcRenderer.on('EDIT_UNDO', () => {
     // TODO: precondition: check document.activeElement
-    if (undo.canUndo()) undo.undo()
+    console.log('[EDIT_UNDO]', document.activeElement.id)
+    if (document.activeElement.id === 'map') {
+      if (undo.canUndo()) undo.undo()
+    } else {
+      ipcRenderer.send('DO_UNDO')
+    }
   })
 
   ipcRenderer.on('EDIT_REDO', () => {

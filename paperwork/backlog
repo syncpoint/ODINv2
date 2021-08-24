@@ -4,6 +4,7 @@ IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN
+1f53a00e-4970-46f4-a8de-fd85dd8d0743 - fix undo/redo handling (branch undo-handling)
 37e3809e-1e29-4cba-a84a-49bd46b1fe5b - tagging: feature should inherit symbols user tags
 5807cc1f-9348-4397-933b-adffafe2f41f - bug: CMD-B has no effect if search input (or other) has focus
 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy: handle feature.properties.references
