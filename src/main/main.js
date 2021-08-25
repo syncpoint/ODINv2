@@ -71,12 +71,6 @@ const ready = async () => {
     session.openProject(key)
   })
 
-  // TODO: Only forward UNDOs when renderer requested such.
-  ipcMain.on('DO_UNDO', (event) => {
-    const window = event.sender.getOwnerBrowserWindow()
-    window.webContents.undo()
-  })
-
   await session.restore()
   await menu.show()
 }
