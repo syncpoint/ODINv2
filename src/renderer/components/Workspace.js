@@ -39,14 +39,18 @@ export const workspace = projectUUID => {
   const layerStore = new LayerStore(propertiesStore, geometryStore)
   const searchIndex = new SearchIndex(propertiesStore)
 
+  const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
+  const activeElement = () => document.activeElement
+  const inputFocused = () => inputTypes.some(type => (activeElement() instanceof type))
+
   ipcRenderer.on('EDIT_UNDO', () => {
-    // TODO: precondition: check document.activeElement
-    if (undo.canUndo()) undo.undo()
+    if (inputFocused()) ipcRenderer.send('DO_UNDO')
+    else if (undo.canUndo()) undo.undo()
   })
 
   ipcRenderer.on('EDIT_REDO', () => {
-    // TODO: precondition: check document.activeElement
-    if (undo.canRedo()) undo.redo()
+    if (inputFocused()) ipcRenderer.send('DO_REDO')
+    else if (undo.canRedo()) undo.redo()
   })
 
   const dragAndDrop = new DragAndDrop()

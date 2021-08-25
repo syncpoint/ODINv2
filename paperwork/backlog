@@ -108,3 +108,4 @@ DEH - c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE 
 DEH - 1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
 DEH - 35405f37-4175-4527-a4bb-efb90b1ddcd8 (reverted) - (legacy) import: write feature metadata (scope, dimension, identity, hierarchy)
 DEH - 558402a9-6227-44b6-9cf1-3444856e0972 - FTS: minisearch index (https://github.com/lucaong/minisearch)
+DEH - 1f53a00e-4970-46f4-a8de-fd85dd8d0743 - fix undo/redo handling (branch undo-handling)
