@@ -139,7 +139,6 @@ export const Map = () => {
     })
 
     const selectAll = () => {
-      console.log('[Map] selectAll')
       const element = document.activeElement
       const isBody = element => element.nodeName.toLowerCase() === 'body'
       const isMap = element => element.id === 'map'
