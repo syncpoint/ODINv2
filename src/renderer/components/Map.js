@@ -29,7 +29,8 @@ export const Map = () => {
     selection,
     dragAndDrop,
     layerStore,
-    undo
+    undo,
+    emitter
   } = useServices()
 
   const effect = async () => {
@@ -137,7 +138,8 @@ export const Map = () => {
       featureLayer.setOpacity(selected.length ? 0.5 : 1)
     })
 
-    ipcRenderer.on('EDIT_SELECT_ALL', () => {
+    const selectAll = () => {
+      console.log('[Map] selectAll')
       const element = document.activeElement
       const isBody = element => element.nodeName.toLowerCase() === 'body'
       const isMap = element => element.id === 'map'
@@ -146,7 +148,10 @@ export const Map = () => {
 
       const ids = features.getFeatures().map(feature => feature.getId())
       selection.select(ids)
-    })
+    }
+
+    ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
+    emitter.on('command/edit/select-all', selectAll)
 
     // Setup Drag'n Drop.
     ;(() => {

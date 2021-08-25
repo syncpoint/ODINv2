@@ -63,6 +63,7 @@
     "milsymbol": "^2.0.0",
     "minisearch": "^3.0.4",
     "mousetrap": "^1.6.5",
+    "mousetrap-global-bind": "^1.1.0",
     "ol": "^6.6.1",
     "path-to-regexp": "^6.2.0",
     "proj4": "^2.7.4",

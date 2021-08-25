@@ -30,7 +30,7 @@ const send = (browserWindow, command) => browserWindow.webContents.send(command)
   is capable of processing undo/redo.
 */
 
-// Only forward UNDO/REDO when renderer requested such.
+// Only forward UNDO/REDO to webContents when renderer requested such.
 
 ipcMain.on('DO_UNDO', (event) => {
   const window = event.sender.getOwnerBrowserWindow()
@@ -44,8 +44,6 @@ ipcMain.on('DO_REDO', (event) => {
 
 
 export default async options => {
-  const platform = options.platform || process.platform
-
   return {
     label: 'Edit',
     submenu: [
@@ -66,6 +64,13 @@ export default async options => {
       { role: 'delete' },
       {
         label: 'Select All',
+
+        // CTRL-A shortcut on Windows platform has only an effect
+        // for active input elements. EDIT_SELECT_ALL will not be send
+        // when menu is invoked by shortcut.
+        // Selecting menu entry with mouse does though.
+        // We also use Mousetrap binding in renderer to get around this.
+
         accelerator: 'CmdOrCtrl+A',
         click: dispatch(browserWindow => {
           browserWindow.webContents.selectAll()

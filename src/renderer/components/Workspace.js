@@ -11,7 +11,7 @@ import { Sources, PaletteCommands } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
-import { CommandRegistry } from '../commands/CommandRegistry'
+import { bindings } from '../commands/bindings'
 import { Map } from './Map'
 import { CommandPalette, Layers } from '.'
 import { useServices, ServiceProvider } from './services'
@@ -74,8 +74,10 @@ export const workspace = projectUUID => {
   services.dragAndDrop = dragAndDrop
   services.layerStore = layerStore
   services.searchIndex = searchIndex
-  services.commandRegistry = new CommandRegistry(services)
   services.paletteCommands = new PaletteCommands(layerStore, undo)
+
+  // Key bindings.
+  bindings(services.emitter)
 
   return (
     <ServiceProvider { ...services }>
@@ -105,14 +107,13 @@ export const Workspace = () => {
     const handleCommand = event => {
       switch (event.type) {
         case 'open-command-palette': return setShowing({ ...showing, spotlight: true })
-        case 'close-command-palette': return setShowing({ ...showing, spotlight: false })
         case 'toggle-sidebar': return setShowing({ ...showing, sidebar: !showing.sidebar })
       }
     }
 
     emitter.on('command/:type', handleCommand)
     return () => emitter.off('command/:type', handleCommand)
-  }, [showing])
+  }, [emitter, showing])
 
   const spotlight = showing.spotlight &&
     <CommandPalette
