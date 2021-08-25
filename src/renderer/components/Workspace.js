@@ -32,9 +32,6 @@ export const workspace = projectUUID => {
   const db = levelup(leveldown(location))
 
   const propertiesStore = propertyPartition(db)
-  db.on('batch', event => console.log('[db]', event))
-  propertiesStore.on('batch', event => console.log('[propertiesStore]', event))
-
   const geometryStore = geometryPartition(db)
   const layerStore = new LayerStore(propertiesStore, geometryStore)
   const searchIndex = new SearchIndex(propertiesStore)

@@ -1,6 +1,7 @@
-//import { Lunr as Index } from './Lunr'
+import util from 'util'
+import Emitter from '../../shared/emitter'
+// import { Lunr as Index } from './Lunr'
 import { MiniSearchIndex as Index } from './MiniSearch'
-import { DebouncingQueue } from './DebouncingQueue'
 import { Query } from './Query'
 
 
@@ -11,27 +12,34 @@ import { Query } from './Query'
  * @constructor
  */
 export function SearchIndex (db) {
+  Emitter.call(this)
   this.index_ = new Index(db)
-
-  const timeout = 50 // ms
-  const size = 32 // events
-  this.DQ_ = new DebouncingQueue(timeout, size)
-
-  this.DQ_.on('data', ({ data }) => {
-    this.index_.handleBatch(data.flat())
-  })
 
   db.on('put', event => console.log('[DB] put', event))
   db.on('del', event => console.log('[DB] del', event))
-  db.on('batch', event => this.handleBatch_(event))
+  db.on('batch', event => setImmediate(() => this.handleBatch_(event)))
 }
+
+util.inherits(SearchIndex, Emitter)
 
 
 /**
- * FIXME: handleBatch is not re-entrant (rapid sequence of consecutive store updates)
+ *
  */
-SearchIndex.prototype.handleBatch_ = function (event) {
-  this.DQ_.push(event)
+SearchIndex.prototype.handleBatch_ = async function (event) {
+  if (this.busy_) {
+    this.queue_ = this.queue_ || []
+    this.queue_.push(event)
+    return
+  }
+
+  this.busy_ = true
+  this.queue_ = []
+  await this.index_.handleBatch(event)
+  this.busy_ = false
+
+  if (this.queue_.length) await this.handleBatch_(this.queue_.flat())
+  this.emit('index/updated')
 }
 
 /**
@@ -40,9 +48,13 @@ SearchIndex.prototype.handleBatch_ = function (event) {
 SearchIndex.prototype.query = function (terms) {
   return new Promise((resolve) => {
     const index = this.index_
-    if (index.ready()) resolve(new Query(index, terms))
+    if (index.ready()) resolve(new Query(this, terms))
     else {
       index.once('ready', () => resolve(new Query(index, terms)))
     }
   })
+}
+
+SearchIndex.prototype.search = function (query) {
+  return this.index_.search(query)
 }

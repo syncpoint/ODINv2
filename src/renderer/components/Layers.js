@@ -20,16 +20,13 @@ export const Layers = () => {
   // changes on query result list due to search index updates.
 
   const handleQueryChange = React.useCallback(({ result }) => {
-    (async () => {
-      const entries = await result
-      dispatch({ type: 'entries', entries })
-    })()
+    dispatch({ type: 'entries', entries: result })
   }, [])
 
   React.useEffect(() => {
     const pendingQuery = (async () => {
       const query = await searchIndex.query(`@feature ${filter}`)
-      dispatch({ type: 'entries', entries: await query.getResult() })
+      dispatch({ type: 'entries', entries: query.getResult() })
       query.on('change', handleQueryChange)
       return query
     })()

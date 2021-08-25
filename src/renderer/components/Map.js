@@ -1,7 +1,7 @@
 import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
-import { OSM } from 'ol/source'
+import { OSM, XYZ } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import ScaleLine from 'ol/control/ScaleLine'
@@ -50,8 +50,13 @@ export const Map = () => {
     const featureLayer = vectorLayer(partition.getDeselected())
     const selectedLayer = vectorLayer(partition.getSelected())
 
+    // http://localhost:8000/services
+    // http://localhost:8000/services/omk50_33
+    // http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg
+
     const layers = [
       new TileLayer({ source: new OSM() }),
+      // new TileLayer({ source: new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' }) }),
       featureLayer,
       selectedLayer
     ]

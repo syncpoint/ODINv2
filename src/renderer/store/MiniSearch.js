@@ -40,12 +40,10 @@ export function MiniSearchIndex (db) {
 
 util.inherits(MiniSearchIndex, Emitter)
 
-
 /**
  *
  */
 MiniSearchIndex.prototype.handleBatch = async function (ops) {
-  console.time('[MiniSearch] batch')
   const cache = memoize(this.store_.get.bind(this.store_))
 
   const updates = ops.filter(op => op.type === 'put')
@@ -62,9 +60,6 @@ MiniSearchIndex.prototype.handleBatch = async function (ops) {
     this.index_.remove(this.cache_[op.key])
     delete this.cache_[op.key]
   }
-
-  this.emit('index/updated')
-  console.timeEnd('[MiniSearch] batch')
 }
 
 
@@ -72,8 +67,6 @@ MiniSearchIndex.prototype.handleBatch = async function (ops) {
  *
  */
 MiniSearchIndex.prototype.refreshIndex_ = async function () {
-  console.time('[MiniSearch] re-index')
-
   const entries = await this.store_.entries()
   const cache = memoize(this.store_.get.bind(this.store_))
   const docs = await Promise.all(Object.values(entries)
@@ -82,10 +75,7 @@ MiniSearchIndex.prototype.refreshIndex_ = async function () {
   )
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
-
   this.index_.addAll(docs)
-  this.emit('index/updated')
-  console.timeEnd('[MiniSearch] re-index')
 }
 
 
