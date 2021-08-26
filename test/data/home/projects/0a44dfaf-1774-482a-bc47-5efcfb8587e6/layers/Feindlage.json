@@ -1,1 +1,336 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"GeometryCollection","geometries":[{"type":"LineString","coordinates":[[15.581754247544273,46.75060062695462],[15.603549737449999,46.73425131128184]]},{"type":"Point","coordinates":[15.579011940272983,46.748872645960745]}]},"properties":{"sidc":"GHGPOLAGS-*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"AngrPfeil Obervogau"},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/e9697da0-f7c7-4c80-847f-4d4b6dee8745"},{"type":"Feature","geometry":{"type":"GeometryCollection","geometries":[{"type":"LineString","coordinates":[[15.60710542505469,46.76464948695147],[15.622879599267415,46.75186327563759]]},{"type":"Point","coordinates":[15.604269737449757,46.76299697479226]}]},"properties":{"sidc":"GHGPOLAGS-*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"AngrPfeil Wagendorf"},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/e0d58f69-81dd-45f0-bd30-4e27c6682eff"},{"type":"Feature","geometry":{"type":"GeometryCollection","geometries":[{"type":"LineString","coordinates":[[15.657225870917534,46.770134256412604],[15.66733185038204,46.75653604409021]]},{"type":"Point","coordinates":[15.654862090427669,46.769304641126325]}]},"properties":{"sidc":"GHGPOLAGS-*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"AngrPfeil Lipsch"},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/028dac84-d429-4eda-aa9f-02cfdac57e95"},{"type":"Feature","geometry":{"type":"Point","coordinates":[15.656442464637076,46.77337309586207]},"properties":{"sidc":"SHGPUCIZ--*E***","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"PzGrenKp Lipsch","f":"(+)","n":"ENY","t":"","m":""},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb"},{"type":"Feature","geometry":{"type":"Point","coordinates":[15.5786402553457,46.75248022123316]},"properties":{"sidc":"SHGPUCIZ--*F***","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"PzGrenBn Obervogau","f":"(±)","n":"ENY","t":"","m":""},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/22b5187b-e14f-4c4d-a3c5-87bd3dd5ea06"},{"type":"Feature","geometry":{"type":"Point","coordinates":[15.5758789012968,46.80845889378824]},"properties":{"sidc":"SHGPUCIZ--*F***","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"PzGrenBn Untergralla","f":"(±)","n":"ENY","w":"0830B","t":"","m":"","g":""},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/1954d633-f979-47b5-ace7-c226ab6ab3ba"},{"type":"Feature","geometry":{"type":"Point","coordinates":[15.606167469507806,46.7654746441068]},"properties":{"sidc":"SHGPUCA---*F***","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"PzB Landscha","f":"(+)","n":"ENY","t":"","m":""},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/b3948d07-d098-4ad4-ad52-eb283c7d3cfe"},{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[15.638291288548684,46.7382448474346],[15.647038517632758,46.737984205082284],[15.650352685173928,46.738207612889966],[15.651221975020793,46.7397342081357],[15.651221975020793,46.742377722062315],[15.649863709635067,46.743382967989476],[15.647201509479046,46.74382973794053],[15.644267656245878,46.744015890994035],[15.640355851934988,46.74412758251762],[15.636661370085815,46.74394142984977],[15.635194443469231,46.74353189171785],[15.634379484237796,46.742191563352236],[15.635303104700089,46.73902676693223],[15.638291288548684,46.7382448474346]]]},"properties":{"sidc":"GHGPGAG---*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","w":"0845","name":"Rm Gaßl"},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/119a844b-4a95-45a2-b7bf-08a8bef1c698"},{"type":"Feature","geometry":{"type":"LineString","coordinates":[[15.561677802092738,46.82068398056285],[15.567283499146976,46.81122129030928],[15.572291255182089,46.79587284762624]]},"properties":{"sidc":"GHGPOLKGS-*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","w":"0830","name":"AngrPfeil Untergralla","w1":""},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/f61ca8b8-cd12-4740-b5ed-62e26ecfb696"},{"type":"Feature","geometry":{"type":"Point","coordinates":[15.704484120499506,46.75736320979894]},"properties":{"sidc":"SHGPEVAT--*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"KPz Rm Stangdorf","c":"3"},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/dedaa40a-c8ea-4e6a-86e6-b6edfa8fee28"},{"type":"Feature","geometry":{"type":"Point","coordinates":[15.709294366102412,46.80300935658744]},"properties":{"sidc":"SUGPE-----*****","layerId":"layer:95edaaad-3ba5-4148-9e15-c658387489f7","name":"Fd fraglich","t":"???"},"id":"feature:95edaaad-3ba5-4148-9e15-c658387489f7/9c8eb930-77eb-467c-b083-bec8d5771f61"}]}
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "LineString",
+            "coordinates": [
+              [
+                15.581754247544273,
+                46.75060062695462
+              ],
+              [
+                15.603549737449999,
+                46.73425131128184
+              ]
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              15.579011940272983,
+              46.748872645960745
+            ]
+          }
+        ]
+      },
+      "properties": {
+        "sidc": "GHGPOLAGS-*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "AngrPfeil Obervogau"
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/e9697da0-f7c7-4c80-847f-4d4b6dee8745"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "LineString",
+            "coordinates": [
+              [
+                15.60710542505469,
+                46.76464948695147
+              ],
+              [
+                15.622879599267415,
+                46.75186327563759
+              ]
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              15.604269737449757,
+              46.76299697479226
+            ]
+          }
+        ]
+      },
+      "properties": {
+        "sidc": "GHGPOLAGS-*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "AngrPfeil Wagendorf"
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/e0d58f69-81dd-45f0-bd30-4e27c6682eff"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "LineString",
+            "coordinates": [
+              [
+                15.657225870917534,
+                46.770134256412604
+              ],
+              [
+                15.66733185038204,
+                46.75653604409021
+              ]
+            ]
+          },
+          {
+            "type": "Point",
+            "coordinates": [
+              15.654862090427669,
+              46.769304641126325
+            ]
+          }
+        ]
+      },
+      "properties": {
+        "sidc": "GHGPOLAGS-*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "AngrPfeil Lipsch"
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/028dac84-d429-4eda-aa9f-02cfdac57e95"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.656442464637076,
+          46.77337309586207
+        ]
+      },
+      "properties": {
+        "sidc": "SHGPUCIZ--*E***",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "PzGrenKp Lipsch",
+        "f": "(+)",
+        "n": "ENY",
+        "t": "",
+        "m": ""
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.5786402553457,
+          46.75248022123316
+        ]
+      },
+      "properties": {
+        "sidc": "SHGPUCIZ--*F***",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "PzGrenBn Obervogau",
+        "f": "(±)",
+        "n": "ENY",
+        "t": "",
+        "m": ""
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/22b5187b-e14f-4c4d-a3c5-87bd3dd5ea06"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.5758789012968,
+          46.80845889378824
+        ]
+      },
+      "properties": {
+        "sidc": "SHGPUCIZ--*F***",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "PzGrenBn Untergralla",
+        "f": "(±)",
+        "n": "ENY",
+        "w": "0830B",
+        "t": "",
+        "m": "",
+        "g": ""
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/1954d633-f979-47b5-ace7-c226ab6ab3ba"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.606167469507806,
+          46.7654746441068
+        ]
+      },
+      "properties": {
+        "sidc": "SHGPUCA---*F***",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "PzB Landscha",
+        "f": "(+)",
+        "n": "ENY",
+        "t": "",
+        "m": ""
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/b3948d07-d098-4ad4-ad52-eb283c7d3cfe"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.638291288548684,
+              46.7382448474346
+            ],
+            [
+              15.647038517632758,
+              46.737984205082284
+            ],
+            [
+              15.650352685173928,
+              46.738207612889966
+            ],
+            [
+              15.651221975020793,
+              46.7397342081357
+            ],
+            [
+              15.651221975020793,
+              46.742377722062315
+            ],
+            [
+              15.649863709635067,
+              46.743382967989476
+            ],
+            [
+              15.647201509479046,
+              46.74382973794053
+            ],
+            [
+              15.644267656245878,
+              46.744015890994035
+            ],
+            [
+              15.640355851934988,
+              46.74412758251762
+            ],
+            [
+              15.636661370085815,
+              46.74394142984977
+            ],
+            [
+              15.635194443469231,
+              46.74353189171785
+            ],
+            [
+              15.634379484237796,
+              46.742191563352236
+            ],
+            [
+              15.635303104700089,
+              46.73902676693223
+            ],
+            [
+              15.638291288548684,
+              46.7382448474346
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "sidc": "GHGPGAG---*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "w": "0845",
+        "name": "Rm Gaßl"
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/119a844b-4a95-45a2-b7bf-08a8bef1c698"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            15.561677802092738,
+            46.82068398056285
+          ],
+          [
+            15.567283499146976,
+            46.81122129030928
+          ],
+          [
+            15.572291255182089,
+            46.79587284762624
+          ]
+        ]
+      },
+      "properties": {
+        "sidc": "GHGPOLKGS-*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "w": "0830",
+        "name": "AngrPfeil Untergralla",
+        "w1": ""
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/f61ca8b8-cd12-4740-b5ed-62e26ecfb696"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.704484120499506,
+          46.75736320979894
+        ]
+      },
+      "properties": {
+        "sidc": "SHGPEVAT--*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "KPz Rm Stangdorf",
+        "c": "3"
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/dedaa40a-c8ea-4e6a-86e6-b6edfa8fee28"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.709294366102412,
+          46.80300935658744
+        ]
+      },
+      "properties": {
+        "sidc": "SUGPE-----*****",
+        "layerId": "layer:95edaaad-3ba5-4148-9e15-c658387489f7",
+        "name": "Fd fraglich",
+        "t": "???",
+        "references": [
+          {
+            "id": "8322aef5-6a0e-4a51-963b-bc051f6aef8d",
+            "name": "2Q - Johnson, Shasha.pdf",
+            "url": "file:///Users/dehmer/Documents/papers/2Q%20-%20Johnson,%20Shasha.pdf"
+          },
+          {
+            "id": "1a2aaf6e-e5d3-442b-ab87-378da230c8c5",
+            "name": "https://www.uuidgenerator.net",
+            "url": "https://www.uuidgenerator.net/"
+          }
+        ]
+      },
+      "id": "feature:95edaaad-3ba5-4148-9e15-c658387489f7/9c8eb930-77eb-467c-b083-bec8d5771f61"
+    }
+  ]
+}

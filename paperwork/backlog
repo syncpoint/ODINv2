@@ -2,8 +2,6 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 5866c153-2b5e-4857-b5a1-687eec525069 - legacy import: handle title/name, t
-DEH - 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy import: handle feature.properties.references
 
 OPEN
 d7ac2ac9-fb91-47d8-ab14-a976c2b32998 - check out: https://github.com/wellyshen/react-cool-virtual#dynamic-size
@@ -116,3 +114,6 @@ DEH - 5807cc1f-9348-4397-933b-adffafe2f41f - bug: CMD-B has no effect if search 
 DEH - b63155f5-cd3a-4285-9fc3-c9a00e7565f5 - MiniSearch index: possible filter race condition
 DEH - b2b56b88-b139-438c-a154-35293a686172 - Layers: Display 'N/A' placeholder if Option name is not defined
 DEH - 8de646bf-dd36-464c-aa67-e1eec2302d85 - bug/layer list: start-up issue (race condition)
+DEH - 5866c153-2b5e-4857-b5a1-687eec525069 - legacy import: handle title/name, t
+DEH - 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy import: handle feature.properties.references (aka links)
+DEH - fe87d634-35d0-4910-98b6-1e58d25b5ab2 - layer/list: decrease title font size

@@ -112,11 +112,7 @@ PropertiesStore.prototype.removeTag = function (id, name) {
 
 PropertiesStore.prototype.rename = async function (id, value) {
   const oldProperties = await this.level_.get(id)
-
-  // TODO: 5866c153-2b5e-4857-b5a1-687eec525069 - legacy import: handle title/name, t
-  const newProperties = isFeatureId(id)
-    ? { ...oldProperties, properties: { ...oldProperties.properties, t: value } }
-    : { ...oldProperties, name: value }
+  const newProperties = { ...oldProperties, name: value }
   const command = this.commands_.updateProperties(oldProperties, newProperties)
   this.undo_.apply(command)
 }

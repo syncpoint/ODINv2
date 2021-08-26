@@ -35,14 +35,14 @@ options.feature = async (feature, cache) => {
   }
 
   const layer = await cache(layerId(feature.id))
-  const { properties } = feature
-  const { sidc, t } = properties
+  const { properties, name } = feature
+  const { sidc } = properties
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
   const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
 
   return {
     id: feature.id,
-    title: t, // might be undefined
+    title: name, // might be undefined
     description,
     url: MILSTD.url(sidc),
     tags: tags(feature, sidc),
@@ -81,6 +81,26 @@ options.layer = layer => {
     description: layer.type === 'socket' ? layer.url : null,
     tags: tags(layer),
     capabilities: 'RENAME|TAG|DROP',
+    actions: 'PRIMARY:panto'
+  }
+}
+
+
+/**
+ * link:
+ */
+options.link = async (link, cache) => {
+  const container = await cache(link.ref)
+  const containerName = container.name
+
+  return {
+    id: link.id,
+    title: link.name + ' ⏤ ' + containerName,
+    tags: [
+      'SCOPE:LINK:NONE',
+      ...(link.tags || []).map(label => `USER:${label}:NONE`)
+    ].join(' '),
+    capabilities: 'TAG',
     actions: 'PRIMARY:panto'
   }
 }

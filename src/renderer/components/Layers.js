@@ -9,7 +9,7 @@ import { initialState, multiselect } from './list-state'
  */
 export const Layers = () => {
   const { searchIndex, selection, propertiesStore } = useServices()
-  const [scope, setScope] = React.useState('layer')
+  const [scope, setScope] = React.useState('feature')
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = React.useReducer(reducer(multiselect), initialState)
 
@@ -41,7 +41,6 @@ export const Layers = () => {
 
     // Release listener and free query resoures.
     return async () => {
-      console.log('[Layers] disposing query')
       const query = await pendingQuery
       query.off('change', handleQueryChange)
       query.dispose()

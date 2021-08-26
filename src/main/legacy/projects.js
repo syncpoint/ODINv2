@@ -7,6 +7,7 @@ import * as io from './io'
  * [project UUID -> project]
  * project: {
  *   layers,
+ *   links,
  *   metadata,
  *   preferences
  * }
@@ -16,17 +17,19 @@ export const readProjects = async location => {
 
   return uuids.reduce(async (acc, uuid) => {
     const layerNames = await io.readLayers(location, uuid)
-    const layers = layerNames.reduce(async (acc, layer) => {
-      const { id, features } = await io.readLayer(location, uuid, layer)
-      const layers = await acc
-      layers.push({ id, name: layer, features })
-      return layers
-    }, [])
+    const [layers, links] = await layerNames.reduce(async (acc, layer) => {
+      const { id, features, links } = await io.readLayer(location, uuid, layer)
+      const [layerList, linkList] = await acc
+      layerList.push({ id, name: layer, features })
+      linkList.push(...links)
+      return acc
+    }, [[], []])
 
     const projects = await acc
     projects.push({
       id: `project:${uuid}`,
-      layers: await layers,
+      layers,
+      links,
       metadata: await io.readMetadata(location, uuid),
       preferences: await io.readPreferences(location, uuid)
     })

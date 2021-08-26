@@ -3,7 +3,7 @@ import levelup from 'levelup'
 import leveldown from 'leveldown'
 import { readSources } from './io'
 import { readProjects } from './projects'
-import { propertyPartition, geometryPartition } from '../../shared/stores'
+import { propertiesPartition, geometryPartition } from '../../shared/stores'
 
 
 /**
@@ -15,16 +15,23 @@ import { propertyPartition, geometryPartition } from '../../shared/stores'
  * @param {*} project project to transfer
  */
 export const transferProject = async (db, project) => {
-  const { layers } = project
-  const properties = propertyPartition(db)
+  const { layers, links } = project
+  const properties = propertiesPartition(db)
   const geometries = geometryPartition(db)
 
+  // Layers.
   {
-    const op = layer => ({ type: 'put', key: layer.id, value: { id: layer.id, name: layer.name } })
+    const op = layer => ({
+      type: 'put',
+      key: layer.id,
+      value: { id: layer.id, name: layer.name }
+    })
+
     const batch = layers.map(op)
     await properties.batch(batch)
   }
 
+  // Feature properties.
   {
     const op = feature => ({
       type: 'put',
@@ -36,6 +43,19 @@ export const transferProject = async (db, project) => {
     await properties.batch(batch)
   }
 
+  // (Feature) links.
+  {
+    const op = link => ({
+      type: 'put',
+      key: link.id,
+      value: link
+    })
+
+    const batch = links.map(op)
+    await properties.batch(batch)
+  }
+
+  // Feature geometries.
   {
     const op = feature => ({
       type: 'put',

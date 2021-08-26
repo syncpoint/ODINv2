@@ -4,9 +4,13 @@ import PropTypes from 'prop-types'
 /**
  *
  */
-export const CardTitle = props => {
+export const CardTitle = React.memo(props => {
   const [value, setValue] = React.useState(props.value)
   const handleChange = ({ target }) => setValue(target.value)
+
+  React.useEffect(() => {
+    setValue(props.value)
+  }, [props.value])
 
   const handleBlur = () => {
     if (props.value === value) return
@@ -26,7 +30,7 @@ export const CardTitle = props => {
     onBlur={handleBlur}
     onKeyDown={handleKeyDown}
   />
-}
+})
 
 CardTitle.propTypes = {
   value: PropTypes.string,

@@ -170,13 +170,42 @@ export const readLayer = async (location, projectUUID, layer) => {
     ? R.head(layerIds)
     : `layer:${uuid()}` // no features or layer id is ambiguous
 
+  const links = json.features.reduce((acc, feature) => {
+    if (!feature.properties.references) return acc
+    else {
+      return feature.properties.references.reduce((acc, reference) => {
+        acc.push({
+          id: `link:${reference.id}`,
+          name: reference.name,
+          url: reference.url,
+          ref: feature.id
+        })
+
+        return acc
+      }, acc)
+    }
+  }, [])
+
   const features = json.features.map(feature => {
     // Reproject geometry to Web Mercator:
     feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
-    if (feature.properties.locked) { feature.locked = true; delete feature.properties.locked }
-    if (feature.properties.hidden) { feature.hidden = true; delete feature.properties.hidden }
+
+    // Move some properties from properties to feature scope.
+    ;['name', 'hidden', 'locked'].forEach(name => {
+      if (feature.properties[name]) {
+        feature[name] = feature.properties[name]
+        delete feature.properties[name]
+      }
+    })
+
+    // Handle referenes/links.
+    if (feature.properties.references) {
+      feature.links = feature.properties.references.map(reference => `link:${reference.id}`)
+      delete feature.properties.references
+    }
+
     return feature
   })
 
-  return { id: layerId, name: layer, features }
+  return { id: layerId, name: layer, features, links }
 }

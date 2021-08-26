@@ -70,3 +70,14 @@ documents.layer = layer => {
     ]
   }
 }
+
+
+/**
+ *
+ */
+documents.link = link => ({
+  id: link.id,
+  scope: 'link',
+  text: link.name,
+  tags: link.tags
+})
