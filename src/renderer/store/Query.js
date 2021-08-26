@@ -3,7 +3,7 @@ import Emitter from '../../shared/emitter'
 
 /**
  * @constructor
- * @fires change { result }
+ * @fires change { result: Promise[Option] }
  */
 export function Query (index, terms) {
   Emitter.call(this)
@@ -22,13 +22,16 @@ util.inherits(Query, Emitter)
  */
 Query.prototype.refresh_ = async function () {
   // TODO: d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
-  this.result_ = await this.index_.search(this.terms_)
+  this.result_ = this.index_.search(this.terms_)
+
+  // Store Promise, but wait for result befor emitting change event.
+  await this.result_
   this.emit('change', { result: this.result_ })
 }
 
 
 /**
- *
+ * getResult :: () => Promise([Option])
  */
 Query.prototype.getResult = function () {
   return this.result_

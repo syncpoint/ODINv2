@@ -8,5 +8,5 @@ export const CardDescription = React.memo(props => {
 })
 
 CardDescription.propTypes = {
-  value: PropTypes.string.isRequired
+  value: PropTypes.string
 }

@@ -7,11 +7,8 @@ DEH - 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy import: handle feature.prope
 
 OPEN
 d7ac2ac9-fb91-47d8-ab14-a976c2b32998 - check out: https://github.com/wellyshen/react-cool-virtual#dynamic-size
-8de646bf-dd36-464c-aa67-e1eec2302d85 - bug/layer list: start-up issue (race condition)
 d6802e39-ee47-49b6-81dd-427026bb0950 - performance: checkout TerserPlugin/WebPack
 d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
-b2b56b88-b139-438c-a154-35293a686172 - Layers: Display 'N/A' placeholder if Option name is not defined
-37e3809e-1e29-4cba-a84a-49bd46b1fe5b - tagging: feature should inherit symbols user tags
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
 46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
@@ -47,6 +44,7 @@ DEFERRED
 c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
 efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
 da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
+37e3809e-1e29-4cba-a84a-49bd46b1fe5b - tagging: feature should inherit symbols user tags
 
 IDEAS/EPICS
 42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
@@ -117,3 +115,4 @@ DEH - 91f8fe8b-16f6-40c1-b603-1786bad8e579 - CTRL-A: mousetrap, SelectAll-Comman
 DEH - 5807cc1f-9348-4397-933b-adffafe2f41f - bug: CMD-B has no effect if search input (or other) has focus
 DEH - b63155f5-cd3a-4285-9fc3-c9a00e7565f5 - MiniSearch index: possible filter race condition
 DEH - b2b56b88-b139-438c-a154-35293a686172 - Layers: Display 'N/A' placeholder if Option name is not defined
+DEH - 8de646bf-dd36-464c-aa67-e1eec2302d85 - bug/layer list: start-up issue (race condition)
