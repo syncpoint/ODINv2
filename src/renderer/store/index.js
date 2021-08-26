@@ -1,4 +1,5 @@
 export { SessionStore } from './SessionStore'
+export { PropertiesStore } from './PropertiesStore'
 export { LayerStore } from './LayerStore'
 export { ProjectStore } from './ProjectStore'
 export { SearchIndex } from './SearchIndex'

@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
-import { Tag } from './Tag'
-import { TagIcon } from './TagIcon'
+import Tag from './Tag'
+import TagIcon from './TagIcon'
 
 export const TagList = React.memo(props => {
   const { id, tags } = props
@@ -10,10 +10,13 @@ export const TagList = React.memo(props => {
   const [inputValue, setInputValue] = React.useState('')
   const inputRef = React.createRef()
 
-  const handleClose = tag => () => {
-  }
+  const handleClose = tag => () => props.onRemove && props.onRemove(tag)
 
-  const handleClick = () => {
+  const handleClick = event => {
+
+    // Don't let bubble up and interfere with current selection.
+    event.stopPropagation()
+
     setInputValue('')
     setInputVisible(true)
   }
@@ -21,7 +24,7 @@ export const TagList = React.memo(props => {
   const handleBlur = () => {
     setInputVisible(false)
     if (!inputValue) return
-    // emitter.emit(`${id}/tag/add`, { tag: inputValue })
+    props.onAdd && props.onAdd(inputValue.toLowerCase())
   }
 
   const handleKeyDown = event => {
@@ -37,6 +40,7 @@ export const TagList = React.memo(props => {
         break
       }
       case 'a': {
+        // TODO: cmdOrCtrl
         if (event.metaKey) event.stopPropagation()
         break
       }
@@ -56,6 +60,7 @@ export const TagList = React.memo(props => {
         variant={variant}
         action={action}
         label={label}
+        onClose={handleClose(label)}
         capabilities={props.capabilities}
       >
         {
@@ -96,5 +101,7 @@ export const TagList = React.memo(props => {
 TagList.propTypes = {
   id: PropTypes.string.isRequired,
   tags: PropTypes.string.isRequired,
-  capabilities: PropTypes.string.isRequired
+  capabilities: PropTypes.string.isRequired,
+  onAdd: PropTypes.func,
+  onRemove: PropTypes.func
 }

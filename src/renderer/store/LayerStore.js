@@ -1,57 +1,83 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
 import { writeGeometryObject } from './format'
+import { compositeCommand } from './store-common'
+
+
+/**
+ *
+ */
+const putLayer = function (layer) {
+  return {
+    apply: () => this.putLayer(layer),
+    inverse: () => this.commands.deleteLayer(layer.id)
+  }
+}
+
+
+/**
+ *
+ */
+const importLayers = function (layers) {
+  return compositeCommand(layers.map(this.commands.putLayer))
+}
+
+
+/**
+ *
+ */
+const deleteLayer = async function (layerId) {
+  const layer = {
+    ...await this.getFeatures(layerId),
+    ...await this.propertiesLevel_.get(layerId)
+  }
+
+  return {
+    apply: () => this.deleteLayer(layerId),
+    inverse: () => this.commands.putLayer(layer)
+  }
+}
+
+
+/**
+ *
+ */
+const updateGeometries = function (oldGeometries, newGeometries) {
+  return {
+    apply: () => this.updateGeometries(newGeometries),
+    inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
+  }
+}
+
+
+/**
+ *
+ */
+const updateEntries = function (entries, updatedEntries) {
+  return {
+    apply: () => this.updateEntries(updatedEntries),
+    inverse: () => this.commands.updateEntries(updatedEntries, entries)
+  }
+}
 
 
 /**
  * @constructor
- * @param {*} db project database.
+ * @param {LevelUp} propertiesLevel properties database.
+ * @param {LevelUp} geometryLevel geometry database.
  */
-export function LayerStore (propertiesStore, geometryStore) {
+export function LayerStore (propertiesLevel, geometryLevel) {
   Emitter.call(this)
 
+  this.propertiesLevel_ = propertiesLevel
+  this.geometryLevel_ = geometryLevel
+
   this.commands = {}
-  this.propertiesStore_ = propertiesStore
-  this.geometryStore_ = geometryStore
-
-  this.commands.composite = async commands => {
-    const resolved = await Promise.all(commands)
-    return {
-      apply: () => Promise.all(resolved.map(command => command.apply())),
-      inverse: () => this.commands.composite(resolved.reverse().map(command => command.inverse()))
-    }
-  }
-
-  this.commands.importLayers = layers => {
-    return this.commands.composite(layers.map(this.commands.putLayer))
-  }
-
-  this.commands.putLayer = layer => ({
-    apply: () => this.putLayer(layer),
-    inverse: () => this.commands.deleteLayer(layer.id)
-  })
-
-  this.commands.deleteLayer = async (layerId) => {
-    const layer = {
-      ...await this.getFeatures(layerId),
-      ...await this.propertiesStore_.get(layerId)
-    }
-
-    return {
-      apply: () => this.deleteLayer(layerId),
-      inverse: () => this.commands.putLayer(layer)
-    }
-  }
-
-  this.commands.updateGeometries = (oldGeometries, newGeometries) => ({
-    apply: () => this.updateGeometries(newGeometries),
-    inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
-  })
-
-  this.commands.updateEntries = (entries, updatedEntries) => ({
-    apply: () => this.updateEntries(updatedEntries),
-    inverse: () => this.commands.updateEntries(updatedEntries, entries)
-  })
+  this.commands.putLayer = putLayer.bind(this)
+  this.commands.importLayers = importLayers.bind(this)
+  this.commands.deleteLayer = deleteLayer.bind(this)
+  this.commands.updateGeometries = updateGeometries.bind(this)
+  this.commands.updateEntries = updateEntries.bind(this)
 }
 
 util.inherits(LayerStore, Emitter)
@@ -76,7 +102,7 @@ LayerStore.prototype.featureProperties = function (layerId) {
       ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
       : { keys: true, values: true }
 
-    this.propertiesStore_.createReadStream(options)
+    this.propertiesLevel_.createReadStream(options)
       .on('data', ({ key, value }) => (acc[key] = value))
       .on('error', reject)
       .on('end', () => resolve(acc))
@@ -101,7 +127,7 @@ LayerStore.prototype.featuerGeometries = function (layerId) {
       ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
       : { keys: true, values: true }
 
-    this.geometryStore_.createReadStream(options)
+    this.geometryLevel_.createReadStream(options)
       .on('data', ({ key, value }) => (acc[key] = value))
       .on('error', reject)
       .on('end', () => resolve(acc))
@@ -144,7 +170,7 @@ LayerStore.prototype.getFeatures = async function (layerId) {
  *
  */
 LayerStore.prototype.getEntry = function (id) {
-  return this.propertiesStore_.get(id)
+  return this.propertiesLevel_.get(id)
 }
 
 
@@ -158,23 +184,22 @@ LayerStore.prototype.updateEntries = async function (entries) {
     value: entry
   }))
 
-  // FIXME: does not return sometimes (queue full?)
-  await this.propertiesStore_.batch(operations)
+  await this.propertiesLevel_.batch(operations)
   this.emit('properties', { operations })
 }
 
 
 LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
-  await this.propertiesStore_.put(id, { name, id })
+  await this.propertiesLevel_.put(id, { name, id })
 
-  await this.propertiesStore_.batch(features.map(feature => ({
+  await this.propertiesLevel_.batch(features.map(feature => ({
     type: 'put',
     key: feature.id,
     value: feature
   })))
 
-  await this.geometryStore_.batch(features.map(feature => ({
+  await this.geometryLevel_.batch(features.map(feature => ({
     type: 'put',
     key: feature.id,
     value: feature.geometry
@@ -190,13 +215,13 @@ LayerStore.prototype.putLayer = async function (layer) {
 }
 
 LayerStore.prototype.deleteLayer = async function (layerId) {
-  await this.propertiesStore_.del(layerId)
+  await this.propertiesLevel_.del(layerId)
   const op = key => ({ type: 'del', key })
   const layerUUID = layerId.split(':')[1]
-  const keys = await this.keys(this.propertiesStore_, `feature:${layerUUID}`)
+  const keys = await this.keys(this.propertiesLevel_, `feature:${layerUUID}`)
   const operations = keys.map(op)
-  await this.propertiesStore_.batch(operations)
-  await this.geometryStore_.batch(operations)
+  await this.propertiesLevel_.batch(operations)
+  await this.geometryLevel_.batch(operations)
   this.emit('batch', { operations })
 }
 
@@ -206,5 +231,5 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
     .map(([key, value]) => ({ type: 'put', key, value }))
 
   this.emit('geometries', { operations: ops })
-  return this.geometryStore_.batch(ops)
+  return this.geometryLevel_.batch(ops)
 }

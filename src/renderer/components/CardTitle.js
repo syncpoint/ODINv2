@@ -10,16 +10,18 @@ export const CardTitle = props => {
 
   const handleBlur = () => {
     if (props.value === value) return
-    props.onChange(value)
+    props.onChange(value.trim())
   }
 
   // Don't let event bubble up to list.
   // This is mainly for capturing META-A (multiselect) right here.
   const handleKeyDown = event => event.stopPropagation()
+  const placeholder = value ? null : 'N/A (click to edit)'
 
   return <input
     className='card-title'
-    value={value}
+    value={value || ''}
+    placeholder={placeholder}
     onChange={handleChange}
     onBlur={handleBlur}
     onKeyDown={handleKeyDown}
@@ -27,6 +29,6 @@ export const CardTitle = props => {
 }
 
 CardTitle.propTypes = {
-  value: PropTypes.string.isRequired,
+  value: PropTypes.string,
   onChange: PropTypes.func.isRequired
 }

@@ -3,11 +3,13 @@ import { SearchInput, List, reducer, Card, TagList, Avatar } from '.'
 import { useServices } from './services'
 import { initialState, multiselect } from './list-state'
 
+
 /**
  *
  */
 export const Layers = () => {
-  const { searchIndex, selection } = useServices()
+  const { searchIndex, selection, propertiesStore } = useServices()
+  const [scope, setScope] = React.useState('layer')
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = React.useReducer(reducer(multiselect), initialState)
 
@@ -25,7 +27,7 @@ export const Layers = () => {
 
   React.useEffect(() => {
     const pendingQuery = (async () => {
-      const query = await searchIndex.query(`@feature ${filter}`)
+      const query = await searchIndex.query(`@${scope} ${filter}`)
       dispatch({ type: 'entries', entries: query.getResult() })
       query.on('change', handleQueryChange)
       return query
@@ -37,7 +39,7 @@ export const Layers = () => {
       query.off('change', handleQueryChange)
       query.dispose()
     }
-  }, [filter, handleQueryChange, searchIndex])
+  }, [scope, filter, handleQueryChange, searchIndex])
 
   // <<= QUERY/RESULT
 
@@ -61,7 +63,6 @@ export const Layers = () => {
   // <<= SELECTION
 
 
-  const handleRename = value => console.log('handleRename', value)
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
@@ -71,6 +72,10 @@ export const Layers = () => {
 
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
+
+  const handleAddTag = id => name => propertiesStore.addTag(id, name)
+  const handleRemoveTag = id => name => propertiesStore.removeTag(id, name)
+  const handleRename = id => value => propertiesStore.rename(id, value)
 
   /* eslint-disable react/prop-types */
   const child = props => {
@@ -86,12 +91,18 @@ export const Layers = () => {
       >
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <Card.Content>
-            <Card.Title value={entry.title} onChange={handleRename}/>
+            <Card.Title value={entry.title} onChange={handleRename(props.id)}/>
             <Card.Description value={entry.description}/>
           </Card.Content>
           { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
         </div>
-        <TagList id={props.id} tags={entry.tags} capabilities={entry.capabilities}/>
+        <TagList
+          id={props.id}
+          tags={entry.tags}
+          capabilities={entry.capabilities}
+          onAdd={handleAddTag(props.id)}
+          onRemove={handleRemoveTag(props.id)}
+        />
       </Card>
     )
   }

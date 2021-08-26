@@ -24,7 +24,7 @@ export const jsonStore = location => levelup(encode(leveldown(location), { value
  * JSON-encoded 'tuples' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const propertyPartition = db => sublevel(db, 'tuples', { valueEncoding: 'json' })
+export const propertiesPartition = db => sublevel(db, 'tuples', { valueEncoding: 'json' })
 
 
 /**

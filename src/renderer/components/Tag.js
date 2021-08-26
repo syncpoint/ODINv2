@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
-import { TagIcon } from './TagIcon'
+import TagIcon from './TagIcon'
 
-export const Tag = React.memo(props => {
+const Tag = props => {
   const { variant, children } = props
   const closable = variant === 'USER'
 
@@ -12,13 +12,15 @@ export const Tag = React.memo(props => {
     ? `tag-active ${variantClassName}`
     : `tag ${variantClassName}`
 
+  const handleClose = () => props.onClose && props.onClose()
+
   return (
     <span
       className={className}
-      // onClick={handleClick}
-      // onDoubleClick={handleDoubleClick}
-      // onMouseDown={handleMouseDown}
-      // onMouseUp={handleMouseUp}
+      onClick={props.onClick}
+      onDoubleClick={props.onDoubleClick}
+      onMouseDown={props.onMouseDown}
+      onMouseUp={props.onMouseUp}
     >
       { children }
       {
@@ -27,17 +29,24 @@ export const Tag = React.memo(props => {
         <TagIcon
           path={mdi.mdiClose}
           closable={closable}
-          // onClose={props.onClose}
+          onClose={handleClose}
           color='grey'
         />
       }
     </span>
   )
-})
+}
 
 Tag.propTypes = {
   variant: PropTypes.string.isRequired,
   action: PropTypes.string,
   children: PropTypes.node.isRequired,
-  capabilities: PropTypes.string
+  capabilities: PropTypes.string,
+  onClick: PropTypes.func,
+  onDoubleClick: PropTypes.func,
+  onMouseDown: PropTypes.func,
+  onMouseUp: PropTypes.func,
+  onClose: PropTypes.func
 }
+
+export default React.memo(Tag)

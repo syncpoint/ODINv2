@@ -46,12 +46,11 @@ SearchIndex.prototype.handleBatch_ = async function (event) {
  * query :: string -> Promise(Query)
  */
 SearchIndex.prototype.query = function (terms) {
+  const query = () => new Query(this, terms)
   return new Promise((resolve) => {
     const index = this.index_
-    if (index.ready()) resolve(new Query(this, terms))
-    else {
-      index.once('ready', () => resolve(new Query(index, terms)))
-    }
+    if (index.ready()) resolve(query())
+    else index.once('ready', () => resolve(query()))
   })
 }
 

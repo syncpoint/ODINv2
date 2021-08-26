@@ -4,9 +4,9 @@ import levelup from 'levelup'
 import leveldown from 'leveldown'
 import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
-import { propertyPartition, geometryPartition } from '../../shared/stores'
+import { propertiesPartition, geometryPartition } from '../../shared/stores'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, LayerStore, SearchIndex } from '../store'
+import { SessionStore, LayerStore, SearchIndex, PropertiesStore } from '../store'
 import { Sources, PaletteCommands } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -21,6 +21,7 @@ import { useServices, ServiceProvider } from './services'
  *
  */
 export const workspace = projectUUID => {
+  const selection = new Selection()
   const undo = new Undo()
 
   const databases = (() => {
@@ -30,11 +31,11 @@ export const workspace = projectUUID => {
 
   const location = path.join(databases, projectUUID)
   const db = levelup(leveldown(location))
-
-  const propertiesStore = propertyPartition(db)
-  const geometryStore = geometryPartition(db)
-  const layerStore = new LayerStore(propertiesStore, geometryStore)
-  const searchIndex = new SearchIndex(propertiesStore)
+  const propertiesLevel = propertiesPartition(db)
+  const geometryLevel = geometryPartition(db)
+  const propertiesStore = new PropertiesStore(propertiesLevel, selection, undo)
+  const layerStore = new LayerStore(propertiesLevel, geometryLevel)
+  const searchIndex = new SearchIndex(propertiesLevel)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
@@ -67,8 +68,9 @@ export const workspace = projectUUID => {
 
   // TODO: 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 
-  services.selection = new Selection()
+  services.selection = selection
   services.dragAndDrop = dragAndDrop
+  services.propertiesStore = propertiesStore
   services.layerStore = layerStore
   services.searchIndex = searchIndex
   services.paletteCommands = new PaletteCommands(layerStore, undo)
