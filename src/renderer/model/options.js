@@ -42,7 +42,7 @@ options.feature = async (feature, cache) => {
 
   return {
     id: feature.id,
-    title: name, // might be undefined
+    title: name || properties.t, // might be undefined
     description,
     url: MILSTD.url(sidc),
     tags: tags(feature, sidc),

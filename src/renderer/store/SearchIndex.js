@@ -1,11 +1,28 @@
+import * as R from 'ramda'
 import util from 'util'
 import Emitter from '../../shared/emitter'
 // import { Lunr as Index } from './Lunr'
 import { MiniSearchIndex as Index } from './MiniSearch'
 import { Query } from './Query'
+import { isGroupId } from '../ids'
 
 
+export const limit = R.take(200)
+// const limit = R.identity /* no limits */
 
+const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
+const compare = fn => (a, b) => collator.compare(fn(a), fn(b))
+const field = x => x.title + x.description
+
+export const sort = entries => entries.sort((a, b) => {
+  // Sort group to the top:
+  const GA = isGroupId(a.id)
+  const GB = isGroupId(b.id)
+  if (!GA && !GB) return compare(field)(a, b)
+  else if (GA && !GB) return -1
+  else if (!GA && GB) return 1
+  else return compare(field)(a, b)
+})
 
 
 /**
@@ -27,6 +44,7 @@ util.inherits(SearchIndex, Emitter)
  *
  */
 SearchIndex.prototype.handleBatch_ = async function (event) {
+
   if (this.busy_) {
     this.queue_ = this.queue_ || []
     this.queue_.push(event)
@@ -45,8 +63,8 @@ SearchIndex.prototype.handleBatch_ = async function (event) {
 /**
  * query :: string -> Promise(Query)
  */
-SearchIndex.prototype.query = function (terms) {
-  const query = () => new Query(this, terms)
+SearchIndex.prototype.query = function (terms, callback) {
+  const query = () => new Query(this, terms, callback)
   return new Promise((resolve) => {
     const index = this.index_
     if (index.ready()) resolve(query())
@@ -54,6 +72,7 @@ SearchIndex.prototype.query = function (terms) {
   })
 }
 
-SearchIndex.prototype.search = function (query) {
-  return this.index_.search(query)
+SearchIndex.prototype.search = async function (query, abortSignal) {
+  const options = await this.index_.search(query, abortSignal)
+  return sort(options)
 }

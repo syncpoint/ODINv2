@@ -4,7 +4,7 @@ import { CardContent } from './CardContent'
 import { CardTitle } from './CardTitle'
 import { CardDescription } from './CardDescription'
 
-export const Card = React.memo(React.forwardRef((props, ref) => {
+export const Card = React.forwardRef((props, ref) => {
   const { children, selected } = props
   const className = props.focused
     ? 'card focus'
@@ -22,7 +22,7 @@ export const Card = React.memo(React.forwardRef((props, ref) => {
       {children}
     </div>
   )
-}))
+})
 
 Card.propTypes = {
   children: PropTypes.node.isRequired,

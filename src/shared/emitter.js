@@ -38,7 +38,7 @@ EventEmitter.prototype.emit = function (path, arg = {}) {
 
   return paths.reduce((acc, [match, handlers]) => {
     const event = { ...arg, path: match.path, ...match.params }
-    const handle = handler => handler(event)
+    const handle = handler => setImmediate(() => handler(event))
     handlers.forEach(handle)
     return acc || handlers.length !== 0
   }, false)

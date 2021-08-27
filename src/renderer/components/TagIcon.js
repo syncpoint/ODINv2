@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Icon from '@mdi/react'
 
-const TagIcon = props => {
+export const TagIcon = props => {
   const { path, closable, color } = props
 
   const handleClick = event => {
@@ -28,4 +28,4 @@ TagIcon.propTypes = {
   onClose: PropTypes.func
 }
 
-export default React.memo(TagIcon)
+export const MemoizedTagIcon = React.memo(TagIcon)

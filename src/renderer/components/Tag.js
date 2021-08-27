@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
-import TagIcon from './TagIcon'
+import { MemoizedTagIcon } from './TagIcon'
 
-const Tag = props => {
+export const Tag = props => {
   const { variant, children } = props
   const closable = variant === 'USER'
 
@@ -26,7 +26,7 @@ const Tag = props => {
       {
         closable &&
         props.capabilities.includes('TAG') &&
-        <TagIcon
+        <MemoizedTagIcon
           path={mdi.mdiClose}
           closable={closable}
           onClose={handleClose}
@@ -49,4 +49,4 @@ Tag.propTypes = {
   onClose: PropTypes.func
 }
 
-export default React.memo(Tag)
+export const MemoizedTag = React.memo(Tag)

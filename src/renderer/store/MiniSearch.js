@@ -1,6 +1,7 @@
 import util from 'util'
 import MiniSearch from 'minisearch'
 import * as R from 'ramda'
+import uuid from 'uuid-random'
 import Store from '../../shared/level/Store'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
@@ -31,7 +32,8 @@ export function MiniSearchIndex (db) {
   })
 
   this.ready_ = false
-  const pendingRefresh = this.refreshIndex_()
+
+  const pendingRefresh = this.createIndex_()
   pendingRefresh.then(() => {
     this.ready_ = true
     this.emit('ready')
@@ -40,12 +42,37 @@ export function MiniSearchIndex (db) {
 
 util.inherits(MiniSearchIndex, Emitter)
 
+
 /**
- *
+ * Create initial index (one time only).
+ */
+MiniSearchIndex.prototype.createIndex_ = async function () {
+  console.log('[MiniSearchIndex/refreshIndex_]')
+  console.time('[MiniSearchIndex/refreshIndex_]')
+  const entries = await this.store_.values()
+  console.log('[MiniSearchIndex/refreshIndex_] entries', entries.length)
+  const cache = memoize(this.store_.get.bind(this.store_))
+  const docs = await entries.reduce(async (acc, entry) => {
+    const scope = entry.id.split(':')[0]
+    const docs = await acc
+    const doc = await documents[scope](entry, cache)
+    docs.push(doc)
+    return docs
+  }, [])
+
+  docs.forEach(doc => (this.cache_[doc.id] = doc))
+  this.index_.addAll(docs)
+  console.timeEnd('[MiniSearchIndex/refreshIndex_]')
+}
+
+
+/**
+ * Update index based on store batch operations.
  */
 MiniSearchIndex.prototype.handleBatch = async function (ops) {
+  console.log('[MiniSearchIndex/handleBatch]')
+  console.time('[MiniSearchIndex/handleBatch]')
   const cache = memoize(this.store_.get.bind(this.store_))
-
   const updates = ops.filter(op => op.type === 'put')
   const removals = ops.filter(op => op.type === 'del')
 
@@ -60,22 +87,8 @@ MiniSearchIndex.prototype.handleBatch = async function (ops) {
     this.index_.remove(this.cache_[op.key])
     delete this.cache_[op.key]
   }
-}
 
-
-/**
- *
- */
-MiniSearchIndex.prototype.refreshIndex_ = async function () {
-  const entries = await this.store_.entries()
-  const cache = memoize(this.store_.get.bind(this.store_))
-  const docs = await Promise.all(Object.values(entries)
-    .map(item => [item.id.split(':')[0], item])
-    .map(([scope, item]) => documents[scope](item, cache))
-  )
-
-  docs.forEach(doc => (this.cache_[doc.id] = doc))
-  this.index_.addAll(docs)
+  console.timeEnd('[MiniSearchIndex/handleBatch]')
 }
 
 
@@ -90,22 +103,45 @@ MiniSearchIndex.prototype.ready = function () {
 /**
  * search :: string -> Promise([option])
  */
-MiniSearchIndex.prototype.search = async function (query) {
-  const { scope, text, tags } = parseQuery(query)
+MiniSearchIndex.prototype.search = async function (query, abortSignal) {
+  const terms = parseQuery(query)
+  const { scope, text, tags } = terms
+  if (!text.length && !tags.length) return this.searchScope_(scope, abortSignal)
+  else return this.searchFiltered_(terms, abortSignal)
+}
+
+
+/**
+ *
+ */
+MiniSearchIndex.prototype.searchScope_ = async function (scope, abortSignal) {
+  const task = uuid()
+  console.log(`[MiniSearchIndex/search:${task}/1]`)
+  console.time(`[MiniSearchIndex/search:${task}/1]`)
+  const items = await this.store_.values(scope)
+  console.log(`[MiniSearchIndex/search:${task}/1]: items`, items.length)
+  const cache = memoize(this.store_.get.bind(this.store_))
+  const result = await items.reduce(async (acc, item) => {
+    const list = await acc
+    const option = await options[item.id.split(':')[0]](item, cache)
+    if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}/1] aborted`)
+    list.push(option)
+    return list
+  }, [])
+
+  console.timeEnd(`[MiniSearchIndex/search:${task}/1]`)
+  return result
+}
+
+MiniSearchIndex.prototype.searchFiltered_ = async function (terms, abortSignal) {
+  const task = uuid()
+  console.log(`[MiniSearchIndex/search:${task}/2]`)
+  console.time(`[MiniSearchIndex/search:${task}/2]`)
+
+  const { scope, text, tags } = terms
   const filter = scope
     ? result => result.id.startsWith(scope)
     : () => true
-
-  if (!text.length && !tags.length) {
-    const items = await this.store_.values(scope)
-    const cache = memoize(this.store_.get.bind(this.store_))
-    return items.reduce(async (acc, item) => {
-      const list = await acc
-      const option = await options[item.id.split(':')[0]](item, cache)
-      list.push(option)
-      return list
-    }, [])
-  }
 
   const A = this.index_.search(text.join(' '), { fields: ['text'], prefix: true, filter, combineWith: 'AND' })
   const B = this.index_.search(tags.join(' '), { fields: ['tags'], prefix: true, filter, combineWith: 'AND' })
@@ -117,12 +153,17 @@ MiniSearchIndex.prototype.search = async function (query) {
       : A.map(R.prop('id'))
     : B.map(R.prop('id'))
 
+  console.log(`[MiniSearchIndex/search:${task}/2] hits`, set.length)
   const cache = memoize(this.store_.get.bind(this.store_))
-  return set.reduce(async (acc, id) => {
+  const result = await set.reduce(async (acc, id) => {
     const list = await acc
     const item = await cache(id)
     const option = await options[item.id.split(':')[0]](item, cache)
+    if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}] aborted`)
     list.push(option)
     return list
   }, [])
+
+  console.timeEnd(`[MiniSearchIndex/search:${task}/2]`)
+  return result
 }

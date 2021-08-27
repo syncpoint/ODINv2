@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 /**
  *
  */
-export const CardTitle = React.memo(props => {
+export const CardTitle = props => {
   const [value, setValue] = React.useState(props.value)
   const handleChange = ({ target }) => setValue(target.value)
 
@@ -30,7 +30,7 @@ export const CardTitle = React.memo(props => {
     onBlur={handleBlur}
     onKeyDown={handleKeyDown}
   />
-})
+}
 
 CardTitle.propTypes = {
   value: PropTypes.string,

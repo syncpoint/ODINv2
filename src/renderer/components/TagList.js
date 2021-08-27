@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
-import Tag from './Tag'
-import TagIcon from './TagIcon'
+import { MemoizedTag } from './Tag'
+import { MemoizedTagIcon } from './TagIcon'
 
-export const TagList = React.memo(props => {
+export const TagList = props => {
   const { id, tags } = props
   const [inputVisible, setInputVisible] = React.useState(false)
   const [inputValue, setInputValue] = React.useState('')
@@ -54,7 +54,7 @@ export const TagList = React.memo(props => {
   const tag = spec => {
     const [variant, label, action, path] = spec.split(':')
     return (
-      <Tag
+      <MemoizedTag
         key={`${variant}:${label}`}
         id={id}
         variant={variant}
@@ -66,9 +66,9 @@ export const TagList = React.memo(props => {
         {
           variant !== 'IMAGE'
             ? <span>{label}</span>
-            : <TagIcon path={mdi[path]} color='black' size='12px'/>
+            : <MemoizedTagIcon path={mdi[path]} color='black' size='12px'/>
         }
-      </Tag>
+      </MemoizedTag>
     )
   }
 
@@ -82,10 +82,10 @@ export const TagList = React.memo(props => {
           onKeyDown={handleKeyDown}
           onChange={handleChange}
         />
-      : <Tag variant='plus' onClick={handleClick} color='black'>
-          <TagIcon path={mdi.mdiPlus} size='12px'/>
+      : <MemoizedTag variant='plus' onClick={handleClick} color='black'>
+          <MemoizedTagIcon path={mdi.mdiPlus} size='12px'/>
           <span>ADD TAG</span>
-        </Tag>
+        </MemoizedTag>
     : null
 
 
@@ -96,7 +96,7 @@ export const TagList = React.memo(props => {
       { newTag }
     </div>
   )
-})
+}
 
 TagList.propTypes = {
   id: PropTypes.string.isRequired,

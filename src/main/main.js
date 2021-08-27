@@ -1,4 +1,6 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, session as electronSession } from 'electron'
+import path from 'path'
+import os from 'os'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
 import { jsonStore } from '../shared/stores'
@@ -9,10 +11,26 @@ import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore } from './stores'
 import { ipc } from './ipc'
 
+const loadReactChromeExtension = async () => {
+  /*
+  (node:7914) ExtensionLoadWarning: Warnings loading extension at /Users/dehmer/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.17.0_0:
+    Unrecognized manifest key 'browser_action'.
+    Unrecognized manifest key 'minimum_chrome_version'.
+    Unrecognized manifest key 'update_url'.
+    Cannot load extension with file or directory name _metadata. Filenames starting with "_" are reserved for use by the system.
+  */
+
+  const extension = '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.17.0_0'
+  await app.whenReady()
+  await electronSession.defaultSession.loadExtension(path.join(os.homedir(), extension))
+}
+
+
 /**
  * Emitted once, when Electron has finished initializing.
  */
 const ready = async () => {
+  // loadReactChromeExtension()
 
   // Open/create master database.
   const databases = paths.databases(app)

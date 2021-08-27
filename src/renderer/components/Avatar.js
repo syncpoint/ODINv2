@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import Icon from '@mdi/react'
 import * as mdi from '@mdi/js'
 
-export const Avatar = React.memo(({ url, path }) => {
+export const Avatar = ({ url, path }) => {
   return (
     <div className='card-avatar'>
       {
@@ -13,9 +13,11 @@ export const Avatar = React.memo(({ url, path }) => {
       }
     </div>
   )
-})
+}
 
 Avatar.propTypes = {
   url: PropTypes.string,
   path: PropTypes.string
 }
+
+export const MemoizedAvatar = React.memo(Avatar)
