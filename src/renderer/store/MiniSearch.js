@@ -8,6 +8,13 @@ import Emitter from '../../shared/emitter'
 import { options } from '../model/options'
 import { memoize, parseQuery } from './index-common'
 
+const logger = console
+// const logger = {
+//   log: () => {},
+//   time: () => {},
+//   timeEnd: () => {}
+// }
+
 /**
  * @constructor
  * @fires ready
@@ -33,11 +40,13 @@ export function MiniSearchIndex (db) {
 
   this.ready_ = false
 
-  const pendingRefresh = this.createIndex_()
-  pendingRefresh.then(() => {
-    this.ready_ = true
-    this.emit('ready')
-  })
+  // Give startup routine up to 2s before doing any heavy lifting.
+  window.requestIdleCallback(() => {
+    this.createIndex_().then(() => {
+      this.ready_ = true
+      this.emit('ready')
+    })
+  }, { timeout: 2000 })
 }
 
 util.inherits(MiniSearchIndex, Emitter)
@@ -47,23 +56,23 @@ util.inherits(MiniSearchIndex, Emitter)
  * Create initial index (one time only).
  */
 MiniSearchIndex.prototype.createIndex_ = async function () {
-  console.log('[MiniSearchIndex/createIndex_]')
-  console.time('[MiniSearchIndex/createIndex_]')
+  logger.log('[MiniSearchIndex/createIndex_]')
+  logger.time('[MiniSearchIndex/createIndex_]')
   const entries = await this.store_.values()
-  console.log('[MiniSearchIndex/createIndex_] entries', entries.length)
+  logger.log('[MiniSearchIndex/createIndex_] entries', entries.length)
   const cache = memoize(this.store_.get.bind(this.store_))
   const docs = await entries.reduce(async (acc, entry) => {
     const scope = entry.id.split(':')[0]
     const docs = await acc
     const doc = await documents[scope](entry, cache)
     docs.push(doc)
-    console.log('[MiniSearchIndex/createIndex_] progress', docs.length, 'of', entries.length)
+    logger.log('[MiniSearchIndex/createIndex_] progress', docs.length, 'of', entries.length)
     return docs
   }, [])
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)
-  console.timeEnd('[MiniSearchIndex/createIndex_]')
+  logger.timeEnd('[MiniSearchIndex/createIndex_]')
 }
 
 
@@ -71,8 +80,8 @@ MiniSearchIndex.prototype.createIndex_ = async function () {
  * Update index based on store batch operations.
  */
 MiniSearchIndex.prototype.handleBatch = async function (ops) {
-  console.log('[MiniSearchIndex/handleBatch]')
-  console.time('[MiniSearchIndex/handleBatch]')
+  logger.log('[MiniSearchIndex/handleBatch]')
+  logger.time('[MiniSearchIndex/handleBatch]')
   const cache = memoize(this.store_.get.bind(this.store_))
   const updates = ops.filter(op => op.type === 'put')
   const removals = ops.filter(op => op.type === 'del')
@@ -89,7 +98,7 @@ MiniSearchIndex.prototype.handleBatch = async function (ops) {
     delete this.cache_[op.key]
   }
 
-  console.timeEnd('[MiniSearchIndex/handleBatch]')
+  logger.timeEnd('[MiniSearchIndex/handleBatch]')
 }
 
 
@@ -117,28 +126,28 @@ MiniSearchIndex.prototype.search = async function (query, abortSignal) {
  */
 MiniSearchIndex.prototype.searchScope_ = async function (scope, abortSignal) {
   const task = uuid()
-  console.log(`[MiniSearchIndex/search:${task}/1]`)
-  console.time(`[MiniSearchIndex/search:${task}/1]`)
+  logger.log(`[MiniSearchIndex/search:${task}/1]`)
+  logger.time(`[MiniSearchIndex/search:${task}/1]`)
   const items = await this.store_.values(scope)
-  console.log(`[MiniSearchIndex/search:${task}/1]: items`, items.length)
+  logger.log(`[MiniSearchIndex/search:${task}/1]: items`, items.length)
   const cache = memoize(this.store_.get.bind(this.store_))
   const result = await items.reduce(async (acc, item) => {
     const list = await acc
     const option = await options[item.id.split(':')[0]](item, cache)
     if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}/1] aborted`)
     list.push(option)
-    console.log(`[MiniSearchIndex/search:${task}/1]: progress`, list.length, 'of', items.length)
+    logger.log(`[MiniSearchIndex/search:${task}/1]: progress`, list.length, 'of', items.length)
     return list
   }, [])
 
-  console.timeEnd(`[MiniSearchIndex/search:${task}/1]`)
+  logger.timeEnd(`[MiniSearchIndex/search:${task}/1]`)
   return result
 }
 
 MiniSearchIndex.prototype.searchFiltered_ = async function (terms, abortSignal) {
   const task = uuid()
-  console.log(`[MiniSearchIndex/search:${task}/2]`)
-  console.time(`[MiniSearchIndex/search:${task}/2]`)
+  logger.log(`[MiniSearchIndex/search:${task}/2]`)
+  logger.time(`[MiniSearchIndex/search:${task}/2]`)
 
   const { scope, text, tags } = terms
   const filter = scope
@@ -155,7 +164,7 @@ MiniSearchIndex.prototype.searchFiltered_ = async function (terms, abortSignal) 
       : A.map(R.prop('id'))
     : B.map(R.prop('id'))
 
-  console.log(`[MiniSearchIndex/search:${task}/2] hits`, set.length)
+  logger.log(`[MiniSearchIndex/search:${task}/2] hits`, set.length)
   const cache = memoize(this.store_.get.bind(this.store_))
   const result = await set.reduce(async (acc, id) => {
     const list = await acc
@@ -166,6 +175,6 @@ MiniSearchIndex.prototype.searchFiltered_ = async function (terms, abortSignal) 
     return list
   }, [])
 
-  console.timeEnd(`[MiniSearchIndex/search:${task}/2]`)
+  logger.timeEnd(`[MiniSearchIndex/search:${task}/2]`)
   return result
 }
