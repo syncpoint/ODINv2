@@ -105,8 +105,6 @@ export const Layers = () => {
   }
   /* eslint-enable react/prop-types */
 
-  const ref = React.useRef()
-
   return (
     <div
       tabIndex={0}
@@ -120,13 +118,7 @@ export const Layers = () => {
       <div style={{ display: 'flex', padding: '6px' }}>
         <SearchInput size='large' onSearch={handleFilterChange}/>
       </div>
-      <div className='list-container'>
-        <List
-          ref={ref}
-          child={child}
-          { ...state }
-        />
-      </div>
+      <List child={child} { ...state }/>
     </div>
   )
 }

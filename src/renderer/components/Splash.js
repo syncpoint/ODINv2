@@ -306,9 +306,6 @@ export const Splash = () => {
   }
   /* eslint-enable react/prop-types */
 
-
-  const ref = React.useRef()
-
   return (
     <div
       onKeyDown={handleKeyDown}
@@ -325,13 +322,7 @@ export const Splash = () => {
         <Button onClick={handleCreate}>New</Button>
         <Button>Import</Button>
       </div>
-      <div className='list-container'>
-        <List
-          ref={ref}
-          child={child}
-          { ...state }
-        />
-      </div>
+      <List child={child} { ...state }/>
     </div>
   )
 }

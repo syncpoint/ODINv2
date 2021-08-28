@@ -24,7 +24,7 @@ const scrollIntoView = (refs, index, behavior) =>
 /**
  *
  */
-export const List = React.forwardRef((props, ref) => {
+export const List = props => {
   const { child, focusId, selected } = props
   const cardrefs = props.entries.map(_ => React.createRef())
 
@@ -47,18 +47,24 @@ export const List = React.forwardRef((props, ref) => {
     ref: cardrefs[index]
   })
 
+  const list = props.entries.length
+    ? props.entries.map(card)
+    : null
+
   return (
-    <ul
-      ref={ref}
-      role='listbox'
-      className='list'
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-    >
-      { props.entries.map(card) }
-    </ul>
+    <div
+      className='list-container'
+      >
+      <div
+        className='list'
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
+        { list }
+      </div>
+    </div>
   )
-})
+}
 
 List.propTypes = {
   child: PropTypes.func.isRequired,

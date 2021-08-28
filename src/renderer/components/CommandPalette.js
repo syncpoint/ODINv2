@@ -82,7 +82,6 @@ export const CommandPalette = props => {
     dispatch({ type: 'entries', entries: commands })
   }, [filter, snapshot, paletteCommands])
 
-  const ref = React.useRef()
 
   /* eslint-disable react/prop-types */
   const child = props => (
@@ -105,13 +104,7 @@ export const CommandPalette = props => {
   }, [state.focusIndex, state.entries])
 
   const list = props.value === undefined
-    ? <div className='list-container'>
-        <List
-          ref={ref}
-          child={child}
-          { ...state }
-        />
-      </div>
+    ? <List child={child} { ...state }/>
     : null
 
   return (
