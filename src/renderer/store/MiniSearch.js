@@ -107,18 +107,18 @@ MiniSearchIndex.prototype.ready = function () {
 /**
  * search :: string -> Promise([option])
  */
-MiniSearchIndex.prototype.search = function (query, abortSignal) {
+MiniSearchIndex.prototype.search = function (query) {
   const terms = parseQuery(query)
   const { scope, text, tags } = terms
-  if (!text.length && !tags.length) return this.searchScope_(scope, abortSignal)
-  else return this.searchFiltered_(terms, abortSignal)
+  if (!text.length && !tags.length) return this.searchScope_(scope)
+  else return this.searchFiltered_(terms)
 }
 
 
 /**
  *
  */
-MiniSearchIndex.prototype.searchScope_ = function (scope, abortSignal) {
+MiniSearchIndex.prototype.searchScope_ = function (scope) {
   const task = uuid()
   logger.log(`[MiniSearchIndex/search:${task}/1]`)
   logger.time(`[MiniSearchIndex/search:${task}/1]`)
@@ -128,7 +128,6 @@ MiniSearchIndex.prototype.searchScope_ = function (scope, abortSignal) {
   const cache = id => this.mirror_[id]
   const result = items.reduce((acc, item) => {
     const option = options[item.id.split(':')[0]](item, cache)
-    if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}/1] aborted`)
     acc.push(option)
     // logger.log(`[MiniSearchIndex/search:${task}/1]: progress`, acc.length, 'of', items.length)
     return acc
@@ -142,7 +141,7 @@ MiniSearchIndex.prototype.searchScope_ = function (scope, abortSignal) {
 /**
  *
  */
-MiniSearchIndex.prototype.searchFiltered_ = function (terms, abortSignal) {
+MiniSearchIndex.prototype.searchFiltered_ = function (terms) {
   const task = uuid()
   logger.log(`[MiniSearchIndex/search:${task}/2]`)
   logger.time(`[MiniSearchIndex/search:${task}/2]`)
@@ -167,7 +166,6 @@ MiniSearchIndex.prototype.searchFiltered_ = function (terms, abortSignal) {
   const result = set.reduce((acc, id) => {
     const item = cache(id)
     const option = options[item.id.split(':')[0]](item, cache)
-    if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}] aborted`)
     acc.push(option)
     return acc
   }, [])

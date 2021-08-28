@@ -30,13 +30,13 @@ export const sort = entries => entries.sort((a, b) => {
  */
 export function SearchIndex (propertiesLevel) {
   Emitter.call(this)
-  this.mirror_ = {}
-  this.index_ = new Index(this.mirror_)
+  this.carrera_ = {}
+  this.index_ = new Index(this.carrera_)
 
   window.requestIdleCallback(async () => {
     await new Promise((resolve, reject) => {
       propertiesLevel.createReadStream()
-        .on('data', ({ key, value }) => (this.mirror_[key] = value))
+        .on('data', ({ key, value }) => (this.carrera_[key] = value))
         .on('error', reject)
         .on('close', () => resolve())
     })
@@ -59,8 +59,8 @@ SearchIndex.prototype.handleBatch_ = function (event) {
 
   event.forEach(op => {
     switch (op.type) {
-      case 'put': this.mirror_[op.key] = op.value; break
-      case 'del': delete this.mirror_[op.key]; break
+      case 'put': this.carrera_[op.key] = op.value; break
+      case 'del': delete this.carrera_[op.key]; break
     }
   })
 
@@ -91,7 +91,7 @@ SearchIndex.prototype.query = function (terms, callback) {
   })
 }
 
-SearchIndex.prototype.search = async function (query, abortSignal) {
-  const options = await this.index_.search(query, abortSignal)
+SearchIndex.prototype.search = function (query, abortSignal) {
+  const options = this.index_.search(query, abortSignal)
   return sort(options)
 }

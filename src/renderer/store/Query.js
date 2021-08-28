@@ -10,12 +10,10 @@ export function Query (index, terms, callback) {
   this.index_ = index
   this.terms_ = terms
   this.callback_ = callback
-  this.abortController_ = new AbortController()
 
-  const abortSignal = this.abortController_.signal
-  this.updatedHandler_ = () => this.refresh_(abortSignal)
+  this.updatedHandler_ = () => this.refresh_()
   this.index_.on('index/updated', this.updatedHandler_)
-  this.refresh_(this.abortController_.signal)
+  this.refresh_()
 }
 
 util.inherits(Query, Emitter)
@@ -24,12 +22,11 @@ util.inherits(Query, Emitter)
 /**
  * Refresh query result with updated index and original search terms.
  */
-Query.prototype.refresh_ = async function (abortSignal) {
+Query.prototype.refresh_ = function () {
   // TODO: d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
   try {
-    // FIXME: abort current query (if any) before starting new query
-    const result = await this.index_.search(this.terms_, abortSignal)
-    if (!abortSignal.aborted) this.callback_(result)
+    const result = this.index_.search(this.terms_)
+    this.callback_(result)
   } catch (err) {
     /* don't invoke callback. */
     console.log(err.message)
@@ -43,5 +40,4 @@ Query.prototype.refresh_ = async function (abortSignal) {
  */
 Query.prototype.dispose = function () {
   this.index_.off('index/updated', this.updatedHandler_)
-  this.abortController_.abort()
 }
