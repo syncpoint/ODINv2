@@ -16,7 +16,7 @@ const identityTag = R.cond([
 /**
  * feature:
  */
-options.feature = async (feature, cache) => {
+options.feature = (feature, cache) => {
   const descriptor = MILSTD.descriptor(feature.properties.sidc)
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
@@ -34,7 +34,7 @@ options.feature = async (feature, cache) => {
     ].join(' ')
   }
 
-  const layer = await cache(layerId(feature.id))
+  const layer = cache(layerId(feature.id))
   const { properties, name } = feature
   const { sidc } = properties
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']

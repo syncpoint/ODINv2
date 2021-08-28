@@ -24,13 +24,13 @@ const identity = R.cond([
 /**
  *
  */
-documents.feature = async (feature, cache) => {
+documents.feature = (feature, cache) => {
   const descriptor = MILSTD.descriptor(feature.properties.sidc)
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : []
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-  const layer = await cache(layerId(feature.id))
+  const layer = cache(layerId(feature.id))
   const { t } = feature.properties
   const links = feature.links || []
 

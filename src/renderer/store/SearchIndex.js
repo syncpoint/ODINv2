@@ -28,13 +28,25 @@ export const sort = entries => entries.sort((a, b) => {
 /**
  * @constructor
  */
-export function SearchIndex (db) {
+export function SearchIndex (propertiesLevel) {
   Emitter.call(this)
-  this.index_ = new Index(db)
+  this.mirror_ = {}
+  this.index_ = new Index(this.mirror_)
 
-  db.on('put', event => console.log('[DB] put', event))
-  db.on('del', event => console.log('[DB] del', event))
-  db.on('batch', event => setImmediate(() => this.handleBatch_(event)))
+  window.requestIdleCallback(async () => {
+    await new Promise((resolve, reject) => {
+      propertiesLevel.createReadStream()
+        .on('data', ({ key, value }) => (this.mirror_[key] = value))
+        .on('error', reject)
+        .on('close', () => resolve())
+    })
+
+    this.index_.createIndex_()
+  }, { timeout: 2000 })
+
+  propertiesLevel.on('put', event => console.log('[DB] put', event))
+  propertiesLevel.on('del', event => console.log('[DB] del', event))
+  propertiesLevel.on('batch', event => this.handleBatch_(event))
 }
 
 util.inherits(SearchIndex, Emitter)
@@ -43,7 +55,14 @@ util.inherits(SearchIndex, Emitter)
 /**
  *
  */
-SearchIndex.prototype.handleBatch_ = async function (event) {
+SearchIndex.prototype.handleBatch_ = function (event) {
+
+  event.forEach(op => {
+    switch (op.type) {
+      case 'put': this.mirror_[op.key] = op.value; break
+      case 'del': delete this.mirror_[op.key]; break
+    }
+  })
 
   if (this.busy_) {
     this.queue_ = this.queue_ || []
@@ -53,10 +72,10 @@ SearchIndex.prototype.handleBatch_ = async function (event) {
 
   this.busy_ = true
   this.queue_ = []
-  await this.index_.handleBatch(event)
+  this.index_.handleBatch(event)
   this.busy_ = false
 
-  if (this.queue_.length) await this.handleBatch_(this.queue_.flat())
+  if (this.queue_.length) this.handleBatch_(this.queue_.flat())
   this.emit('index/updated')
 }
 

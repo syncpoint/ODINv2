@@ -2,11 +2,10 @@ import util from 'util'
 import MiniSearch from 'minisearch'
 import * as R from 'ramda'
 import uuid from 'uuid-random'
-import Store from '../../shared/level/Store'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
 import { options } from '../model/options'
-import { memoize, parseQuery } from './index-common'
+import { parseQuery } from './index-common'
 
 const logger = console
 // const logger = {
@@ -20,12 +19,12 @@ const logger = console
  * @fires ready
  * @fires index/updated
  */
-export function MiniSearchIndex (db) {
+export function MiniSearchIndex (mirror) {
   Emitter.call(this)
-  this.store_ = new Store(db)
 
   // Cache indexed documents for removal.
   this.cache_ = {}
+  this.mirror_ = mirror
 
   this.index_ = new MiniSearch({
     fields: ['text', 'tags'],
@@ -39,14 +38,6 @@ export function MiniSearchIndex (db) {
   })
 
   this.ready_ = false
-
-  // Give startup routine up to 2s before doing any heavy lifting.
-  window.requestIdleCallback(() => {
-    this.createIndex_().then(() => {
-      this.ready_ = true
-      this.emit('ready')
-    })
-  }, { timeout: 2000 })
 }
 
 util.inherits(MiniSearchIndex, Emitter)
@@ -55,41 +46,44 @@ util.inherits(MiniSearchIndex, Emitter)
 /**
  * Create initial index (one time only).
  */
-MiniSearchIndex.prototype.createIndex_ = async function () {
+MiniSearchIndex.prototype.createIndex_ = function () {
   logger.log('[MiniSearchIndex/createIndex_]')
   logger.time('[MiniSearchIndex/createIndex_]')
-  const entries = await this.store_.values()
+  const entries = Object.values(this.mirror_)
+
   logger.log('[MiniSearchIndex/createIndex_] entries', entries.length)
-  const cache = memoize(this.store_.get.bind(this.store_))
-  const docs = await entries.reduce(async (acc, entry) => {
+  const cache = id => this.mirror_[id]
+  const docs = entries.reduce((acc, entry) => {
     const scope = entry.id.split(':')[0]
-    const docs = await acc
-    const doc = await documents[scope](entry, cache)
-    docs.push(doc)
-    logger.log('[MiniSearchIndex/createIndex_] progress', docs.length, 'of', entries.length)
-    return docs
+    const doc = documents[scope](entry, cache)
+    acc.push(doc)
+    // logger.log('[MiniSearchIndex/createIndex_] progress', acc.length, 'of', entries.length)
+    return acc
   }, [])
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)
   logger.timeEnd('[MiniSearchIndex/createIndex_]')
+
+  this.ready_ = true
+  this.emit('ready')
 }
 
 
 /**
  * Update index based on store batch operations.
  */
-MiniSearchIndex.prototype.handleBatch = async function (ops) {
+MiniSearchIndex.prototype.handleBatch = function (ops) {
   logger.log('[MiniSearchIndex/handleBatch]')
   logger.time('[MiniSearchIndex/handleBatch]')
-  const cache = memoize(this.store_.get.bind(this.store_))
+  const cache = id => this.mirror_[id]
   const updates = ops.filter(op => op.type === 'put')
   const removals = ops.filter(op => op.type === 'del')
 
   for (const op of updates) {
     const scope = op.key.split(':')[0]
     this.index_.remove(this.cache_[op.key])
-    this.cache_[op.key] = await documents[scope](op.value, cache)
+    this.cache_[op.key] = documents[scope](op.value, cache)
     this.index_.add(this.cache_[op.key])
   }
 
@@ -113,7 +107,7 @@ MiniSearchIndex.prototype.ready = function () {
 /**
  * search :: string -> Promise([option])
  */
-MiniSearchIndex.prototype.search = async function (query, abortSignal) {
+MiniSearchIndex.prototype.search = function (query, abortSignal) {
   const terms = parseQuery(query)
   const { scope, text, tags } = terms
   if (!text.length && !tags.length) return this.searchScope_(scope, abortSignal)
@@ -124,27 +118,31 @@ MiniSearchIndex.prototype.search = async function (query, abortSignal) {
 /**
  *
  */
-MiniSearchIndex.prototype.searchScope_ = async function (scope, abortSignal) {
+MiniSearchIndex.prototype.searchScope_ = function (scope, abortSignal) {
   const task = uuid()
   logger.log(`[MiniSearchIndex/search:${task}/1]`)
   logger.time(`[MiniSearchIndex/search:${task}/1]`)
-  const items = await this.store_.values(scope)
+  const items = Object.values(this.mirror_)
+    .filter(item => item.id.startsWith(scope))
   logger.log(`[MiniSearchIndex/search:${task}/1]: items`, items.length)
-  const cache = memoize(this.store_.get.bind(this.store_))
-  const result = await items.reduce(async (acc, item) => {
-    const list = await acc
-    const option = await options[item.id.split(':')[0]](item, cache)
+  const cache = id => this.mirror_[id]
+  const result = items.reduce((acc, item) => {
+    const option = options[item.id.split(':')[0]](item, cache)
     if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}/1] aborted`)
-    list.push(option)
-    logger.log(`[MiniSearchIndex/search:${task}/1]: progress`, list.length, 'of', items.length)
-    return list
+    acc.push(option)
+    // logger.log(`[MiniSearchIndex/search:${task}/1]: progress`, acc.length, 'of', items.length)
+    return acc
   }, [])
 
   logger.timeEnd(`[MiniSearchIndex/search:${task}/1]`)
   return result
 }
 
-MiniSearchIndex.prototype.searchFiltered_ = async function (terms, abortSignal) {
+
+/**
+ *
+ */
+MiniSearchIndex.prototype.searchFiltered_ = function (terms, abortSignal) {
   const task = uuid()
   logger.log(`[MiniSearchIndex/search:${task}/2]`)
   logger.time(`[MiniSearchIndex/search:${task}/2]`)
@@ -165,14 +163,13 @@ MiniSearchIndex.prototype.searchFiltered_ = async function (terms, abortSignal) 
     : B.map(R.prop('id'))
 
   logger.log(`[MiniSearchIndex/search:${task}/2] hits`, set.length)
-  const cache = memoize(this.store_.get.bind(this.store_))
-  const result = await set.reduce(async (acc, id) => {
-    const list = await acc
-    const item = await cache(id)
-    const option = await options[item.id.split(':')[0]](item, cache)
+  const cache = id => this.mirror_[id]
+  const result = set.reduce((acc, id) => {
+    const item = cache(id)
+    const option = options[item.id.split(':')[0]](item, cache)
     if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}] aborted`)
-    list.push(option)
-    return list
+    acc.push(option)
+    return acc
   }, [])
 
   logger.timeEnd(`[MiniSearchIndex/search:${task}/2]`)

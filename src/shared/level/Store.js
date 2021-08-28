@@ -68,7 +68,7 @@ Store.prototype.entries = function (prefix) {
     this.db.createReadStream(options)
       .on('data', ({ key, value }) => (acc[key] = value))
       .on('error', reject)
-      .on('end', () => resolve(acc))
+      .on('close', () => resolve(acc))
   })
 }
 
@@ -87,7 +87,7 @@ Store.prototype.values = function (prefix) {
     this.db.createReadStream(options)
       .on('data', value => acc.push(value))
       .on('error', reject)
-      .on('end', () => resolve(acc))
+      .on('close', () => resolve(acc))
   })
 }
 
@@ -105,7 +105,7 @@ Store.prototype.keys = function (prefix) {
     this.db.createReadStream(options)
       .on('data', value => acc.push(value))
       .on('error', reject)
-      .on('end', () => resolve(acc))
+      .on('close', () => resolve(acc))
   })
 }
 
@@ -126,7 +126,7 @@ Store.prototype.list = function (prefix) {
     this.db.createReadStream(options)
       .on('data', ({ key, value }) => acc.push([key, value]))
       .on('error', reject)
-      .on('end', () => resolve(acc))
+      .on('close', () => resolve(acc))
   })
 }
 
@@ -152,7 +152,7 @@ Store.prototype.key = function (predicate, prefix) {
 
     stream.on('data', data)
       .on('error', reject)
-      .on('end', () => resolve(undefined))
+      .on('close', () => resolve(undefined))
   })
 }
 
