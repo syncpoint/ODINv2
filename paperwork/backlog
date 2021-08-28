@@ -2,7 +2,6 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 95e05f34-905d-4dd6-a868-4a1e22e0c5f4 - (legac) import: filter geometry property from feature
 
 OPEN
 d7ac2ac9-fb91-47d8-ab14-a976c2b32998 - check out: https://github.com/wellyshen/react-cool-virtual#dynamic-size
@@ -121,3 +120,4 @@ DEH - fe87d634-35d0-4910-98b6-1e58d25b5ab2 - layer/list: decrease title font siz
 DEH - 826f0877-d4d2-44f9-960a-52b7e13a621d - Layers: debounce filter change
 DEH - 96ad6db1-d89c-4c57-837e-befe39c66ab7 - race condition/Layers: earlier/slow query result can overwrite later/fast result
 DEH - 37ddb956-dd6f-4a2c-a176-a6988370af27 - command palette: batch update (unique designation)
+DEH - 95e05f34-905d-4dd6-a868-4a1e22e0c5f4 - (legacy) import: remove geometry property from feature

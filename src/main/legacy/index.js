@@ -27,44 +27,32 @@ export const transferProject = async (db, project) => {
       value: { id: layer.id, name: layer.name }
     })
 
-    const batch = layers.map(op)
-    await properties.batch(batch)
-  }
-
-  // Feature properties.
-  {
-    const op = feature => ({
-      type: 'put',
-      key: feature.id,
-      value: feature
-    })
-
-    const batch = layers.flatMap(({ features }) => features).map(op)
-    await properties.batch(batch)
-  }
-
-  // (Feature) links.
-  {
-    const op = link => ({
-      type: 'put',
-      key: link.id,
-      value: link
-    })
-
-    const batch = links.map(op)
-    await properties.batch(batch)
+    const ops = layers.map(op)
+    await properties.batch(ops)
   }
 
   // Feature geometries.
   {
-    const op = feature => ({
-      type: 'put',
-      key: feature.id,
-      value: feature.geometry
-    })
+    const op = feature => ({ type: 'put', key: feature.id, value: feature.geometry })
+    const ops = layers.flatMap(({ features }) => features).map(op)
+    await geometries.batch(ops)
+  }
 
-    const batch = layers.flatMap(({ features }) => features).map(op)
-    await geometries.batch(batch)
+  // Feature properties.
+  {
+    const op = feature => ({ type: 'put', key: feature.id, value: feature })
+    const ops = layers.flatMap(({ features }) => features)
+      .map(feature => { delete feature.geometry; return feature })
+      .map(op)
+
+    await properties.batch(ops)
+  }
+
+  // (Feature) links.
+  {
+    const op = link => ({ type: 'put', key: link.id, value: link })
+    const ops = links.map(op)
+    await properties.batch(ops)
   }
 }
 
