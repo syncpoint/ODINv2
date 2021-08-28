@@ -47,22 +47,23 @@ util.inherits(MiniSearchIndex, Emitter)
  * Create initial index (one time only).
  */
 MiniSearchIndex.prototype.createIndex_ = async function () {
-  console.log('[MiniSearchIndex/refreshIndex_]')
-  console.time('[MiniSearchIndex/refreshIndex_]')
+  console.log('[MiniSearchIndex/createIndex_]')
+  console.time('[MiniSearchIndex/createIndex_]')
   const entries = await this.store_.values()
-  console.log('[MiniSearchIndex/refreshIndex_] entries', entries.length)
+  console.log('[MiniSearchIndex/createIndex_] entries', entries.length)
   const cache = memoize(this.store_.get.bind(this.store_))
   const docs = await entries.reduce(async (acc, entry) => {
     const scope = entry.id.split(':')[0]
     const docs = await acc
     const doc = await documents[scope](entry, cache)
     docs.push(doc)
+    console.log('[MiniSearchIndex/createIndex_] progress', docs.length, 'of', entries.length)
     return docs
   }, [])
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)
-  console.timeEnd('[MiniSearchIndex/refreshIndex_]')
+  console.timeEnd('[MiniSearchIndex/createIndex_]')
 }
 
 
@@ -126,6 +127,7 @@ MiniSearchIndex.prototype.searchScope_ = async function (scope, abortSignal) {
     const option = await options[item.id.split(':')[0]](item, cache)
     if (abortSignal.aborted) throw new Error(`[MiniSearchIndex/search:${task}/1] aborted`)
     list.push(option)
+    console.log(`[MiniSearchIndex/search:${task}/1]: progress`, list.length, 'of', items.length)
     return list
   }, [])
 

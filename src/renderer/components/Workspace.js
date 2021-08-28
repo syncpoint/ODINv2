@@ -36,6 +36,10 @@ export const workspace = projectUUID => {
   const propertiesStore = new PropertiesStore(propertiesLevel, selection, undo)
   const layerStore = new LayerStore(propertiesLevel, geometryLevel)
   const searchIndex = new SearchIndex(propertiesLevel)
+  const emitter = new EventEmitter()
+
+  // Key bindings.
+  bindings(emitter)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
@@ -59,12 +63,14 @@ export const workspace = projectUUID => {
   })
 
   const services = {}
-  services.emitter = new EventEmitter()
+  services.emitter = emitter
   services.ipcRenderer = ipcRenderer
   services.master = levelup(new IPCDownClient(ipcRenderer))
   services.sessionStore = new SessionStore(services.master, `project:${projectUUID}`)
   services.undo = undo
-  services.sources = new Sources(layerStore)
+
+  // FIXME: It would be nicer if Sources depended only on only one store/db
+  services.sources = new Sources(layerStore, propertiesLevel)
 
   // TODO: 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 
@@ -73,10 +79,7 @@ export const workspace = projectUUID => {
   services.propertiesStore = propertiesStore
   services.layerStore = layerStore
   services.searchIndex = searchIndex
-  services.paletteCommands = new PaletteCommands(layerStore, undo)
-
-  // Key bindings.
-  bindings(services.emitter)
+  services.paletteCommands = new PaletteCommands(propertiesStore, emitter)
 
   return (
     <ServiceProvider { ...services }>
@@ -104,8 +107,17 @@ export const Workspace = () => {
 
   React.useEffect(() => {
     const handleCommand = event => {
+
       switch (event.type) {
-        case 'open-command-palette': return setShowing({ ...showing, spotlight: true })
+        case 'open-command-palette': {
+          return setShowing({
+            ...showing,
+            spotlight: true,
+            paletteValue: event.value,
+            palettePlaceholder: event.placeholder,
+            paletteCallback: event.callback
+          })
+        }
         case 'toggle-sidebar': return setShowing({ ...showing, sidebar: !showing.sidebar })
       }
     }
@@ -118,6 +130,9 @@ export const Workspace = () => {
     <CommandPalette
       onBlur={handleCommandPaletteBlur}
       onKeyDown={handleCommandPaletteKeyDown}
+      value={showing.paletteValue}
+      placeholder={showing.palettePlaceholder}
+      callback={showing.paletteCallback}
     />
 
   const sidebar = showing.sidebar &&

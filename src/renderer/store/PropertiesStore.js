@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { isGroupId, isFeatureId } from '../ids'
+import { isGroupId } from '../ids'
 
 const taggable = id => !isGroupId(id)
 
@@ -47,16 +47,12 @@ const removeTag = function (ids, name) {
 }
 
 /**
- *
+ * updateProperties :: [object] -> [object] -> command
  */
-const updateProperties = function (oldProperties, newProperties) {
+const updateProperties = function (newProperties, oldProperties) {
   return {
-    apply: () => this.level_.batch([{
-      type: 'put',
-      key: newProperties.id,
-      value: newProperties
-    }]),
-    inverse: () => this.commands_.updateProperties(newProperties, oldProperties)
+    apply: () => this.updateProperties_(newProperties),
+    inverse: () => this.commands_.updateProperties(oldProperties, newProperties)
   }
 }
 
@@ -91,6 +87,15 @@ PropertiesStore.prototype.valuesById_ = function (ids) {
   }, [])
 }
 
+
+/**
+ *
+ */
+PropertiesStore.prototype.value = function (id) {
+  return this.level_.get(id)
+}
+
+
 /**
  *
  */
@@ -101,6 +106,7 @@ PropertiesStore.prototype.addTag = function (id, name) {
   this.undo_.apply(command)
 }
 
+
 /**
  *
  */
@@ -110,9 +116,38 @@ PropertiesStore.prototype.removeTag = function (id, name) {
   this.undo_.apply(command)
 }
 
+
+/**
+ *
+ */
 PropertiesStore.prototype.rename = async function (id, value) {
   const oldProperties = await this.level_.get(id)
   const newProperties = { ...oldProperties, name: value }
-  const command = this.commands_.updateProperties(oldProperties, newProperties)
+  const command = this.commands_.updateProperties([newProperties], [oldProperties])
   this.undo_.apply(command)
+}
+
+
+/**
+ *
+ */
+PropertiesStore.prototype.updateProperties = function (newProperties, oldProperties) {
+  // No undo when oldProperties not provided.
+  if (!oldProperties) return this.updateProperties_(newProperties)
+  else {
+    const command = this.commands_.updateProperties(newProperties, oldProperties)
+    this.undo_.apply(command)
+  }
+}
+
+
+/**
+ *
+ */
+PropertiesStore.prototype.updateProperties_ = async function (properties) {
+  this.level_.batch(properties.map(value => ({
+    type: 'put',
+    key: value.id,
+    value: value
+  })))
 }

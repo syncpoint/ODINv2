@@ -4,12 +4,16 @@ import { Input } from 'antd'
 import { cmdOrCtrl } from '../platform'
 
 export const SearchInput = props => {
-  const [value, setValue] = React.useState('')
+  const [value, setValue] = React.useState(props.value || '')
 
   const handleChange = ({ target }) => {
     setValue(target.value)
     props.onSearch(target.value)
   }
+
+  React.useEffect(() => {
+    setValue(props.value)
+  }, [props.value])
 
   const handleKeyDown = event => {
     const { key } = event
@@ -42,6 +46,7 @@ export const SearchInput = props => {
 
 SearchInput.propTypes = {
   onSearch: PropTypes.func.isRequired,
+  value: PropTypes.string,
   placeholder: PropTypes.string,
   size: PropTypes.string
 }

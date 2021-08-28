@@ -13,11 +13,15 @@ export const Tag = props => {
     : `tag ${variantClassName}`
 
   const handleClose = () => props.onClose && props.onClose()
+  const handleClick = event => {
+    event.stopPropagation()
+    props.onClick && props.onClick(event)
+  }
 
   return (
     <span
       className={className}
-      onClick={props.onClick}
+      onClick={handleClick}
       onDoubleClick={props.onDoubleClick}
       onMouseDown={props.onMouseDown}
       onMouseUp={props.onMouseUp}

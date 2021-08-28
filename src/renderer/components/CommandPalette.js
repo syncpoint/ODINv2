@@ -3,17 +3,20 @@ import PropTypes from 'prop-types'
 import { useServices } from './services'
 import { initialState, singleselect } from './list-state'
 import { SearchInput, List, reducer } from '.'
-import { isFeatureId } from '../ids'
 
 
 /**
  *
  */
 export const CommandPalette = props => {
-  const { selection, layerStore, paletteCommands } = useServices()
-  const [featuresSnapshot, setFeaturesSnapshot] = React.useState()
-  const [filter, setFilter] = React.useState('')
+  const { selection, paletteCommands, propertiesStore } = useServices()
+  const [snapshot, setSnapshot] = React.useState()
+  const [filter, setFilter] = React.useState(props.value)
+  const [placeholder, setPlaceholder] = React.useState(props.placeholder)
   const [state, dispatch] = React.useReducer(reducer(singleselect), initialState)
+
+  React.useEffect(() => setFilter(props.value), [props.value])
+  React.useEffect(() => setPlaceholder(props.placeholder), [props.placeholder])
 
   const handleBlur = ({ currentTarget, relatedTarget }) => {
     if (currentTarget.contains(relatedTarget)) return
@@ -26,12 +29,13 @@ export const CommandPalette = props => {
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
-    // On Escape key, reset features to stored snapshot:
-    if (key === 'Escape') layerStore.updateEntries(featuresSnapshot)
+    // On Escape key, reset values to stored snapshot:
+    if (key === 'Escape') propertiesStore.updateProperties(snapshot)
 
     // On Enter key, apply command for good, i.e. no dry run:
-    if (key === 'Enter' && state.focusIndex !== -1) {
-      state.entries[state.focusIndex].invoke(false)
+    if (key === 'Enter') {
+      if (state.focusIndex !== -1) state.entries[state.focusIndex].invoke(false)
+      else if (props.callback) props.callback(filter)
     }
 
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
@@ -43,7 +47,7 @@ export const CommandPalette = props => {
   }
 
   const handleSearch = value => {
-    setFilter(value.toLowerCase())
+    setFilter(value)
   }
 
   /**
@@ -52,32 +56,31 @@ export const CommandPalette = props => {
    */
   React.useEffect(() => {
     (async () => {
-      // Get properties snapshot of currently selected features:
+      // Get properties snapshot of currently selection:
+      // snapshot :: [value]
       const snapshot = await selection.selected().reduce(async (acc, id) => {
-        if (!isFeatureId(id)) return acc
-
-        const feature = await layerStore.getEntry(id)
-        const features = await acc
-        features.push(feature)
-        return features
+        const value = await propertiesStore.value(id)
+        const values = await acc
+        values.push(value)
+        return values
       }, [])
 
-      setFeaturesSnapshot(snapshot)
+      setSnapshot(snapshot)
     })()
-  }, [layerStore, selection])
+  }, [propertiesStore, selection])
 
 
   /**
    * Filter command entries based on features snapshot and current filter.
    */
   React.useEffect(() => {
-    const commands = paletteCommands.getCommands(featuresSnapshot).filter(command => {
-      if (!filter) return true
-      return command.description().toLowerCase().includes(filter)
-    })
+    // TODO: 1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
+    const isMatch = command => command.description().toLowerCase().includes(filter.toLowerCase())
+    const commands = paletteCommands.getCommands(snapshot)
+      .filter(command => !filter || isMatch(command))
 
     dispatch({ type: 'entries', entries: commands })
-  }, [filter, featuresSnapshot, paletteCommands])
+  }, [filter, snapshot, paletteCommands])
 
   const ref = React.useRef()
 
@@ -101,6 +104,16 @@ export const CommandPalette = props => {
     state.entries[state.focusIndex].invoke(true)
   }, [state.focusIndex, state.entries])
 
+  const list = props.value === undefined
+    ? <div className='list-container'>
+        <List
+          ref={ref}
+          child={child}
+          { ...state }
+        />
+      </div>
+    : null
+
   return (
     <div
       className='spotlight-container fullscreen'
@@ -111,15 +124,13 @@ export const CommandPalette = props => {
         onKeyDown={handleKeyDown}
       >
         <div style={{ display: 'flex', padding: '6px' }}>
-          <SearchInput onSearch={handleSearch}/>
-        </div>
-        <div className='list-container'>
-          <List
-            ref={ref}
-            child={child}
-            { ...state }
+          <SearchInput
+            onSearch={handleSearch}
+            value={props.value}
+            placeholder={placeholder}
           />
         </div>
+        { list }
       </div>
     </div>
   )
@@ -127,5 +138,8 @@ export const CommandPalette = props => {
 
 CommandPalette.propTypes = {
   onBlur: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func.isRequired
+  onKeyDown: PropTypes.func.isRequired,
+  value: PropTypes.string, // edit mode value
+  callback: PropTypes.func, // edit mode callback
+  placeholder: PropTypes.string // edit mode, multiple values
 }

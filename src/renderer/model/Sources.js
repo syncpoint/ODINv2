@@ -10,9 +10,9 @@ import { readFeature, readFeatures, readGeometry } from '../store/format'
 /**
  * @constructor
  */
-export function Sources (layerStore) {
+export function Sources (layerStore, propertiesLevel) {
   Emitter.call(this)
-  this.layerStore = layerStore
+  this.layerStore_ = layerStore
 
   // For now, hold all features in a single source.
   // This might change in the future, especially for 'external' features/sources.
@@ -22,6 +22,7 @@ export function Sources (layerStore) {
   layerStore.on('batch', ({ operations }) => this.storeBatch_(operations))
   layerStore.on('geometries', ({ operations }) => this.updateGeometries_(operations))
   layerStore.on('properties', ({ operations }) => this.updateProperties_(operations))
+  propertiesLevel.on('batch', operations => this.updateProperties_(operations))
 }
 
 util.inherits(Sources, Emitter)
@@ -88,6 +89,7 @@ Sources.prototype.updateGeometries_ = function (operations) {
  */
 Sources.prototype.updateProperties_ = function (operations) {
   operations
+    .filter(({ key }) => isFeatureId(key))
     .forEach(({ key, value }) => {
       const feature = this.source_.getFeatureById(key)
       // Note: Does not increase revision counter
@@ -103,7 +105,7 @@ Sources.prototype.updateProperties_ = function (operations) {
  */
 Sources.prototype.getFeatureSource = async function () {
   if (this.source_) return this.source_
-  const json = await this.layerStore.getFeatures()
+  const json = await this.layerStore_.getFeatures()
   const features = readFeatures(json)
   this.source_ = new VectorSource({ features })
   return this.source_
