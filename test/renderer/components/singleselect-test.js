@@ -5,29 +5,25 @@ import { initialState } from '../../../src/renderer/components/list-state'
 describe('singleselect', function () {
 
   describe('entries', function () {
-    const entries = [{ id: 'x' }, { id: 'y' }]
 
-    it('reset to initial state (empty list)', function () {
+    it('reset focus and selection (empty list)', function () {
+      // Note: This is pretty different from multiselect.
+      const entries = [{ id: 'x' }, { id: 'y' }] // we will remove all entries
       const state = { entries, selected: ['x'], focusIndex: 0, focusId: 'x' }
       const actual = singleselect.entries(state, { entries: [] })
-      assert.deepStrictEqual(actual, initialState)
-    })
-
-    it('focus/select candidate (scroll/smooth)', function () {
-      const state = { entries, selected: ['y'], focusIndex: 1, focusId: 'y' }
-      const actual = singleselect.entries(state, { entries: [{ id: 'y' }, { id: 'z' }], candidateId: 'z' })
       const expected = {
-        entries: [{ id: 'y' }, { id: 'z' }],
-        focusId: 'z',
-        focusIndex: 1,
-        selected: ['z'],
-        scroll: 'smooth'
+        entries: [],
+        focusIndex: -1,
+        focusId: null,
+        selected: [],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
     })
 
-    it('retain focus/selection (adjust index)', function () {
+    it('retain focus and selection (adjust index)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }] // we will remove all entries
       const state = { entries, selected: ['y'], focusIndex: 1, focusId: 'y' }
       const actual = singleselect.entries(state, { entries: [{ id: 'x' }, { id: 'w' }, { id: 'y' }] })
       const expected = {
@@ -41,7 +37,8 @@ describe('singleselect', function () {
       assert.deepStrictEqual(actual, expected)
     })
 
-    it('focus same index (entry removed)', function () {
+    it('focus previous index (entry removed)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }] // we will remove 'x'
       const state = { entries, selected: ['x'], focusIndex: 0, focusId: 'x' }
       const actual = singleselect.entries(state, { entries: [{ id: 'y' }] })
       const expected = {
@@ -56,6 +53,7 @@ describe('singleselect', function () {
     })
 
     it('focus previous index (entry removed)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }] // we will remove all entries
       const state = { entries, selected: ['y'], focusIndex: 1, focusId: 'y' }
       const actual = singleselect.entries(state, { entries: [{ id: 'x' }] })
       const expected = {
@@ -67,6 +65,46 @@ describe('singleselect', function () {
       }
 
       assert.deepStrictEqual(actual, expected)
+    })
+  })
+
+  describe('focus', function () {
+
+    it('focus and select candidate (scroll/smooth)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries, selected: ['y'], focusIndex: 1, focusId: 'y' }
+      const actual = singleselect.focus(state, { focusId: 'x' })
+      const expected = {
+        entries: [{ id: 'x' }, { id: 'y' }],
+        focusId: 'x',
+        focusIndex: 0,
+        selected: ['x'],
+        scroll: 'smooth'
+      }
+
+      assert.deepStrictEqual(actual, expected)
+    })
+
+    it('reset focus and selection (candidate does not exist)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries, selected: ['y'], focusIndex: 1, focusId: 'y' }
+      const actual = singleselect.focus(state, { focusId: 'z' })
+      const expected = {
+        entries: [{ id: 'x' }, { id: 'y' }],
+        focusId: null,
+        focusIndex: -1,
+        selected: [],
+        scroll: 'smooth'
+      }
+
+      assert.deepStrictEqual(actual, expected)
+    })
+
+    it('noop (undefined candidate)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries, selected: ['y'], focusIndex: 1, focusId: 'y' }
+      const actual = singleselect.focus(state, { focusId: null })
+      assert(actual === state)
     })
   })
 
