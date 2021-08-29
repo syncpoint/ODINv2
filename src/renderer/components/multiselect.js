@@ -24,14 +24,11 @@ import { cmdOrCtrl } from '../platform'
 export const multiselect = {
 
   /**
-   * Note: New set of entries must not change current selection.
+   *
    */
   entries: (state, { entries }) => {
 
-    if (!entries || !entries.length) {
-      // Back to square one.
-      return initialState
-    }
+    // 438fe36c-5778-4684-be38-b7d76e50e34b - filter does not change selection
 
     const focusIndex = state.focusId
       ? indexOf(entries, state.focusId)
