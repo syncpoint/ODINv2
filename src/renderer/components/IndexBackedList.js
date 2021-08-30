@@ -1,0 +1,115 @@
+import React from 'react'
+import PropTypes from 'prop-types'
+import { useServices } from './services'
+import { List, Card, Avatar, TagList } from '.'
+
+/**
+ *
+ */
+export const IndexBackedList = props => {
+  const { searchIndex, propertiesStore, selection } = useServices()
+  const { scope, filter, dispatch, state } = props
+
+  // >>= QUERY/RESULT
+  // Open new query, dispatch result list and listen for
+  // changes on query result list due to search index updates.
+
+  React.useEffect(() => {
+    const pendingQuery = (async () => {
+      return await searchIndex.query(`@${scope} ${filter}`, entries => {
+        // Note: (multiselect) strategy makes sure that state is only
+        // updated when entries are not deep equal.
+        dispatch({ type: 'entries', entries })
+      })
+    })()
+
+    return async () => {
+      const query = await pendingQuery
+      query.dispose()
+    }
+  }, [scope, filter, searchIndex, dispatch])
+
+  // <<= QUERY/RESULT
+
+
+  // =>> SELECTION
+  // Sync global selection with list state and vice versa.
+
+  const handleSelection = React.useCallback(event => {
+    dispatch({ type: 'selection', event })
+  }, [dispatch])
+
+  React.useEffect(() => {
+    selection.on('selection', handleSelection)
+    return () => selection.off('selection', handleSelection)
+  }, [selection, handleSelection])
+
+  React.useEffect(() => {
+    selection.set(state.selected)
+  }, [selection, state.selected])
+
+  // <<= SELECTION
+
+
+  /* eslint-disable react/prop-types */
+
+  // WDYR does not flag child function without useCallback().
+  // But why not use it anyways...
+  const child = React.useCallback(props => {
+    const { entry } = props
+    const handleClick = id => ({ metaKey, shiftKey }) => dispatch({ type: 'click', id, shiftKey, metaKey })
+    const handleRename = id => value => propertiesStore.rename(id, value)
+    const handleAddTag = (id, name) => {
+      console.log('handleAddTag', id, name)
+      propertiesStore.addTag(id, name)
+    }
+    const handleRemoveTag = (id, name) => {
+      console.log('handleRemoveTag', id, name, new Error())
+      propertiesStore.removeTag(id, name)
+    }
+
+    return (
+      <Card
+        key={props.id}
+        ref={props.ref}
+        onClick={handleClick(props.id)}
+        focused={props.focused}
+        selected={props.selected}
+      >
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <Card.Content>
+            <Card.Title
+              value={entry.title}
+              onChange={handleRename(props.id)}
+            />
+            <Card.Description value={entry.description}/>
+          </Card.Content>
+          { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
+        </div>
+
+        <TagList
+          id={props.id}
+          tags={entry.tags}
+          capabilities={entry.capabilities}
+          onAdd={handleAddTag}
+          onRemove={handleRemoveTag}
+        />
+      </Card>
+    )
+  }, [dispatch, propertiesStore])
+
+  /* eslint-enable react/prop-types */
+
+  return (
+    <List child={child} { ...state }/>
+  )
+}
+
+IndexBackedList.whyDidYouRender = true
+
+IndexBackedList.propTypes = {
+  scope: PropTypes.string.isRequired,
+  filter: PropTypes.string.isRequired,
+  state: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired
+}

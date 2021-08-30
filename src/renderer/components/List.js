@@ -22,9 +22,9 @@ const scrollIntoView = (refs, index, behavior) =>
 
 
 /**
- *
+ * Abstract list. Mainly obsessed with scrolling.
  */
-export const List = props => {
+const List = props => {
   const { child, focusId, selected } = props
   const cardrefs = props.entries.map(_ => React.createRef())
 
@@ -33,28 +33,27 @@ export const List = props => {
     scrollIntoView(cardrefs, props.focusIndex, props.scroll)
   }, [cardrefs, props.focusIndex, props.scroll])
 
-
   const handleKeyDown = event => {
     const { key } = event
     if (key === ' ') event.preventDefault()
   }
 
-  const card = (entry, index) => child({
-    entry,
-    id: entry.id,
-    focused: focusId === entry.id,
-    selected: selected.includes(entry.id),
-    ref: cardrefs[index]
-  })
+  const card = (entry, index) => {
+    return child({
+      entry,
+      id: entry.id,
+      focused: focusId === entry.id,
+      selected: selected.includes(entry.id),
+      ref: cardrefs[index]
+    })
+  }
 
   const list = props.entries.length
     ? props.entries.map(card)
     : null
 
   return (
-    <div
-      className='list-container'
-      >
+    <div className='list-container'>
       <div
         className='list'
         tabIndex={0}
@@ -67,10 +66,17 @@ export const List = props => {
 }
 
 List.propTypes = {
-  child: PropTypes.func.isRequired,
   entries: PropTypes.array.isRequired,
   focusId: PropTypes.string,
-  focusIndex: PropTypes.number,
+  focusIndex: PropTypes.number.isRequired,
   selected: PropTypes.array.isRequired,
-  scroll: PropTypes.string.isRequired
+  scroll: PropTypes.string,
+  child: PropTypes.func.isRequired
 }
+
+List.whyDidYouRender = true
+
+const ListMemo = React.memo(List)
+ListMemo.whyDidYouRender = true
+
+export { ListMemo as List }

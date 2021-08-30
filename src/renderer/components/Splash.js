@@ -4,7 +4,7 @@ import { Button } from 'antd'
 import { ipcRenderer } from 'electron'
 import { useServices, ServiceProvider } from './services'
 import { initialState, singleselect } from './list-state'
-import { SearchInput, List, reducer, Card } from '.'
+import { FilterInput, List, reducer, Card } from '.'
 import { militaryFormat } from '../../shared/datetime'
 import { ProjectStore } from '../store'
 import { Selection } from '../Selection'
@@ -256,14 +256,14 @@ export const Splash = () => {
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
-  const handleSearch = value => setFilter(value.toLowerCase())
+  const handleFilterChange = React.useCallback(value => setFilter(value.toLowerCase()), [])
   const handleCreate = () => projectStore.createProject()
   const handleClick = id => ({ metaKey, shiftKey }) => {
     dispatch({ type: 'click', id, shiftKey, metaKey })
   }
 
   /* eslint-disable react/prop-types */
-  const child = props => {
+  const child = React.useCallback(props => {
     const { entry: project } = props
     const send = message => () => ipcRenderer.send(message, project.id)
     const loadPreview = () => projectStore.getPreview(project.id)
@@ -303,7 +303,7 @@ export const Splash = () => {
         </div>
       </Card>
     )
-  }
+  }, [ipcRenderer, projectStore])
   /* eslint-enable react/prop-types */
 
   return (
@@ -318,7 +318,7 @@ export const Splash = () => {
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >
-        <SearchInput onSearch={handleSearch}/>
+        <FilterInput onChange={handleFilterChange}/>
         <Button onClick={handleCreate}>New</Button>
         <Button>Import</Button>
       </div>

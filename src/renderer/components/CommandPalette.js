@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
 import { initialState, singleselect } from './list-state'
-import { SearchInput, List, reducer } from '.'
+import { FilterInput, List, reducer } from '.'
 
 
 /**
@@ -46,9 +46,9 @@ export const CommandPalette = props => {
     dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
   }
 
-  const handleSearch = value => {
+  const handleFilterChange = React.useCallback(value => {
     setFilter(value)
-  }
+  }, [])
 
   /**
    * Store feature properties snapshot of all selected features.
@@ -84,7 +84,7 @@ export const CommandPalette = props => {
 
 
   /* eslint-disable react/prop-types */
-  const child = props => (
+  const child = React.useCallback(props => (
     <div
       key={props.id}
       ref={props.ref}
@@ -94,7 +94,7 @@ export const CommandPalette = props => {
     >
       <span>{props.entry.description()}</span>
     </div>
-  )
+  ), [])
   /* eslint-enable react/prop-types */
 
   // Invoke command for newly focused entry (state.focusId):
@@ -117,8 +117,8 @@ export const CommandPalette = props => {
         onKeyDown={handleKeyDown}
       >
         <div style={{ display: 'flex', padding: '6px' }}>
-          <SearchInput
-            onSearch={handleSearch}
+          <FilterInput
+            onChange={handleFilterChange}
             value={props.value}
             placeholder={placeholder}
           />

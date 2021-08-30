@@ -2,10 +2,9 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 0fe18c43-7f04-4695-b72f-1e2c7b17be9e - WDYR: inspect/fix IndexBackList and sub-components
+DEH - 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 
 OPEN
-76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 b73b6b06-24b8-4861-92e4-e3e5ce494588 - UI: switch to Roboto font face
 5ddb2139-daf4-4ca1-902d-3149e4b191cd - multiselect/selection: improve behavior
 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize issue
@@ -126,3 +125,4 @@ DEH - 826f0877-d4d2-44f9-960a-52b7e13a621d - Layers: debounce filter change
 DEH - 96ad6db1-d89c-4c57-837e-befe39c66ab7 - race condition/Layers: earlier/slow query result can overwrite later/fast result
 DEH - 37ddb956-dd6f-4a2c-a176-a6988370af27 - command palette: batch update (unique designation)
 DEH - 95e05f34-905d-4dd6-a868-4a1e22e0c5f4 - (legacy) import: remove geometry property from feature
+DEH - 0fe18c43-7f04-4695-b72f-1e2c7b17be9e - WDYR: inspect/fix IndexBackList and sub-components

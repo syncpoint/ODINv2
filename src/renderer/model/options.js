@@ -23,6 +23,8 @@ options.feature = (feature, cache) => {
   const identity = identityTag(MILSTD.identityCode(feature.properties.sidc))
 
   const tags = feature => {
+    // FIXME: somehow null tags can/could be introduced. check!
+    const tags = (feature.tags || []).filter(R.identity)
     return [
       'SCOPE:FEATURE:identify',
       ...((feature.links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
@@ -30,8 +32,7 @@ options.feature = (feature, cache) => {
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),
       ...identity.map(label => `SYSTEM:${label}:NONE`),
-      // FIXME: somehow null tags can/could be introduced. check!
-      ...(feature.tags.filter(R.identity) || []).map(label => `USER:${label}:NONE`)
+      ...tags.map(label => `USER:${label}:NONE`)
     ].join(' ')
   }
 

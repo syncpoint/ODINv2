@@ -1,10 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
-import { MemoizedTagIcon } from './TagIcon'
+import { TagIcon } from './TagIcon'
 
+/**
+ * A tag in different variants.
+ */
 export const Tag = props => {
-  const { variant, children } = props
+  const { variant, children, onClose } = props
   const closable = variant === 'USER'
 
   const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
@@ -12,7 +15,8 @@ export const Tag = props => {
     ? `tag-active ${variantClassName}`
     : `tag ${variantClassName}`
 
-  const handleClose = () => props.onClose && props.onClose()
+  const handleClose = () => onClose && onClose()
+
   const handleClick = event => {
     event.stopPropagation()
     props.onClick && props.onClick(event)
@@ -30,7 +34,7 @@ export const Tag = props => {
       {
         closable &&
         props.capabilities.includes('TAG') &&
-        <MemoizedTagIcon
+        <TagIcon
           path={mdi.mdiClose}
           closable={closable}
           onClose={handleClose}
@@ -42,9 +46,9 @@ export const Tag = props => {
 }
 
 Tag.propTypes = {
-  variant: PropTypes.string.isRequired,
-  action: PropTypes.string,
   children: PropTypes.node.isRequired,
+  variant: PropTypes.string,
+  action: PropTypes.string,
   capabilities: PropTypes.string,
   onClick: PropTypes.func,
   onDoubleClick: PropTypes.func,
@@ -52,5 +56,3 @@ Tag.propTypes = {
   onMouseUp: PropTypes.func,
   onClose: PropTypes.func
 }
-
-export const MemoizedTag = React.memo(Tag)
