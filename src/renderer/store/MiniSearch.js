@@ -7,12 +7,12 @@ import Emitter from '../../shared/emitter'
 import { options } from '../model/options'
 import { parseQuery } from './index-common'
 
-const logger = console
-// const logger = {
-//   log: () => {},
-//   time: () => {},
-//   timeEnd: () => {}
-// }
+// const logger = console
+const logger = {
+  log: () => {},
+  time: () => {},
+  timeEnd: () => {}
+}
 
 /**
  * @constructor

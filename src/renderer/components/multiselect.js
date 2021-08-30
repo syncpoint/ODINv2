@@ -1,6 +1,6 @@
 import * as R from 'ramda'
+import isEqual from 'react-fast-compare'
 import { toggleSelection, indexOf, firstId, lastId } from './selection'
-import { initialState } from './list-state'
 import { cmdOrCtrl } from '../platform'
 
 /**
@@ -24,11 +24,12 @@ import { cmdOrCtrl } from '../platform'
 export const multiselect = {
 
   /**
-   *
+   * 438fe36c-5778-4684-be38-b7d76e50e34b - filter does not change selection
    */
   entries: (state, { entries }) => {
 
-    // 438fe36c-5778-4684-be38-b7d76e50e34b - filter does not change selection
+    // Don't update when entries are deep equal to previous state.
+    if (isEqual(state.entries, entries)) return state
 
     const focusIndex = state.focusId
       ? indexOf(entries, state.focusId)
@@ -69,6 +70,10 @@ export const multiselect = {
 
   /** Focus clicked entry, optionally selecting it. */
   click: (state, { id, metaKey, ctrlKey }) => {
+
+    // Don't touch state when clicked on already focused entry:
+    if (!cmdOrCtrl({ metaKey, ctrlKey }) && id === state.focusId) return state
+
     const selected = cmdOrCtrl({ metaKey, ctrlKey })
       ? toggleSelection(state.selected, id)
       : []
@@ -87,14 +92,24 @@ export const multiselect = {
     const selected = state.selected.concat(event.selected)
       .filter(id => !event.deselected.includes(id))
 
-    // TODO: check if focusId still exists
-    // TODO: no focus: optionally focus first entry
+    // Return same state (reference) when selection didn't change:
+    if (isEqual(state.selected, selected)) return state
 
-    return { ...state, selected }
+    // TODO: 5ddb2139-daf4-4ca1-902d-3149e4b191cd - multiselect/selection: improve behavior
+
+    return {
+      ...state,
+      selected,
+      scroll: 'none' // don't scroll with changed focus (for now)
+    }
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
+    if (!state.entries || !state.entries.length) return state
+
+    // Return same state (reference) when we are already at the end.
+    if (state.focusIndex === state.entries.length - 1) return state
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.min(state.entries.length - 1, index + 1)
@@ -117,6 +132,10 @@ export const multiselect = {
 
   'keydown/ArrowUp': (state, { shiftKey, metaKey, ctrlKey }) => {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
+    if (!state.entries || !state.entries.length) return state
+
+    // Return same state (reference) when we are already at the top.
+    if (state.focusIndex === 0) return state
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.max(0, index - 1)
@@ -139,6 +158,10 @@ export const multiselect = {
 
   'keydown/Home': state => {
     if (!state.focusId) return state
+
+    // Return same state (reference) when we are already at the top.
+    if (state.focusIndex === 0) return state
+
     const focusId = firstId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
     return { ...state, focusId, focusIndex, scroll: 'auto' }
@@ -146,6 +169,10 @@ export const multiselect = {
 
   'keydown/End': state => {
     if (!state.focusId) return state
+
+    // Return same state (reference) when we are already at the end.
+    if (state.focusIndex === state.entries.length - 1) return state
+
     const focusId = lastId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
     return { ...state, focusId, focusIndex, scroll: 'auto' }
@@ -165,7 +192,11 @@ export const multiselect = {
     return { ...state, selected }
   },
 
+  /**
+   * Reset selection (if any).
+   */
   'keydown/Escape': (state) => {
+    if (!state.selected || !state.selected.length) return state
     return { ...state, selected: [], scroll: 'none' }
   }
 }

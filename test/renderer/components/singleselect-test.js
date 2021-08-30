@@ -6,6 +6,20 @@ describe('singleselect', function () {
 
   describe('entries', function () {
 
+    it('noop (empty list)', function () {
+      const state = { entries: [] }
+      const actual = singleselect.entries(state, { entries: [] })
+      assert(actual === state) // reference equal, same state
+    })
+
+    it('noop (deep equal)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries }
+      // entries: new reference with same values
+      const actual = singleselect.entries(state, { entries: [...entries] })
+      assert(actual === state) // reference equal, same state
+    })
+
     it('reset focus and selection (empty list)', function () {
       // Note: This is pretty different from multiselect.
       const entries = [{ id: 'x' }, { id: 'y' }] // we will remove all entries

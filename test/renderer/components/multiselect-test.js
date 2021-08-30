@@ -3,6 +3,24 @@ import { multiselect } from '../../../src/renderer/components/multiselect'
 
 describe('multiselect', function () {
 
+  // TODO: add missing test cases (entries)
+  describe('entries', function () {
+
+    it('noop (empty list)', function () {
+      const state = { entries: [] }
+      const actual = multiselect.entries(state, { entries: [] })
+      assert(actual === state) // reference equal, same state
+    })
+
+    it('noop (deep equal)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries }
+      // entries: new reference with same values
+      const actual = multiselect.entries(state, { entries: [...entries] })
+      assert(actual === state) // reference equal, same state
+    })
+  })
+
   describe('click', function () {
     const entries = [{ id: 'x' }, { id: 'y' }]
 

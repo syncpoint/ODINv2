@@ -55,7 +55,7 @@ export const Map = () => {
     // http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg
 
     const layers = [
-      new TileLayer({ source: new OSM() }),
+      // new TileLayer({ source: new OSM() }),
       // new TileLayer({ source: new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' }) }),
       featureLayer,
       selectedLayer

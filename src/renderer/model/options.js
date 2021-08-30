@@ -30,7 +30,8 @@ options.feature = (feature, cache) => {
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),
       ...identity.map(label => `SYSTEM:${label}:NONE`),
-      ...(feature.tags || []).map(label => `USER:${label}:NONE`)
+      // FIXME: somehow null tags can/could be introduced. check!
+      ...(feature.tags.filter(R.identity) || []).map(label => `USER:${label}:NONE`)
     ].join(' ')
   }
 

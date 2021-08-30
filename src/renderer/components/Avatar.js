@@ -19,5 +19,3 @@ Avatar.propTypes = {
   url: PropTypes.string,
   path: PropTypes.string
 }
-
-export const MemoizedAvatar = React.memo(Avatar)

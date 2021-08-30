@@ -1,3 +1,4 @@
+import isEqual from 'react-fast-compare'
 import { indexOf, firstId, lastId } from './selection'
 import { initialState } from './list-state'
 import { cmdOrCtrl } from '../platform'
@@ -25,6 +26,9 @@ export const singleselect = {
    *
    */
   entries: (state, { entries }) => {
+
+    // Don't update when entries are deep equal to previous state.
+    if (isEqual(state.entries, entries)) return state
 
     // Check if focused entry is still available.
     const index = indexOf(entries, state.focusId)
