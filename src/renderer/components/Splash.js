@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 import { Button } from 'antd'
 import { ipcRenderer } from 'electron'
 import { useServices, ServiceProvider } from './services'
-import { initialState, singleselect } from './list-state'
-import { FilterInput, List, reducer, Card } from '.'
+import { FilterInput, List, Card } from '.'
+import { useList } from './hooks'
 import { militaryFormat } from '../../shared/datetime'
 import { ProjectStore } from '../store'
 import { Selection } from '../Selection'
@@ -193,7 +193,7 @@ Project.propTypes = {
 export const Splash = () => {
   const { projectStore, ipcRenderer } = useServices()
   const [filter, setFilter] = React.useState('')
-  const [state, dispatch] = React.useReducer(reducer(singleselect), initialState)
+  const [state, dispatch] = useList({ multiselect: true })
 
   /**
    * Reload projects from store and update entry list

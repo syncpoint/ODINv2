@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { initialState, singleselect } from './list-state'
-import { FilterInput, List, reducer } from '.'
+import { useList } from './hooks'
+import { FilterInput, List } from '.'
 
 
 /**
@@ -13,7 +13,7 @@ export const CommandPalette = props => {
   const [snapshot, setSnapshot] = React.useState()
   const [filter, setFilter] = React.useState(props.value)
   const [placeholder, setPlaceholder] = React.useState(props.placeholder)
-  const [state, dispatch] = React.useReducer(reducer(singleselect), initialState)
+  const [state, dispatch] = useList({ multiselect: true })
 
   React.useEffect(() => setFilter(props.value), [props.value])
   React.useEffect(() => setPlaceholder(props.placeholder), [props.placeholder])

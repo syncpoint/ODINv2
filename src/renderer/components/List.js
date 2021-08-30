@@ -4,14 +4,6 @@ import PropTypes from 'prop-types'
 /**
  *
  */
-export const reducer = strategy => (state, event) => {
-  const handler = strategy[event.type]
-  return handler ? handler(state, event) : state
-}
-
-/**
- *
- */
 const scrollIntoView = (refs, index, behavior) =>
   refs[index] &&
   refs[index].current &&
