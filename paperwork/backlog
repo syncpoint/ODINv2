@@ -5,6 +5,12 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 DEH - 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 
 OPEN
+e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing
+4c3316e5-ebab-4b87-835b-35c7f88976f2 - project list: support open project without closing list
+3905a9bd-20df-4c98-845e-523bb44d1a63 - project list: export project
+12c88373-6930-47d8-a95c-41b636168a16 - project list: import project
+216fa1b9-5b91-4460-8695-21e8d427a38e - project list: support clipboard operations
+c5687f5a-3757-4ba4-9419-fb4cac441932 - project list: support undo/redo
 b73b6b06-24b8-4861-92e4-e3e5ce494588 - UI: switch to Roboto font face
 5ddb2139-daf4-4ca1-902d-3149e4b191cd - multiselect/selection: improve behavior
 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize issue

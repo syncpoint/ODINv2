@@ -1,0 +1,71 @@
+3ac60e97-e09e-4159-8ca2-9c753c659799 - Open project list
+1. Open project list.
+2. Expected:
+2.1 Project list is displayed in separate window.
+2.2 Available projects are displayed in alphabetical order.
+2.3 Project name, date of last use and preview image of the projects are displayed.
+3. Notes
+3.1 For remaining test, project list should contain the following six projects
+
+  A - 'Exercise HUNTER 2021'
+  B - 'Lage ALTHOFEN'
+  C - 'Lage LEIBNITZ'
+  D - 'Lage YPPSFELD'
+  E - 'TakKal 01/2021/LVAk (January)'
+  F - 'TakKal 02/2021/LVAk (February)'
+
+e30a14fb-cd85-4c4c-8d41-f4a3cd7bbd8e - Filter project by name
+1. Project list contains projects from 3ac60e97-e09e-4159-8ca2-9c753c659799
+2. Enter 'ta' in filter field. Expected: Projects E and F are displayed.
+3. Enter 'x' in filter field. Expected: Empty project list is displayed.
+5. Notes
+5.1 Filter text is only matched against project name prefix.
+5.2 Fuzzy or wildcard search are not supported.
+
+
+a4e58ffd-b5e1-4e2a-815e-420900656327 - New project
+1. Project list contains projects from 3ac60e97-e09e-4159-8ca2-9c753c659799
+2. Create new project.
+3. Expected
+3.1 Project 'New Project' is created and displayed between D and E.
+
+
+aed84108-8d00-4a83-8c5d-2d85485253ad - Rename project
+1. Project list contains projects from 3ac60e97-e09e-4159-8ca2-9c753c659799
+2. Rename project E to '01/2021/LVAk'.
+3. Expected
+2.1 Project name is updated.
+2.2 Project is moved to alphabetically correct position (at top of list.)
+3. Notes
+3.1 Duplicate project names are permissible.
+
+
+377cacd2-8bc7-43d9-b6f7-9cfcd6f05704 - Open project (initial)
+1. Open any available project X from list.
+2. Expected
+2.1 Project is opened in new window.
+2.2 Project list is now closed.
+2.3 Project cannot be delete while open.
+
+
+509a4a2e-1bf8-4be8-bdf6-d2bb2591b45e - Open project (already open)
+1. Open any available project X from list.
+2. Open project list again.
+3. Open project X again.
+4. Expected
+4.1 Existing project window for X is activated.
+
+
+b58ae3ef-5b73-4dca-8835-01b37ca3b13c - Delete project
+1. Project list contains projects from 3ac60e97-e09e-4159-8ca2-9c753c659799
+2. Delete project B
+3. Expected
+3.1 Project B is deleted and no longer displayed.
+
+
+115bc457-ab57-494f-91bb-ba4afa582e70 - Close project
+1. Project F is open (verify F cannot be deleted in project list).
+2. Close project window for F.
+Expected
+3.1 Project window is now closed.
+3.2 Project F can now be deleted in project list.
