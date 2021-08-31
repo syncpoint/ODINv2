@@ -52,6 +52,7 @@ const IndexBackedList = props => {
 
   const handleAddTag = React.useCallback((id, name) => propertiesStore.addTag(id, name), [propertiesStore])
   const handleRemoveTag = React.useCallback((id, name) => propertiesStore.removeTag(id, name), [propertiesStore])
+  const handleRename = React.useCallback((id, value) => propertiesStore.rename(id, value), [propertiesStore])
 
   /* eslint-disable react/prop-types */
 
@@ -60,7 +61,6 @@ const IndexBackedList = props => {
   const child = React.useCallback(props => {
     const { entry } = props
     const handleClick = id => ({ metaKey, shiftKey }) => dispatch({ type: 'click', id, shiftKey, metaKey })
-    const handleRename = id => value => propertiesStore.rename(id, value)
 
     return (
       <Card
@@ -73,8 +73,9 @@ const IndexBackedList = props => {
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <Card.Content>
             <Card.Title
+              id={props.id}
               value={entry.title}
-              onChange={handleRename(props.id)}
+              onChange={handleRename}
             />
             <Card.Description value={entry.description}/>
           </Card.Content>
@@ -90,7 +91,7 @@ const IndexBackedList = props => {
         />
       </Card>
     )
-  }, [dispatch, propertiesStore, handleAddTag, handleRemoveTag])
+  }, [dispatch, handleAddTag, handleRemoveTag, handleRename])
 
   /* eslint-enable react/prop-types */
 
@@ -110,4 +111,5 @@ IndexBackedList.propTypes = {
 
 const IndexBackedListMemo = React.memo(IndexBackedList)
 IndexBackedListMemo.whyDidYouRender = true
+
 export { IndexBackedListMemo as IndexBackedList }
