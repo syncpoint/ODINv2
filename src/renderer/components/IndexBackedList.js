@@ -8,7 +8,7 @@ import { List, Card, Avatar, TagList } from '.'
  */
 export const IndexBackedList = props => {
   const { searchIndex, propertiesStore, selection } = useServices()
-  const { scope, filter, dispatch, state, history } = props
+  const { scope, filter, dispatch, state } = props
 
   // >>= QUERY/RESULT
   // Open new query, dispatch result list and listen for
@@ -103,7 +103,6 @@ IndexBackedList.whyDidYouRender = true
 
 IndexBackedList.propTypes = {
   scope: PropTypes.string.isRequired,
-  history: PropTypes.object,
   filter: PropTypes.string.isRequired,
   state: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired

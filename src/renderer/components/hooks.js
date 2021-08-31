@@ -2,6 +2,10 @@ import * as R from 'ramda'
 import React from 'react'
 import { initialState, multiselect, singleselect } from './list-state'
 
+
+/**
+ *
+ */
 export const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = React.useState(value)
   React.useEffect(() => {
@@ -12,6 +16,10 @@ export const useDebounce = (value, delay) => {
   return debouncedValue
 }
 
+
+/**
+ *
+ */
 export const useList = (options = {}) => {
   const strategy = options.multiselect ? multiselect : singleselect
   const reducer = (state, event) => {
@@ -22,17 +30,20 @@ export const useList = (options = {}) => {
   return React.useReducer(reducer, initialState)
 }
 
-export const useStack = initial => {
-  const [entries, setEntries] = React.useState(initial)
 
-  return {
-    entries,
-    push: entry => setEntries([...entries, entry]),
-    pop: (key) => {
-      if (!key) setEntries(R.dropLast(1, entries))
-      else setEntries(R.dropLastWhile(entry => entry.key !== key), entries)
-    },
-    reset: entry => setEntries([entry]),
-    peek: () => R.last(entries)
+/**
+ *
+ */
+export const useStack = initial => {
+  const reducer = (entries, event) => {
+    switch (event.type) {
+      case 'reset': return [event.entry]
+      case 'push': return [...entries, event.entry]
+      case 'pop': return event.key
+        ? R.dropLastWhile(entry => entry.key !== event.key, entries)
+        : R.dropLast(1, entries)
+    }
   }
+
+  return React.useReducer(reducer, initial)
 }

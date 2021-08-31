@@ -5,32 +5,32 @@ import { useList, useStack } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 
+const stickyHistoryEntry = {
+  key: 'layer',
+  scope: '@id:layer',
+  label: 'Layers',
+  items: [
+    { key: 'layer', scope: '@id:layer', label: 'Layers' },
+    { key: 'feature', scope: '@id:feature', label: 'Features' },
+    { key: 'link', scope: '@id:link', label: 'Links' },
+    { key: 'view', scope: '@id:view', label: 'Views' },
+    { key: 'pinned', scope: '#pin', label: 'Pinned' }
+  ]
+}
 
 /**
  * Top-most component, combining history. filter input and
  * concrete filterable list, e.g. feature list.
+ * TODO: rename Marc -> ...
  */
 const Marc = () => {
-  const [state, dispatch] = useList({ multiselect: true })
+  const [listState, listDispatch] = useList({ multiselect: true })
   const [filter, setFilter] = React.useState('')
+  const [historyEntries, historyDispatch] = useStack([stickyHistoryEntry])
 
-  const stickyHistoryEntry = {
-    key: 'layer',
-    scope: '@id:layer',
-    label: 'Layers',
-    items: [
-      { key: 'layer', scope: '@id:layer', label: 'Layers' },
-      { key: 'feature', scope: '@id:feature', label: 'Features' },
-      { key: 'link', scope: '@id:link', label: 'Links' },
-      { key: 'view', scope: '@id:view', label: 'Views' },
-      { key: 'pinned', scope: '#pin', label: 'Pinned' }
-    ]
-  }
-
-  const history = useStack([stickyHistoryEntry])
 
   // Reset filter on each history update:
-  React.useEffect(() => setFilter(''), [history.entries])
+  React.useEffect(() => setFilter(''), [historyEntries])
 
   const handleKeyDown = event => {
     const preventDefault = R.cond([
@@ -42,28 +42,34 @@ const Marc = () => {
     if (preventDefault(event)) event.preventDefault()
 
     if (cmdOrCtrl(event) && event.key === 'ArrowUp') {
-      if (history.entries.length > 1) history.pop()
+      if (historyEntries.length > 1) historyDispatch({ type: 'pop' })
     }
 
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
-      if (!state.focusId) return
-      if (isLayerId(state.focusId)) {
-        history.push({
-          key: state.focusId,
-          scope: `@id:feature:${state.focusId.split(':')[1]}`,
-          label: state.entries[state.focusIndex].title
+      if (!listState.focusId) return
+      if (isLayerId(listState.focusId)) {
+        historyDispatch({
+          type: 'push',
+          entry: {
+            key: listState.focusId,
+            scope: `@id:feature:${listState.focusId.split(':')[1]}`,
+            label: listState.entries[listState.focusIndex].title
+          }
         })
-      } else if (isFeatureId(state.focusId)) {
-        history.push({
-          key: state.focusId,
-          scope: `@id:link @ref:${state.focusId}`,
-          label: state.entries[state.focusIndex].title
+      } else if (isFeatureId(listState.focusId)) {
+        historyDispatch({
+          type: 'push',
+          entry: {
+            key: listState.focusId,
+            scope: `@id:link @ref:${listState.focusId}`,
+            label: listState.entries[listState.focusIndex].title
+          }
         })
       }
     }
 
     const { key, shiftKey, metaKey, ctrlKey } = event
-    dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
+    listDispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
   const handleFilterChange = React.useCallback(value => setFilter(value), [])
@@ -78,16 +84,16 @@ const Marc = () => {
         height: '100%'
       }}
     >
-      <History stack={history}/>
+      <History entries={historyEntries} dispatch={historyDispatch}/>
       <div style={{ display: 'flex', padding: '8px' }}>
         <FilterInput size='large' value={filter} onChange={handleFilterChange}/>
       </div>
       <IndexBackedList
-        scope={history.peek().scope}
+        scope={R.last(historyEntries).scope}
         history={history}
         filter={filter}
-        dispatch={dispatch}
-        state={state}
+        dispatch={listDispatch}
+        state={listState}
       />
     </div>
   )
