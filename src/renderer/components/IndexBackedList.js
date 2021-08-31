@@ -6,7 +6,7 @@ import { List, Card, Avatar, TagList } from '.'
 /**
  *
  */
-export const IndexBackedList = props => {
+const IndexBackedList = props => {
   const { searchIndex, propertiesStore, selection } = useServices()
   const { scope, filter, dispatch, state } = props
 
@@ -107,3 +107,7 @@ IndexBackedList.propTypes = {
   state: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired
 }
+
+const IndexBackedListMemo = React.memo(IndexBackedList)
+IndexBackedListMemo.whyDidYouRender = true
+export { IndexBackedListMemo as IndexBackedList }

@@ -37,6 +37,7 @@ export const useList = (options = {}) => {
 export const useStack = initial => {
   const reducer = (entries, event) => {
     switch (event.type) {
+      // might change entries unnecessarily (accepted for now)
       case 'reset': return [event.entry]
       case 'push': return [...entries, event.entry]
       case 'pop': return event.key
