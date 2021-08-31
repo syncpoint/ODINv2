@@ -25,6 +25,10 @@ const FilterInput = props => {
     onChange && onChange(debouncedValue)
   }, [onChange, debouncedValue])
 
+  React.useEffect(() => {
+    setValue(props.value)
+  }, [props.value])
+
   const handleChange = ({ target }) => setValue(target.value)
 
   const handleKeyDown = event => {

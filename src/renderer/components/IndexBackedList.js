@@ -8,7 +8,7 @@ import { List, Card, Avatar, TagList } from '.'
  */
 export const IndexBackedList = props => {
   const { searchIndex, propertiesStore, selection } = useServices()
-  const { scope, filter, dispatch, state } = props
+  const { scope, filter, dispatch, state, history } = props
 
   // >>= QUERY/RESULT
   // Open new query, dispatch result list and listen for
@@ -16,7 +16,7 @@ export const IndexBackedList = props => {
 
   React.useEffect(() => {
     const pendingQuery = (async () => {
-      return await searchIndex.query(`@${scope} ${filter}`, entries => {
+      return await searchIndex.query(`${scope} ${filter}`, entries => {
         // Note: (multiselect) strategy makes sure that state is only
         // updated when entries are not deep equal.
         dispatch({ type: 'entries', entries })
@@ -50,6 +50,8 @@ export const IndexBackedList = props => {
 
   // <<= SELECTION
 
+  const handleAddTag = React.useCallback((id, name) => propertiesStore.addTag(id, name), [propertiesStore])
+  const handleRemoveTag = React.useCallback((id, name) => propertiesStore.removeTag(id, name), [propertiesStore])
 
   /* eslint-disable react/prop-types */
 
@@ -59,14 +61,6 @@ export const IndexBackedList = props => {
     const { entry } = props
     const handleClick = id => ({ metaKey, shiftKey }) => dispatch({ type: 'click', id, shiftKey, metaKey })
     const handleRename = id => value => propertiesStore.rename(id, value)
-    const handleAddTag = (id, name) => {
-      console.log('handleAddTag', id, name)
-      propertiesStore.addTag(id, name)
-    }
-    const handleRemoveTag = (id, name) => {
-      console.log('handleRemoveTag', id, name, new Error())
-      propertiesStore.removeTag(id, name)
-    }
 
     return (
       <Card
@@ -96,7 +90,7 @@ export const IndexBackedList = props => {
         />
       </Card>
     )
-  }, [dispatch, propertiesStore])
+  }, [dispatch, propertiesStore, handleAddTag, handleRemoveTag])
 
   /* eslint-enable react/prop-types */
 
@@ -109,6 +103,7 @@ IndexBackedList.whyDidYouRender = true
 
 IndexBackedList.propTypes = {
   scope: PropTypes.string.isRequired,
+  history: PropTypes.object,
   filter: PropTypes.string.isRequired,
   state: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired

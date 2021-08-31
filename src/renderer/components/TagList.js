@@ -89,9 +89,8 @@ const TagList = props => {
         </Tag>
     : null
 
-
   return (
-    <div className='tag-list'>
+    <div className='taglist'>
       { (tags || '').split(' ').map(tag) }
       { newTag }
     </div>

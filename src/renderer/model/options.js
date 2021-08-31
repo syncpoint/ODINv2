@@ -58,21 +58,13 @@ options.feature = (feature, cache) => {
  * layer:
  */
 options.layer = layer => {
-  const tags = feature => {
-    const { type, hidden, active, tags, links } = feature
-
-    const socket = type === 'socket'
-      ? active
-        ? ['SYSTEM:ACTIVE:suspend']
-        : ['SYSTEM:INACTIVE:resume']
-      : []
+  const tags = () => {
+    const { hidden, tags, links } = layer
 
     return [
       'SCOPE:LAYER:identify',
       ...((links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
-      'IMAGE:OPEN:open:mdiArrowDown',
       hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
-      ...[socket],
       ...(tags || []).map(label => `USER:${label}:NONE`)
     ].join(' ').replace('  ', ' ').trim()
   }
@@ -91,13 +83,14 @@ options.layer = layer => {
 /**
  * link:
  */
-options.link = async (link, cache) => {
-  const container = await cache(link.ref)
+options.link = (link, cache) => {
+  const container = cache(link.ref)
   const containerName = container.name
 
   return {
     id: link.id,
-    title: link.name + ' ⏤ ' + containerName,
+    title: link.name,
+    description: containerName,
     tags: [
       'SCOPE:LINK:NONE',
       ...(link.tags || []).map(label => `USER:${label}:NONE`)

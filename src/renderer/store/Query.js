@@ -29,7 +29,7 @@ Query.prototype.refresh_ = function () {
     this.callback_(result)
   } catch (err) {
     /* don't invoke callback. */
-    console.log(err.message)
+    console.log(err)
   }
 }
 

@@ -53,10 +53,13 @@ export const Map = () => {
     // http://localhost:8000/services
     // http://localhost:8000/services/omk50_33
     // http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg
+    // const source = new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' })
+    const source = new OSM()
+    const tileLayer = new TileLayer({ source })
+    tileLayer.setOpacity(0.85)
 
     const layers = [
-      new TileLayer({ source: new OSM() }),
-      // new TileLayer({ source: new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' }) }),
+      tileLayer,
       featureLayer,
       selectedLayer
     ]
@@ -129,7 +132,8 @@ export const Map = () => {
         const url = canvas.toDataURL()
         ipcRenderer.send('PREVIEW', url)
       } catch (err) {
-        console.error('[PREVIEW]', err.message)
+        // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
+        // console.error('[PREVIEW]', err.message)
       }
 
       const reschedule = () => map.once('rendercomplete', ({ target }) => sendPreview(target))
