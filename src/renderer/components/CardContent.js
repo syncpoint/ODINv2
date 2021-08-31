@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-export const CardContent = props => {
+const CardContent = props => {
   return (
     <div className='card-content'>{props.children}</div>
   )
@@ -10,3 +10,10 @@ export const CardContent = props => {
 CardContent.propTypes = {
   children: PropTypes.node.isRequired
 }
+
+CardContent.whyDidYouRender = true
+
+const CardContentMemo = React.memo(CardContent)
+CardContentMemo.whyDidYouRender = true
+
+export { CardContentMemo as CardContent }

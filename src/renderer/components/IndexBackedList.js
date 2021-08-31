@@ -1,13 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, Card, Avatar, TagList } from '.'
+import { List, IndexEntry } from '.'
+
 
 /**
- *
+ * Filterable list of entries from search index (multiselect).
  */
 const IndexBackedList = props => {
-  const { searchIndex, propertiesStore, selection } = useServices()
+  const { searchIndex, selection } = useServices()
   const { scope, filter, dispatch, state } = props
 
   // >>= QUERY/RESULT
@@ -50,48 +51,17 @@ const IndexBackedList = props => {
 
   // <<= SELECTION
 
-  const handleAddTag = React.useCallback((id, name) => propertiesStore.addTag(id, name), [propertiesStore])
-  const handleRemoveTag = React.useCallback((id, name) => propertiesStore.removeTag(id, name), [propertiesStore])
-  const handleRename = React.useCallback((id, value) => propertiesStore.rename(id, value), [propertiesStore])
-
   /* eslint-disable react/prop-types */
 
-  // WDYR does not flag child function without useCallback().
-  // But why not use it anyways...
-  const child = React.useCallback(props => {
-    const { entry } = props
-    const handleClick = id => ({ metaKey, shiftKey }) => dispatch({ type: 'click', id, shiftKey, metaKey })
-
-    return (
-      <Card
-        key={props.id}
-        ref={props.ref}
-        onClick={handleClick(props.id)}
-        focused={props.focused}
-        selected={props.selected}
-      >
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <Card.Content>
-            <Card.Title
-              id={props.id}
-              value={entry.title}
-              onChange={handleRename}
-            />
-            <Card.Description value={entry.description}/>
-          </Card.Content>
-          { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
-        </div>
-
-        <TagList
-          id={props.id}
-          tags={entry.tags}
-          capabilities={entry.capabilities}
-          onAdd={handleAddTag}
-          onRemove={handleRemoveTag}
-        />
-      </Card>
-    )
-  }, [dispatch, handleAddTag, handleRemoveTag, handleRename])
+  const child = React.useMemo(() => props => <IndexEntry
+    key={props.id}
+    ref={props.ref}
+    id={props.id}
+    entry={props.entry}
+    focused={props.focused}
+    selected={props.selected}
+    dispatch={dispatch}
+  />, [dispatch])
 
   /* eslint-enable react/prop-types */
 

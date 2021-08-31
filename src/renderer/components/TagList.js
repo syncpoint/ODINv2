@@ -10,12 +10,12 @@ import { cmdOrCtrl } from '../platform'
  * List of tags with optional slot to create a new tag.
  */
 const TagList = props => {
-  const { id, tags, onRemove } = props
+  const { id, tags, onRemove, onAdd } = props
   const [inputVisible, setInputVisible] = React.useState(false)
   const [inputValue, setInputValue] = React.useState('')
   const inputRef = React.createRef()
 
-  const handleClose = tag => () => onRemove && onRemove(id, tag)
+  const handleClose = tag => () => onRemove && onRemove(tag)
   const handleChange = ({ target }) => setInputValue(target.value)
 
   const handleClick = event => {
@@ -29,7 +29,7 @@ const TagList = props => {
   const handleBlur = () => {
     setInputVisible(false)
     if (!inputValue) return
-    props.onAdd && props.onAdd(id, inputValue.toLowerCase())
+    onAdd && onAdd(inputValue.toLowerCase())
   }
 
   const handleKeyDown = event => {
