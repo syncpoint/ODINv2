@@ -22,7 +22,7 @@ const FilterInput = props => {
 
   // Pass debounced value to parent:
   React.useEffect(() => {
-    onChange && onChange(debouncedValue)
+    onChange && onChange(debouncedValue || '')
   }, [onChange, debouncedValue])
 
   React.useEffect(() => {

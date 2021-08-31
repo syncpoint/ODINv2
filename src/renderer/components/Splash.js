@@ -203,13 +203,12 @@ export const Splash = () => {
    * @param {*} projectId - optional project id to focus in list next.
    */
   const fetch = React.useCallback(projectId => {
-    console.log('[fetch]', projectId)
-    ;(async () => {
+    (async () => {
       const projects = await projectStore.getProjects(filter)
       dispatch({ type: 'entries', entries: projects, candidateId: projectId })
       if (projectId) dispatch({ type: 'focus', focusId: projectId })
     })()
-  }, [filter, projectStore])
+  }, [dispatch, filter, projectStore])
 
 
   /**
@@ -256,7 +255,7 @@ export const Splash = () => {
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
-  const handleFilterChange = React.useCallback(value => setFilter(value.toLowerCase()), [])
+  const handleFilterChange = React.useCallback(value => setFilter(value), [])
   const handleCreate = () => projectStore.createProject()
   const handleClick = id => ({ metaKey, shiftKey }) => {
     dispatch({ type: 'click', id, shiftKey, metaKey })
