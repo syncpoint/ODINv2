@@ -1,56 +1,10 @@
 import * as R from 'ramda'
 import React from 'react'
-import PropTypes from 'prop-types'
-import { Breadcrumb, Menu } from 'antd'
-import { FilterInput, IndexBackedList } from '.'
+import { FilterInput, IndexBackedList, History } from '.'
 import { useList, useStack } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 
-const History = props => {
-  const { stack } = props
-  const menuItemStyle = { userSelect: 'none' }
-
-  const breadcrumbItem = entry => {
-
-    const menuItem = item => {
-      const handleClick = () => {
-        stack.reset({ ...item, items: entry.items })
-      }
-
-      return (
-        <Menu.Item
-          key={`${entry.key}:${item.key}`}
-          style={menuItemStyle}
-          onClick={handleClick}
-        >{item.label}</Menu.Item>
-      )
-    }
-
-    const overlay = entry.items && entry.items.length
-      ? <Menu>{ entry.items.map(menuItem) }</Menu>
-      : null
-
-    return (
-      <Breadcrumb.Item
-        key={entry.key}
-        overlay={overlay}
-      >{entry.label}</Breadcrumb.Item>
-    )
-  }
-
-  return (
-    <Breadcrumb style={{ padding: '12px', paddingBottom: '6px' }}>
-      { stack.entries.map(breadcrumbItem) }
-    </Breadcrumb>
-  )
-}
-
-History.propTypes = {
-  stack: PropTypes.object.isRequired
-}
-
-History.whyDidYouRender = true
 
 /**
  * Top-most component, combining history. filter input and
@@ -60,7 +14,7 @@ const Marc = () => {
   const [state, dispatch] = useList({ multiselect: true })
   const [filter, setFilter] = React.useState('')
 
-  const scopesHistoryEntry = {
+  const stickyHistoryEntry = {
     key: 'layer',
     scope: '@id:layer',
     label: 'Layers',
@@ -73,7 +27,10 @@ const Marc = () => {
     ]
   }
 
-  const history = useStack([scopesHistoryEntry])
+  const history = useStack([stickyHistoryEntry])
+
+  // Reset filter on each history update:
+  React.useEffect(() => setFilter(''), [history.entries])
 
   const handleKeyDown = event => {
     const preventDefault = R.cond([
@@ -91,14 +48,12 @@ const Marc = () => {
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
       if (!state.focusId) return
       if (isLayerId(state.focusId)) {
-        setFilter('')
         history.push({
           key: state.focusId,
           scope: `@id:feature:${state.focusId.split(':')[1]}`,
           label: state.entries[state.focusIndex].title
         })
       } else if (isFeatureId(state.focusId)) {
-        setFilter('')
         history.push({
           key: state.focusId,
           scope: `@id:link @ref:${state.focusId}`,

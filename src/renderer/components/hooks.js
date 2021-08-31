@@ -23,13 +23,16 @@ export const useList = (options = {}) => {
 }
 
 export const useStack = initial => {
-  const [entries, setState] = React.useState(initial)
+  const [entries, setEntries] = React.useState(initial)
 
   return {
     entries,
-    push: entry => setState([...entries, entry]),
-    pop: () => setState(R.dropLast(1, entries)),
-    reset: entry => setState([entry]),
+    push: entry => setEntries([...entries, entry]),
+    pop: (key) => {
+      if (!key) setEntries(R.dropLast(1, entries))
+      else setEntries(R.dropLastWhile(entry => entry.key !== key), entries)
+    },
+    reset: entry => setEntries([entry]),
     peek: () => R.last(entries)
   }
 }
