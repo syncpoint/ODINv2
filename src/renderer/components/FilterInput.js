@@ -40,6 +40,7 @@ const FilterInput = props => {
 
     const stopPropagation = R.cond([
       [event => cmdOrCtrl(event) && event.key === 'a', R.always(true)],
+      [({ key }) => key === ' ', R.always(true)],
       [R.T, R.always(false)]
     ])
 

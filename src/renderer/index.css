@@ -155,7 +155,8 @@ div {
 }
 
 .card-title {
-  font-size: 110%;
+  font-size: 100%;
+  font-weight: bold;
   margin-bottom: 8px;
   padding: 0;
   background: inherit;
@@ -173,6 +174,12 @@ div {
 .card-text {
   font-size: 100%;
   color: grey;
+}
+
+.card-description {
+  display: inline-block;
+  font-size: 0.9em;
+  line-height: 16px;
 }
 
 .card-avatar {
