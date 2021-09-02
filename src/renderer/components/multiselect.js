@@ -108,8 +108,11 @@ export const multiselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries || !state.entries.length) return state
 
-    // Return same state (reference) when we are already at the end.
-    if (state.focusIndex === state.entries.length - 1) return state
+    if (state.focusIndex === state.entries.length - 1) {
+      // Clear selection, if any.
+      if (state.selected.length) return { ...state, selected: [], scroll: 'auto' }
+      else return state
+    }
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.min(state.entries.length - 1, index + 1)
@@ -134,8 +137,11 @@ export const multiselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries || !state.entries.length) return state
 
-    // Return same state (reference) when we are already at the top.
-    if (state.focusIndex === 0) return state
+    if (state.focusIndex === 0) {
+      // Clear selection, if any.
+      if (state.selected.length) return { ...state, selected: [], scroll: 'auto' }
+      else return state
+    }
 
     const index = indexOf(state.entries, state.focusId)
     const focusIndex = Math.max(0, index - 1)
@@ -183,6 +189,8 @@ export const multiselect = {
     const focusId = lastId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
     const selected = [...state.entries.map(entry => entry.id)]
+
+    // Note: Select/all should not scroll to focused entry.
     return { ...state, selected, focusId, focusIndex, scroll: 'none' }
   },
 
