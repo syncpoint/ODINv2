@@ -1,0 +1,173 @@
+[
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GHGPOAO---*****",
+      "t": "\"H\"",
+      "n": "ENY",
+      "h": ""
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/0b049638-d31d-42fd-a70a-8241f7e73e30",
+    "name": "Obj 2/88",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "t": "2",
+      "m": "53",
+      "name": ""
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/1748fb31-07ce-45d3-8396-7ec8554f50ff",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GHGPGPPK--*****",
+      "t": "III/2/88",
+      "n": "ENY"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/21fc859e-8b6a-4823-9cbb-3a2e185fb6d6",
+    "name": "CP III/2/88",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GFGPGLP---*****",
+      "t": "\"A\""
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/25a03bdb-854f-409f-b4a6-192c58f9946c",
+    "name": "PL \"A\"",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GFGPGAA---*****",
+      "t": "JgB53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/27bebd04-3ecd-4503-9a5d-dee1e39b39f2",
+    "name": "VfgR JgB53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "t": "2",
+      "m": "53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/2bdeef8a-6b63-4eb0-a02d-7f34bd0aae49",
+    "name": "2/JgB53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "t": "1",
+      "m": "53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/2e768802-d8c6-41d3-82be-22483fe6bfaa",
+    "name": "1.InfCoy/InfBn53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GFGPGLP---*****",
+      "t": "\"B\"",
+      "name": ""
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/3ec4ec3e-5347-408e-b413-51ee8531b11f",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GUGPGPPK--*****",
+      "n": null
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/5b3f8da2-2e5e-4580-bc7e-cfd7ab795030",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GHGPGLB---*E***",
+      "t": "1/53",
+      "t1": "3/88",
+      "n": "ENY",
+      "name": ""
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/8fe648dd-c9d6-4963-85e8-ff5f085953b7",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "t": "1",
+      "m": "53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/9a8f30bd-b5a2-4f83-9196-2e71cbb691e5",
+    "name": "1/InfBn53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GFGPGLB---*E***",
+      "t": "1/53",
+      "t1": "2/53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/c442c732-8cf7-4444-b4a9-27bb15e41fc6",
+    "name": "Gz 1/53 zu 2/53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "t": "1",
+      "m": "53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/c564ac17-1ef9-42e0-89f9-89006451ba0c",
+    "name": "1/53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "GFGPGLB---*E***",
+      "t": "2/88",
+      "t1": "2/53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/d510850f-8747-4c71-9147-d6f03607e5fe",
+    "name": "Gz 2/53 zu 2/88",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "t": "2",
+      "m": "53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/d700d104-14bf-4a66-9436-807c286fef34",
+    "name": "2/InfBn53",
+    "links": []
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "sidc": "SFGPUCI---*E***",
+      "m": "53"
+    },
+    "id": "feature:78e6ba85-3c39-4d16-a6f5-2b187330597f/f6a40f8b-7a2d-4ad7-82e6-6cc9b63409d0",
+    "links": []
+  }
+]

@@ -1,27 +1,31 @@
 import * as R from 'ramda'
 import util from 'util'
 import Emitter from '../../shared/emitter'
-// import { Lunr as Index } from './Lunr'
 import { MiniSearchIndex as Index } from './MiniSearch'
 import { Query } from './Query'
 import { isGroupId } from '../ids'
 
 
-export const limit = R.take(200)
-// const limit = R.identity /* no limits */
-
 const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
-const compare = fn => (a, b) => collator.compare(fn(a), fn(b))
-const field = x => x.title + x.description
+const compare = fn => (a, b) => {
+  const A = fn(a)
+  const B = fn(b)
+  return A
+    ? B
+      ? collator.compare(A, B)
+      : -1
+    : 1
+}
 
 export const sort = entries => entries.sort((a, b) => {
   // Sort group to the top:
   const GA = isGroupId(a.id)
   const GB = isGroupId(b.id)
-  if (!GA && !GB) return compare(field)(a, b)
-  else if (GA && !GB) return -1
-  else if (!GA && GB) return 1
-  else return compare(field)(a, b)
+  if (GA && !GB) return -1
+  if (!GA && GB) return 1
+
+  return compare(R.prop('title'))(a, b) ||
+    compare(R.prop('description'))(a, b)
 })
 
 

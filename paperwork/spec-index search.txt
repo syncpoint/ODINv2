@@ -1,0 +1,38 @@
+666a58ed-768b-450c-a505-4063fb31b32a - Index search (features)
+
+Pre-condition:
+List should contain the following features
+
+  A - '1.InfCoy/InfBn53' [Unit/Name]
+  B - '1/InfBn53' [Unit/Name]
+  C - '1/53' [Unit/Name]
+  D - '2/InfBn53' [Unit/Name]
+  E - '2' [Unit/Unique Designation]
+  F - [N/A]	[Unit]
+  G - '2/JgB53' [Unit/Name]
+  H - 'Gz 1/53 zu 2/53' [Boundaries/Name]
+  I - 'Gz 2/53 zu 2/88' [Boundaries/Name]
+  J - '1/53' [Boundaries/Name Left]
+  K - 'CP III/2/88'	[Check Point/Name]
+  L - [N/A] [Check Point]
+  M - 'PL "A"' [Phase Line/Name]
+  N - '"B"' [Phase Line/Unique Designation]
+  O - 'Obj 2/88"' [Objective/Name]
+  P - 'VfgR JgB53"' [Assembly Area/Name]
+
+ 1. Filter '1', expected: A, B, C, H and J (5)
+ 2. Filter '1.', expected: A (1)
+ 3. Filter '1/', expected: B, C, H and J (4)
+ 4. Filter 'Inf', expected: A, B, C, D, E, F and G (7)
+ 5. Filter 'InfBn', expected: A, B and D (3)
+ 6. Filter '53', expected: A, B, C, D, G, H, I, J and P (9)
+ 7. Filter '/53', expected: C, H, I and J (4)
+ 8. Filter 'JgB', expected: G and P (2)
+ 9. Filter '88', expected: I, K and O (3)
+10. Filter 'CP III', expected: K (1)
+11. Filter 'Check', expected: K and L (2)
+12. Filter 'PL', expected: M and N (2)
+13. Filter 'zu', expected: H and I (2)
+14. Filter '"', expected: M and N (2)
+15. Filter 'Boun', expected: H, I and J (3)
+16. Filter 'Unit', expected: A, B, C, D, E, F and G (7)

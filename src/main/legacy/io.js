@@ -192,10 +192,8 @@ export const readLayer = async (location, projectUUID, layer) => {
 
     // Move some properties from properties to feature scope.
     ;['name', 'hidden', 'locked'].forEach(name => {
-      if (feature.properties[name]) {
-        feature[name] = feature.properties[name]
-        delete feature.properties[name]
-      }
+      if (feature.properties[name]) feature[name] = feature.properties[name]
+      delete feature.properties[name]
     })
 
     // Handle referenes/links.

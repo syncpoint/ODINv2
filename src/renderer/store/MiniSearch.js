@@ -1,9 +1,9 @@
 import util from 'util'
-import MiniSearch from 'minisearch'
 import * as R from 'ramda'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
 import { options as createOption } from '../model/options'
+import { createIndex } from './MiniSearch-index'
 
 
 /**
@@ -32,17 +32,7 @@ export function MiniSearchIndex (carrera) {
   this.cache_ = {}
   this.carrera_ = carrera
 
-  this.index_ = new MiniSearch({
-    fields: ['text', 'tags'],
-    tokenize: string => string.split(/[ ()]+/),
-    extractField: (document, fieldName) => {
-      const value = document[fieldName]
-      return value && fieldName === 'tags'
-        ? value.flat().filter(R.identity).join(' ')
-        : value
-    }
-  })
-
+  this.index_ = createIndex()
   this.ready_ = false
 }
 
@@ -127,7 +117,10 @@ MiniSearchIndex.prototype.search = function (query) {
     : () => true
 
   const options = field => ({ fields: [field], prefix: true, combineWith: 'AND' })
-  const searchIndex = field => this.index_.search(tokens[field].join(' '), options(field)).map(R.prop('id'))
+  const searchIndex = field => {
+    const matches = this.index_.search(tokens[field].join(' '), options(field))
+    return matches.map(R.prop('id'))
+  }
   const intersection = () => {
     const A = searchIndex('text')
     const B = searchIndex('tags')
@@ -145,62 +138,3 @@ MiniSearchIndex.prototype.search = function (query) {
     return acc
   }, [])
 }
-
-
-// /**
-//  *
-//  */
-// MiniSearchIndex.prototype.searchScope_ = function (scope) {
-//   const task = uuid()
-//   logger.log(`[MiniSearchIndex/search:${task}/1]`)
-//   logger.time(`[MiniSearchIndex/search:${task}/1]`)
-
-
-
-//   const items = Object.values(this.mirror_)
-//     .filter(item => item.id.startsWith(scope))
-//   logger.log(`[MiniSearchIndex/search:${task}/1]: items`, items.length)
-//   const cache = id => this.mirror_[id]
-//   const result = items.reduce((acc, item) => {
-//     const option = options[item.id.split(':')[0]](item, cache)
-//     acc.push(option)
-//     // logger.log(`[MiniSearchIndex/search:${task}/1]: progress`, acc.length, 'of', items.length)
-//     return acc
-//   }, [])
-
-//   logger.timeEnd(`[MiniSearchIndex/search:${task}/1]`)
-//   return result
-// }
-
-
-// /**
-//  *
-//  */
-// MiniSearchIndex.prototype.searchFiltered_ = function (terms) {
-//   const task = uuid()
-//   logger.log(`[MiniSearchIndex/search:${task}/2]`)
-//   logger.time(`[MiniSearchIndex/search:${task}/2]`)
-
-//   const { scope, text, tags } = terms
-//   const filter = scope
-//     ? result => result.id.startsWith(scope)
-//     : () => true
-
-//   const A = this.index_.search(text.join(' '), { fields: ['text'], prefix: true, filter, combineWith: 'AND' })
-//   const B = this.index_.search(tags.join(' '), { fields: ['tags'], prefix: true, filter, combineWith: 'AND' })
-
-//   // Intersect result A with B.
-//   const set =
-
-//   logger.log(`[MiniSearchIndex/search:${task}/2] hits`, set.length)
-//   const cache = id => this.mirror_[id]
-//   const result = set.reduce((acc, id) => {
-//     const item = cache(id)
-//     const option = options[item.id.split(':')[0]](item, cache)
-//     acc.push(option)
-//     return acc
-//   }, [])
-
-//   logger.timeEnd(`[MiniSearchIndex/search:${task}/2]`)
-//   return result
-// }

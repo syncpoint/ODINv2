@@ -4,16 +4,6 @@ import * as MILSTD from '../symbology/2525c'
 
 export const documents = {}
 
-// const sidc = feature.properties.sidc
-// feature.identity = MILSTD.identityText(sidc)
-
-// const descriptor = MILSTD.descriptor(sidc)
-// if (descriptor) {
-//   feature.hierarchy = descriptor.hierarchy
-//   feature.scope = descriptor.scope
-//   feature.dimensions = descriptor.dimensions
-// }
-
 const identity = R.cond([
   [R.equals('F'), R.always(['OWN'])],
   [R.equals('H'), R.always(['ENY'])],
@@ -32,6 +22,7 @@ documents.feature = (feature, cache) => {
 
   const layer = cache(layerId(feature.id))
   const { t } = feature.properties
+  const name = feature.name || t
   const links = feature.links || []
 
   const tags = ({ hidden, tags }) => [
@@ -47,7 +38,7 @@ documents.feature = (feature, cache) => {
     id: feature.id,
     scope: 'feature',
     tags: tags(feature),
-    text: `${t} ${hierarchy.join(' ')} ${layer.name}`
+    text: `${name} ${hierarchy.join(' ')} ${layer.name}`
   }
 }
 

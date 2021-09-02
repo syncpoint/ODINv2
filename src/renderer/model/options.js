@@ -44,7 +44,7 @@ options.feature = (feature, cache) => {
 
   return {
     id: feature.id,
-    title: name || properties.t, // might be undefined
+    title: name || properties.t || null, // might be undefined
     description,
     url: MILSTD.url(sidc),
     tags: tags(feature, sidc),
