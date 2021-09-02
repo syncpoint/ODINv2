@@ -1,22 +1,7 @@
 import util from 'util'
-import * as R from 'ramda'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
-import { createIndex } from './MiniSearch-index'
-
-
-/**
- *
- */
-const parseQuery = query => {
-  const tokens = (query || '').split(' ')
-  return tokens.reduce((acc, token) => {
-    if (token.startsWith('@') && token.length > 1) acc.scope.push(token.substring(1))
-    else if (token.startsWith('#') && token.length > 1) acc.tags.push(token.substring(1))
-    else if (token) acc.text.push(token)
-    return acc
-  }, { scope: [], text: [], tags: [] })
-}
+import { createIndex, parseQuery, searchIndex } from './MiniSearch-index'
 
 
 /**
@@ -113,19 +98,8 @@ MiniSearchIndex.prototype.search = function (query) {
     ? scopeFilter(tokens.scope)
     : () => true
 
-  const options = field => ({ fields: [field], prefix: true, combineWith: 'AND' })
-  const searchIndex = field => {
-    const matches = this.index_.search(tokens[field].join(' '), options(field))
-    return matches.map(R.prop('id'))
-  }
-  const intersection = () => {
-    const A = searchIndex('text')
-    const B = searchIndex('tags')
-    return A.length ? B.length ? R.intersection(A, B) : A : B
-  }
-
   const ids = (tokens.text.length || tokens.tags.length)
-    ? intersection()
+    ? searchIndex(this.index_, tokens)
     : Object.keys(this.carrera_)
 
   return ids.map(id => this.carrera_[id]).filter(filter)
