@@ -1,8 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { CardContent } from './CardContent'
 import { CardTitle } from './CardTitle'
-import { CardDescription } from './CardDescription'
 
 export const Card = React.forwardRef((props, ref) => {
   const { children, selected } = props
@@ -32,6 +30,4 @@ Card.propTypes = {
   onDoubleClick: PropTypes.func
 }
 
-Card.Content = CardContent
 Card.Title = CardTitle
-Card.Description = CardDescription

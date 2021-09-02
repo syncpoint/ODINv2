@@ -19,6 +19,12 @@ const IndexEntry = React.forwardRef((props, ref) => {
   const handleRemoveTag = React.useCallback(name => propertiesStore.removeTag(id, name), [id, propertiesStore])
   const handleRename = React.useCallback(value => propertiesStore.rename(id, value), [id, propertiesStore])
 
+  const description = entry.description && (
+    <div>
+      <span className='card-description'>{entry.description}</span>
+    </div>
+  )
+
   return (
     <Card
       ref={ref}
@@ -27,14 +33,14 @@ const IndexEntry = React.forwardRef((props, ref) => {
       selected={props.selected}
     >
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Card.Content>
+        <div className='card-content'>
           <Card.Title
             id={props.id}
             value={entry.title}
             onChange={handleRename}
           />
-          <Card.Description value={entry.description}/>
-        </Card.Content>
+          { description }
+        </div>
         { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
       </div>
 
