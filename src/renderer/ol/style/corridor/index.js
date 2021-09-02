@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as geom from 'ol/geom'
-import * as MILSTD from '../../../symbology/2525c'
+import { parameterized } from '../../../symbology/2525c'
 import * as TS from '../../ts'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
@@ -40,7 +40,7 @@ import './G_T_Y' // TASKS / BYPASS
 
 styles['LineString:Point'] = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
-  const key = MILSTD.parameterized(sidc)
+  const key = parameterized(sidc)
   if (!key || !styles[key]) return styles.DEFAULT()
 
   const featureStyles = makeStyles(feature, mode)

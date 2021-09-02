@@ -1,5 +1,5 @@
 import ms from 'milsymbol'
-import symbols from './symbols.json'
+import symbols from './extension.json'
 
 ;(() => {
   const parts = Object.keys(symbols.iconParts)

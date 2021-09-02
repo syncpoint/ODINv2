@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import * as MILSTD from '../../../symbology/2525c'
+import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_G_GAF' // FORTIFIED AREA
@@ -111,7 +111,7 @@ styles['FILL:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
 
 styles.Polygon = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
-  const key = MILSTD.parameterized(sidc)
+  const key = parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
   const featureStyles = makeStyles(feature, mode)

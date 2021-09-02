@@ -6,7 +6,7 @@ import GeometryCollection from 'ol/geom/GeometryCollection'
 import * as Style from 'ol/style'
 import ms from 'milsymbol'
 import * as Colors from './color-schemes'
-import * as MILSTD from '../../symbology/2525c'
+import { identityCode, statusCode } from '../../symbology/2525c'
 
 export const stroke = options => new Style.Stroke(options)
 export const style = options => new Style.Style(options)
@@ -153,8 +153,8 @@ export const makeStyles = (sidcLike, mode = 'default') => {
   if (!(typeof sidcLike === 'string')) return null
 
   const sidc = sidcLike
-  const standardIdentity = MILSTD.identityCode(sidc)
-  const status = MILSTD.statusCode(sidc)
+  const standardIdentity = identityCode(sidc)
+  const status = statusCode(sidc)
 
   const props = {
     strokeColor: Colors.stroke(standardIdentity),

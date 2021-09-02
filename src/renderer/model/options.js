@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { layerId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
+import { url } from '../symbology/symbol'
 
 export const options = {}
 
@@ -12,7 +13,6 @@ const identityTag = R.cond([
 ])
 
 
-
 /**
  * feature:
  */
@@ -20,7 +20,13 @@ options.feature = (feature, cache) => {
   const descriptor = MILSTD.descriptor(feature.properties.sidc)
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
+  const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
+
   const identity = identityTag(MILSTD.identityCode(feature.properties.sidc))
+  const layer = cache(layerId(feature.id))
+  const { properties, name } = feature
+  const { sidc } = properties
+  const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
 
   const tags = feature => {
     // FIXME: somehow null tags can/could be introduced. check!
@@ -36,17 +42,11 @@ options.feature = (feature, cache) => {
     ].join(' ')
   }
 
-  const layer = cache(layerId(feature.id))
-  const { properties, name } = feature
-  const { sidc } = properties
-  const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
-  const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
-
   return {
     id: feature.id,
     title: name || properties.t || null, // might be undefined
     description,
-    url: MILSTD.url(sidc),
+    url: url(sidc),
     tags: tags(feature, sidc),
     capabilities: 'RENAME|TAG|DROP|FOLLOW',
     actions: 'PRIMARY:panto'

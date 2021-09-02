@@ -1,4 +1,4 @@
-import * as MILSTD from '../../symbology/2525c'
+import { geometry } from '../../symbology/2525c'
 import corridor from './corridor'
 import fan from './fan'
 import { geometryType } from '../style/styles'
@@ -21,7 +21,7 @@ const defaultBehavior = (feature, descriptor) => ({
 })
 
 export const special = feature => {
-  const descriptor = MILSTD.geometry(feature.get('sidc'))
+  const descriptor = geometry(feature.get('sidc'))
   if (!descriptor) return defaultBehavior(feature, descriptor)
   const key = geometryType(feature)
 

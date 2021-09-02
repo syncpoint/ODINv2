@@ -1,7 +1,6 @@
-// TODO: use renderer/store/documents
-// FIXME: node/mocha cannot load ol nor milsymbol libs
 import assert from 'assert'
 import { createIndex } from '../../../src/renderer/store/minisearch-index'
+import { documents } from '../../../src/renderer/store/documents'
 import layer from './layer.json'
 
 const features = layer.map(feature => ({
@@ -37,7 +36,10 @@ const fixtureReverse = Object.keys(fixture)
 
 
 const index = createIndex()
-index.addAll(features)
+
+const cache = () => ({ /* layer */ })
+const docs = features.map(entry => documents.feature(entry, cache))
+index.addAll(docs)
 
 const search = query => {
   const matches = index.search(query, { fields: ['text'], prefix: true, combineWith: 'AND' })
@@ -49,21 +51,21 @@ const verify = (query, expected) => () => {
   assert.deepStrictEqual(actual, expected)
 }
 
-describe('MiniSearch', function () {
+describe.only('MiniSearch', function () {
   it(" 1. - '1'", verify('1', ['A', 'B', 'C', 'H', 'J']))
   it(" 2. - '1.'", verify('1.', ['A']))
   it(" 3. - '1/'", verify('1/', ['B', 'C', 'H', 'J']))
-  // it(" 4. - 'Inf'", verify('Inf', ['A', 'B', 'C', 'D', 'E', 'F', 'G']))
+  it(" 4. - 'Inf'", verify('Inf', ['A', 'B', 'C', 'D', 'E', 'F', 'G']))
   it(" 5. - 'InfBn'", verify('InfBn', ['A', 'B', 'D']))
   it(" 6. - '53'", verify('53', ['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'P']))
   it(" 7. - '/53'", verify('/53', ['C', 'H', 'I', 'J']))
   it(" 8. - 'JgB'", verify('JgB', ['G', 'P']))
   it(" 9. - '88'", verify('88', ['I', 'K', 'O']))
   it("10. - 'CP III'", verify('CP III', ['K']))
-  // it("11. - 'Check'", verify('Check', ['K', 'L']))
-  // it("12. - 'PL'", verify('PL', ['M', 'N']))
+  it("11. - 'Check'", verify('Check', ['K', 'L']))
+  it("12. - 'PL'", verify('PL', ['M', 'N']))
   it("13. - 'zu'", verify('zu', ['H', 'I']))
   it("14. - '\"'", verify('"', ['M', 'N']))
-  // it("15. - 'Boun'", verify('Boun', ['H', 'I', 'J']))
-  // it("16. - 'Unit'", verify('Unit', ['A', 'B', 'C', 'D', 'E', 'F', 'G']))
+  it("15. - 'Boun'", verify('Boun', ['H', 'I', 'J']))
+  it("16. - 'Unit'", verify('Unit', ['A', 'B', 'C', 'D', 'E', 'F', 'G']))
 })

@@ -1,4 +1,4 @@
-import * as MILSTD from '../../../symbology/2525c'
+import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import { LineStringLabels } from '../labels'
@@ -107,7 +107,7 @@ styles['TEXTS:G*O*BO----'] = MM('"O"') // BEARING LINE / ELECTRO-OPTICAL INTERCE
 
 styles.LineString = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
-  const key = MILSTD.parameterized(sidc)
+  const key = parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
   const featureStyles = makeStyles(feature, mode)

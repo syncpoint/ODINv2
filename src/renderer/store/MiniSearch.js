@@ -2,7 +2,6 @@ import util from 'util'
 import * as R from 'ramda'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
-import { options as createOption } from '../model/options'
 import { createIndex } from './MiniSearch-index'
 
 
@@ -46,12 +45,10 @@ MiniSearchIndex.prototype.createIndex_ = function () {
   const entries = Object.values(this.carrera_)
 
   const cache = id => this.carrera_[id]
-  const docs = entries.reduce((acc, entry) => {
+  const docs = entries.map(entry => {
     const scope = entry.id.split(':')[0]
-    const doc = documents[scope](entry, cache)
-    acc.push(doc)
-    return acc
-  }, [])
+    return documents[scope](entry, cache)
+  })
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)
@@ -131,10 +128,5 @@ MiniSearchIndex.prototype.search = function (query) {
     ? intersection()
     : Object.keys(this.carrera_)
 
-  const cache = id => this.carrera_[id]
-  return ids.reduce((acc, id) => {
-    const item = this.carrera_[id]
-    if (filter(item)) acc.push(createOption[item.id.split(':')[0]](item, cache))
-    return acc
-  }, [])
+  return ids.map(id => this.carrera_[id]).filter(filter)
 }

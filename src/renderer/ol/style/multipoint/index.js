@@ -1,4 +1,4 @@
-import * as MILSTD from '../../../symbology/2525c'
+import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
 import { transform } from './commons'
 import './G_M_NM' // MINIMUM SAFE DISTANCE ZONES
@@ -10,7 +10,7 @@ import './G_T_Ux' // TASKS / SCREEN, GUARD, COVER and // SEARCH AREA/RECONNAISSA
 
 styles.MultiPoint = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
-  const key = MILSTD.parameterized(sidc)
+  const key = parameterized(sidc)
   if (!key) return styles.DEFAULT()
 
   const featureStyles = makeStyles(feature, mode)
