@@ -58,11 +58,20 @@ const CardTitle = props => {
     onKeyDown={handleKeyDown}
   />
 
+  const spanValue = mode === 'edit'
+    ? value || ''
+    : value || placeholder
+
+  const spanStyle = placeholder
+    ? { color: 'grey' }
+    : {}
+
   const span = () => <span
-    className='card-title'
+  style={spanStyle}
+  className='card-title'
     placeholder={placeholder}
     onClick={handleClick}
-  >{value || ''}</span>
+  >{spanValue}</span>
 
   return mode === 'display' ? span() : input()
 }

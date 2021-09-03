@@ -85,7 +85,7 @@ const Marc = () => {
       }}
     >
       <History entries={historyEntries} dispatch={historyDispatch}/>
-      <div style={{ display: 'flex', padding: '8px' }}>
+      <div style={{ display: 'flex', padding: '0.5em' }}>
         <FilterInput size='large' value={filter} onChange={handleFilterChange}/>
       </div>
       <IndexBackedList
