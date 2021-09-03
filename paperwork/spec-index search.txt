@@ -38,4 +38,4 @@ List should contain the following features
 16. Filter 'Unit' (Hierachy Code), expected: A, B, C, D, E, F and G (7)
 17. Filter '#Control' (Tag), expected: H, I, J, K, L, M, N, O and P (9)
 18. Filter '#Eny' (Tag), expected: J, K and O (3)
-19. Filter '#ukn' (Tag), expected: L
+19. Filter '#ukn' (Tag), expected: L (1)
