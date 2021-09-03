@@ -25,12 +25,10 @@ const IndexEntry = React.forwardRef((props, ref) => {
     <Card
       focused={props.focused}
       selected={props.selected}
+      ref={ref}
+      onClick={handleClick}
     >
-      <div
-        style={{ display: 'flex', flexDirection: 'row' }}
-        ref={ref}
-        onClick={handleClick}
-      >
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <div className='card-content'>
           <Card.Title
             id={props.id}

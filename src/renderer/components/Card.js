@@ -8,14 +8,22 @@ export const Card = React.forwardRef((props, ref) => {
     ? 'card focus'
     : 'card'
 
+  const handleClick = event => {
+    props.onClick && props.onClick(event)
+  }
+
+  const handleDoubleClick = event => {
+    props.onDoubleClick && props.onDoubleClick(event)
+  }
+
   return (
     <div
       ref={ref}
       className={className}
       aria-selected={selected}
       role='option'
-      onClick={event => props.onClick && props.onClick(event)}
-      onDoubleClick={event => props.onDoubleClick && props.onDoubleClick(event)}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
     >
       {children}
     </div>
