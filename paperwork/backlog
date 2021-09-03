@@ -133,5 +133,6 @@ DEH - 96ad6db1-d89c-4c57-837e-befe39c66ab7 - race condition/Layers: earlier/slow
 DEH - 37ddb956-dd6f-4a2c-a176-a6988370af27 - command palette: batch update (unique designation)
 DEH - 95e05f34-905d-4dd6-a868-4a1e22e0c5f4 - (legacy) import: remove geometry property from feature
 DEH - 0fe18c43-7f04-4695-b72f-1e2c7b17be9e - WDYR: inspect/fix IndexBackList and sub-components
-DEH - 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize issue
+DEH - 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize issue (https://github.com/wellyshen/react-cool-virtual/issues/235)
 DEH - cb9a5835-e49e-441f-b7e3-5eadd05fcd97 - list: navigation incl. breadcrumbs
+DEH - 50124375-e071-4a2c-97d4-b8c4f5d27d22 - react-cool-virtual: file fast scroll issue (https://github.com/wellyshen/react-cool-virtual/issues/243)
