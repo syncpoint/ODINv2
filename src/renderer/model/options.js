@@ -38,7 +38,8 @@ options.feature = (feature, cache) => {
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),
       ...identity.map(label => `SYSTEM:${label}:NONE`),
-      ...tags.map(label => `USER:${label}:NONE`)
+      ...tags.map(label => `USER:${label}:NONE`),
+      'PLUS'
     ].join(' ')
   }
 
@@ -48,7 +49,7 @@ options.feature = (feature, cache) => {
     description,
     url: url(sidc),
     tags: tags(feature, sidc),
-    capabilities: 'RENAME|TAG|DROP|FOLLOW',
+    capabilities: 'RENAME|DROP|FOLLOW',
     actions: 'PRIMARY:panto'
   }
 }
@@ -65,7 +66,8 @@ options.layer = layer => {
       'SCOPE:LAYER:identify',
       ...((links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
       hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
-      ...(tags || []).map(label => `USER:${label}:NONE`)
+      ...(tags || []).map(label => `USER:${label}:NONE`),
+      'PLUS'
     ].join(' ').replace('  ', ' ').trim()
   }
 
@@ -74,7 +76,7 @@ options.layer = layer => {
     title: layer.name,
     description: layer.type === 'socket' ? layer.url : null,
     tags: tags(layer),
-    capabilities: 'RENAME|TAG|DROP',
+    capabilities: 'RENAME|DROP',
     actions: 'PRIMARY:panto'
   }
 }
@@ -93,9 +95,9 @@ options.link = (link, cache) => {
     description: containerName,
     tags: [
       'SCOPE:LINK:NONE',
-      ...(link.tags || []).map(label => `USER:${label}:NONE`)
+      ...(link.tags || []).map(label => `USER:${label}:NONE`),
+      'PLUS'
     ].join(' '),
-    capabilities: 'TAG',
     actions: 'PRIMARY:panto'
   }
 }

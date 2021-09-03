@@ -1,58 +1,96 @@
+import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
 import { TagIcon } from './TagIcon'
+import { cmdOrCtrl } from '../platform'
+import { useServices } from './services'
 
 /**
  * A tag in different variants.
  */
 export const Tag = props => {
-  const { variant, children, onClose } = props
+  const { propertiesStore } = useServices()
+  const { id, spec } = props
+  const [variant, label, action, path] = spec.split(':')
   const closable = variant === 'USER'
-
-  const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
-  const className = props.action !== 'NONE'
-    ? `tag-active ${variantClassName}`
-    : `tag ${variantClassName}`
-
-  const handleClose = () => onClose && onClose()
+  const [mode, setMode] = React.useState('display')
+  const [inputValue, setInputValue] = React.useState('')
 
   const handleClick = event => {
     event.stopPropagation()
-    props.onClick && props.onClick(event)
+    if (variant === 'PLUS') {
+      setMode('edit')
+    }
   }
 
-  return (
-    <span
-      className={className}
-      onClick={handleClick}
-      onDoubleClick={props.onDoubleClick}
-      onMouseDown={props.onMouseDown}
-      onMouseUp={props.onMouseUp}
-    >
-      { children }
-      {
-        closable &&
-        props.capabilities.includes('TAG') &&
-        <TagIcon
-          path={mdi.mdiClose}
-          closable={closable}
-          onClose={handleClose}
-          color='grey'
-        />
-      }
-    </span>
-  )
+  const addTag = value => propertiesStore.addTag(id, value.toLowerCase())
+  const removeTag = value => propertiesStore.removeTag(id, value.toLowerCase())
+
+  const handleBlur = () => {
+    setMode('display')
+    if (inputValue) addTag(inputValue)
+  }
+
+  const handleKeyDown = event => {
+    const stopPropagation = R.cond([
+      [({ key }) => key === 'Enter', R.always(true)],
+      [({ key }) => key === 'Escape', R.always(true)],
+      [event => cmdOrCtrl(event) && event.key === 'a', R.always(true)],
+      [R.T, R.always(false)]
+    ])
+
+    if (stopPropagation(event)) event.stopPropagation()
+
+    switch (event.key) {
+      case 'Enter': return addTag(inputValue)
+      case 'Escape': return setMode('display')
+    }
+  }
+
+  const handleChange = ({ target }) => setInputValue(target.value)
+
+  const handleClose = () => removeTag(label)
+
+  const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
+  const className = action !== 'NONE'
+    ? `tag-active ${variantClassName}`
+    : `tag ${variantClassName}`
+
+  const closeIcon = closable &&
+    <TagIcon
+      path={mdi.mdiClose}
+      closable={variant === 'USER'}
+      color='grey'
+      onClose={handleClose}
+    />
+
+  return mode === 'display'
+    ? <span
+        className={className}
+        onClick={handleClick}
+      >
+        { variant === 'PLUS' && <TagIcon path={mdi.mdiPlus} size='12px'/>}
+        {
+          variant === 'PLUS'
+            ? 'add tag'
+            : path
+              ? <TagIcon path={mdi[path]} size='12px'/>
+              : label
+        }
+        { closeIcon }
+      </span>
+    : <input
+        className='tag-input'
+        autoFocus
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        onChange={handleChange}
+      >
+      </input>
 }
 
 Tag.propTypes = {
-  children: PropTypes.node.isRequired,
-  variant: PropTypes.string,
-  action: PropTypes.string,
-  capabilities: PropTypes.string,
-  onClick: PropTypes.func,
-  onDoubleClick: PropTypes.func,
-  onMouseDown: PropTypes.func,
-  onMouseUp: PropTypes.func,
-  onClose: PropTypes.func
+  id: PropTypes.string.isRequired,
+  spec: PropTypes.string.isRequired
 }
