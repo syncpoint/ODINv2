@@ -37,7 +37,7 @@ div {
     Give WebKit a chance to calculate explicit height.
     This is necessary to stretch children to desired height.
   */
-  height: calc(100vh - 4em);
+  height: calc(100vh - 12em);
 
   padding-top: 6em;
   padding-bottom: 2em;
@@ -76,12 +76,14 @@ div {
 }
 
 .panel-left {
+  height: inherit;
   grid-area: L;
   display: flex;
   flex-direction: column;
 }
 
 .panel-right {
+  height: inherit;
   grid-area: R;
   display: flex;
   flex-direction: column;
