@@ -1,6 +1,6 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
-import { writeGeometryObject } from './format'
+import { writeGeometryObject, writeFeatureObject } from './format'
 import { compositeCommand } from './store-common'
 
 
@@ -62,6 +62,20 @@ const updateEntries = function (entries, updatedEntries) {
 
 
 /**
+ *
+ */
+const cloneFeatures = function (features) {
+  const { features: clones } = writeFeaturesObject(features)
+  console.log('[LayerStore] cloneFeatures', clones)
+
+  return {
+    apply: () => {},
+    inverse: () => {}
+  }
+}
+
+
+/**
  * @constructor
  * @param {LevelUp} propertiesLevel properties database.
  * @param {LevelUp} geometryLevel geometry database.
@@ -78,6 +92,7 @@ export function LayerStore (propertiesLevel, geometryLevel) {
   this.commands.deleteLayer = deleteLayer.bind(this)
   this.commands.updateGeometries = updateGeometries.bind(this)
   this.commands.updateEntries = updateEntries.bind(this)
+  this.commands.cloneFeatures = cloneFeatures.bind(this)
 }
 
 util.inherits(LayerStore, Emitter)
@@ -90,7 +105,7 @@ util.inherits(LayerStore, Emitter)
  * NOTE: Not only `properties` are stored, but also `id` on the same level,
  *       i.e. { id, properties }
  */
-LayerStore.prototype.featureProperties = function (layerId) {
+LayerStore.prototype.featureProperties_ = function (layerId) {
   return new Promise((resolve, reject) => {
     const acc = {}
 
@@ -115,7 +130,7 @@ LayerStore.prototype.featureProperties = function (layerId) {
  * @param {String} layerId optional
  * @returns Feature geometries for given layer or all features.
  */
-LayerStore.prototype.featuerGeometries = function (layerId) {
+LayerStore.prototype.featureGeometries_ = function (layerId) {
   return new Promise((resolve, reject) => {
     const acc = {}
 
@@ -134,10 +149,11 @@ LayerStore.prototype.featuerGeometries = function (layerId) {
   })
 }
 
+
 /**
  * @private
  */
-LayerStore.prototype.keys = function (store, prefix) {
+LayerStore.prototype.keys_ = function (store, prefix) {
   return new Promise((resolve, reject) => {
     const acc = []
     const options = { keys: true, values: false, gte: prefix, lte: prefix + '\xff' }
@@ -149,13 +165,14 @@ LayerStore.prototype.keys = function (store, prefix) {
   })
 }
 
+
 /**
  * @param {String} layerId optional
  * @returns GeoJSON FeatureCollection, i.e. Features for given layer or all features.
  */
 LayerStore.prototype.getFeatures = async function (layerId) {
-  const properties = await this.featureProperties(layerId)
-  const geometries = await this.featuerGeometries(layerId)
+  const properties = await this.featureProperties_(layerId)
+  const geometries = await this.featureGeometries_(layerId)
   const features = Object.values(properties).map(feature => ({
     type: 'Feature',
     ...feature,
@@ -189,6 +206,9 @@ LayerStore.prototype.updateEntries = async function (entries) {
 }
 
 
+/**
+ *
+ */
 LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
   await this.propertiesLevel_.put(id, { name, id })
@@ -214,17 +234,68 @@ LayerStore.prototype.putLayer = async function (layer) {
   })
 }
 
+
+/**
+ *
+ */
+LayerStore.prototype.putFeatures = async function (features) {
+
+  const json = features.map(feature => writeFeatureObject(feature))
+  console.log('json', json)
+
+  const properties = json.map(feature => {
+    return {
+      type: 'put',
+      key: feature.id,
+      value: feature
+    }
+  })
+
+  console.log(properties)
+  // await this.propertiesLevel_.batch()
+
+  // await this.geometryLevel_.batch(json.map(feature => ({
+  //   type: 'put',
+  //   key: feature.id,
+  //   value: feature.geometry
+  // })))
+
+  // this.emit('batch', {
+  //   operations: json.map(feature => ({
+  //     type: 'put',
+  //     key: feature.id,
+  //     value: feature
+  //   }))
+  // })
+}
+
+
+/**
+ *
+ */
+LayerStore.prototype.deleteFeatures = async function (features) {
+  console.log('[LayerStore] deleteFeatures', features)
+}
+
+
+/**
+ *
+ */
 LayerStore.prototype.deleteLayer = async function (layerId) {
   await this.propertiesLevel_.del(layerId)
   const op = key => ({ type: 'del', key })
   const layerUUID = layerId.split(':')[1]
-  const keys = await this.keys(this.propertiesLevel_, `feature:${layerUUID}`)
+  const keys = await this.keys_(this.propertiesLevel_, `feature:${layerUUID}`)
   const operations = keys.map(op)
   await this.propertiesLevel_.batch(operations)
   await this.geometryLevel_.batch(operations)
   this.emit('batch', { operations })
 }
 
+
+/**
+ *
+ */
 LayerStore.prototype.updateGeometries = async function (geometries) {
   const ops = Object.entries(geometries)
     .map(([key, value]) => [key, writeGeometryObject(value)])
