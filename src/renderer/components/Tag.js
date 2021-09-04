@@ -25,7 +25,6 @@ export const Tag = props => {
   }
 
   const addTag = value => propertiesStore.addTag(id, value.toLowerCase())
-  const removeTag = value => propertiesStore.removeTag(id, value.toLowerCase())
 
   const handleBlur = () => {
     setMode('display')
@@ -50,7 +49,9 @@ export const Tag = props => {
 
   const handleChange = ({ target }) => setInputValue(target.value)
 
-  const handleClose = () => removeTag(label)
+  const handleClose = React.useCallback(() => {
+    propertiesStore.removeTag(id, label)
+  }, [id, label, propertiesStore])
 
   const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
   const className = action !== 'NONE'

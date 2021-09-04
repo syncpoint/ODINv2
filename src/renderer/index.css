@@ -54,7 +54,7 @@ div {
 .spotlight-container {
   z-index: 30;
   pointer-events: none;
-  height: calc(100vh - 4em);
+  height: calc(100vh - 12em);
   padding-top: 0;
 
   display: grid;
@@ -117,9 +117,7 @@ div {
 }
 
 .list {
-  max-height: 0;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding: 8px;
 }
 
 .focus {
@@ -137,7 +135,6 @@ div {
 }
 
 .card[aria-selected="true"] {
-  border-color: #cc6666;
   background-color: #f4f0ec;
   border-color: #40a9ff;
   border-width: 2px;
