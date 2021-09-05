@@ -42,10 +42,6 @@ export const CommandPalette = props => {
     props.onKeyDown(event)
   }
 
-  const handleClick = id => ({ metaKey, shiftKey, ctrlKey }) => {
-    dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
-  }
-
   const handleFilterChange = React.useCallback(value => {
     setFilter(value)
   }, [])
@@ -80,21 +76,27 @@ export const CommandPalette = props => {
       .filter(command => !filter || isMatch(command))
 
     dispatch({ type: 'entries', entries: commands })
-  }, [filter, snapshot, paletteCommands])
+  }, [dispatch, filter, snapshot, paletteCommands])
 
 
   /* eslint-disable react/prop-types */
-  const child = React.useCallback(props => (
-    <div
-      key={props.id}
-      ref={props.ref}
-      role='option'
-      onClick={handleClick(props.id)}
-      style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
-    >
-      <span>{props.entry.description()}</span>
-    </div>
-  ), [])
+  const child = React.useCallback(props => {
+    const handleClick = id => ({ metaKey, shiftKey, ctrlKey }) => {
+      dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
+    }
+
+    return (
+      <div
+        key={props.id}
+        ref={props.ref}
+        role='option'
+        onClick={handleClick(props.id)}
+        style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
+      >
+        <span>{props.entry.description()}</span>
+      </div>
+    )
+  }, [dispatch])
   /* eslint-enable react/prop-types */
 
   // Invoke command for newly focused entry (state.focusId):

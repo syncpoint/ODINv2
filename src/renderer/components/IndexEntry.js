@@ -22,28 +22,29 @@ const IndexEntry = React.forwardRef((props, ref) => {
   const tag = spec => <Tag key={spec} id={entry.id} spec={spec}/>
 
   return (
-    <Card
-      focused={props.focused}
-      selected={props.selected}
-      ref={ref}
-      onClick={handleClick}
-    >
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <div className='card-content'>
-          <Card.Title
-            id={props.id}
-            value={entry.title}
-            focused={props.focused}
-          />
-          { description }
+    <div ref={ref} style={{ padding: '3px 6px' }}>
+      <Card
+        focused={props.focused}
+        selected={props.selected}
+        onClick={handleClick}
+      >
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div className='card-content'>
+            <Card.Title
+              id={props.id}
+              value={entry.title}
+              focused={props.focused}
+            />
+            { description }
+          </div>
+          { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
         </div>
-        { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
-      </div>
 
-      <div className='taglist'>
-        { entry.tags.split(' ').map(tag)}
-      </div>
-    </Card>
+        <div className='taglist'>
+          { entry.tags.split(' ').map(tag)}
+        </div>
+      </Card>
+    </div>
   )
 })
 

@@ -116,21 +116,16 @@ div {
   overflow: auto;
 }
 
-.list {
-  padding: 8px;
-}
-
 .focus {
   background-color: #f4f0ec;
 }
 
 .card {
-  border: 1px solid #d9d9d9;
-  border-radius: 2px;
-  margin-bottom: 8px;
   user-select: none;
   display: flex;
   flex-direction: column;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
   padding: 8px;
 }
 

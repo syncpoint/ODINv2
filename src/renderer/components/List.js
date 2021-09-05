@@ -7,17 +7,28 @@ import useVirtual from 'react-cool-virtual'
  * Abstract list. Mainly obsessed with scrolling.
  */
 const List = props => {
-  const { child, entries, focusId, selected } = props
+  const { child, focusIndex, focusId, selected, scroll } = props
+
+  const entries = props.entries
+  // const [entries, setEntries] = React.useState(props.entries)
+  // React.useEffect(() => {
+  //   setEntries(props.entries)
+  // }, [props.entries])
+
   const { outerRef, innerRef, items, scrollToItem } = useVirtual({
     itemCount: entries.length,
-    itemSize: 200
+    resetScroll: true
   })
 
   React.useEffect(() => {
-    if (props.scroll === 'none') return
-    if (props.focusIndex === -1) return
-    scrollToItem({ index: props.focusIndex, smooth: false })
-  }, [scrollToItem, props.focusIndex, props.scroll])
+    return () => console.log('<List/> unmounting...')
+  }, [])
+
+  React.useEffect(() => {
+    if (scroll === 'none') return
+    if (focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+  }, [scrollToItem, focusIndex, scroll])
 
   const handleKeyDown = event => {
     const { key } = event
@@ -25,12 +36,12 @@ const List = props => {
   }
 
   const card = ({ index, measureRef }) => {
-    const entry = entries[index]
     if (index >= entries.length) {
       console.warn('<List/> overshooting', `${index}/${entries.length}`)
       return null
     }
 
+    const entry = entries[index]
     return child({
       entry,
       id: entry.id,
@@ -47,7 +58,6 @@ const List = props => {
   return (
     <div className='list-container' ref={outerRef}>
       <div
-        className='list'
         ref={innerRef}
         tabIndex={0}
         onKeyDown={handleKeyDown}

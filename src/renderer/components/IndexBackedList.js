@@ -66,7 +66,9 @@ const IndexBackedList = props => {
   /* eslint-enable react/prop-types */
 
   return (
-    <List child={child} { ...state }/>
+    state.entries.length > 0
+      ? <List child={child} { ...state }/>
+      : null
   )
 }
 
