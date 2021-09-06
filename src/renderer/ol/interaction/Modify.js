@@ -157,8 +157,9 @@ class Modify extends PointerInteraction {
 
 
   addFeature_ (feature) {
-    // TODO: get feature geometries (callback)
-    // TODO: index geometries (RBush per geometry)
+
+    // Ignore point geometries. They are handled by translate interaction.
+    if (feature.getGeometry().getType() === 'Point') return
 
     this.special_ = special(feature)
     this.special_.roles().forEach(role => {

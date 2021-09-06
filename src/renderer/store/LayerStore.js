@@ -1,6 +1,7 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
 import { writeGeometryObject } from './format'
+import { isFeatureId } from '../ids'
 
 
 /**
@@ -86,7 +87,10 @@ const putFeatures = function (features) {
 const deleteFeatures = function (features) {
   const ids = features.map(feature => feature.id)
   return {
-    apply: () => this.deleteFeatures(ids),
+    apply: async () => {
+      await this.deleteFeatures(ids)
+      this.selection_.deselect(ids)
+    },
     inverse: () => this.commands.putFeatures(features)
   }
 }
@@ -97,11 +101,13 @@ const deleteFeatures = function (features) {
  * @param {LevelUp} propertiesLevel properties database.
  * @param {LevelUp} geometryLevel geometry database.
  */
-export function LayerStore (propertiesLevel, geometryLevel) {
+export function LayerStore (propertiesLevel, geometryLevel, selection, undo) {
   Emitter.call(this)
 
   this.propertiesLevel_ = propertiesLevel
   this.geometryLevel_ = geometryLevel
+  this.selection_ = selection
+  this.undo_ = undo
 
   this.commands = {}
   this.commands.composite = composite.bind(this)
@@ -117,55 +123,72 @@ export function LayerStore (propertiesLevel, geometryLevel) {
 util.inherits(LayerStore, Emitter)
 
 /**
- * @private
- * @param {String} layerId optional
- * @returns Feature properties for given layer or all features.
+ * @async
+ * featureProperties_ :: () -> { string -> object }
+ * featureProperties_ :: string -> { string -> object }
+ * featureProperties_ :: [string] -> { string -> object }
  *
  * NOTE: Not only `properties` are stored, but also `id` on the same level,
  *       i.e. { id, properties }
  */
-LayerStore.prototype.featureProperties_ = function (layerId) {
-  return new Promise((resolve, reject) => {
-    const acc = {}
+LayerStore.prototype.featureProperties_ = function (arg) {
+  if (Array.isArray(arg)) {
+    return arg.reduce(async (acc, id) => {
+      const xs = await acc
+      xs[id] = await this.propertiesLevel_.get(id)
+      return xs
+    }, {})
+  } else {
+    return new Promise((resolve, reject) => {
+      const acc = {}
 
-    const prefix = layerId
-      ? `feature:${layerId.split(':')[1]}`
-      : 'feature:'
+      const prefix = arg
+        ? `feature:${arg.split(':')[1]}`
+        : 'feature:'
 
-    const options = prefix
-      ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
-      : { keys: true, values: true }
+      const options = prefix
+        ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
+        : { keys: true, values: true }
 
-    this.propertiesLevel_.createReadStream(options)
-      .on('data', ({ key, value }) => (acc[key] = value))
-      .on('error', reject)
-      .on('end', () => resolve(acc))
-  })
+      this.propertiesLevel_.createReadStream(options)
+        .on('data', ({ key, value }) => (acc[key] = value))
+        .on('error', reject)
+        .on('end', () => resolve(acc))
+    })
+  }
 }
 
 
 /**
  * @private
- * @param {String} layerId optional
+ * @param {String} arg optional
  * @returns Feature geometries for given layer or all features.
  */
-LayerStore.prototype.featureGeometries_ = function (layerId) {
-  return new Promise((resolve, reject) => {
-    const acc = {}
+LayerStore.prototype.featureGeometries_ = function (arg) {
+  if (Array.isArray(arg)) {
+    return arg.reduce(async (acc, id) => {
+      const xs = await acc
+      xs[id] = await this.geometryLevel_.get(id)
+      return xs
+    }, {})
+  } else {
+    return new Promise((resolve, reject) => {
+      const acc = {}
 
-    const prefix = layerId
-      ? `feature:${layerId.split(':')[1]}`
-      : 'feature'
+      const prefix = arg
+        ? `feature:${arg.split(':')[1]}`
+        : 'feature'
 
-    const options = prefix
-      ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
-      : { keys: true, values: true }
+      const options = prefix
+        ? { keys: true, values: true, gte: prefix, lte: prefix + '\xff' }
+        : { keys: true, values: true }
 
-    this.geometryLevel_.createReadStream(options)
-      .on('data', ({ key, value }) => (acc[key] = value))
-      .on('error', reject)
-      .on('end', () => resolve(acc))
-  })
+      this.geometryLevel_.createReadStream(options)
+        .on('data', ({ key, value }) => (acc[key] = value))
+        .on('error', reject)
+        .on('end', () => resolve(acc))
+    })
+  }
 }
 
 
@@ -186,19 +209,18 @@ LayerStore.prototype.keys_ = function (store, prefix) {
 
 
 /**
- * @param {String} layerId optional
- * @returns GeoJSON FeatureCollection, i.e. Features for given layer or all features.
+ * getFeatures :: () -> Promise(GeoJSON/FeatureCollection)
+ * getFeatures :: string -> Promise(GeoJSON/FeatureCollection)
+ * getFeatures :: [string] -> Promise(GeoJSON/FeatureCollection)
  */
-LayerStore.prototype.getFeatures = async function (layerId) {
-  const properties = await this.featureProperties_(layerId)
-  const geometries = await this.featureGeometries_(layerId)
-  const features = Object.values(properties).map(feature => ({
+LayerStore.prototype.getFeatures = async function (arg) {
+  const properties = await this.featureProperties_(arg)
+  const geometries = await this.featureGeometries_(arg)
+  return Object.values(properties).map(feature => ({
     type: 'Feature',
     ...feature,
     geometry: geometries[feature.id]
   }))
-
-  return { type: 'FeatureCollection', features }
 }
 
 
@@ -321,4 +343,15 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
 
   this.emit('geometries', { operations })
   return this.geometryLevel_.batch(operations)
+}
+
+LayerStore.prototype.del = async function (ids) {
+  // TODO: undo
+  // TODO: support all scopes
+  // TODO: recursively delete all dependencies
+
+  const featureIds = ids.filter(id => isFeatureId(id))
+  const features = await this.getFeatures(featureIds)
+  const command = this.commands.deleteFeatures(features)
+  this.undo_.apply(command)
 }

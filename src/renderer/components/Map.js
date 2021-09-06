@@ -10,6 +10,7 @@ import { useServices } from './services'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
+import * as ids from '../ids'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -42,8 +43,8 @@ export const Map = () => {
 
     const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
     const view = new ol.View({ ...viewport })
-    const features = await sources.getFeatureSource()
-    const partition = new Partition(features, selection)
+    const featureSource = await sources.getFeatureSource()
+    const partition = new Partition(featureSource, selection)
     const style = featureStyle(selection)
     const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
@@ -56,23 +57,24 @@ export const Map = () => {
     // const source = new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' })
     const source = new OSM()
     const tileLayer = new TileLayer({ source })
-    tileLayer.setOpacity(0.85)
+    tileLayer.setOpacity(0.55)
 
     const layers = [
-      tileLayer,
+      // tileLayer,w
       featureLayer,
       selectedLayer
     ]
 
-    const interactions = defaultInteractions(
+    const interactions = defaultInteractions({
+      hitTolerance: 3,
       selection,
       layerStore,
       undo,
       partition,
       featureLayer,
       selectedLayer,
-      features
-    )
+      featureSource
+    })
 
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({
@@ -144,7 +146,9 @@ export const Map = () => {
 
     // Dim feature layer when we have a selection:
     selection.on('selection', ({ selected }) => {
-      featureLayer.setOpacity(selected.length ? 0.5 : 1)
+      // Only consider selected features:
+      const features = selected.filter(id => ids.isFeatureId(id))
+      featureLayer.setOpacity(features.length ? 0.5 : 1)
     })
 
     const selectAll = () => {
@@ -154,12 +158,12 @@ export const Map = () => {
       if (!element) return
       if (!isBody(element) && !isMap(element)) return
 
-      const ids = features.getFeatures().map(feature => feature.getId())
+      const ids = featureSource.getFeatures().map(feature => feature.getId())
       selection.select(ids)
     }
 
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
-    emitter.on('command/edit/select-all', selectAll)
+    emitter.on('command/delete', () => layerStore.del(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

@@ -26,10 +26,12 @@ export const Tag = props => {
 
   const addTag = value => propertiesStore.addTag(id, value.toLowerCase())
 
-  const handleBlur = () => {
+  const commitValue = () => {
     setMode('display')
     if (inputValue) addTag(inputValue)
   }
+
+  const handleBlur = commitValue
 
   const handleKeyDown = event => {
     const stopPropagation = R.cond([
@@ -42,7 +44,7 @@ export const Tag = props => {
     if (stopPropagation(event)) event.stopPropagation()
 
     switch (event.key) {
-      case 'Enter': return addTag(inputValue)
+      case 'Enter': return commitValue()
       case 'Escape': return setMode('display')
     }
   }
