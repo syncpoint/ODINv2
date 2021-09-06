@@ -1,21 +1,18 @@
-import { Select } from 'ol/interaction'
 import { click, platformModifierKeyOnly } from 'ol/events/condition'
+import { Select } from 'ol/interaction'
 import { featureStyle } from '../style'
 
-const hitTolerance = 3
 const noAltKey = ({ originalEvent }) => originalEvent.altKey !== true // macOS: option key
 const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
 
 /**
  *
  */
-export default ({ selection, deselectedLayer, selectedLayer }) => {
-  const selectedSource = selectedLayer.getSource()
-
+export default options => {
+  const { selection, partition, featureLayer, selectedLayer, hitTolerance } = options
   const interaction = new Select({
     hitTolerance,
-    layers: [deselectedLayer, selectedLayer],
-    // TODO: could probably be supplied as argument
+    layers: [featureLayer, selectedLayer],
     style: featureStyle(selection),
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
@@ -29,12 +26,12 @@ export default ({ selection, deselectedLayer, selectedLayer }) => {
     selection.set(ids(interaction.getFeatures().getArray()))
   })
 
-  selectedSource.on('addfeature', ({ feature }) => {
+  partition.getSelected().on('addfeature', ({ feature }) => {
     const features = interaction.getFeatures().getArray()
     if (!features.includes(feature)) interaction.getFeatures().push(feature)
   })
 
-  selectedSource.on('removefeature', ({ feature }) => {
+  partition.getSelected().on('removefeature', ({ feature }) => {
     const features = interaction.getFeatures().getArray()
     if (features.includes(feature)) interaction.getFeatures().remove(feature)
   })

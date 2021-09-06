@@ -42,8 +42,8 @@ export const Map = () => {
 
     const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
     const view = new ol.View({ ...viewport })
-    const features = await sources.getFeatureSource()
-    const partition = new Partition(features, selection)
+    const featureSource = await sources.getFeatureSource()
+    const partition = new Partition(featureSource, selection)
     const style = featureStyle(selection)
     const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
@@ -64,15 +64,16 @@ export const Map = () => {
       selectedLayer
     ]
 
-    const interactions = defaultInteractions(
+    const interactions = defaultInteractions({
+      hitTolerance: 3,
       selection,
       layerStore,
       undo,
       partition,
       featureLayer,
       selectedLayer,
-      features
-    )
+      featureSource
+    })
 
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({
@@ -154,7 +155,7 @@ export const Map = () => {
       if (!element) return
       if (!isBody(element) && !isMap(element)) return
 
-      const ids = features.getFeatures().map(feature => feature.getId())
+      const ids = featureSource.getFeatures().map(feature => feature.getId())
       selection.select(ids)
     }
 
