@@ -10,6 +10,7 @@ import { useServices } from './services'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
+import * as ids from '../ids'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -56,10 +57,10 @@ export const Map = () => {
     // const source = new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' })
     const source = new OSM()
     const tileLayer = new TileLayer({ source })
-    tileLayer.setOpacity(0.85)
+    tileLayer.setOpacity(0.55)
 
     const layers = [
-      tileLayer,
+      // tileLayer,w
       featureLayer,
       selectedLayer
     ]
@@ -145,7 +146,9 @@ export const Map = () => {
 
     // Dim feature layer when we have a selection:
     selection.on('selection', ({ selected }) => {
-      featureLayer.setOpacity(selected.length ? 0.5 : 1)
+      // Only consider selected features:
+      const features = selected.filter(id => ids.isFeatureId(id))
+      featureLayer.setOpacity(features.length ? 0.5 : 1)
     })
 
     const selectAll = () => {
@@ -160,7 +163,7 @@ export const Map = () => {
     }
 
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
-    emitter.on('command/edit/select-all', selectAll)
+    emitter.on('command/delete', () => layerStore.del(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

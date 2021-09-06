@@ -13,7 +13,7 @@ import { writeGeometryObject } from '../../store/format'
 const CmdOrCtrlTracker = function () {
   Emitter.call(this)
   this.handler_ = event => {
-    const current = this.cmdOrCtrl
+    const current = this.cmdOrCtrl && event.shiftKey
     const value = cmdOrCtrl(event)
     if (current !== value) this.emit('update', { cmdOrCtrl: value })
     this.cmdOrCtrl = value
@@ -63,7 +63,6 @@ export default (options, select) => {
   }
 
   interaction.on('translatestart', ({ features }) => {
-
     const updateCursor = set('updateCursor', cursor => {
       const map = interaction.getMap()
       const target = map.getViewport()

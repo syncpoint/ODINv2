@@ -34,7 +34,7 @@ export const workspace = projectUUID => {
   const propertiesLevel = propertiesPartition(db)
   const geometryLevel = geometryPartition(db)
   const propertiesStore = new PropertiesStore(propertiesLevel, selection, undo)
-  const layerStore = new LayerStore(propertiesLevel, geometryLevel)
+  const layerStore = new LayerStore(propertiesLevel, geometryLevel, selection, undo)
   const searchIndex = new SearchIndex(propertiesLevel)
   const emitter = new EventEmitter()
 

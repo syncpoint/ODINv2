@@ -3,6 +3,7 @@ import selectInteraction from './select-interaction'
 import translateInteraction from './translate-transaction'
 import modifyInteraction from './modify-interaction'
 import snapInteraction from './snap-interaction'
+import boxselectInteraction from './boxselect-interaction'
 
 /**
  * @param {Selection} selection
@@ -18,7 +19,8 @@ export default options => {
   const modify = modifyInteraction(options)
   const translate = translateInteraction(options, select)
   const snap = snapInteraction(options)
+  const boxselect = boxselectInteraction(options)
   return defaultInteractions({ doubleClickZoom: false }).extend(
-    [select, translate, modify, snap]
+    [select, translate, modify, snap, boxselect]
   )
 }

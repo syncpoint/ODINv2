@@ -4,6 +4,7 @@ import { FilterInput, IndexBackedList, History } from '.'
 import { useList, useStack } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
+import { useServices } from './services'
 
 const stickyHistoryEntry = {
   key: 'layer',
@@ -24,6 +25,7 @@ const stickyHistoryEntry = {
  * TODO: rename Marc -> ...
  */
 const Marc = () => {
+  const { selection } = useServices()
   const [listState, listDispatch] = useList({ multiselect: true })
   const [filter, setFilter] = React.useState('')
   const [historyEntries, historyDispatch] = useStack([stickyHistoryEntry])
@@ -31,6 +33,8 @@ const Marc = () => {
 
   // Reset filter on each history update:
   React.useEffect(() => setFilter(''), [historyEntries])
+
+  const handleClick = () => selection.set([])
 
   const handleKeyDown = event => {
     const preventDefault = R.cond([
@@ -79,6 +83,7 @@ const Marc = () => {
   return (
     <div
       tabIndex={0}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
       style={{
         display: 'flex',

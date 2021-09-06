@@ -8,12 +8,21 @@ const modifiers = properties => Object.entries(properties)
 
 styles.Point = ({ feature, mode }) => {
   // TODO: e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
+  const geometry = feature.getGeometry()
   const featureStyles = makeStyles(feature, mode)
   const { sidc, ...properties } = feature.getProperties()
-  return featureStyles.symbol(feature.getGeometry(), {
+
+  // Don't want them handles when selected.
+  const handles = mode !== 'selected'
+    ? featureStyles.handles(geometry)
+    : []
+
+  const symbol = featureStyles.symbol(geometry, {
     sidc,
     // outlineWidth: 4,
     // outlineColor: 'white',
     ...modifiers(properties)
   })
+
+  return [symbol, handles]
 }

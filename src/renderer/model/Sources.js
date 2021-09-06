@@ -91,22 +91,26 @@ Sources.prototype.updateProperties_ = function (operations) {
   const features = operations.filter(({ key }) => isFeatureId(key))
 
   // Removals.
-  features
+  const removals = features
     .filter(({ type }) => type === 'del')
     .map(({ key }) => this.source_.getFeatureById(key))
-    .forEach(feature => this.source_.removeFeature(feature))
 
-  // Updates.
-  features
+  const additions = features
     .filter(({ type }) => type === 'put')
-    .forEach(({ key, value }) => {
-      const feature = this.source_.getFeatureById(key)
-      if (!feature) return
+    .filter(({ key }) => !this.source_.getFeatureById(key))
 
-      // Note: Does not increase revision counter
-      feature.setProperties(value.properties, true)
-      feature.changed()
-    })
+  const updates = features
+    .filter(({ type }) => type === 'put')
+    .filter(({ key }) => this.source_.getFeatureById(key))
+
+  removals.forEach(feature => this.source_.removeFeature(feature))
+  additions.forEach(({ value }) => console.log('[Source] addition', value))
+  updates.forEach(({ key, value }) => {
+    const feature = this.source_.getFeatureById(key)
+    // Note: Does not increase revision counter
+    feature.setProperties(value.properties, true)
+    feature.changed()
+  })
 }
 
 
@@ -116,8 +120,8 @@ Sources.prototype.updateProperties_ = function (operations) {
  */
 Sources.prototype.getFeatureSource = async function () {
   if (this.source_) return this.source_
-  const json = await this.layerStore_.getFeatures()
-  const features = readFeatures(json)
-  this.source_ = new VectorSource({ features })
+  const geoJSONFeatures = await this.layerStore_.getFeatures()
+  const olFeatures = readFeatures({ type: 'FeatureCollection', features: geoJSONFeatures })
+  this.source_ = new VectorSource({ features: olFeatures })
   return this.source_
 }
