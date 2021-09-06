@@ -53,9 +53,11 @@ MiniSearchIndex.prototype.handleBatch = function (ops) {
 
   for (const op of updates) {
     const scope = op.key.split(':')[0]
-    this.index_.remove(this.cache_[op.key])
-    this.cache_[op.key] = documents[scope](op.value, cache)
-    this.index_.add(this.cache_[op.key])
+    const cachedDocument = this.cache_[op.key]
+    if (cachedDocument) this.index_.remove(cachedDocument)
+    const document = documents[scope](op.value, cache)
+    this.cache_[op.key] = document
+    this.index_.add(document)
   }
 
   for (const op of removals) {

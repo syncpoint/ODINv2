@@ -41,10 +41,12 @@ const Marc = () => {
 
     if (preventDefault(event)) event.preventDefault()
 
+    // History: Back.
     if (cmdOrCtrl(event) && event.key === 'ArrowUp') {
       if (historyEntries.length > 1) historyDispatch({ type: 'pop' })
     }
 
+    // History: Open details.
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
       if (!listState.focusId) return
       if (isLayerId(listState.focusId)) {

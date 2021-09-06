@@ -5,6 +5,7 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 DEH - 099455f2-4bfe-489b-83ba-ca6106f35d39 - history: store/restore focused element and query
 
 OPEN
+8deb78e2-a30c-4ccb-860a-b49138afdca6 - bug/add tag: Return key duplicates tag
 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing
 4c3316e5-ebab-4b87-835b-35c7f88976f2 - project list: support open project without closing list
@@ -135,3 +136,4 @@ DEH - 95e05f34-905d-4dd6-a868-4a1e22e0c5f4 - (legacy) import: remove geometry pr
 DEH - 0fe18c43-7f04-4695-b72f-1e2c7b17be9e - WDYR: inspect/fix IndexBackList and sub-components
 DEH - 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize issue
 DEH - cb9a5835-e49e-441f-b7e3-5eadd05fcd97 - list: navigation incl. breadcrumbs
+DEH - af3f609b-2415-43af-a5ba-1398718bb7ec - import/DND: undo probably broken - go check

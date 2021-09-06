@@ -1,16 +1,16 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
-import { writeGeometryObject, writeFeatureObject } from './format'
-import { compositeCommand } from './store-common'
+import { writeGeometryObject } from './format'
 
 
 /**
  *
  */
-const putLayer = function (layer) {
+const composite = async function (commands) {
+  const resolved = await Promise.all(commands)
   return {
-    apply: () => this.putLayer(layer),
-    inverse: () => this.commands.deleteLayer(layer.id)
+    apply: () => Promise.all(resolved.map(command => command.apply())),
+    inverse: () => this.commands.composite(resolved.reverse().map(command => command.inverse()))
   }
 }
 
@@ -19,21 +19,27 @@ const putLayer = function (layer) {
  *
  */
 const importLayers = function (layers) {
-  return compositeCommand(layers.map(this.commands.putLayer))
+  return this.commands.composite(layers.map(this.commands.putLayer))
 }
 
 
 /**
  *
  */
-const deleteLayer = async function (layerId) {
-  const layer = {
-    ...await this.getFeatures(layerId),
-    ...await this.propertiesLevel_.get(layerId)
-  }
-
+const putLayer = function (layer) {
   return {
-    apply: () => this.deleteLayer(layerId),
+    apply: () => this.putLayer(layer),
+    inverse: () => this.commands.deleteLayer(layer)
+  }
+}
+
+
+/**
+ *
+ */
+const deleteLayer = async function (layer) {
+  return {
+    apply: () => this.deleteLayer(layer.id),
     inverse: () => this.commands.putLayer(layer)
   }
 }
@@ -42,10 +48,12 @@ const deleteLayer = async function (layerId) {
 /**
  *
  */
-const updateGeometries = function (oldGeometries, newGeometries) {
+const updateGeometries = function (geometries) {
+  const entries = Object.entries(geometries).map(([id, xs]) => [id, [xs[1], xs[0]]])
+  const flippedGeometries = Object.fromEntries(entries)
   return {
-    apply: () => this.updateGeometries(newGeometries),
-    inverse: () => this.commands.updateGeometries(newGeometries, oldGeometries)
+    apply: () => this.updateGeometries(geometries),
+    inverse: () => this.commands.updateGeometries(flippedGeometries)
   }
 }
 
@@ -62,15 +70,24 @@ const updateEntries = function (entries, updatedEntries) {
 
 
 /**
- *
+ * putFeatures :: [JSON/feature] -> Command
  */
-const cloneFeatures = function (features) {
-  const { features: clones } = writeFeaturesObject(features)
-  console.log('[LayerStore] cloneFeatures', clones)
-
+const putFeatures = function (features) {
   return {
-    apply: () => {},
-    inverse: () => {}
+    apply: () => this.putFeatures(features),
+    inverse: () => this.commands.deleteFeatures(features)
+  }
+}
+
+
+/**
+ * deleteFeatures :: [JSON/feature] -> Command
+ */
+const deleteFeatures = function (features) {
+  const ids = features.map(feature => feature.id)
+  return {
+    apply: () => this.deleteFeatures(ids),
+    inverse: () => this.commands.putFeatures(features)
   }
 }
 
@@ -87,12 +104,14 @@ export function LayerStore (propertiesLevel, geometryLevel) {
   this.geometryLevel_ = geometryLevel
 
   this.commands = {}
+  this.commands.composite = composite.bind(this)
   this.commands.putLayer = putLayer.bind(this)
   this.commands.importLayers = importLayers.bind(this)
   this.commands.deleteLayer = deleteLayer.bind(this)
   this.commands.updateGeometries = updateGeometries.bind(this)
   this.commands.updateEntries = updateEntries.bind(this)
-  this.commands.cloneFeatures = cloneFeatures.bind(this)
+  this.commands.putFeatures = putFeatures.bind(this)
+  this.commands.deleteFeatures = deleteFeatures.bind(this)
 }
 
 util.inherits(LayerStore, Emitter)
@@ -184,10 +203,14 @@ LayerStore.prototype.getFeatures = async function (layerId) {
 
 
 /**
- *
+ * getFeatureProperties :: [string] -> Promise([object])
  */
-LayerStore.prototype.getEntry = function (id) {
-  return this.propertiesLevel_.get(id)
+LayerStore.prototype.getFeatureProperties = function (ids) {
+  return ids.reduce(async (acc, id) => {
+    const xs = await acc
+    xs.push(await this.propertiesLevel_.get(id))
+    return xs
+  }, [])
 }
 
 
@@ -207,23 +230,50 @@ LayerStore.prototype.updateEntries = async function (entries) {
 
 
 /**
- *
+ * putLayer :: GeoJSON/layer -> Promise()
  */
 LayerStore.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
-  await this.propertiesLevel_.put(id, { name, id })
+  await this.propertiesLevel_.batch([{
+    type: 'put', key: id, value: { name, id }
+  }])
 
-  await this.propertiesLevel_.batch(features.map(feature => ({
-    type: 'put',
-    key: feature.id,
-    value: feature
-  })))
+  this.putFeatures(features)
+}
 
-  await this.geometryLevel_.batch(features.map(feature => ({
-    type: 'put',
-    key: feature.id,
-    value: feature.geometry
-  })))
+
+/**
+ * putFeatures :: [GeoJSON/feature] -> Promise()
+ */
+LayerStore.prototype.putFeatures = async function (features) {
+
+  // Write geometries first, so we can delete geometry property
+  // from properies in next step.
+  await (async () => {
+    const ops = features.map(feature => ({
+      type: 'put',
+      key: feature.id,
+      value: feature.geometry
+    }))
+
+    return this.geometryLevel_.batch(ops)
+  })()
+
+  await (async () => {
+    const ops = features.map(feature => {
+      // Note: We keep type: 'Feature' form GeoJSON.
+      const copy = { ...feature }
+      delete copy.geometry // Don't write geometry property as JSON.
+
+      return {
+        type: 'put',
+        key: copy.id,
+        value: copy
+      }
+    })
+
+    return this.propertiesLevel_.batch(ops)
+  })()
 
   this.emit('batch', {
     operations: features.map(feature => ({
@@ -238,43 +288,11 @@ LayerStore.prototype.putLayer = async function (layer) {
 /**
  *
  */
-LayerStore.prototype.putFeatures = async function (features) {
-
-  const json = features.map(feature => writeFeatureObject(feature))
-  console.log('json', json)
-
-  const properties = json.map(feature => {
-    return {
-      type: 'put',
-      key: feature.id,
-      value: feature
-    }
-  })
-
-  console.log(properties)
-  // await this.propertiesLevel_.batch()
-
-  // await this.geometryLevel_.batch(json.map(feature => ({
-  //   type: 'put',
-  //   key: feature.id,
-  //   value: feature.geometry
-  // })))
-
-  // this.emit('batch', {
-  //   operations: json.map(feature => ({
-  //     type: 'put',
-  //     key: feature.id,
-  //     value: feature
-  //   }))
-  // })
-}
-
-
-/**
- *
- */
-LayerStore.prototype.deleteFeatures = async function (features) {
-  console.log('[LayerStore] deleteFeatures', features)
+LayerStore.prototype.deleteFeatures = async function (ids) {
+  const operations = ids.map(key => ({ type: 'del', key }))
+  await this.propertiesLevel_.batch(operations)
+  await this.geometryLevel_.batch(operations)
+  this.emit('batch', { operations })
 }
 
 
@@ -294,13 +312,13 @@ LayerStore.prototype.deleteLayer = async function (layerId) {
 
 
 /**
- *
+ * updateGeometries :: { id -> [new, old] } -> Promise()
  */
 LayerStore.prototype.updateGeometries = async function (geometries) {
-  const ops = Object.entries(geometries)
-    .map(([key, value]) => [key, writeGeometryObject(value)])
+  const operations = Object.entries(geometries)
+    .map(([key, xs]) => [key, writeGeometryObject(xs[0])])
     .map(([key, value]) => ({ type: 'put', key, value }))
 
-  this.emit('geometries', { operations: ops })
-  return this.geometryLevel_.batch(ops)
+  this.emit('geometries', { operations })
+  return this.geometryLevel_.batch(operations)
 }

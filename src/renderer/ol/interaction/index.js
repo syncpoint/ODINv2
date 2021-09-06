@@ -7,6 +7,7 @@ import { featureStyle } from '../style'
 import Modify from './Modify'
 import { cmdOrCtrl } from '../../platform'
 import * as ids from '../../ids'
+import { writeGeometryObject } from '../../store/format'
 
 const hitTolerance = 3
 const noAltKey = ({ originalEvent }) => originalEvent.altKey !== true // macOS: option key
@@ -65,7 +66,6 @@ const selectInteraction = (
   interaction.on('select', () => {
     // Propagate to global selection.
     // NOTE: selected, deselected are deltas/changes.
-    console.log('[Select]', interaction.getFeatures().getArray())
     const ids = features => features.map(feature => feature.getId())
     selection.set(ids(interaction.getFeatures().getArray()))
   })
@@ -85,17 +85,21 @@ const selectInteraction = (
 
 
 /**
- * @param {*} layerStore
- * @param {*} undo
- * @param {*} select
- * @returns
+ * @param {LayerStore} layerStore
+ * @param {Undo} undo
+ * @param {ol/insteraction/Select} select
+ * @param {ol/VectorSource} featureSource source for all features
+ * @param {Selection} selection
+ * @returns {ol/interaction/Translate}
  */
 const translateInteraction = (
   layerStore,
   undo,
-  select
+  select,
+  featureSource,
+  selection
 ) => {
-  let state = {}
+  let clones = []
 
   const interaction = new Translate({
     hitTolerance,
@@ -116,67 +120,71 @@ const translateInteraction = (
 
   interaction.on('translatestart', ({ features }) => {
 
-    // Complete clones of original features.
-    // Note: Features lose their id after cloning.
-    state = features.getArray().reduce((acc, feature) => {
-      acc[feature.getId()] = { original: feature.clone() }
-      return acc
-    }, {})
-
     const updateCursor = set('updateCursor', cursor => {
       const map = interaction.getMap()
       const target = map.getViewport()
       target.style.cursor = cursor
     })
 
-    const cloning = set('cloning', cmdOrCtrlTracker.cmdOrCtrl)
-    if (cloning) {
-      // Insert original features under new identities but
-      // with same geometry to the map.
-      // Later we switch geometries between original featues
-      // and clones to correct identities.
-      Object.entries(state).forEach(([id, slot]) => {
-        // Assign new (imposter) ids to clones:
-        const layerUUID = ids.layerUUID(id)
-        state[id].imposter = `feature:${layerUUID}/${uuid()}`
-        slot.original.setId(state[id].imposter)
-      })
-
-      const imposters = Object.values(state).map(slot => slot.original)
-      layerStore.putFeatures(imposters)
-
-      updateCursor('copy')
-    }
-
-    const cmdOrCtrlHandler = set('cmdOrCtrlHandler', ({ cmdOrCtrl }) => {
-      const setCloning = flag => {
-        updateCursor(flag ? 'copy' : 'auto')
-        interaction.set('cloning', flag, true)
-      }
-
-      setCloning(cmdOrCtrl)
+    // Clone features with new identities:
+    clones = features.getArray().map(feature => {
+      const layerUUID = ids.layerUUID(feature.getId())
+      const clone = feature.clone()
+      const id = `feature:${layerUUID}/${uuid()}`
+      clone.setId(id)
+      return clone
     })
 
-    cmdOrCtrlTracker.on('update', cmdOrCtrlHandler)
+    const cloning = set('cloning', cmdOrCtrlTracker.cmdOrCtrl)
+    if (cloning) {
+      updateCursor('copy')
+      featureSource.addFeatures(clones)
+    }
   })
 
-  interaction.on('translateend', ({ features }) => {
-    // const updateCursor = unset('updateCursor')
-    // updateCursor(null)
-    // const cloning = unset('cloning')
-    // const cmdOrCtrlHandler = unset('cmdOrCtrlHandler')
-    // cmdOrCtrlTracker.off('update', cmdOrCtrlHandler)
+  interaction.on('translateend', async ({ features }) => {
+    const cloning = unset('cloning')
+    const updateCursor = unset('updateCursor')
+    updateCursor(null)
 
-    // const newGeometries = () => features.getArray().reduce((acc, feature) => {
-    //   acc[feature.getId()] = feature.getGeometry()
-    //   return acc
-    // }, {})
+    if (cloning) {
 
-    // const command = cloning
-    //   ? layerStore.commands.cloneFeatures(features.getArray())
-    //   : layerStore.commands.updateGeometries(originalFeatures, newGeometries())
+      // Get complete properties set for all features:
+      const featureIds = features.getArray().map(feature => feature.getId())
+      const properties = await layerStore.getFeatureProperties(featureIds)
 
-    // undo.apply(command)
+      // Swap geometries: feature <-> clone.
+      features.getArray().forEach((feature, index) => {
+        const geometry = feature.getGeometry()
+        feature.setGeometry(clones[index].getGeometry())
+        clones[index].setGeometry(geometry)
+      })
+
+      // Prepare new JSON features to put into store:
+      const json = clones.map((clone, index) => {
+        const geometry = writeGeometryObject(clone.getGeometry())
+        return { ...properties[index], id: clone.getId(), geometry }
+      })
+
+      const command = layerStore.commands.putFeatures(json)
+      undo.apply(command)
+
+      // Finally, set clones as new selection:
+      selection.set(clones.map(clone => clone.getId()))
+    } else {
+
+      // geometries :: { id -> [new, old] }
+      const geometries = features.getArray().reduce((acc, feature, index) => {
+        acc[feature.getId()] = [
+          feature.getGeometry(), // new geometry
+          clones[index].getGeometry() // old geometry
+        ]
+        return acc
+      }, {})
+
+      const command = layerStore.commands.updateGeometries(geometries)
+      undo.apply(command)
+    }
   })
 
   return interaction
@@ -194,7 +202,7 @@ const modifyInteraction = (
   undo,
   partition
 ) => {
-  let oldGeometries = {} // Cloned geometries BEFORE modify.
+  let clones = [] // Cloned geometries BEFORE modify.
 
   const interaction = new Modify({
     source: partition.getSelected(),
@@ -205,19 +213,19 @@ const modifyInteraction = (
   })
 
   interaction.on('modifystart', ({ features }) => {
-    oldGeometries = features.getArray().reduce((acc, feature) => {
-      acc[feature.getId()] = feature.getGeometry().clone()
-      return acc
-    }, {})
+    clones = features.getArray().map(feature => feature.getGeometry().clone())
   })
 
   interaction.on('modifyend', ({ features }) => {
-    const newGeometries = features.getArray().reduce((acc, feature) => {
-      acc[feature.getId()] = feature.getGeometry()
+    const geometries = features.getArray().reduce((acc, feature, index) => {
+      acc[feature.getId()] = [
+        feature.getGeometry(),
+        clones[index]
+      ]
       return acc
     }, {})
 
-    const command = layerStore.commands.updateGeometries(oldGeometries, newGeometries)
+    const command = layerStore.commands.updateGeometries(geometries)
     undo.apply(command)
   })
 
@@ -229,13 +237,22 @@ const modifyInteraction = (
  *
  */
 const snapInteraction = (
-  features
+  featureSource
 ) => {
   return new Snap({
-    source: features
+    source: featureSource
   })
 }
 
+/**
+ * @param {Selection} selection
+ * @param {LayerStore} layerStore
+ * @param {Undo} undo
+ * @param {Partition} partition
+ * @param {ol/VectorLayer} featureLayer
+ * @param {ol/VectorLayer} selectedLayer
+ * @param {ol/VectorSource} featureSource source for all features
+ */
 export default (
   selection,
   layerStore,
@@ -243,12 +260,12 @@ export default (
   partition,
   featureLayer,
   selectedLayer,
-  features
+  featureSource
 ) => {
   const select = selectInteraction(selection, partition, featureLayer, selectedLayer)
   const modify = modifyInteraction(layerStore, undo, partition)
-  const translate = translateInteraction(layerStore, undo, select)
-  const snap = snapInteraction(features)
+  const translate = translateInteraction(layerStore, undo, select, featureSource, selection)
+  const snap = snapInteraction(featureSource)
   return defaultInteractions({ doubleClickZoom: false }).extend(
     [select, translate, modify, snap]
   )
