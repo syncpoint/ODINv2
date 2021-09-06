@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, IndexEntry } from '.'
+import { List, IndexEntry, Card } from '.'
 
 
 /**
@@ -63,12 +63,22 @@ const IndexBackedList = props => {
     dispatch={dispatch}
   />, [dispatch])
 
+  const emptyList = () => {
+    return (
+      <div style={{ padding: '3px 6px' }}>
+        <Card>
+          <span style={{ paddingTop: '6px' }} className='card-title'>No match, try Tinder.</span>
+        </Card>
+      </div>
+    )
+  }
+
   /* eslint-enable react/prop-types */
 
   return (
     state.entries.length > 0
       ? <List child={child} { ...state }/>
-      : null
+      : emptyList()
   )
 }
 

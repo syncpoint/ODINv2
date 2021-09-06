@@ -7,22 +7,11 @@ import useVirtual from 'react-cool-virtual'
  * Abstract list. Mainly obsessed with scrolling.
  */
 const List = props => {
-  const { child, focusIndex, focusId, selected, scroll } = props
-
-  const entries = props.entries
-  // const [entries, setEntries] = React.useState(props.entries)
-  // React.useEffect(() => {
-  //   setEntries(props.entries)
-  // }, [props.entries])
-
+  const { child, focusIndex, focusId, selected, scroll, entries } = props
   const { outerRef, innerRef, items, scrollToItem } = useVirtual({
     itemCount: entries.length,
     resetScroll: true
   })
-
-  React.useEffect(() => {
-    return () => console.log('<List/> unmounting...')
-  }, [])
 
   React.useEffect(() => {
     if (scroll === 'none') return
@@ -36,10 +25,7 @@ const List = props => {
   }
 
   const card = ({ index, measureRef }) => {
-    if (index >= entries.length) {
-      console.warn('<List/> overshooting', `${index}/${entries.length}`)
-      return null
-    }
+    if (index >= entries.length) return null
 
     const entry = entries[index]
     return child({
