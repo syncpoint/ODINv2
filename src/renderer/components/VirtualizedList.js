@@ -1,55 +1,50 @@
-import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
-
-
-/**
- *
- */
-const scrollIntoView = (refs, index, behavior) =>
-  refs[index] &&
-  refs[index].current &&
-  refs[index].current.scrollIntoView({
-    behavior,
-    block: 'nearest'
-  })
+import useVirtual from 'react-cool-virtual'
 
 
 /**
  * Abstract list. Mainly obsessed with scrolling.
  */
-const List = props => {
+const VirtualizedList = props => {
   const { child, focusIndex, focusId, selected, scroll, entries } = props
-  const cardrefs = props.entries.map(_ => React.createRef())
+  const { outerRef, innerRef, items, scrollToItem } = useVirtual({
+    itemCount: entries.length,
+    resetScroll: true
+  })
 
   React.useEffect(() => {
     if (scroll === 'none') return
-    scrollIntoView(cardrefs, focusIndex, scroll)
-  }, [cardrefs, focusIndex, scroll])
+    if (focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+  }, [scrollToItem, focusIndex, scroll])
 
   const handleKeyDown = event => {
     const { key } = event
     if (key === ' ') event.preventDefault()
   }
 
-  const card = index => {
+  const card = ({ index, measureRef }) => {
+    if (index >= entries.length) return null
+
     const entry = entries[index]
     return child({
       entry,
       id: entry.id,
       focused: focusId === entry.id,
       selected: selected.includes(entry.id),
-      ref: cardrefs[index]
+      ref: measureRef
     })
   }
 
-  const list = entries.length
-    ? R.range(0, entries.length).map(card)
+  const list = items.length
+    ? items.map(card)
     : null
 
   return (
-    <div className='list-container'>
+    <div className='list-container' ref={outerRef}>
       <div
+        ref={innerRef}
         tabIndex={0}
         onKeyDown={handleKeyDown}
       >
@@ -59,7 +54,7 @@ const List = props => {
   )
 }
 
-List.propTypes = {
+VirtualizedList.propTypes = {
   entries: PropTypes.array.isRequired,
   focusId: PropTypes.string,
   focusIndex: PropTypes.number.isRequired,
@@ -68,8 +63,8 @@ List.propTypes = {
   child: PropTypes.func.isRequired
 }
 
-List.whyDidYouRender = true
+VirtualizedList.whyDidYouRender = true
 
-const ListMemo = React.memo(List)
-ListMemo.whyDidYouRender = true
-export { ListMemo as List }
+const VirtualizedListMemo = React.memo(VirtualizedList)
+VirtualizedListMemo.whyDidYouRender = true
+export { VirtualizedListMemo as VirtualizedList }

@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
-import { List, IndexEntry, Card } from '.'
+import { VirtualizedList, IndexEntry, Card } from '.'
 
 
 /**
@@ -77,7 +77,7 @@ const IndexBackedList = props => {
 
   return (
     state.entries.length > 0
-      ? <List child={child} { ...state }/>
+      ? <VirtualizedList child={child} { ...state }/>
       : emptyList()
   )
 }

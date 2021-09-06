@@ -257,9 +257,6 @@ export const Splash = () => {
 
   const handleFilterChange = React.useCallback(value => setFilter(value), [])
   const handleCreate = () => projectStore.createProject()
-  const handleClick = id => ({ metaKey, shiftKey }) => {
-    dispatch({ type: 'click', id, shiftKey, metaKey })
-  }
 
   /* eslint-disable react/prop-types */
   const child = React.useCallback(props => {
@@ -268,41 +265,45 @@ export const Splash = () => {
     const loadPreview = () => projectStore.getPreview(project.id)
     const handleRename = name => projectStore.updateProject({ ...project, name })
     const handleDelete = () => projectStore.deleteProject(project.id)
+    const handleClick = id => ({ metaKey, shiftKey }) => {
+      dispatch({ type: 'click', id, shiftKey, metaKey })
+    }
 
     const isOpen = project.tags
       ? project.tags.includes('OPEN')
       : false
 
     return (
-      <Card
-        key={props.id}
-        ref={props.ref}
-        onClick={handleClick(props.id)}
-        focused={props.focused}
-        selected={props.selected}
-      >
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <div className='card-content'>
-            <Title value={project.name} onChange={handleRename}/>
-            <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
+      <div ref={props.ref} style={{ padding: '3px 6px' }}>
+        <Card
+          key={props.id}
+          onClick={handleClick(props.id)}
+          focused={props.focused}
+          selected={props.selected}
+        >
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <div className='card-content'>
+              <Title value={project.name} onChange={handleRename}/>
+              <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
-            <ButtonBar>
-              <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
-              <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
-              <CustomButton
-                danger
-                onClick={handleDelete}
-                style={{ marginLeft: 'auto' }}
-                text='Delete'
-                disabled={isOpen}
-              />
-            </ButtonBar>
+              <ButtonBar>
+                <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
+                <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
+                <CustomButton
+                  danger
+                  onClick={handleDelete}
+                  style={{ marginLeft: 'auto' }}
+                  text='Delete'
+                  disabled={isOpen}
+                />
+              </ButtonBar>
+            </div>
+            <Media loadPreview={loadPreview}/>
           </div>
-          <Media loadPreview={loadPreview}/>
-        </div>
-      </Card>
+        </Card>
+      </div>
     )
-  }, [ipcRenderer, projectStore])
+  }, [dispatch, ipcRenderer, projectStore])
   /* eslint-enable react/prop-types */
 
   return (
