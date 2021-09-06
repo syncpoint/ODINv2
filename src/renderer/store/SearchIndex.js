@@ -49,8 +49,9 @@ export function SearchIndex (propertiesLevel) {
     this.index_.createIndex_()
   }, { timeout: 2000 })
 
+  // TODO: investigate - it seems put event does not carry properties as promised (key, value)
   propertiesLevel.on('put', event => console.log('[DB] put', event))
-  propertiesLevel.on('del', event => console.log('[DB] del', event))
+  propertiesLevel.on('del', key => this.handleBatch_([{ type: 'del', key }]))
   propertiesLevel.on('batch', event => this.handleBatch_(event))
 }
 
@@ -61,7 +62,6 @@ util.inherits(SearchIndex, Emitter)
  *
  */
 SearchIndex.prototype.handleBatch_ = function (event) {
-
   event.forEach(op => {
     switch (op.type) {
       case 'put': this.carrera_[op.key] = op.value; break

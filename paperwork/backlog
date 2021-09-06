@@ -11,6 +11,7 @@ b6b39e8f-c2cf-41a7-bac9-91211110472d - tags: show/hide feature/layer
 62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
 a17822f4-e8d4-45de-8d01-b9fd424da620 - sidebar: persistent application state (showing, last scope)
 099455f2-4bfe-489b-83ba-ca6106f35d39 - history: store/restore focused element and query
+8deb78e2-a30c-4ccb-860a-b49138afdca6 - bug/add tag: Return key duplicates tag
 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing
 4c3316e5-ebab-4b87-835b-35c7f88976f2 - project list: support open project without closing list
@@ -141,3 +142,4 @@ DEH - 0fe18c43-7f04-4695-b72f-1e2c7b17be9e - WDYR: inspect/fix IndexBackList and
 DEH - 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize issue (https://github.com/wellyshen/react-cool-virtual/issues/235)
 DEH - cb9a5835-e49e-441f-b7e3-5eadd05fcd97 - list: navigation incl. breadcrumbs
 DEH - 50124375-e071-4a2c-97d4-b8c4f5d27d22 - react-cool-virtual: file fast scroll issue (https://github.com/wellyshen/react-cool-virtual/issues/243)
+DEH - af3f609b-2415-43af-a5ba-1398718bb7ec - import/DND: undo probably broken - go check

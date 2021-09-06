@@ -88,10 +88,21 @@ Sources.prototype.updateGeometries_ = function (operations) {
  * @private
  */
 Sources.prototype.updateProperties_ = function (operations) {
-  operations
-    .filter(({ key }) => isFeatureId(key))
+  const features = operations.filter(({ key }) => isFeatureId(key))
+
+  // Removals.
+  features
+    .filter(({ type }) => type === 'del')
+    .map(({ key }) => this.source_.getFeatureById(key))
+    .forEach(feature => this.source_.removeFeature(feature))
+
+  // Updates.
+  features
+    .filter(({ type }) => type === 'put')
     .forEach(({ key, value }) => {
       const feature = this.source_.getFeatureById(key)
+      if (!feature) return
+
       // Note: Does not increase revision counter
       feature.setProperties(value.properties, true)
       feature.changed()
@@ -101,7 +112,7 @@ Sources.prototype.updateProperties_ = function (operations) {
 
 /**
  * @returns ol/VectorSource
- * NOTE: Source is laziliy loaded.
+ * NOTE: Source is loaded laziliy.
  */
 Sources.prototype.getFeatureSource = async function () {
   if (this.source_) return this.source_

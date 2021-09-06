@@ -9,6 +9,12 @@ export const layerId = R.cond([
   [R.T, x => layerId(x.id)]
 ])
 
+export const layerUUID = R.cond([
+  [R.startsWith('feature:'), x => x.split(':')[1].split('/')[0]],
+  [R.startsWith('layer:'), x => x.split(':')[1]],
+  [R.T, () => uuid()]
+])
+
 export const featureId = R.cond([
   [x => typeof x === 'object', R.prop('id')],
   [R.T, layerId => `feature:${layerId.split(':')[1]}/${uuid()}`]
