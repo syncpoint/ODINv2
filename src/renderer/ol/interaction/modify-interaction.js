@@ -11,7 +11,7 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
  * @returns
  */
 export default options => {
-  const { layerStore, undo, partition, hitTolerance } = options
+  const { layerStore, partition, hitTolerance } = options
   let clones = [] // Cloned geometries BEFORE modify.
 
   const interaction = new Modify({
@@ -35,8 +35,7 @@ export default options => {
       return acc
     }, {})
 
-    const command = layerStore.commands.updateGeometries(geometries)
-    undo.apply(command)
+    layerStore.updateGeometries(geometries)
   })
 
   return interaction

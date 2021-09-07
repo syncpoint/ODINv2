@@ -9,9 +9,16 @@ import './multipoint'
 /**
  *
  */
-export const featureStyle = selection => {
+export const featureStyle = (selection, featureSource) => {
+
   let currentResolution
   const cache = new StyleCache()
+
+  // When feature is removed from source, delete all matching key from cache.
+  // Failing to do so, will pull out old styles when feature is re-added
+  // because of undo/redo. Note: Feature revision will restart with low value,
+  // which was previously used. The remainder of the key, will be the same (mode, id).
+  featureSource.on('removefeature', ({ feature }) => cache.removePartial(feature.getId()))
 
   return (feature, resolution) => {
 

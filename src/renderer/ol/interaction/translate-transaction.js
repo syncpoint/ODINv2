@@ -33,16 +33,12 @@ CmdOrCtrlTracker.prototype.dispose = function () {
 
 const cmdOrCtrlTracker = new CmdOrCtrlTracker()
 
+
 /**
- * @param {LayerStore} layerStore
- * @param {Undo} undo
- * @param {ol/insteraction/Select} select
- * @param {ol/VectorSource} featureSource source for all features
- * @param {Selection} selection
- * @returns {ol/interaction/Translate}
+ *
  */
 export default (options, select) => {
-  const { layerStore, undo, featureSource, selection, hitTolerance } = options
+  const { layerStore, featureSource, hitTolerance } = options
   let clones = []
 
   const interaction = new Translate({
@@ -81,6 +77,11 @@ export default (options, select) => {
     const cloning = set('cloning', cmdOrCtrlTracker.cmdOrCtrl)
     if (cloning) {
       updateCursor('copy')
+
+      // Add clones to source as placeholders.
+      // Placeholders must be removed before adding to store,
+      // because re-adding them to the source will result in a major
+      // (feature) identity crisis.
       featureSource.addFeatures(clones)
     }
   })
@@ -93,8 +94,8 @@ export default (options, select) => {
     if (cloning) {
 
       // Get complete properties set for all features:
-      const featureIds = features.getArray().map(feature => feature.getId())
-      const properties = await layerStore.getFeatureProperties(featureIds)
+      const ids = features.getArray().map(feature => feature.getId())
+      const properties = await layerStore.getValues(ids)
 
       // Swap geometries: feature <-> clone.
       features.getArray().forEach((feature, index) => {
@@ -109,11 +110,10 @@ export default (options, select) => {
         return { ...properties[index], id: clone.getId(), geometry }
       })
 
-      const command = layerStore.commands.putFeatures(json)
-      undo.apply(command)
+      // Important: Remove clones from source before adding to store.
+      clones.forEach(clone => featureSource.removeFeature(clone))
+      await layerStore.putFeatures(json)
 
-      // Finally, set clones as new selection:
-      selection.set(clones.map(clone => clone.getId()))
     } else {
 
       // geometries :: { id -> [new, old] }
@@ -125,8 +125,7 @@ export default (options, select) => {
         return acc
       }, {})
 
-      const command = layerStore.commands.updateGeometries(geometries)
-      undo.apply(command)
+      layerStore.updateGeometries(geometries)
     }
   })
 

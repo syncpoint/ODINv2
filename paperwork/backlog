@@ -5,6 +5,7 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 DEH - 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 
 OPEN
+1dedb884-7b83-47b8-baeb-53a18c877f02 - translate/clone: Escape key deselects and brings ongoing translate into trouble
 0bc82d1a-150e-4368-8b61-74df1fb0885d - symbol: make modifer text style configurable
 667f3379-b9d9-4c7c-9e83-fd7ab9ae54cf - tags: focus/center map on feature/layer
 055a9e2c-a086-448d-8b8e-8b70c324fbae - tags: highlight feature/layer
@@ -34,7 +35,6 @@ e1c55546-1891-4fcd-af5a-1887954e0278 - style: improve cache (feature timestamp/g
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
 c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: ESM, upgrade to v9.x
-57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
 e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
 6a932e7a-bd4b-49dc-b96a-7c36b749fbd1 - feature style: cascaded (layer, feature)
   NOTE: complete replacement, no inheritance
@@ -143,3 +143,4 @@ DEH - 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: file resize iss
 DEH - cb9a5835-e49e-441f-b7e3-5eadd05fcd97 - list: navigation incl. breadcrumbs
 DEH - af3f609b-2415-43af-a5ba-1398718bb7ec - import/DND: undo probably broken - go check
 DEH - 8deb78e2-a30c-4ccb-860a-b49138afdca6 - bug/add tag: Return key duplicates tag
+DEH - 57470315-1145-4730-9025-be56377062da - Sources: deselect (feature) removals

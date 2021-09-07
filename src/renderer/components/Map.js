@@ -45,7 +45,7 @@ export const Map = () => {
     const view = new ol.View({ ...viewport })
     const featureSource = await sources.getFeatureSource()
     const partition = new Partition(featureSource, selection)
-    const style = featureStyle(selection)
+    const style = featureStyle(selection, featureSource)
     const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
     const featureLayer = vectorLayer(partition.getDeselected())
@@ -73,7 +73,8 @@ export const Map = () => {
       partition,
       featureLayer,
       selectedLayer,
-      featureSource
+      featureSource,
+      style
     })
 
     view.on('change', ({ target: view }) => {

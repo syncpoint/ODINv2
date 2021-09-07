@@ -34,7 +34,7 @@ export const workspace = projectUUID => {
   const propertiesLevel = propertiesPartition(db)
   const geometryLevel = geometryPartition(db)
   const propertiesStore = new PropertiesStore(propertiesLevel, selection, undo)
-  const layerStore = new LayerStore(propertiesLevel, geometryLevel, selection, undo)
+  const layerStore = new LayerStore(propertiesLevel, geometryLevel, undo)
   const searchIndex = new SearchIndex(propertiesLevel)
   const emitter = new EventEmitter()
 
@@ -46,20 +46,21 @@ export const workspace = projectUUID => {
   const inputFocused = () => inputTypes.some(type => (activeElement() instanceof type))
 
   ipcRenderer.on('EDIT_UNDO', () => {
-    if (inputFocused()) ipcRenderer.send('DO_UNDO')
-    else if (undo.canUndo()) undo.undo()
+    if (inputFocused()) return ipcRenderer.send('DO_UNDO')
+    console.log('canUndo', undo.canUndo())
+    if (undo.canUndo()) undo.undo()
   })
 
   ipcRenderer.on('EDIT_REDO', () => {
-    if (inputFocused()) ipcRenderer.send('DO_REDO')
-    else if (undo.canRedo()) undo.redo()
+    if (inputFocused()) return ipcRenderer.send('DO_REDO')
+    console.log('canRedo', undo.canRedo())
+    if (undo.canRedo()) undo.redo()
   })
 
   const dragAndDrop = new DragAndDrop()
 
   dragAndDrop.on('layers', async ({ layers }) => {
-    const command = await layerStore.commands.importLayers(layers)
-    services.undo.apply(command)
+    await layerStore.importLayers(layers)
   })
 
   const services = {}
@@ -68,12 +69,7 @@ export const workspace = projectUUID => {
   services.master = levelup(new IPCDownClient(ipcRenderer))
   services.sessionStore = new SessionStore(services.master, `project:${projectUUID}`)
   services.undo = undo
-
-  // FIXME: It would be nicer if Sources depended only on only one store/db
-  services.sources = new Sources(layerStore, propertiesLevel)
-
-  // TODO: 57470315-1145-4730-9025-be56377062da - layer store: deselect (feature) removals
-
+  services.sources = new Sources(layerStore, selection)
   services.selection = selection
   services.dragAndDrop = dragAndDrop
   services.propertiesStore = propertiesStore
