@@ -38,7 +38,7 @@ const cmdOrCtrlTracker = new CmdOrCtrlTracker()
  *
  */
 export default (options, select) => {
-  const { store, featureSource, hitTolerance } = options
+  const { store, featureSource, hitTolerance, selection } = options
   let clones = []
 
   const interaction = new Translate({
@@ -113,7 +113,7 @@ export default (options, select) => {
       // Important: Remove clones from source before adding to store.
       clones.forEach(clone => featureSource.removeFeature(clone))
       await store.putFeatures(json)
-
+      selection.set(clones.map(clone => clone.getId()))
     } else {
 
       // geometries :: { id -> [new, old] }
