@@ -22,7 +22,7 @@ const IndexEntry = React.forwardRef((props, ref) => {
   const tag = spec => <Tag key={spec} id={entry.id} spec={spec}/>
 
   return (
-    <div ref={ref} style={{ padding: '3px 6px' }}>
+    <div ref={ref} key={id} style={{ padding: '3px 6px' }}>
       <Card
         focused={props.focused}
         selected={props.selected}

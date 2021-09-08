@@ -60,7 +60,7 @@ export const Map = () => {
     tileLayer.setOpacity(0.55)
 
     const layers = [
-      // tileLayer,w
+      tileLayer,
       featureLayer,
       selectedLayer
     ]

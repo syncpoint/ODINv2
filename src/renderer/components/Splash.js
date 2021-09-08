@@ -274,9 +274,12 @@ export const Splash = () => {
       : false
 
     return (
-      <div ref={props.ref} style={{ padding: '3px 6px' }}>
+      <div
+        key={props.id}
+        ref={props.ref}
+        style={{ padding: '3px 6px' }}
+      >
         <Card
-          key={props.id}
           onClick={handleClick(props.id)}
           focused={props.focused}
           selected={props.selected}
