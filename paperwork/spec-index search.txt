@@ -3,22 +3,22 @@
 Pre-condition:
 List should contain the following features
 
-  A - '1.InfCoy/InfBn53' [Unit/Name]
-  B - '1/InfBn53' [Unit/Name]
-  C - '1/53' [Unit/Name]
-  D - '2/InfBn53' [Unit/Name]
-  E - '2' [Unit/Unique Designation]
-  F - [N/A]	[Unit]
-  G - '2/JgB53' [Unit/Name]
-  H - 'Gz 1/53 zu 2/53' [Boundaries/Name]
-  I - 'Gz 2/53 zu 2/88' [Boundaries/Name]
-  J - '1/53' [Boundaries/Name Left]
-  K - 'CP III/2/88'	[Check Point/Name]
-  L - [N/A] [Check Point]
-  M - 'PL "A"' [Phase Line/Name]
-  N - '"B"' [Phase Line/Unique Designation]
-  O - 'Obj 2/88"' [Objective/Name]
-  P - 'VfgR JgB53"' [Assembly Area/Name]
+  A - '1.InfCoy/InfBn53' [Unit/Name] [Friend]
+  B - '1/InfBn53' [Unit/Name] [Friend]
+  C - '1/53' [Unit/Name] [Faker]
+  D - '2/InfBn53' [Unit/Name] [Friend]
+  E - '2' [Unit/Unique Designation] [Unknown]
+  F - [N/A]	[Unit] [Neutral]
+  G - '2/JgB53' [Unit/Name][Friend]
+  H - 'Gz 1/53 zu 2/53' [Boundaries/Name] [Friend]
+  I - 'Gz 2/53 zu 2/88' [Boundaries/Name] [Friend]
+  J - '1/53' [Boundaries/Name Left] [Hostile]
+  K - 'CP III/2/88'	[Check Point/Name] [Hostile]
+  L - [N/A] [Check Point] [Unknown]
+  M - 'PL "A"' [Phase Line/Name] [Friend]
+  N - '"B"' [Phase Line/Unique Designation] [Neutral]
+  O - 'Obj 2/88"' [Objective/Name] [Hostile]
+  P - 'VfgR JgB53"' [Assembly Area/Name] [Friend]
 
  1. Filter '1', expected: A, B, C, H and J (5)
  2. Filter '1.', expected: A (1)
@@ -38,4 +38,16 @@ List should contain the following features
 16. Filter 'Unit' (Hierachy Code), expected: A, B, C, D, E, F and G (7)
 17. Filter '#Control' (Tag), expected: H, I, J, K, L, M, N, O and P (9)
 18. Filter '#Eny' (Tag), expected: J, K and O (3)
-19. Filter '#ukn' (Tag), expected: L (1)
+19. Filter '#unkown' (Tag), expected: E and L (2)
+20. Filter '#Eny' and '#X_Eny', expected: C, J, K and O (4)
+21. Filter 'PL' and 'Check', expected: K, L, M and N (4)
+
+Notes:
+Tag '#Eny' should includes Hostility Status 'Hostile' and 'Suspect'
+Tag '#Own' should includes Hostility Status 'Friend' and 'Assumed friend'
+Tag '#Neutral' should includes Hostility Status 'Neutral'
+Tag '#Unknown' should includes Hostility Status 'Unknown' and 'Pending'
+Tag '#X_Eny' should includes Hostility Status 'Joker' and 'Faker'
+Tag '#X_Own' should includes Hostility Status 'Excercise Friend' and 'Excercise Assumed friend'
+Tag '#X_Neutral' should includes Hostility Status 'Excercise Neutral'
+Tag '#X_Unknown' should includes Hostility Status 'Excercise Unknown' and 'Excercise Pending'
