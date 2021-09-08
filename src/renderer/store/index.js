@@ -1,4 +1,4 @@
 export { SessionStore } from './SessionStore'
-export { LayerStore } from './LayerStore'
+export { Store } from './Store'
 export { ProjectStore } from './ProjectStore'
 export { SearchIndex } from './SearchIndex'

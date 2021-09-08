@@ -5,13 +5,13 @@ const noShiftKey = ({ originalEvent }) => originalEvent.shiftKey !== true
 const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
 
 /**
- * @param {*} layerStore
+ * @param {*} store
  * @param {*} undo
  * @param {*} partition
  * @returns
  */
 export default options => {
-  const { layerStore, partition, hitTolerance } = options
+  const { store, partition, hitTolerance } = options
   let clones = [] // Cloned geometries BEFORE modify.
 
   const interaction = new Modify({
@@ -35,7 +35,7 @@ export default options => {
       return acc
     }, {})
 
-    layerStore.updateGeometries(geometries)
+    store.updateGeometries(geometries)
   })
 
   return interaction

@@ -6,7 +6,7 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import { propertiesPartition, geometryPartition } from '../../shared/stores'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, LayerStore, SearchIndex } from '../store'
+import { SessionStore, Store, SearchIndex } from '../store'
 import { Sources, PaletteCommands } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -33,7 +33,7 @@ export const workspace = projectUUID => {
   const db = levelup(leveldown(location))
   const propertiesLevel = propertiesPartition(db)
   const geometryLevel = geometryPartition(db)
-  const layerStore = new LayerStore(propertiesLevel, geometryLevel, undo, selection)
+  const store = new Store(propertiesLevel, geometryLevel, undo, selection)
   const searchIndex = new SearchIndex(propertiesLevel)
   const emitter = new EventEmitter()
 
@@ -59,7 +59,7 @@ export const workspace = projectUUID => {
   const dragAndDrop = new DragAndDrop()
 
   dragAndDrop.on('layers', async ({ layers }) => {
-    await layerStore.importLayers(layers)
+    await store.importLayers(layers)
   })
 
   const services = {}
@@ -68,12 +68,12 @@ export const workspace = projectUUID => {
   services.master = levelup(new IPCDownClient(ipcRenderer))
   services.sessionStore = new SessionStore(services.master, `project:${projectUUID}`)
   services.undo = undo
-  services.sources = new Sources(layerStore, selection)
+  services.sources = new Sources(store, selection)
   services.selection = selection
   services.dragAndDrop = dragAndDrop
-  services.layerStore = layerStore
+  services.store = store
   services.searchIndex = searchIndex
-  services.paletteCommands = new PaletteCommands(layerStore, emitter)
+  services.paletteCommands = new PaletteCommands(store, emitter)
 
   return (
     <ServiceProvider { ...services }>

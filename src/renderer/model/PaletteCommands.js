@@ -56,8 +56,8 @@ const ECHELON = [
 /**
  * @constructor
  */
-export function PaletteCommands (layerStore, emitter) {
-  this.layerStore_ = layerStore
+export function PaletteCommands (store, emitter) {
+  this.store_ = store
   this.emitter_ = emitter
 }
 
@@ -87,8 +87,8 @@ PaletteCommands.prototype.getCommands = function (entries) {
  *
  */
 PaletteCommands.prototype.updateEntries_ = function (dryRun, entries, updatedEntries) {
-  if (dryRun) this.layerStore_.replaceValues(updatedEntries)
-  else this.layerStore_.replaceValues(updatedEntries, entries)
+  if (dryRun) this.store_.replaceValues(updatedEntries)
+  else this.store_.replaceValues(updatedEntries, entries)
 }
 
 

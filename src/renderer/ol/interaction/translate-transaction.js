@@ -38,7 +38,7 @@ const cmdOrCtrlTracker = new CmdOrCtrlTracker()
  *
  */
 export default (options, select) => {
-  const { layerStore, featureSource, hitTolerance } = options
+  const { store, featureSource, hitTolerance } = options
   let clones = []
 
   const interaction = new Translate({
@@ -95,7 +95,7 @@ export default (options, select) => {
 
       // Get complete properties set for all features:
       const ids = features.getArray().map(feature => feature.getId())
-      const properties = await layerStore.getValues(ids)
+      const properties = await store.getValues(ids)
 
       // Swap geometries: feature <-> clone.
       features.getArray().forEach((feature, index) => {
@@ -112,7 +112,7 @@ export default (options, select) => {
 
       // Important: Remove clones from source before adding to store.
       clones.forEach(clone => featureSource.removeFeature(clone))
-      await layerStore.putFeatures(json)
+      await store.putFeatures(json)
 
     } else {
 
@@ -125,7 +125,7 @@ export default (options, select) => {
         return acc
       }, {})
 
-      layerStore.updateGeometries(geometries)
+      store.updateGeometries(geometries)
     }
   })
 

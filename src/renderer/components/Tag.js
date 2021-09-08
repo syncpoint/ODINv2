@@ -10,7 +10,7 @@ import { useServices } from './services'
  * A tag in different variants.
  */
 export const Tag = props => {
-  const { layerStore } = useServices()
+  const { store } = useServices()
   const { id, spec } = props
   const [variant, label, action, path] = spec.split(':')
   const closable = variant === 'USER'
@@ -24,7 +24,7 @@ export const Tag = props => {
     }
   }
 
-  const addTag = value => layerStore.addTag(id, value.toLowerCase())
+  const addTag = value => store.addTag(id, value.toLowerCase())
 
   const commitValue = () => {
     setMode('display')
@@ -52,8 +52,8 @@ export const Tag = props => {
   const handleChange = ({ target }) => setInputValue(target.value)
 
   const handleClose = React.useCallback(() => {
-    layerStore.removeTag(id, label)
-  }, [id, label, layerStore])
+    store.removeTag(id, label)
+  }, [id, label, store])
 
   const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
   const className = action !== 'NONE'

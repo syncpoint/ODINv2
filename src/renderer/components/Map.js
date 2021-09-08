@@ -29,7 +29,7 @@ export const Map = () => {
     sources,
     selection,
     dragAndDrop,
-    layerStore,
+    store,
     undo,
     emitter
   } = useServices()
@@ -68,7 +68,7 @@ export const Map = () => {
     const interactions = defaultInteractions({
       hitTolerance: 3,
       selection,
-      layerStore,
+      store,
       undo,
       partition,
       featureLayer,
@@ -164,7 +164,7 @@ export const Map = () => {
     }
 
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
-    emitter.on('command/delete', () => layerStore.del(selection.selected()))
+    emitter.on('command/delete', () => store.del(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

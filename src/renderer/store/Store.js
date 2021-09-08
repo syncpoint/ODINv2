@@ -60,7 +60,7 @@ import { isFeatureId, isGroupId } from '../ids'
  * removeTagCommand :: [string] -> string -> Command
  * replaceValuesCommand :: [object] -> [object] -> Command
  */
-export function LayerStore (propertiesLevel, geometryLevel, undo, selection) {
+export function Store (propertiesLevel, geometryLevel, undo, selection) {
   Emitter.call(this)
 
   this.properties_ = propertiesLevel
@@ -95,7 +95,7 @@ export function LayerStore (propertiesLevel, geometryLevel, undo, selection) {
   this.replaceValuesCommand = replaceValuesCommand.bind(this)
 }
 
-util.inherits(LayerStore, Emitter)
+util.inherits(Store, Emitter)
 
 
 /**
@@ -104,7 +104,7 @@ util.inherits(LayerStore, Emitter)
  * entries_ :: db -> string -> { string -> object } - entries with common id prefix
  * entries_ :: db -> [string] -> { string -> object } - entries by id (random access)
  */
-LayerStore.prototype.entries_ = function (db, arg) {
+Store.prototype.entries_ = function (db, arg) {
   if (Array.isArray(arg)) {
     return arg.reduce(async (acc, id) => {
       const xs = await acc
@@ -134,7 +134,7 @@ LayerStore.prototype.entries_ = function (db, arg) {
  * values_ :: db -> string -> [object] - values with common id prefix
  * values_ :: db -> [string] -> [object] - values by id (random access)
  */
-LayerStore.prototype.values_ = function (db, arg) {
+Store.prototype.values_ = function (db, arg) {
   if (Array.isArray(arg)) {
     return arg.reduce(async (acc, id) => {
       const xs = await acc
@@ -162,7 +162,7 @@ LayerStore.prototype.values_ = function (db, arg) {
  * @async
  * keys_ :: db -> string -> [string]
  */
-LayerStore.prototype.keys_ = function (db, prefix) {
+Store.prototype.keys_ = function (db, prefix) {
   return new Promise((resolve, reject) => {
     const acc = []
     const options = { keys: true, values: false, gte: prefix, lte: prefix + '\xff' }
@@ -184,7 +184,7 @@ LayerStore.prototype.keys_ = function (db, prefix) {
  * NOTE: Not only `properties` are stored, but also `id` on the same level,
  *       i.e. { id, properties }
  */
-LayerStore.prototype.featureProperties = function (arg) {
+Store.prototype.featureProperties = function (arg) {
   if (Array.isArray(arg)) return this.entries_(this.properties_, arg)
   else {
     const prefix = arg ? `feature:${arg.split(':')[1]}` : 'feature:'
@@ -199,7 +199,7 @@ LayerStore.prototype.featureProperties = function (arg) {
  * featureGeometries :: string -> { string -> object } - features geometries by layer id
  * featureGeometries :: [string] -> { string -> object } - features geometries by id
  */
-LayerStore.prototype.featureGeometries = function (arg) {
+Store.prototype.featureGeometries = function (arg) {
   if (Array.isArray(arg)) return this.entries_(this.geometries_, arg)
   else {
     const prefix = arg ? `feature:${arg.split(':')[1]}` : 'feature:'
@@ -214,7 +214,7 @@ LayerStore.prototype.featureGeometries = function (arg) {
  * getFeatures :: string -> [GeoJSON/Feature]
  * getFeatures :: [string] -> [GeoJSON/Feature]
  */
-LayerStore.prototype.getFeatures = async function (arg) {
+Store.prototype.getFeatures = async function (arg) {
   const properties = await this.featureProperties(arg)
   const geometries = await this.featureGeometries(arg)
   return Object.values(properties).map(feature => ({
@@ -229,7 +229,7 @@ LayerStore.prototype.getFeatures = async function (arg) {
  * @async
  * getValue :: string -> object
  */
-LayerStore.prototype.getValue = function (id) {
+Store.prototype.getValue = function (id) {
   return this.properties_.get(id)
 }
 
@@ -238,7 +238,7 @@ LayerStore.prototype.getValue = function (id) {
  * @async
  * getValues :: [string] -> [object]
  */
-LayerStore.prototype.getValues = function (ids) {
+Store.prototype.getValues = function (ids) {
   return this.values_(this.properties_, ids)
 }
 
@@ -247,7 +247,7 @@ LayerStore.prototype.getValues = function (ids) {
  * @async
  * importLayer :: [GeoJSON/Layer] -> unit
  */
-LayerStore.prototype.importLayers = async function (layers) {
+Store.prototype.importLayers = async function (layers) {
   const command = await this.importLayersCommand(layers)
   this.undo_.apply(command)
 }
@@ -257,7 +257,7 @@ LayerStore.prototype.importLayers = async function (layers) {
  * @async
  * putFeatures_ :: [GeoJSON/Feature] -> unit
  */
-LayerStore.prototype.putFeatures_ = async function (features) {
+Store.prototype.putFeatures_ = async function (features) {
 
   await (async () => {
     const ops = features.map(feature => ({
@@ -294,7 +294,7 @@ LayerStore.prototype.putFeatures_ = async function (features) {
  * @async
  * putLayer :: GeoJSON/Layer -> unit
  */
-LayerStore.prototype.putLayer = async function (layer) {
+Store.prototype.putLayer = async function (layer) {
   const { id, name, features } = layer
   await this.properties_.batch([{
     type: 'put', key: id, value: { name, id }
@@ -308,7 +308,7 @@ LayerStore.prototype.putLayer = async function (layer) {
  * @async
  * putFeatures :: [GeoJSON/Feature] -> unit
  */
-LayerStore.prototype.putFeatures = function (features) {
+Store.prototype.putFeatures = function (features) {
   const command = this.putFeaturesCommand(features)
   return this.undo_.apply(command)
 }
@@ -318,7 +318,7 @@ LayerStore.prototype.putFeatures = function (features) {
  * @async
  * deleteFeatures :: [string] -> unit
  */
-LayerStore.prototype.deleteFeatures = async function (ids) {
+Store.prototype.deleteFeatures = async function (ids) {
   const operations = ids.map(key => ({ type: 'del', key }))
   await this.properties_.batch(operations)
   await this.geometries_.batch(operations)
@@ -330,7 +330,7 @@ LayerStore.prototype.deleteFeatures = async function (ids) {
  * @async
  * deleteLayer :: string -> unit
  */
-LayerStore.prototype.deleteLayer = async function (layerId) {
+Store.prototype.deleteLayer = async function (layerId) {
   await this.properties_.del(layerId)
 
   const op = key => ({ type: 'del', key })
@@ -347,7 +347,7 @@ LayerStore.prototype.deleteLayer = async function (layerId) {
  * @async
  * updateGeometries :: { id -> [new, old] } -> unit
  */
-LayerStore.prototype.updateGeometries = async function (geometries) {
+Store.prototype.updateGeometries = async function (geometries) {
   const command = this.updateGeometriesCommand(geometries)
   this.undo_.apply(command)
 }
@@ -357,7 +357,7 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
  * @async
  * del :: [string] -> unit
  */
-LayerStore.prototype.del = async function (ids) {
+Store.prototype.del = async function (ids) {
   // TODO: undo
   // TODO: support all scopes
   // TODO: recursively delete all dependencies
@@ -373,7 +373,7 @@ const taggable = id => !isGroupId(id)
 /**
  * addTag :: string -> string -> unit
  */
-LayerStore.prototype.addTag = function (id, name) {
+Store.prototype.addTag = function (id, name) {
   // TODO: special handling - default layer
   const ids = R.uniq([id, ...this.selection_.selected(taggable)])
   const command = this.addTagCommand(ids, name)
@@ -384,7 +384,7 @@ LayerStore.prototype.addTag = function (id, name) {
 /**
  * removeTag :: string -> string -> unit
  */
-LayerStore.prototype.removeTag = function (id, name) {
+Store.prototype.removeTag = function (id, name) {
   const ids = R.uniq([id, ...this.selection_.selected(taggable)])
   const command = this.removeTagCommand(ids, name)
   this.undo_.apply(command)
@@ -395,7 +395,7 @@ LayerStore.prototype.removeTag = function (id, name) {
  * @async
  * replaceValues_ :: [object] -> unit
  */
-LayerStore.prototype.replaceValues_ = function (values) {
+Store.prototype.replaceValues_ = function (values) {
   return this.properties_.batch(values.map(value => ({
     type: 'put',
     key: value.id,
@@ -408,7 +408,7 @@ LayerStore.prototype.replaceValues_ = function (values) {
  * @async
  * replaceValues :: [object] -> [object] -> unit
  */
-LayerStore.prototype.replaceValues = function (newValues, oldvalues) {
+Store.prototype.replaceValues = function (newValues, oldvalues) {
   // No undo when oldProperties not provided.
   if (!oldvalues) return this.replaceValues_(newValues)
   else {
@@ -422,7 +422,7 @@ LayerStore.prototype.replaceValues = function (newValues, oldvalues) {
  * @async
  * rename :: string -> string -> unit
  */
-LayerStore.prototype.rename = async function (id, name) {
+Store.prototype.rename = async function (id, name) {
   const oldValue = await this.properties_.get(id)
   const newValue = { ...oldValue, name }
   const command = this.replaceValuesCommand([newValue], [oldValue])

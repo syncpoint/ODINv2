@@ -9,7 +9,7 @@ import { FilterInput, List } from '.'
  *
  */
 export const CommandPalette = props => {
-  const { selection, paletteCommands, layerStore } = useServices()
+  const { selection, paletteCommands, store } = useServices()
   const [snapshot, setSnapshot] = React.useState()
   const [filter, setFilter] = React.useState(props.value)
   const [placeholder, setPlaceholder] = React.useState(props.placeholder)
@@ -30,7 +30,7 @@ export const CommandPalette = props => {
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset values to stored snapshot:
-    if (key === 'Escape') layerStore.replaceValues(snapshot)
+    if (key === 'Escape') store.replaceValues(snapshot)
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
@@ -54,10 +54,10 @@ export const CommandPalette = props => {
     (async () => {
       // Get properties snapshot of currently selection:
       // snapshot :: [value]
-      const snapshot = await layerStore.getValues(selection.selected())
+      const snapshot = await store.getValues(selection.selected())
       setSnapshot(snapshot)
     })()
-  }, [layerStore, selection])
+  }, [store, selection])
 
 
   /**

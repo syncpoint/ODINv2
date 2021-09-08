@@ -7,9 +7,9 @@ import { readFeature, readFeatures, readGeometry } from '../store/format'
 /**
  * @constructor
  */
-export function Sources (layerStore, selection) {
+export function Sources (store, selection) {
   Emitter.call(this)
-  this.layerStore_ = layerStore
+  this.store_ = store
   this.selection_ = selection
 
   // For now, hold all features in a single source.
@@ -17,9 +17,9 @@ export function Sources (layerStore, selection) {
   // Note: Source is mutable. Changes reflect more or less immediately in map.
   this.source_ = null
 
-  layerStore.on('features/batch', ({ operations }) => this.updateFeatures_(operations))
-  layerStore.on('features/properties', ({ operations }) => this.updateProperties_(operations))
-  layerStore.on('features/geometries', ({ operations }) => this.updateGeometries_(operations))
+  store.on('features/batch', ({ operations }) => this.updateFeatures_(operations))
+  store.on('features/properties', ({ operations }) => this.updateProperties_(operations))
+  store.on('features/geometries', ({ operations }) => this.updateGeometries_(operations))
 }
 
 util.inherits(Sources, Emitter)
@@ -91,7 +91,7 @@ Sources.prototype.updateProperties_ = function (operations) {
  */
 Sources.prototype.getFeatureSource = async function () {
   if (this.source_) return this.source_
-  const geoJSONFeatures = await this.layerStore_.getFeatures()
+  const geoJSONFeatures = await this.store_.getFeatures()
   const olFeatures = readFeatures({ type: 'FeatureCollection', features: geoJSONFeatures })
   this.source_ = new VectorSource({ features: olFeatures })
   return this.source_
