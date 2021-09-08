@@ -49,6 +49,13 @@ DragAndDrop.prototype.drop = async function (event) {
         delete feature.title // legacy
         feature.id = `feature:${layerUUID}/${uuid()}`
         feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
+
+        // Pull up 'name':
+        if (feature.properties.name) {
+          feature.name = feature.properties.name
+          delete feature.properties.name
+        }
+
         return feature
       })
 

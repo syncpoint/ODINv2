@@ -3,12 +3,17 @@ import MiniSearch from 'minisearch'
 
 export const createIndex = () => new MiniSearch({
   fields: ['text', 'tags'],
-  tokenize: string => {
+  tokenize: (string, fieldName) => {
     const tokens = R.uniq([
-      ...string.split(/[\s-/]/), // el clásico
-      ...string.split(/(\/?["\w]+\.?)|[ /]/), // leading '/' and trailing '.'
-      ...string.split(/([\d/.]+)/) // separate numbers and words
-    ].filter(Boolean).map(s => s.trim()))
+      ...string.split(/[\s-/]/), // A: el clásico
+      ...string.split(/(\/?["\w]+\.?)|[ /]/), // B: leading '/' and trailing '.'
+      ...string.split(/([\d/.]+)/) // C: separate numbers and words
+    ]
+      .filter(Boolean)
+      .map(s => s.trim())
+      .filter(s => !s.includes(' ')) // filter tokens with blanks introduced by C
+    )
+
     return tokens
   },
   extractField: (document, fieldName) => {
