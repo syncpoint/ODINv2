@@ -1,24 +1,72 @@
 import util from 'util'
+import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
 import { writeGeometryObject } from './format'
-import { isFeatureId } from '../ids'
+import { isFeatureId, isGroupId } from '../ids'
+
 
 
 /**
  * @constructor
  * @param {LevelUp} propertiesLevel properties database.
  * @param {LevelUp} geometryLevel geometry database.
+ * @param {Undo} undo
+ * @param {Selection} selection
  *
  * @emits features/batch - complete features (properties and geometries)
  * @emits feature/properties - feature properties only
  * @emits feature/geometries - feature geometries only
+ *
+ * MANIFEST
+ * entries_ :: db -> { string -> object } - all entries
+ * entries_ :: db -> string -> { string -> object } - entries with common id prefix
+ * entries_ :: db -> [string] -> { string -> object } - entries by id (random access)
+ * values_ :: db -> [object] - all values
+ * values_ :: db -> string -> [object] - values with common id prefix
+ * values_ :: db -> [string] -> [object] - values by id (random access)
+ * keys_ :: db -> string -> [string]
+ * featureProperties :: () -> { string -> object } - all features properties
+ * featureProperties :: string -> { string -> object } - features properties by layer
+ * featureProperties :: [string] -> { string -> object } - features properties by id
+ * featureGeometries :: () -> { string -> object } - all features geometries
+ * featureGeometries :: string -> { string -> object } - features geometries by layer id
+ * featureGeometries :: [string] -> { string -> object } - features geometries by id
+ * getFeatures :: () -> [GeoJSON/Feature]
+ * getFeatures :: string -> [GeoJSON/Feature]
+ * getFeatures :: [string] -> [GeoJSON/Feature]
+ * getValue :: string -> object
+ * getValues :: [string] -> [object]
+ * importLayer :: [GeoJSON/Layer] -> unit
+ * putFeatures_ :: [GeoJSON/Feature] -> unit
+ * putLayer :: GeoJSON/Layer -> unit
+ * putFeatures :: [GeoJSON/Feature] -> unit
+ * deleteFeatures :: [string] -> unit
+ * deleteLayer :: string -> unit
+ * updateGeometries :: { id -> [new, old] } -> unit
+ * del :: [string] -> unit
+ * addTag :: string -> string -> unit
+ * removeTag :: string -> string -> unit
+ * replaceValues_ :: [object] -> unit
+ * replaceValues :: [object] -> [object] -> unit
+ * rename :: string -> string -> unit
+ * compositeCommand :: [Command] -> Command
+ * importLayersCommand :: [GeoJSON/Layer] -> Command
+ * putLayerCommand :: GeoJSON/Layer -> Command
+ * deleteLayerCommand :: GeoJSON/Layer -> Command
+ * updateGeometriesCommand :: { string -> [new, old] } -> Command
+ * deleteFeaturesCommand :: [JSON/feature] -> Command
+ * putFeaturesCommand :: [JSON/feature] -> Command
+ * addTagCommand :: [string] -> string -> Command
+ * removeTagCommand :: [string] -> string -> Command
+ * replaceValuesCommand :: [object] -> [object] -> Command
  */
-export function LayerStore (propertiesLevel, geometryLevel, undo) {
+export function LayerStore (propertiesLevel, geometryLevel, undo, selection) {
   Emitter.call(this)
 
   this.properties_ = propertiesLevel
   this.geometries_ = geometryLevel
   this.undo_ = undo
+  this.selection_ = selection
 
   // Geometries deletes are ignored. They can be handled on 'features/batch' event.
   this.geometries_.on('batch', event => {
@@ -42,6 +90,9 @@ export function LayerStore (propertiesLevel, geometryLevel, undo) {
   this.updateGeometriesCommand = updateGeometriesCommand.bind(this)
   this.deleteFeaturesCommand = deleteFeaturesCommand.bind(this)
   this.putFeaturesCommand = putFeaturesCommand.bind(this)
+  this.addTagCommand = addTagCommand.bind(this)
+  this.removeTagCommand = removeTagCommand.bind(this)
+  this.replaceValuesCommand = replaceValuesCommand.bind(this)
 }
 
 util.inherits(LayerStore, Emitter)
@@ -109,7 +160,7 @@ LayerStore.prototype.values_ = function (db, arg) {
 
 /**
  * @async
- * key_ :: db -> string -> [string]
+ * keys_ :: db -> string -> [string]
  */
 LayerStore.prototype.keys_ = function (db, prefix) {
   return new Promise((resolve, reject) => {
@@ -176,7 +227,16 @@ LayerStore.prototype.getFeatures = async function (arg) {
 
 /**
  * @async
- * getProperties :: [string] -> [object]
+ * getValue :: string -> object
+ */
+LayerStore.prototype.getValue = function (id) {
+  return this.properties_.get(id)
+}
+
+
+/**
+ * @async
+ * getValues :: [string] -> [object]
  */
 LayerStore.prototype.getValues = function (ids) {
   return this.values_(this.properties_, ids)
@@ -295,6 +355,7 @@ LayerStore.prototype.updateGeometries = async function (geometries) {
 
 /**
  * @async
+ * del :: [string] -> unit
  */
 LayerStore.prototype.del = async function (ids) {
   // TODO: undo
@@ -304,6 +365,67 @@ LayerStore.prototype.del = async function (ids) {
   const featureIds = ids.filter(id => isFeatureId(id))
   const features = await this.getFeatures(featureIds)
   const command = this.deleteFeaturesCommand(features)
+  this.undo_.apply(command)
+}
+
+const taggable = id => !isGroupId(id)
+
+/**
+ * addTag :: string -> string -> unit
+ */
+LayerStore.prototype.addTag = function (id, name) {
+  // TODO: special handling - default layer
+  const ids = R.uniq([id, ...this.selection_.selected(taggable)])
+  const command = this.addTagCommand(ids, name)
+  this.undo_.apply(command)
+}
+
+
+/**
+ * removeTag :: string -> string -> unit
+ */
+LayerStore.prototype.removeTag = function (id, name) {
+  const ids = R.uniq([id, ...this.selection_.selected(taggable)])
+  const command = this.removeTagCommand(ids, name)
+  this.undo_.apply(command)
+}
+
+
+/**
+ * @async
+ * replaceValues_ :: [object] -> unit
+ */
+LayerStore.prototype.replaceValues_ = function (values) {
+  return this.properties_.batch(values.map(value => ({
+    type: 'put',
+    key: value.id,
+    value: value
+  })))
+}
+
+
+/**
+ * @async
+ * replaceValues :: [object] -> [object] -> unit
+ */
+LayerStore.prototype.replaceValues = function (newValues, oldvalues) {
+  // No undo when oldProperties not provided.
+  if (!oldvalues) return this.replaceValues_(newValues)
+  else {
+    const command = this.replaceValuesCommand(newValues, oldvalues)
+    this.undo_.apply(command)
+  }
+}
+
+
+/**
+ * @async
+ * rename :: string -> string -> unit
+ */
+LayerStore.prototype.rename = async function (id, name) {
+  const oldValue = await this.properties_.get(id)
+  const newValue = { ...oldValue, name }
+  const command = this.replaceValuesCommand([newValue], [oldValue])
   this.undo_.apply(command)
 }
 
@@ -389,5 +511,55 @@ const putFeaturesCommand = function (features) {
   return {
     apply: async () => this.putFeatures_(features),
     inverse: () => this.deleteFeaturesCommand(features)
+  }
+}
+
+const addTag = name => item => (item.tags = R.uniq([...(item.tags || []), name]))
+const removeTag = name => item => (item.tags = (item.tags || []).filter(tag => tag !== name))
+
+
+/**
+ * addTagCommand :: [string] -> string -> Command
+ */
+const addTagCommand = function (ids, name) {
+  return {
+    apply: async () => {
+      const items = await this.getValues(ids)
+      const ops = items
+        .map(R.tap(addTag(name)))
+        .reduce((acc, item) => acc.concat({ type: 'put', key: item.id, value: item }), [])
+
+      this.properties_.batch(ops)
+    },
+    inverse: () => this.removeTagCommand(ids, name)
+  }
+}
+
+
+/**
+ * removeTagCommand :: [string] -> string -> Command
+ */
+const removeTagCommand = function (ids, name) {
+  return {
+    apply: async () => {
+      const items = await this.getValues(ids)
+      const ops = items
+        .map(R.tap(removeTag(name)))
+        .reduce((acc, item) => acc.concat({ type: 'put', key: item.id, value: item }), [])
+
+      this.properties_.batch(ops)
+    },
+    inverse: () => this.addTagCommand(ids, name)
+  }
+}
+
+
+/**
+ * replaceValuesCommand :: [object] -> [object] -> Command
+ */
+const replaceValuesCommand = function (newValues, oldValues) {
+  return {
+    apply: () => this.replaceValues_(newValues),
+    inverse: () => this.replaceValuesCommand(oldValues, newValues)
   }
 }

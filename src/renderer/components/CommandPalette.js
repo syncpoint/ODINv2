@@ -9,7 +9,7 @@ import { FilterInput, List } from '.'
  *
  */
 export const CommandPalette = props => {
-  const { selection, paletteCommands, propertiesStore } = useServices()
+  const { selection, paletteCommands, layerStore } = useServices()
   const [snapshot, setSnapshot] = React.useState()
   const [filter, setFilter] = React.useState(props.value)
   const [placeholder, setPlaceholder] = React.useState(props.placeholder)
@@ -30,7 +30,7 @@ export const CommandPalette = props => {
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset values to stored snapshot:
-    if (key === 'Escape') propertiesStore.updateProperties(snapshot)
+    if (key === 'Escape') layerStore.replaceValues(snapshot)
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
@@ -40,10 +40,6 @@ export const CommandPalette = props => {
 
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
     props.onKeyDown(event)
-  }
-
-  const handleClick = id => ({ metaKey, shiftKey, ctrlKey }) => {
-    dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
   }
 
   const handleFilterChange = React.useCallback(value => {
@@ -58,16 +54,10 @@ export const CommandPalette = props => {
     (async () => {
       // Get properties snapshot of currently selection:
       // snapshot :: [value]
-      const snapshot = await selection.selected().reduce(async (acc, id) => {
-        const value = await propertiesStore.value(id)
-        const values = await acc
-        values.push(value)
-        return values
-      }, [])
-
+      const snapshot = await layerStore.getValues(selection.selected())
       setSnapshot(snapshot)
     })()
-  }, [propertiesStore, selection])
+  }, [layerStore, selection])
 
 
   /**
@@ -80,21 +70,27 @@ export const CommandPalette = props => {
       .filter(command => !filter || isMatch(command))
 
     dispatch({ type: 'entries', entries: commands })
-  }, [filter, snapshot, paletteCommands])
+  }, [dispatch, filter, snapshot, paletteCommands])
 
 
   /* eslint-disable react/prop-types */
-  const child = React.useCallback(props => (
-    <div
-      key={props.id}
-      ref={props.ref}
-      role='option'
-      onClick={handleClick(props.id)}
-      style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
-    >
-      <span>{props.entry.description()}</span>
-    </div>
-  ), [])
+  const child = React.useCallback(props => {
+    const handleClick = id => ({ metaKey, shiftKey, ctrlKey }) => {
+      dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
+    }
+
+    return (
+      <div
+        key={props.id}
+        ref={props.ref}
+        role='option'
+        onClick={handleClick(props.id)}
+        style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
+      >
+        <span>{props.entry.description()}</span>
+      </div>
+    )
+  }, [dispatch])
   /* eslint-enable react/prop-types */
 
   // Invoke command for newly focused entry (state.focusId):
