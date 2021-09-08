@@ -38,16 +38,6 @@ List should contain the following features
 16. Filter 'Unit' (Hierachy Code), expected: A, B, C, D, E, F and G (7)
 17. Filter '#Control' (Tag), expected: H, I, J, K, L, M, N, O and P (9)
 18. Filter '#Eny' (Tag), expected: J, K and O (3)
-19. Filter '#unkown' (Tag), expected: E and L (2)
-20. Filter '#Eny' and '#X_Eny', expected: C, J, K and O (4)
-21. Filter 'PL' and 'Check', expected: K, L, M and N (4)
+19. Filter '#ukn' (Tag), expected: E and L (2)
+20. Filter '#Own' and '#Unit', expected: A, B, D and G (4)
 
-Notes:
-Tag '#Eny' should includes Hostility Status 'Hostile' and 'Suspect'
-Tag '#Own' should includes Hostility Status 'Friend' and 'Assumed friend'
-Tag '#Neutral' should includes Hostility Status 'Neutral'
-Tag '#Unknown' should includes Hostility Status 'Unknown' and 'Pending'
-Tag '#X_Eny' should includes Hostility Status 'Joker' and 'Faker'
-Tag '#X_Own' should includes Hostility Status 'Excercise Friend' and 'Excercise Assumed friend'
-Tag '#X_Neutral' should includes Hostility Status 'Excercise Neutral'
-Tag '#X_Unknown' should includes Hostility Status 'Excercise Unknown' and 'Excercise Pending'
