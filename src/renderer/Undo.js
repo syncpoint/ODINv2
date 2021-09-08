@@ -41,8 +41,8 @@ Undo.prototype.redo = async function () {
  */
 Undo.prototype.apply = async function (command) {
   await command.apply()
-  unshift(this.undoStack, await command.inverse())
   this.redoStack = []
+  unshift(this.undoStack, await command.inverse())
 }
 
 Undo.prototype.canUndo = function () {

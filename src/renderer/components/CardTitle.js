@@ -2,11 +2,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useServices } from './services'
 
+
 /**
  *
  */
 const CardTitle = props => {
-  const { propertiesStore } = useServices()
+  const { store } = useServices()
   const [value, setValue] = React.useState(props.value)
   const [mode, setMode] = React.useState('display')
 
@@ -15,7 +16,7 @@ const CardTitle = props => {
   const rename = value => {
     setMode('display')
     if (props.value === value) return
-    propertiesStore.rename(props.id, value)
+    store.rename(props.id, value)
   }
 
   const reset = () => {

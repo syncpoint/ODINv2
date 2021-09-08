@@ -1,6 +1,5 @@
 import { click, platformModifierKeyOnly } from 'ol/events/condition'
 import { Select } from 'ol/interaction'
-import { featureStyle } from '../style'
 
 const noAltKey = ({ originalEvent }) => originalEvent.altKey !== true // macOS: option key
 const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
@@ -9,11 +8,11 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
  *
  */
 export default options => {
-  const { selection, partition, featureLayer, selectedLayer, hitTolerance } = options
+  const { selection, partition, featureLayer, selectedLayer, hitTolerance, style } = options
   const interaction = new Select({
     hitTolerance,
+    style,
     layers: [featureLayer, selectedLayer],
-    style: featureStyle(selection),
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
     multi: false // don't select all features under cursor at once.

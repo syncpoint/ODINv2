@@ -29,7 +29,7 @@ export const Map = () => {
     sources,
     selection,
     dragAndDrop,
-    layerStore,
+    store,
     undo,
     emitter
   } = useServices()
@@ -45,7 +45,7 @@ export const Map = () => {
     const view = new ol.View({ ...viewport })
     const featureSource = await sources.getFeatureSource()
     const partition = new Partition(featureSource, selection)
-    const style = featureStyle(selection)
+    const style = featureStyle(selection, featureSource)
     const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
     const featureLayer = vectorLayer(partition.getDeselected())
@@ -68,12 +68,13 @@ export const Map = () => {
     const interactions = defaultInteractions({
       hitTolerance: 3,
       selection,
-      layerStore,
+      store,
       undo,
       partition,
       featureLayer,
       selectedLayer,
-      featureSource
+      featureSource,
+      style
     })
 
     view.on('change', ({ target: view }) => {
@@ -163,7 +164,7 @@ export const Map = () => {
     }
 
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
-    emitter.on('command/delete', () => layerStore.del(selection.selected()))
+    emitter.on('command/delete', () => store.del(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

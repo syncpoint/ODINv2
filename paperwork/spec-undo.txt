@@ -1,0 +1,32 @@
+d99dbae0-2dc1-48b2-9a44-6e936eac4fa2 - redo: import layer (DND)
+1. Drop layer 'data/Feindlage.json' into empty project.
+2. Perform UNDO (1x)
+3. Expected: Layer and six features are removed from project.
+4. Perform REDO
+5. Expected: Layer and six features are re-added to project.
+
+50d2efbf-2855-4479-b210-71504336f95f - redo: correct feature order
+1. Drop layer 'data/Feindlage.json' into empty project.
+2. Move unit '611' from position A to position B.
+3. Perform UNDO (2x).
+4. Perform REDO (1x).
+5. Expected: Unit '611' has position A
+6. Perform REDO (1x).
+7. Expected: Unit '611' has position B.
+
+9e5a3c48-67e5-4302-8eed-98f032645b5b - redo: linear history
+1. Drop layer 'data/Feindlage.json' into empty project.
+2. Move unit '611' from position A to position B.
+3. Perform UNDO (1x).
+4. Move unit '611' from position A to position C.
+5. Perform UNDO (2x).
+6. Perform REDO (2x).
+7. Expected: Unit '611' has position C, no further 'undo' possible.
+8. Note: Undo for step 2. is discarded in step 4.
+
+7706ecb8-f492-47c5-b1ef-f2f243db1f7a - undo delete does not select
+1. Drop layer 'data/Feindlage.json' into empty project.
+2. Delete unit '611'.
+3. Select any other unit A.
+4. Perform UNDO (1x).
+5. Expected: Unit A is still selected as only feature.

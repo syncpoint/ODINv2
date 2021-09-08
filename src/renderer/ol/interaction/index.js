@@ -7,7 +7,7 @@ import boxselectInteraction from './boxselect-interaction'
 
 /**
  * @param {Selection} selection
- * @param {LayerStore} layerStore
+ * @param {Store} store
  * @param {Undo} undo
  * @param {Partition} partition
  * @param {ol/VectorLayer} featureLayer
