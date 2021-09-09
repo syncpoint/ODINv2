@@ -80,8 +80,10 @@ const devServer = env => {
   if (env.production) return ({}) // no development server for production
   return ({
     devServer: {
-      contentBase: path.resolve(__dirname, 'dist'),
-      before () {
+      static: {
+        directory: path.resolve(__dirname, 'dist')
+      },
+      onBeforeSetupMiddleware () {
         spawn(
           'electron',
           ['.'],
