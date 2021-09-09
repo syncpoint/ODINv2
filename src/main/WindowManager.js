@@ -68,11 +68,15 @@ WindowManager.prototype.createWindow = function (options) {
         nodeIntegration: true,
         contextIsolation: false,
 
+        // See: https://github.com/electron/electron/issues/28511
+        nativeWindowOpen: true,
+
         // String - A list of strings that will be appended to
         // process.argv in the renderer process of this app.
         // Useful for passing small bits of data down to renderer
         // process preload scripts.
         additionalArguments
+
       }
     })
 

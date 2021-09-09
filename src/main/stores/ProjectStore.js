@@ -46,6 +46,9 @@ ProjectStore.prototype.addTag = async function (id, tag) {
 }
 
 ProjectStore.prototype.removeTag = async function (id, tag) {
+
+  // FIXME: On shutdown, might run into ReadError: Database is not open.
+
   const project = await this.store.get(id)
   return this.store.put(id, {
     ...project,
