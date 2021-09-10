@@ -3,6 +3,7 @@ import { layerId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
 
+
 export const options = {}
 
 const identityTag = R.cond([
@@ -17,38 +18,42 @@ const identityTag = R.cond([
  * feature:
  */
 options.feature = (feature, cache) => {
-  const descriptor = MILSTD.descriptor(feature.properties.sidc)
+  const sidc = feature.properties.sidc
+  const descriptor = MILSTD.descriptor(sidc)
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
 
-  const identity = identityTag(MILSTD.identityCode(feature.properties.sidc))
+  const identity = identityTag(MILSTD.identityCode(sidc))
   const layer = cache(layerId(feature.id))
   const { properties, name } = feature
-  const { sidc } = properties
   const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
 
-  const tags = feature => {
-    // FIXME: somehow null tags can/could be introduced. check!
-    const tags = (feature.tags || []).filter(R.identity)
-    return [
-      'SCOPE:FEATURE:identify',
-      ...((feature.links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
-      feature.hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
-      ...dimensions.map(label => `SYSTEM:${label}:NONE`),
-      ...scope.map(label => `SYSTEM:${label}:NONE`),
-      ...identity.map(label => `SYSTEM:${label}:NONE`),
-      ...tags.map(label => `USER:${label}:NONE`),
-      'PLUS'
-    ].join(' ')
-  }
+  // FIXME: somehow null tags can/could be introduced. check!
+  const userTags = (feature.tags || []).filter(R.identity)
+
+  // Echelon's only permitted for units and stability operations.
+  const standardSIDC = sidc.startsWith('S*G*U') || sidc.startsWith('O*')
+    ? sidc
+    : MILSTD.format(sidc, { echelon: '-' })
+
+  const tags = [
+    'SCOPE:FEATURE:identify',
+    ...((feature.links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
+    feature.hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
+    ...dimensions.map(label => `SYSTEM:${label}:NONE`),
+    ...scope.map(label => `SYSTEM:${label}:NONE`),
+    ...identity.map(label => `SYSTEM:${label}:NONE`),
+    ...userTags.map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ')
 
   return {
     id: feature.id,
     title: name || properties.t || null, // might be undefined
     description,
-    url: url(sidc),
-    tags: tags(feature, sidc),
+    url: url(standardSIDC),
+    tags,
     capabilities: 'RENAME|DROP|FOLLOW',
     actions: 'PRIMARY:panto'
   }
@@ -99,5 +104,36 @@ options.link = (link, cache) => {
       'PLUS'
     ].join(' '),
     actions: 'PRIMARY:panto'
+  }
+}
+
+
+/**
+ * symbol:
+ */
+options.symbol = symbol => {
+  const tags = [
+    'SCOPE:SYMBOL:NONE',
+    ...symbol.dimensions.map(label => `SYSTEM:${label}:NONE`),
+    ...symbol.scope ? [`SYSTEM:${symbol.scope}:NONE`] : [],
+    ...(symbol.tags || []).map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ')
+
+  const standardSIDC = MILSTD.format(symbol.sidc, {
+    identity: 'F', // friendly
+    status: 'P' // present
+  })
+
+  return {
+    id: symbol.id,
+    title: R.last(symbol.hierarchy),
+    description: R.dropLast(1, symbol.hierarchy).join(' • '),
+    url: url(standardSIDC),
+    urn: `urn:symbol:${standardSIDC}`,
+    scope: 'SYMBOL',
+    tags,
+    capabilities: 'TAG',
+    actions: 'PRIMARY:draw'
   }
 }

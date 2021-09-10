@@ -1,4 +1,5 @@
 import util from 'util'
+import * as R from 'ramda'
 import { documents } from './documents'
 import Emitter from '../../shared/emitter'
 import { createIndex, parseQuery, searchIndex } from './MiniSearch-index'
@@ -31,9 +32,10 @@ MiniSearchIndex.prototype.createIndex_ = function () {
 
   const cache = id => this.carrera_[id]
   const docs = entries.map(entry => {
+    if (!entry.id) return null
     const scope = entry.id.split(':')[0]
     return documents[scope](entry, cache)
-  })
+  }).filter(R.identity)
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)

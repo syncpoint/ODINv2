@@ -15,7 +15,8 @@ const stickyHistoryEntry = {
     { key: 'feature', scope: '@id:feature', label: 'Features' },
     { key: 'link', scope: '@id:link', label: 'Links' },
     { key: 'view', scope: '@id:view', label: 'Views' },
-    { key: 'pinned', scope: '#pin', label: 'Pinned' }
+    { key: 'pinned', scope: '#pin', label: 'Pinned' },
+    { key: 'symbol', scope: '@id:symbol', label: 'Symbols' }
   ]
 }
 

@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
 import { writeGeometryObject } from './format'
 import { isFeatureId, isGroupId } from '../ids'
-
+import { importSymbols } from './symbols'
 
 
 /**
@@ -24,7 +24,8 @@ import { isFeatureId, isGroupId } from '../ids'
  * values_ :: db -> [object] - all values
  * values_ :: db -> string -> [object] - values with common id prefix
  * values_ :: db -> [string] -> [object] - values by id (random access)
- * keys_ :: db -> string -> [string]
+ * getKey_ :: db -> string -> [string]
+ * hasKey_ :: string -> boolean - properties only
  * featureProperties :: () -> { string -> object } - all features properties
  * featureProperties :: string -> { string -> object } - features properties by layer
  * featureProperties :: [string] -> { string -> object } - features properties by id
@@ -93,6 +94,11 @@ export function Store (propertiesLevel, geometryLevel, undo, selection) {
   this.addTagCommand = addTagCommand.bind(this)
   this.removeTagCommand = removeTagCommand.bind(this)
   this.replaceValuesCommand = replaceValuesCommand.bind(this)
+
+  window.requestIdleCallback(async () => {
+    const alreadyImported = await this.hasKey_('symbol:')
+    if (!alreadyImported) importSymbols(this.properties_)
+  }, { timeout: 2000 })
 }
 
 util.inherits(Store, Emitter)
@@ -160,9 +166,9 @@ Store.prototype.values_ = function (db, arg) {
 
 /**
  * @async
- * keys_ :: db -> string -> [string]
+ * getKey_ :: db -> string -> [string]
  */
-Store.prototype.keys_ = function (db, prefix) {
+Store.prototype.getKey_ = function (db, prefix) {
   return new Promise((resolve, reject) => {
     const acc = []
     const options = { keys: true, values: false, gte: prefix, lte: prefix + '\xff' }
@@ -171,6 +177,23 @@ Store.prototype.keys_ = function (db, prefix) {
       .on('data', key => acc.push(key))
       .on('error', reject)
       .on('end', () => resolve(acc))
+  })
+}
+
+
+/**
+ * @async
+ * hasKey_ :: string -> boolean
+ */
+Store.prototype.hasKey_ = function (prefix) {
+  return new Promise((resolve, reject) => {
+    const options = { keys: true, values: false, gte: prefix, lte: prefix + '\xff' }
+    const stream = this.properties_.createReadStream(options)
+
+    stream
+      .on('data', () => { stream.destroy(); resolve(true) })
+      .on('error', reject)
+      .on('end', () => resolve(false))
   })
 }
 
@@ -335,7 +358,7 @@ Store.prototype.deleteLayer = async function (layerId) {
 
   const op = key => ({ type: 'del', key })
   const layerUUID = layerId.split(':')[1]
-  const keys = await this.keys_(this.properties_, `feature:${layerUUID}`)
+  const keys = await this.getKey_(this.properties_, `feature:${layerUUID}`)
   const operations = keys.map(op)
   await this.properties_.batch(operations)
   await this.geometries_.batch(operations)
