@@ -1,11 +1,9 @@
 import ms from 'milsymbol'
 import './extension'
+import urls from './urls.json'
 
-const placeholderSymbol = new ms.Symbol('')
-
-const cache = {
-  _: placeholderSymbol.asCanvas().toDataURL()
-}
+const cache = urls
+cache.placeholder = new ms.Symbol('').asCanvas().toDataURL()
 
 export const url = sidc => {
   if (!cache[sidc]) {

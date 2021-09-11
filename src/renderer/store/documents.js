@@ -11,6 +11,7 @@ const identity = R.cond([
   [R.T, R.always([])]
 ])
 
+
 /**
  *
  */
@@ -72,3 +73,22 @@ documents.link = link => ({
   text: link.name,
   tags: link.tags
 })
+
+
+/**
+ *
+ */
+documents.symbol = symbol => {
+  const tags = [
+    ...symbol.dimensions,
+    symbol.scope,
+    ...(symbol.tags || [])
+  ]
+
+  return ({
+    id: symbol.id,
+    scope: 'symbol',
+    text: symbol.hierarchy.join(' '),
+    tags
+  })
+}
