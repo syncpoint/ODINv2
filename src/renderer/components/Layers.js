@@ -15,7 +15,9 @@ const stickyHistoryEntry = {
     { key: 'feature', scope: '@id:feature', label: 'Features' },
     { key: 'link', scope: '@id:link', label: 'Links' },
     { key: 'view', scope: '@id:view', label: 'Views' },
-    { key: 'pinned', scope: '#pin', label: 'Pinned' }
+
+    // Tag #pin and any of given scopes:
+    { key: 'pinned', scope: '@id:layer|feature|link|view #pin', label: 'Pinned' }
   ]
 }
 

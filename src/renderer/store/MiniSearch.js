@@ -89,7 +89,8 @@ MiniSearchIndex.prototype.search = function (query) {
   const scopeFilter = scope => {
     const conditions = scope.map(scope => {
       const [property, prefix] = split(scope)
-      return item => item[property] && item[property].startsWith(prefix)
+      const prefixes = prefix.split('|')
+      return item => prefixes.some(prefix => item[property] && item[property].startsWith(prefix))
     })
 
     // All conditions must hold.
