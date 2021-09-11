@@ -13,8 +13,6 @@ const VirtualizedList = props => {
     resetScroll: true
   })
 
-  console.log('entries', entries.length, 'items', items.length)
-
   React.useEffect(() => {
     if (scroll === 'none') return
     if (focusIndex === -1) return
@@ -27,10 +25,8 @@ const VirtualizedList = props => {
   }
 
   const card = ({ index, measureRef }) => {
-    if (index >= entries.length) {
-      console.warn('overshooting', `${index}/${entries.length}`)
-      return null
-    }
+    // Handle 'overshooting':
+    if (index >= entries.length) return null
 
     const entry = entries[index]
     return child({
@@ -70,7 +66,6 @@ VirtualizedList.propTypes = {
 
 VirtualizedList.whyDidYouRender = true
 
-// const VirtualizedListMemo = React.memo(VirtualizedList)
-// VirtualizedListMemo.whyDidYouRender = true
-// export { VirtualizedListMemo as VirtualizedList }
-export { VirtualizedList }
+const VirtualizedListMemo = React.memo(VirtualizedList)
+VirtualizedListMemo.whyDidYouRender = true
+export { VirtualizedListMemo as VirtualizedList }
