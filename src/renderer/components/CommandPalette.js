@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useServices } from './services'
-import { useList } from './hooks'
+import { useList, useServices } from './hooks'
 import { FilterInput, List } from '.'
 
 

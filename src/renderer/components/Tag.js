@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
 import { TagIcon } from './TagIcon'
 import { cmdOrCtrl } from '../platform'
-import { useServices } from './services'
+import { useServices } from './hooks'
 
 /**
  * A tag in different variants.

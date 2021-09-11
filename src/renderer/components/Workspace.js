@@ -14,7 +14,7 @@ import { Selection } from '../Selection'
 import { bindings } from '../commands/bindings'
 import { Map } from './Map'
 import { CommandPalette, Sidebar } from '.'
-import { useServices, ServiceProvider } from './services'
+import { useServices, ServiceProvider } from './hooks'
 
 
 /**

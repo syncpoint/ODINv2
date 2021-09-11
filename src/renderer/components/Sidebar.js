@@ -2,10 +2,9 @@ import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import { FilterInput, IndexBackedList, History } from '.'
-import { useList, useStack } from './hooks'
+import { useList, useStack, useServices } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
-import { useServices } from './services'
 
 /**
  * Top-most component, combining history. filter input and
@@ -102,11 +101,6 @@ Sidebar.propTypes = {
 
 Sidebar.whyDidYouRender = true
 
-/**
- * Prevent Marc from re-rendering when Workspace updated
- * one if Marcs siblings (e.g. command palette).
- */
 const SidebarMemo = React.memo(Sidebar)
 SidebarMemo.whyDidYouRender = true
-
 export { SidebarMemo as Sidebar }

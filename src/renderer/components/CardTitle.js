@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useServices } from './services'
+import { useServices } from './hooks'
 
 
 /**
