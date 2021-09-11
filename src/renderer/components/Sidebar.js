@@ -1,39 +1,28 @@
 import * as R from 'ramda'
 import React from 'react'
+import PropTypes from 'prop-types'
 import { FilterInput, IndexBackedList, History } from '.'
 import { useList, useStack } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 import { useServices } from './services'
 
-const stickyHistoryEntry = {
-  key: 'layer',
-  scope: '@id:layer',
-  label: 'Layers',
-  items: [
-    { key: 'layer', scope: '@id:layer', label: 'Layers' },
-    { key: 'feature', scope: '@id:feature', label: 'Features' },
-    { key: 'link', scope: '@id:link', label: 'Links' },
-    { key: 'view', scope: '@id:view', label: 'Views' },
-    { key: 'pinned', scope: '#pin', label: 'Pinned' },
-    { key: 'symbol', scope: '@id:symbol', label: 'Symbols' }
-  ]
-}
-
 /**
  * Top-most component, combining history. filter input and
  * concrete filterable list, e.g. feature list.
- * TODO: rename Marc -> ...
  */
-const Marc = () => {
+const Sidebar = props => {
   const { selection } = useServices()
   const [listState, listDispatch] = useList({ multiselect: true })
   const [filter, setFilter] = React.useState('')
-  const [historyEntries, historyDispatch] = useStack([stickyHistoryEntry])
-
+  const [historyEntries, historyDispatch] = useStack([props.group])
 
   // Reset filter on each history update:
   React.useEffect(() => setFilter(''), [historyEntries])
+
+  React.useEffect(() => {
+    historyDispatch({ type: 'reset', entry: props.group })
+  }, [props.group, historyDispatch])
 
   const handleClick = () => selection.set([])
 
@@ -107,13 +96,17 @@ const Marc = () => {
   )
 }
 
-Marc.whyDidYouRender = true
+Sidebar.propTypes = {
+  group: PropTypes.object.isRequired
+}
+
+Sidebar.whyDidYouRender = true
 
 /**
  * Prevent Marc from re-rendering when Workspace updated
  * one if Marcs siblings (e.g. command palette).
  */
-const MarcMemo = React.memo(Marc)
-MarcMemo.whyDidYouRender = true
+const SidebarMemo = React.memo(Sidebar)
+SidebarMemo.whyDidYouRender = true
 
-export { MarcMemo as Layers }
+export { SidebarMemo as Sidebar }

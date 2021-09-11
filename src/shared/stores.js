@@ -32,3 +32,10 @@ export const propertiesPartition = db => sublevel(db, 'tuples', { valueEncoding:
  * @param {*} db plain store without explicit encoding.
  */
 export const geometryPartition = db => sublevel(db, 'geometries', wkb)
+
+
+/**
+ * JSON-encoded 'preferences' partition on top of plain store.
+ * @param {*} db plain store without explicit encoding.
+ */
+export const preferencesPartition = db => sublevel(db, 'tuples', { valueEncoding: 'json' })
