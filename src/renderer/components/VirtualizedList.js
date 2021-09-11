@@ -15,11 +15,11 @@ const VirtualizedList = props => {
 
   console.log('entries', entries.length, 'items', items.length)
 
-  // React.useEffect(() => {
-  //   if (scroll === 'none') return
-  //   if (focusIndex === -1) return
-  //   scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
-  // }, [scrollToItem, focusIndex, scroll])
+  React.useEffect(() => {
+    if (scroll === 'none') return
+    if (focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+  }, [scrollToItem, focusIndex, scroll])
 
   const handleKeyDown = event => {
     const { key } = event
