@@ -1,6 +1,7 @@
 0.0.0
 
-* Sidebar: fixed issue with partially empty list
-* Sidebar: store/restore visibility and scope group
-* Symbol previews: removed echelon from all but UNIT and SO.
-* Performance: Externalized symbol image/url cache to file (FRIENDLY/PRESENT only).
+* Sidebar - Fixed issue with partially empty list.
+* Sidebar - Store/restore visibility and current scope (group).
+* Sidebar - Shortcuts. CMD/CTRL-B: toggle, CMD/CTRL-1: layers, CMD/CTRL-2: symbols.
+* Symbols - Removed echelon from all previews but UNIT and SO.
+* Performance - Externalized symbol image/url cache to file (FRIENDLY/PRESENT only).
