@@ -11,7 +11,6 @@ OPEN
 055a9e2c-a086-448d-8b8e-8b70c324fbae - tags: highlight feature/layer
 b6b39e8f-c2cf-41a7-bac9-91211110472d - tags: show/hide feature/layer
 62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
-a17822f4-e8d4-45de-8d01-b9fd424da620 - sidebar: persistent application state (showing, last scope)
 099455f2-4bfe-489b-83ba-ca6106f35d39 - history: store/restore focused element and query
 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing
@@ -66,83 +65,3 @@ IDEAS/EPICS
 
 WON'T FIX
 0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
-
-DONE
-DEH - f5e3785c-0e7d-4859-933c-bd20ecf62337 - resolve mocha/esm issue
-DEH - 83bfe462-21a6-4c9b-8fe6-88b79f613987 - mocha: downgraded to v8.4.0
-DEH - 47ca14d5-cd26-4fda-942e-98b8b590b2b2 - undo/redo
-DEH - d34f5440-70af-4433-bed7-5501443b3a67 - symbol: improve rendering (downscaling)
-DEH - 39af245a-bb33-480d-b2ba-f7be1e5ba446 - layer store/import: write layer properties
-DEH - b9e5feb5-6e83-476d-a770-453ec0d937fd - layer store/command: importGeoJSON/inverse
-DEH - c2ad262e-f291-47eb-9d41-fe0dfddbdec4 - import: (ODIN) GeoJSON layer (DND)
-DEH - 2b40ea01-745e-4083-9bf7-0c2b5e89406e - rendering: area (polygon) labels (nearly completely)
-DEH - c839daed-08ba-4f2c-9257-d4790dec037f - polygon labels: lazy evaluation/cache declarative positions
-DEH - 79349f31-bbd0-4306-9f6e-5e1e30959c59 - style: line string feature labels
-DEH - 3b559ce6-c8cb-4c7f-9192-d665ff9aa052 - style: solid color fill (SIDC)
-DEH - a381a2c4-c66a-4133-9b66-3e59655b935c - G*G*PF----: DIRECTION OF ATTACK FOR FEINT (multiple line styles)
-DEH - 15d0b552-0403-4eea-823c-d851a3ecf32d - G*M*BCF---: FERRY (solid color fill)
-DEH - 1a40dd8d-4aa9-4ee5-893b-ca2129fa6c79 - G*M*OEF---: OBSTACLE EFFECT / FIX (solid color fill)
-DEH - 468eb407-3810-42a2-bca4-b3b0cc34ab5c - G*T*AS----: FOLLOW AND SUPPORT (solid color fill)
-DEH - 1f41f035-b84c-406e-8b2f-a9f4ad906d39 - G*M*OADC--: ANTITANK DITCH / COMPLETE
-DEH - 055d71ed-61c3-4460-ab31-f48835a31e1b - G*M*OADU--: ANTITANK DITCH / UNDER CONSTRUCTION
-DEH - 2027c0a0-491d-4639-93f0-dbe23871be4d - G*M*OGL---: OBSTACLES / GENERAL / LINE
-DEH - 4903a227-f838-4e61-8ced-bad912f7d146 - G*M*OAW---: ANTITANK WALL
-DEH - 3be30670-dcb1-41b7-a37b-ea587238448c - G*M*OAR---: ANTITANK DITCH REINFORCED WITH ANTITANK MINES
-DEH - e1df31d5-7879-4e72-a562-b5f5433666d4 - G*M*OS____: ABATIS
-DEH - 8e2b0d2a-c32d-4914-9f10-a11111f8fbb6 - G*M*SL----: FORTIFIED LINE
-DEH - bb9a8802-fcbe-4866-a422-a93396165ab1 - style: custom line string geometries
-DEH - dbaa0d50-81e8-412a-9e9d-731dcd3d80e3 - feature rendering (WIP)
-DEH - 5ab0836e-dad2-456c-a7bb-732b5da31797 - select interaction, incl. select all
-DEH - 02f37f2d-fbd7-4919-a580-a0edcd662ab6 - custom modify interaction
-DEH - 9d859be3-d2a1-4ddc-8138-0ab143b28066 - Modify: bug - vertex feature is not removed on deselect
-DEH - 3ba90390-2de4-4e9f-819b-2d20982b1cd7 - Modify: support corridor (constraints, derived geometry)
-DEH - 3ba90390-2de4-4e9f-819b-2d20982b1cd7 - Modify: disable add/remove point for 2-point line strings
-DEH - 87649363-ab57-4ce1-bb37-d4f44d57de76 - Modify: default behavior should support geometry collection
-DEH - 97f54be5-7993-43f5-be67-5ed3107e4c38 - Modify: integrate persistence and undo/redo
-DEH - 0e2f5c6d-025f-4667-bbf2-44e96ca6830c - style/selected: show fixed handles for 2-point line strings
-DEH - 19286105-c878-4deb-bcda-1f29a00b2e09 - Modify: support orbit area (as corridor)
-DEH - a270598e-1c6d-4ae9-970c-c2e368fa9bc7 - Modify: support fan area
-DEH - 0ea1f9be-03b9-49c5-bd1b-ada9c9261792 (reverted) - project database: remove unnecessary `properties` scope
-DEH - 6e6ca0f4-1a89-4d86-b2fe-0d02ec8120bc - implement missing corridors: TACGRP.C2GM.*, TACGRP.MOBSU.*
-DEH - ab740c4c-76df-4e03-b3c6-3244734c464d - LineString: simplify geometry depending on point count and resolution
-DEH - 109522c8-b805-469b-bb85-b34416f2a753 - TACGRP.MOBSU.CBRN.DRCL: DOSE RATE CONTOUR LINES
-DEH - 98de035c-8289-4dd4-9854-6137a0716868 - check CAN GeoJSON layers for possible errors
-DEH - 7ac885dd-2410-4775-a687-71fb7abdd149 - persistence: store geometries in Web-Mercator
-DEH - 5acbe7e0-f943-4176-9775-95073a792379 - command palette
-DEH - 398fed12-b84e-48a5-b6e5-4f5a87d28b41 - pattern fill, e.g. LIMITED ACCESS AREA
-DEH - 6336f041-9d00-49b8-89f6-61fe8df3b5c3 - TACGRP.C2GM.GNL.ARS.FTFDAR - FORTIFIED AREA
-DEH - a20f5036-55bd-482d-8a05-f212be3eed7b - TACGRP.MOBSU.OBST.GNL.OFA - OBSTACLE FREE AREA
-DEH - b0975c24-70e4-4b79-a182-ff1282f9f6bd - TACGRP.MOBSU.OBST.GNL.ORA - OBSTACLE RESTRICTED AREA
-DEH - 14ecd341-3b8f-420c-b9b5-2a79827a132e - TACGRP.MOBSU.OBST.GNL.BLT - BELT
-DEH - d535d14b-6794-4319-b7cc-a63de28a9ce2 - TACGRP.MOBSU.OBST.GNL.Z - ZONE
-DEH - c36a4c6f-f980-4cee-95d4-5f1ad4dbc727 - TACGRP.C2GM.SPL.ARA.ENCMT - ENCIRCLEMENT
-DEH - d3b906d7-477d-4dda-8956-a91e3c45a165 - TACGRP.C2GM.OFF.LNE.INFNLE - INFILTRATION LANE
-DEH - ca7a1a2f-7506-403c-bc79-946a42cccc00 - persistence/feature: re-introduce properties scope, id goes top-level, reverts 0ea1f9be-03b9-49c5-bd1b-ada9c9261792
-DEH - 2f7dbc4f-beac-4aa4-b707-02328b9d57c9 - TACGRP.MOBSU.OBST.WREOBS.* - WIRE OBSTACLE
-DEH - 04b5df23-f954-4e28-bfd7-8888fc3f5cfe - TACGRP.C2GM.AVN.LNE.* - AVIATION LINES
-DEH - c6d811ff-1d5b-434c-9fc5-abfbbfe0eb65 - TACGRP.MOBSU.OBST.MNE.MCLST - MINE CLUSTER
-DEH - 1a465502-70c5-4847-bbfb-17380ff05e98 - Map: Escape key - deselect all
-DEH - 35405f37-4175-4527-a4bb-efb90b1ddcd8 (reverted) - (legacy) import: write feature metadata (scope, dimension, identity, hierarchy)
-DEH - 558402a9-6227-44b6-9cf1-3444856e0972 - FTS: minisearch index (https://github.com/lucaong/minisearch)
-DEH - 1f53a00e-4970-46f4-a8de-fd85dd8d0743 - fix undo/redo handling (branch undo-handling)
-DEH - 91f8fe8b-16f6-40c1-b603-1786bad8e579 - CTRL-A: mousetrap, SelectAll-Command (Windows)
-DEH - 5807cc1f-9348-4397-933b-adffafe2f41f - bug: CMD-B has no effect if search input (or other) has focus
-DEH - b63155f5-cd3a-4285-9fc3-c9a00e7565f5 - MiniSearch index: possible filter race condition
-DEH - b2b56b88-b139-438c-a154-35293a686172 - Layers: Display 'N/A' placeholder if Option name is not defined
-DEH - 8de646bf-dd36-464c-aa67-e1eec2302d85 - bug/layer list: start-up issue (race condition)
-DEH - 5866c153-2b5e-4857-b5a1-687eec525069 - legacy import: handle title/name, t
-DEH - 6072a658-37c3-4f0d-ab10-97c39cd5850a - legacy import: handle feature.properties.references (aka links)
-DEH - fe87d634-35d0-4910-98b6-1e58d25b5ab2 - layer/list: decrease title font size
-DEH - 826f0877-d4d2-44f9-960a-52b7e13a621d - Layers: debounce filter change
-DEH - 96ad6db1-d89c-4c57-837e-befe39c66ab7 - race condition/Layers: earlier/slow query result can overwrite later/fast result
-DEH - 37ddb956-dd6f-4a2c-a176-a6988370af27 - command palette: batch update (unique designation)
-DEH - 95e05f34-905d-4dd6-a868-4a1e22e0c5f4 - (legacy) import: remove geometry property from feature
-DEH - 0fe18c43-7f04-4695-b72f-1e2c7b17be9e - WDYR: inspect/fix IndexBackList and sub-components
-DEH - d7ac2ac9-fb91-47d8-ab14-a976c2b32998 - check out: https://github.com/wellyshen/react-cool-virtual#dynamic-size
-DEH - 3bd93c0c-2f07-4fbe-bde6-0c0170c940b8 - react-cool-virtual: resize issue (https://github.com/wellyshen/react-cool-virtual/issues/235)
-DEH - cb9a5835-e49e-441f-b7e3-5eadd05fcd97 - list: navigation incl. breadcrumbs
-DEH - 50124375-e071-4a2c-97d4-b8c4f5d27d22 - react-cool-virtual: fast scroll issue (https://github.com/wellyshen/react-cool-virtual/issues/243)
-DEH - 63dff5fb-fa29-460e-8560-ae900373c301 - react-cool-virtual: overshooting issue (https://github.com/wellyshen/react-cool-virtual/issues/244)
-DEH - af3f609b-2415-43af-a5ba-1398718bb7ec - import/DND: undo probably broken - go check
-DEH - 8deb78e2-a30c-4ccb-860a-b49138afdca6 - bug/add tag: Return key duplicates tag
-DEH - 57470315-1145-4730-9025-be56377062da - Sources: deselect (feature) removals

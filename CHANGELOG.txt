@@ -1,4 +1,6 @@
 0.0.0
 
+* Sidebar: fixed issue with partially empty list
+* Sidebar: store/restore visibility and scope group
 * Symbol previews: removed echelon from all but UNIT and SO.
 * Performance: Externalized symbol image/url cache to file (FRIENDLY/PRESENT only).

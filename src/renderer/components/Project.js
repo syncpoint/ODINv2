@@ -1,7 +1,7 @@
 import React from 'react'
 import { Map } from './Map'
 import { CommandPalette, Sidebar } from '.'
-import { useServices } from './hooks'
+import { useServices, useMemento } from './hooks'
 
 /**
  * Groups of related scopes.
@@ -33,22 +33,7 @@ const scopeGroups = {
 
 
 const handlers = {
-  sidebar: (state, { showing, group }) => ({
-    ...state,
-    sidebar: {
-      showing,
-      group: group || state.sidebar.group
-    }
-  }),
-  palette: (state, { showing, value, placeholder, callback }) => ({
-    ...state,
-    palette: {
-      showing,
-      value,
-      placeholder,
-      callback
-    }
-  })
+  palette: (state, palette) => ({ ...state, palette })
 }
 
 const reducer = (state, event) => {
@@ -62,10 +47,11 @@ const reducer = (state, event) => {
  */
 export const Project = () => {
   const { emitter } = useServices()
+  const sidebarMemento = useMemento('ui.sidebar', { showing: true, group: 'layer' })
+
   const [state, dispatch] = React.useReducer(reducer, {
     palette: { showing: false },
-    properties: false,
-    sidebar: { showing: true, group: 'symbol' }
+    properties: false
   })
 
   const handleCommandPaletteBlur = () => dispatch({ type: 'palette', showing: false })
@@ -87,18 +73,15 @@ export const Project = () => {
             callback: event.callback
           })
         }
-        case 'toggle-sidebar': return dispatch({
-          type: 'sidebar',
-          showing: !state.sidebar.showing,
-          group: state.sidebar.group
+        case 'toggle-sidebar': return sidebarMemento.put({
+          showing: !sidebarMemento.value.showing,
+          group: sidebarMemento.value.group
         })
-        case 'sidebar-layer': return dispatch({
-          type: 'sidebar',
+        case 'sidebar-layer': return sidebarMemento.put({
           showing: true,
           group: 'layer'
         })
-        case 'sidebar-symbol': return dispatch({
-          type: 'sidebar',
+        case 'sidebar-symbol': return sidebarMemento.put({
           showing: true,
           group: 'symbol'
         })
@@ -107,7 +90,7 @@ export const Project = () => {
 
     emitter.on('command/:type', handleCommand)
     return () => emitter.off('command/:type', handleCommand)
-  }, [state.sidebar, emitter, dispatch])
+  }, [emitter, sidebarMemento])
 
   const palette = state.palette.showing &&
     <CommandPalette
@@ -118,9 +101,9 @@ export const Project = () => {
       callback={state.palette.callback}
     />
 
-  const sidebar = state.sidebar.showing &&
+  const sidebar = sidebarMemento.value && sidebarMemento.value.showing &&
     <div className="panel-left panel">
-      <Sidebar group={scopeGroups[state.sidebar.group]}/>
+      <Sidebar group={scopeGroups[sidebarMemento.value.group]}/>
     </div>
 
   return (
