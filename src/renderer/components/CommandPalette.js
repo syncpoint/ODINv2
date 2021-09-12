@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useList, useServices } from './hooks'
-import { FilterInput, List } from '.'
+import { FilterInput, VirtualizedList } from '.'
 
 
 /**
@@ -78,13 +78,14 @@ export const CommandPalette = props => {
       dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
     }
 
+    const backgroundColor = props.focused ? 'lightgrey' : 'white'
     return (
       <div
         key={props.id}
         ref={props.ref}
         role='option'
         onClick={handleClick(props.id)}
-        style={{ backgroundColor: props.focused ? 'lightgrey' : 'white' }}
+        style={{ backgroundColor, padding: '0px 4px' }}
       >
         <span>{props.entry.description()}</span>
       </div>
@@ -99,7 +100,7 @@ export const CommandPalette = props => {
   }, [state.focusIndex, state.entries])
 
   const list = props.value === undefined
-    ? <List child={child} { ...state }/>
+    ? <VirtualizedList child={child} { ...state }/>
     : null
 
   return (

@@ -1,30 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'antd'
-import { ipcRenderer } from 'electron'
 import { FilterInput, List, Card } from '.'
-import { useList, useServices, ServiceProvider } from './hooks'
+import { useList, useServices } from './hooks'
 import { militaryFormat } from '../../shared/datetime'
-import { ProjectStore } from '../store'
-import { Selection } from '../Selection'
-
-
-/**
- *
- */
-export const splash = () => {
-  const services = {}
-  services.ipcRenderer = ipcRenderer
-  services.projectStore = new ProjectStore(ipcRenderer)
-  services.selection = new Selection()
-
-  return (
-    <ServiceProvider { ...services }>
-      <Splash/>
-    </ServiceProvider>
-  )
-}
-
 
 /**
  *
@@ -189,7 +168,7 @@ Project.propTypes = {
 /**
  *
  */
-export const Splash = () => {
+export const ProjectList = () => {
   const { projectStore, ipcRenderer } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: true })

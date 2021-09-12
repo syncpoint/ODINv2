@@ -1,9 +1,14 @@
 // import './wdyr'
 import ReactDOM from 'react-dom'
+import React from 'react'
 import 'antd/dist/antd.css'
 import './index.css'
-import { splash } from './components/Splash'
-import { workspace } from './components/Workspace'
+import { Project } from './components/Project'
+import projectServices from './components/Project-services'
+import { ProjectList } from './components/ProjectList'
+import projectListServices from './components/ProjectList-services'
+import { ServiceProvider } from './components/hooks'
+
 
 // Clipboard events: Handlers must evaluate target element to determin context.
 document.addEventListener('copy', event => console.log('[index] copy', event))
@@ -15,11 +20,17 @@ const page = (() => {
   if (entry) return entry.split('=')[1]
 })()
 
-
 const projectUUID = page => page.split(':')[1]
-const app = page === 'splash'
-  ? splash()
-  : workspace(projectUUID(page))
+
+const services = page === 'splash'
+  ? projectListServices()
+  : projectServices(projectUUID(page))
+
+const app = (
+  <ServiceProvider { ...services }>
+  { page === 'splash' ? <ProjectList/> : <Project/> }
+  </ServiceProvider>
+)
 
 const container = document.createElement('div')
 document.body.appendChild(container)
