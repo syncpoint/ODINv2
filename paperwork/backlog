@@ -2,15 +2,16 @@ CURRENT FOCUS - Layer Management
 
 IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-DEH - 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
+DEH - 46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
 
 OPEN
+62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
 1dedb884-7b83-47b8-baeb-53a18c877f02 - translate/clone: Escape key deselects and brings ongoing translate into trouble
+27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 0bc82d1a-150e-4368-8b61-74df1fb0885d - symbol: make modifer text style configurable
 667f3379-b9d9-4c7c-9e83-fd7ab9ae54cf - tags: focus/center map on feature/layer
 055a9e2c-a086-448d-8b8e-8b70c324fbae - tags: highlight feature/layer
 b6b39e8f-c2cf-41a7-bac9-91211110472d - tags: show/hide feature/layer
-62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
 099455f2-4bfe-489b-83ba-ca6106f35d39 - history: store/restore focused element and query
 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing
@@ -23,12 +24,8 @@ b73b6b06-24b8-4861-92e4-e3e5ce494588 - UI: switch to Roboto font face
 5ddb2139-daf4-4ca1-902d-3149e4b191cd - multiselect/selection: improve behavior
 d6802e39-ee47-49b6-81dd-427026bb0950 - performance: checkout TerserPlugin/WebPack
 d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
-434dffee-469f-4e04-8a54-5e693570b69b - Clipboard support
-46f36292-d5e1-4ae4-89b3-c495af70395b - Draw interaction
 481d485a-83b3-4136-a819-5fcb56a14217 - OSD
-67a05bf0-83dc-44b6-9c72-87583426cc65 - SVG graphics preview: suppress echelon for boundaries and such
 1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
-e1c55546-1891-4fcd-af5a-1887954e0278 - style: improve cache (feature timestamp/geometry revision)
 7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
