@@ -53,7 +53,7 @@
     "antd": "^4.16.13",
     "jexl": "^2.3.0",
     "jsts": "^2.7.1",
-    "leveldown": "^6.0.1",
+    "leveldown": "^6.0.2",
     "levelup": "^5.0.1",
     "lodash.debounce": "^4.0.8",
     "lru-ttl-cache": "^2.4.2",
