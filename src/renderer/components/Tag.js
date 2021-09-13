@@ -20,6 +20,7 @@ export const Tag = props => {
   const handleClick = event => {
     event.stopPropagation()
     if (variant === 'PLUS') {
+      setInputValue('')
       setMode('edit')
     }
   }
@@ -37,6 +38,7 @@ export const Tag = props => {
     const stopPropagation = R.cond([
       [({ key }) => key === 'Enter', R.always(true)],
       [({ key }) => key === 'Escape', R.always(true)],
+      [({ key }) => key === ' ', R.always(true)],
       [event => cmdOrCtrl(event) && event.key === 'a', R.always(true)],
       [R.T, R.always(false)]
     ])
@@ -49,7 +51,12 @@ export const Tag = props => {
     }
   }
 
-  const handleChange = ({ target }) => setInputValue(target.value)
+  const handleChange = ({ target }) => {
+    const value = target.value
+      ? target.value.replace(/[^0-9a-z]+/ig, '')
+      : ''
+    setInputValue(value.substring(0, 16).toUpperCase())
+  }
 
   const handleClose = React.useCallback(() => {
     store.removeTag(id, label)
@@ -85,6 +92,7 @@ export const Tag = props => {
       </span>
     : <input
         className='tag-input'
+        value={inputValue}
         autoFocus
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
