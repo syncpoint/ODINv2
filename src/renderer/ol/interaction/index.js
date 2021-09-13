@@ -4,6 +4,7 @@ import translateInteraction from './translate-transaction'
 import modifyInteraction from './modify-interaction'
 import snapInteraction from './snap-interaction'
 import boxselectInteraction from './boxselect-interaction'
+import drawInteraction from './draw-interaction'
 
 /**
  * @param {Selection} selection
@@ -13,6 +14,8 @@ import boxselectInteraction from './boxselect-interaction'
  * @param {ol/VectorLayer} featureLayer
  * @param {ol/VectorLayer} selectedLayer
  * @param {ol/VectorSource} featureSource source for all features
+ * @param {EventEmitter} emitter
+ * @param {ol/Map} map
  */
 export default options => {
   const select = selectInteraction(options)
@@ -20,6 +23,10 @@ export default options => {
   const translate = translateInteraction(options, select)
   const snap = snapInteraction(options)
   const boxselect = boxselectInteraction(options)
+
+  // Draw interaction is dynamically added to map as required.
+  drawInteraction(options)
+
   return defaultInteractions({ doubleClickZoom: false }).extend(
     [select, translate, modify, snap, boxselect]
   )

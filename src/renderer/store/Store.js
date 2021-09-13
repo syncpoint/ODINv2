@@ -1,8 +1,9 @@
 import util from 'util'
 import * as R from 'ramda'
+import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
 import { writeGeometryObject } from './format'
-import { isFeatureId, isGroupId } from '../ids'
+import { isFeatureId, isGroupId, featureId, isLayerId } from '../ids'
 import { importSymbols } from './symbols'
 
 
@@ -41,6 +42,7 @@ import { importSymbols } from './symbols'
  * putFeatures_ :: [GeoJSON/Feature] -> unit
  * putLayer :: GeoJSON/Layer -> unit
  * putFeatures :: [GeoJSON/Feature] -> unit
+ * putFeature :: GeoJSON/Feature -> unit - add new feature to default layer
  * deleteFeatures :: [string] -> unit
  * deleteLayer :: string -> unit
  * updateGeometries :: { id -> [new, old] } -> unit
@@ -318,9 +320,9 @@ Store.prototype.putFeatures_ = async function (features) {
  * putLayer :: GeoJSON/Layer -> unit
  */
 Store.prototype.putLayer = async function (layer) {
-  const { id, name, features } = layer
+  const { id, name, features, tags } = layer
   await this.properties_.batch([{
-    type: 'put', key: id, value: { name, id }
+    type: 'put', key: id, value: { name, id, tags }
   }])
 
   this.putFeatures_(features)
@@ -333,6 +335,38 @@ Store.prototype.putLayer = async function (layer) {
  */
 Store.prototype.putFeatures = function (features) {
   const command = this.putFeaturesCommand(features)
+  return this.undo_.apply(command)
+}
+
+
+/**
+ * @async
+ * putFeature :: GeoJSON/Feature -> unit - add new feature to default layer
+ */
+Store.prototype.putFeature = async function (feature) {
+
+  // Get or create default layer:
+  const layers = await this.values_(this.properties_, 'layer:')
+  const defaultLayer = layers.find(layer => (layer.tags || []).includes('default'))
+
+  const command = (() => {
+    if (defaultLayer) {
+      // Add feature to exiting default layer.
+      feature.id = featureId(defaultLayer.id)
+      return this.putFeaturesCommand([feature])
+    } else {
+      // Create new default layer with feature.
+      const layerId = `layer:${uuid()}`
+      feature.id = featureId(layerId)
+      return this.putLayerCommand({
+        id: layerId,
+        name: 'Default Layer',
+        tags: ['default'],
+        features: [feature]
+      })
+    }
+  })()
+
   return this.undo_.apply(command)
 }
 
@@ -393,13 +427,32 @@ Store.prototype.del = async function (ids) {
 
 const taggable = id => !isGroupId(id)
 
+
 /**
+ * @async
  * addTag :: string -> string -> unit
  */
-Store.prototype.addTag = function (id, name) {
-  // TODO: special handling - default layer
-  const ids = R.uniq([id, ...this.selection_.selected(taggable)])
-  const command = this.addTagCommand(ids, name)
+Store.prototype.addTag = async function (id, name) {
+
+  const command = await (async () => {
+    // 'default' tag can only by applied to a single layer.
+    if (name === 'default' && isLayerId(id)) {
+      const layers = await this.values_(this.properties_, 'layer:')
+      const defaultLayer = layers.find(layer => (layer.tags || []).includes('default'))
+      if (!defaultLayer) return this.addTagCommand([id], name)
+      else {
+        // Add tag to new layer, remove tag from current default layer:
+        return this.compositeCommand([
+          this.addTagCommand([id], name),
+          this.removeTagCommand([defaultLayer.id], name)
+        ])
+      }
+    }
+
+    const ids = R.uniq([id, ...this.selection_.selected(taggable)])
+    return this.addTagCommand(ids, name)
+  })()
+
   this.undo_.apply(command)
 }
 
@@ -536,6 +589,7 @@ const putFeaturesCommand = function (features) {
     inverse: () => this.deleteFeaturesCommand(features)
   }
 }
+
 
 const addTag = name => item => (item.tags = R.uniq([...(item.tags || []), name]))
 const removeTag = name => item => (item.tags = (item.tags || []).filter(tag => tag !== name))

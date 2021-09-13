@@ -65,18 +65,6 @@ export const Map = () => {
       selectedLayer
     ]
 
-    const interactions = defaultInteractions({
-      hitTolerance: 3,
-      selection,
-      store,
-      undo,
-      partition,
-      featureLayer,
-      selectedLayer,
-      featureSource,
-      style
-    })
-
     view.on('change', ({ target: view }) => {
       sessionStore.putViewport({
         center: view.getCenter(),
@@ -90,8 +78,25 @@ export const Map = () => {
       controls,
       layers,
       view,
-      interactions
+      interactions: []
     })
+
+    const interactions = defaultInteractions({
+      hitTolerance: 3,
+      selection,
+      store,
+      undo,
+      partition,
+      featureLayer,
+      selectedLayer,
+      featureSource,
+      style,
+      emitter,
+      map
+    })
+
+    interactions.getArray().forEach(interaction => map.addInteraction(interaction))
+
 
     // Map-related keys/shortcuts:
     map.addEventListener('keydown', event => {

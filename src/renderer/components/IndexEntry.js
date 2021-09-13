@@ -1,16 +1,27 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Card, Avatar, Tag } from '.'
+import { useServices } from './hooks'
 
 /**
  * Render entry (aka option) from search index in a generic way.
  * E.g. Layer, Feature etc.
  */
 const IndexEntry = React.forwardRef((props, ref) => {
+  const { emitter } = useServices()
   const { id, entry, dispatch } = props
+  const actions = entry.actions.split('|').map(action => action.split(':'))
 
-  const handleClick = ({ metaKey, shiftKey }) => {
-    dispatch({ type: 'click', id, shiftKey, metaKey })
+  const handleClick = ({ metaKey, ctrlKey, shiftKey }) => {
+    dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey })
+  }
+
+  const handleDoubleClick = () => {
+    const primaryAction = actions.find(([type]) => type === 'PRIMARY')
+
+    if (primaryAction) {
+      emitter.emit(`command/entry/${primaryAction[1]}`, { id })
+    }
   }
 
   const description = entry.description && (
@@ -27,6 +38,7 @@ const IndexEntry = React.forwardRef((props, ref) => {
         focused={props.focused}
         selected={props.selected}
         onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
       >
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <div className='card-content'>

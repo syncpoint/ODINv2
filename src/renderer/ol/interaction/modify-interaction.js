@@ -6,9 +6,8 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
 
 /**
  * @param {*} store
- * @param {*} undo
  * @param {*} partition
- * @returns
+ * @param {*} hitTolerance
  */
 export default options => {
   const { store, partition, hitTolerance } = options

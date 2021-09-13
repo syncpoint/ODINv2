@@ -1,5 +1,10 @@
 0.0.0
 
+* Draw interaction - Drawing is initialized by double clicking symbol in palette.
+* Draw interaction - Shortscuts. Escape key cancels ongoing drawing.
+* Draw interaction - Features SEIZE and TURN are currently unsupported
+* Default Layer - Tag 'default' defines new default layer.
+* Default Layer - Layer is created implicitly when needed and none is defined.
 * Sidebar - Fixed issue with partially empty list.
 * Sidebar - Store/restore visibility and current scope (group).
 * Sidebar - Shortcuts. CMD/CTRL-B: toggle, CMD/CTRL-1: layers, CMD/CTRL-2: symbols.

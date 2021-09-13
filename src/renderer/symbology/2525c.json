@@ -6196,6 +6196,7 @@
     "sidc": "G*M*OET---*****",
     "scope": "CONTROL",
     "geometry": "MultiPoint",
+    "unsupported": true,
     "hierarchy": [
       "Tactical Graphics",
       "Mobility / Survivability",
@@ -7899,6 +7900,7 @@
     "scope": "CONTROL",
     "geometry": "MultiPoint",
     "dimensions": "TASK",
+    "unsupported": true,
     "hierarchy": [
       "Tactical Graphics",
       "Tasks",

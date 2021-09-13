@@ -82,26 +82,28 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
-export const index = raw.reduce((acc, descriptor) => {
-  const sidc = parameterized(descriptor.sidc)
-  const dimensions = descriptor.dimensions
-    ? descriptor.dimensions.split(',').map(s => s.trim()).filter(R.identity)
-    : []
+export const index = raw
+  .filter(({ unsupported }) => !unsupported)
+  .reduce((acc, descriptor) => {
+    const sidc = parameterized(descriptor.sidc)
+    const dimensions = descriptor.dimensions
+      ? descriptor.dimensions.split(',').map(s => s.trim()).filter(R.identity)
+      : []
 
-  acc[sidc] = {
-    parameterized: sidc,
-    sidc: descriptor.sidc,
-    hierarchy: descriptor.hierarchy,
-    scope: descriptor.scope,
-    dimensions,
-    geometry: {
-      type: descriptor.geometry,
-      ...descriptor.parameters
+    acc[sidc] = {
+      parameterized: sidc,
+      sidc: descriptor.sidc,
+      hierarchy: descriptor.hierarchy,
+      scope: descriptor.scope,
+      dimensions,
+      geometry: {
+        type: descriptor.geometry,
+        ...descriptor.parameters
+      }
     }
-  }
 
-  return acc
-}, {})
+    return acc
+  }, {})
 
 export const descriptor = sidc => {
   if (!sidc) return
