@@ -85,7 +85,7 @@ export const CommandPalette = props => {
         ref={props.ref}
         role='option'
         onClick={handleClick(props.id)}
-        style={{ backgroundColor, padding: '0px 4px' }}
+        style={{ backgroundColor, padding: '0px 8px' }}
       >
         <span>{props.entry.description()}</span>
       </div>

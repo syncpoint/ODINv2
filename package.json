@@ -41,7 +41,7 @@
     "memdown": "^6.0.0",
     "mocha": "^8.4.0",
     "style-loader": "^3.2.1",
-    "webpack": "^5.52.0",
+    "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.2.0"
   },
