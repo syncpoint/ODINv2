@@ -9,7 +9,7 @@
     "hot": "webpack serve",
     "webpack": "webpack",
     "webpack:production": "webpack --mode='production'",
-    "test": "mocha --bail --require esm --recursive",
+    "test": "mocha 'src/**/*.test.js' --bail --require esm --recursive",
     "test:watch": "mocha --require esm --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha --require esm --recursive",
     "lint": "eslint",

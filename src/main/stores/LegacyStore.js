@@ -9,14 +9,14 @@ const LEGACY = {
  * @constructor
  */
 function LegacyStore (db) {
-  this.store = new Store(db)
+  this.store_ = new Store(db)
 }
 
 /**
  * Whether or not legacy projects have been transferred.
  */
 LegacyStore.prototype.getTransferred = async function () {
-  return await this.store.get(LEGACY.TRANSFERRED, false)
+  return await this.store_.get(LEGACY.TRANSFERRED, false)
 }
 
 /**
@@ -24,7 +24,7 @@ LegacyStore.prototype.getTransferred = async function () {
  */
 LegacyStore.prototype.transferSources = function (sources) {
   const entries = Object.entries(sources)
-  return this.store.put(entries)
+  return this.store_.put(entries)
 }
 
 
@@ -40,12 +40,12 @@ LegacyStore.prototype.transferMetadata = async function (projects) {
     }]
   })
 
-  await this.store.put(LEGACY.TRANSFERRED, true)
-  return this.store.put(Object.fromEntries(entries))
+  await this.store_.put(LEGACY.TRANSFERRED, true)
+  return this.store_.put(Object.fromEntries(entries))
 }
 
 LegacyStore.prototype.getSources = function () {
-  return this.store.entries(BASEMAP)
+  return this.store_.entries(BASEMAP)
 }
 
 export default LegacyStore

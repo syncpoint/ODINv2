@@ -1,6 +1,6 @@
 import assert from 'assert'
-import { Selection } from '../../src/renderer/Selection'
-import { ERR_INVALID_ARG } from '../../src/shared/error'
+import { Selection } from './Selection'
+import { ERR_INVALID_ARG } from '../shared/error'
 
 describe('Selection', function () {
 

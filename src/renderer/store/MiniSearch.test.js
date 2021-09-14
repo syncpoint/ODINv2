@@ -1,8 +1,8 @@
 import assert from 'assert'
-import { createIndex, parseQuery, searchIndex } from '../../../src/renderer/store/minisearch-index'
-import { documents } from '../../../src/renderer/store/documents'
-import layer from './layer.json'
-import fixture from './fixture.json'
+import { createIndex, parseQuery, searchIndex } from './minisearch-index'
+import { documents } from './documents'
+import layer from './data/layer.json'
+import fixture from './data/fixture.json'
 
 const features = layer.map(feature => ({
   id: feature.id,
