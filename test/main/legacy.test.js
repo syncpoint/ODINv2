@@ -28,7 +28,7 @@ describe('legacy', async function () {
 
       entries.layers.push(...await tupleStore.values('layer:'))
       entries.features.push(...await tupleStore.values('feature:'))
-      entries.links.push(...await tupleStore.values('link:'))
+      entries.links.push(...await tupleStore.values('link+'))
       entries.geometries.push(...await geometryStore.values('feature:'))
 
       return entries

@@ -175,10 +175,9 @@ export const readLayer = async (location, projectUUID, layer) => {
     else {
       return feature.properties.references.reduce((acc, reference) => {
         acc.push({
-          id: `link:${reference.id}`,
+          id: `link+${feature.id}/${reference.id}`,
           name: reference.name,
-          url: reference.url,
-          ref: feature.id
+          url: reference.url
         })
 
         return acc
@@ -196,12 +195,7 @@ export const readLayer = async (location, projectUUID, layer) => {
       delete feature.properties[name]
     })
 
-    // Handle referenes/links.
-    if (feature.properties.references) {
-      feature.links = feature.properties.references.map(reference => `link:${reference.id}`)
-      delete feature.properties.references
-    }
-
+    delete feature.properties.references
     return feature
   })
 

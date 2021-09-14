@@ -66,7 +66,7 @@ const IndexBackedList = props => {
   const emptyList = () => {
     return (
       <div style={{ padding: '3px 6px' }}>
-        <Card>
+        <Card id='null:'>
           <span style={{ paddingTop: '6px' }} className='card-title'>No match, try Tinder.</span>
         </Card>
       </div>

@@ -38,6 +38,7 @@ import { importSymbols } from './symbols'
  * getFeatures :: [string] -> [GeoJSON/Feature]
  * getValue :: string -> object
  * getValues :: [string] -> [object]
+ * putValues :: [object] -> unit
  * importLayer :: [GeoJSON/Layer] -> unit
  * putFeatures_ :: [GeoJSON/Feature] -> unit
  * putLayer :: GeoJSON/Layer -> unit
@@ -265,6 +266,17 @@ Store.prototype.getValue = function (id) {
  */
 Store.prototype.getValues = function (ids) {
   return this.values_(this.properties_, ids)
+}
+
+
+/**
+ * @async
+ * putValues :: [object] -> unit
+ */
+Store.prototype.putValues = function (values) {
+  if (!values.length) return
+  const ops = values.map(value => ({ type: 'put', key: value.id, value }))
+  return this.properties_.batch(ops)
 }
 
 

@@ -20,6 +20,23 @@ export const featureId = R.cond([
   [R.T, layerId => `feature:${layerId.split(':')[1]}/${uuid()}`]
 ])
 
+/**
+ * '+'-notation container id.
+ *
+ * link+layer:{uuid}/{uuid}
+ *      |----------|
+ *
+ * link+feature:{uuid}/{uuid}/uuid
+ *      |-------------------|
+ */
+export const containerId = idLike => {
+  if (typeof idLike === 'object') return containerId(idLike.id)
+
+  const indexStart = idLike.indexOf('+')
+  const indexEnd = idLike.lastIndexOf('/')
+  return idLike.substring(indexStart + 1, indexEnd)
+}
+
 const isId = prefix => id => id.startsWith(prefix)
 export const isLayerId = isId('layer:')
 export const isFeatureId = isId('feature:')

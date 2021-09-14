@@ -35,8 +35,10 @@ const IndexEntry = React.forwardRef((props, ref) => {
   return (
     <div ref={ref} key={id} style={{ padding: '3px 6px' }}>
       <Card
+        id={id}
         focused={props.focused}
         selected={props.selected}
+        capabilities={entry.capabilities}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
       >

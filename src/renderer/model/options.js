@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { layerId } from '../ids'
+import { layerId, containerId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
 
@@ -39,7 +39,6 @@ options.feature = (feature, cache) => {
 
   const tags = [
     'SCOPE:FEATURE:identify',
-    ...((feature.links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
     feature.hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
     ...dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...scope.map(label => `SYSTEM:${label}:NONE`),
@@ -64,23 +63,18 @@ options.feature = (feature, cache) => {
  * layer:
  */
 options.layer = layer => {
-  const tags = () => {
-    const { hidden, tags, links } = layer
-
-    return [
-      'SCOPE:LAYER:identify',
-      ...((links || []).length ? ['IMAGE:LINKS:links:mdiLink'] : []),
-      hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
-      ...(tags || []).map(label => `USER:${label}:NONE`),
-      'PLUS'
-    ].join(' ').replace('  ', ' ').trim()
-  }
+  const tags = [
+    'SCOPE:LAYER:identify',
+    layer.hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
+    ...(layer.tags || []).map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ').replace('  ', ' ').trim()
 
   return {
     id: layer.id,
     title: layer.name,
     description: layer.type === 'socket' ? layer.url : null,
-    tags: tags(layer),
+    tags,
     capabilities: 'RENAME|DROP',
     actions: 'PRIMARY:panto'
   }
@@ -90,14 +84,13 @@ options.layer = layer => {
 /**
  * link:
  */
-options.link = (link, cache) => {
-  const container = cache(link.ref)
-  const containerName = container.name
+const link = (link, cache) => {
+  const container = cache(containerId(link))
 
   return {
     id: link.id,
     title: link.name,
-    description: containerName,
+    description: container.name,
     tags: [
       'SCOPE:LINK:NONE',
       ...(link.tags || []).map(label => `USER:${label}:NONE`),
@@ -106,6 +99,9 @@ options.link = (link, cache) => {
     actions: 'PRIMARY:panto'
   }
 }
+
+options['link+layer'] = link
+options['link+feature'] = link
 
 
 /**

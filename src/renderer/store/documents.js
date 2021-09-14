@@ -67,12 +67,15 @@ documents.layer = layer => {
 /**
  *
  */
-documents.link = link => ({
+const link = link => ({
   id: link.id,
   scope: 'link',
   text: link.name,
   tags: link.tags
 })
+
+documents['link+layer'] = link
+documents['link+feature'] = link
 
 
 /**
