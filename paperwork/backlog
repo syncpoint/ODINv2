@@ -4,7 +4,6 @@ IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN
-legacy import: migrate 'activeLayer' (preferences.json)
 1862a5c5-a462-4d48-b738-6fa7c0814cf5 - delete layer, feature, link
 62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
 1dedb884-7b83-47b8-baeb-53a18c877f02 - translate/clone: Escape key deselects and brings ongoing translate into trouble

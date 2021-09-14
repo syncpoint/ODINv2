@@ -15,17 +15,24 @@ import { propertiesPartition, geometryPartition } from '../../shared/stores'
  * @param {*} project project to transfer
  */
 export const transferProject = async (db, project) => {
-  const { layers, links } = project
+  const { layers, links, preferences } = project
   const properties = propertiesPartition(db)
   const geometries = geometryPartition(db)
 
   // Layers.
   {
-    const op = layer => ({
-      type: 'put',
-      key: layer.id,
-      value: { id: layer.id, name: layer.name }
-    })
+    const op = layer => {
+      const value = { id: layer.id, name: layer.name }
+      if (layer.name === preferences.activeLayer) {
+        value.tags = ['default']
+      }
+
+      return {
+        type: 'put',
+        key: layer.id,
+        value
+      }
+    }
 
     const ops = layers.map(op)
     await properties.batch(ops)

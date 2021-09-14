@@ -1,5 +1,6 @@
 0.0.0
 
+* Transfer active/default layer from legacy projects.
 * Links (ex. references) - Drag'n drop for layers and features.
 * Tagging - Only support alphanumeric characters and '/' in tag names (#1).
 * Draw interaction - Drawing is initialized by double clicking symbol in palette.
