@@ -1,7 +1,7 @@
 import assert from 'assert'
 import * as R from 'ramda'
-import EventEmitter from '../../src/shared/emitter'
-import { ERR_INVALID_ARG } from '../../src/shared/error'
+import EventEmitter from './emitter'
+import { ERR_INVALID_ARG } from './error'
 
 
 describe('EventEmitter', function () {

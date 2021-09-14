@@ -2,15 +2,17 @@ import assert from 'assert'
 import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
-import { readJSON } from '../../src/main/legacy/io'
-import { transferProject } from '../../src/main/legacy'
-import Store from '../../src/shared/level/Store'
-import { propertiesPartition, geometryPartition } from '../../src/shared/stores'
+import { readJSON } from './io'
+import { transferProject } from '.'
+import Store from '../../shared/level/Store'
+import { propertiesPartition, geometryPartition } from '../../shared/stores'
+
+const pathname = dir => new URL(dir, import.meta.url).pathname
 
 describe('legacy', async function () {
 
   it('transferProject', async function () {
-    const projects = await readJSON('./test/data/legacy-projects.json')
+    const projects = await readJSON(pathname('./data/legacy-projects.json'))
     const entries = Object.entries(projects)
     const databases = await entries.reduce(async (acc, [key, value]) => {
       const databases = await acc
@@ -34,7 +36,7 @@ describe('legacy', async function () {
       return entries
     }, acc)
 
-    const expected = await readJSON('./test/data/projects.json')
+    const expected = await readJSON(pathname('./data/projects.json'))
     assert.deepStrictEqual(actual, expected)
   })
 })

@@ -1,6 +1,6 @@
 import assert from 'assert'
-import { singleselect } from '../../../src/renderer/components/singleselect'
-import { initialState } from '../../../src/renderer/components/list-state'
+import { singleselect } from './singleselect'
+import { initialState } from './list-state'
 
 describe('singleselect', function () {
 

@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { multiselect } from '../../../src/renderer/components/multiselect'
+import { multiselect } from './multiselect'
 
 describe('multiselect', function () {
 

@@ -2,7 +2,7 @@ import assert from 'assert'
 import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
-import Store from '../../src/shared/level/Store'
+import Store from './Store'
 
 describe('Store', function () {
 

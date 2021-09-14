@@ -2,13 +2,15 @@ import assert from 'assert'
 import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
-import { readJSON } from '../../../src/main/legacy/io'
-import LegacyStore from '../../../src/main/stores/LegacyStore'
+import { readJSON } from '../legacy/io'
+import LegacyStore from './LegacyStore'
+
+const pathname = dir => new URL(dir, import.meta.url).pathname
 
 describe('LegacyStore', async function () {
 
   it('transferSources', async function () {
-    const expected = await readJSON('./test/data/sources.json')
+    const expected = await readJSON(pathname('./data/sources.json'))
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new LegacyStore(db)
     await store.transferSources(expected)
@@ -17,12 +19,12 @@ describe('LegacyStore', async function () {
   })
 
   it('transferMetadata', async function () {
-    const projects = await readJSON('./test/data/legacy-projects.json')
+    const projects = await readJSON(pathname('./data/legacy-projects.json'))
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new LegacyStore(db)
     await store.transferMetadata(projects)
-    const actual = await store.store.values('project:')
-    const expected = await readJSON('./test/data/metadata.json')
+    const actual = await store.store_.values('project:')
+    const expected = await readJSON(pathname('./data/metadata.json'))
     assert.deepStrictEqual(actual, expected)
   })
 })

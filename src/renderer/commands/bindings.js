@@ -14,4 +14,5 @@ export const bindings = emitter => {
   Mousetrap.bindGlobal(cmdOrCtrl('1'), emitCommand('sidebar-layer'))
   Mousetrap.bindGlobal(cmdOrCtrl('2'), emitCommand('sidebar-symbol'))
   Mousetrap.bind(cmdOrCtrl('backspace'), emitCommand('delete'))
+  Mousetrap.bind('del', emitCommand('delete'))
 }

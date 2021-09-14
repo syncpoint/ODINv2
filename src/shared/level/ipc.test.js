@@ -2,7 +2,7 @@ import assert from 'assert'
 import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
-import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from '../../src/shared/level/ipc'
+import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from './ipc'
 
 describe('IPCDownClient', function () {
   it('GET', async function () {
