@@ -8,7 +8,7 @@ export const importSymbols = async db => {
     return { type: 'put', key: symbol.id, value: symbol }
   }))
 
-  const urls = Object.values(index).reduce((acc, symbol) => {
+  Object.values(index).reduce((acc, symbol) => {
     // Eager cache symbol images in symbol cache.
     const sidc = format(symbol.sidc, {
       identity: 'F', // friendly
@@ -18,6 +18,4 @@ export const importSymbols = async db => {
     acc[sidc] = url(sidc)
     return acc
   }, {})
-
-  console.log(JSON.stringify(urls))
 }
