@@ -1,11 +1,8 @@
 import assert from 'assert'
-import levelup from 'levelup'
-import memdown from 'memdown'
-import encode from 'encoding-down'
 import { readJSON } from './io'
 import { transferProject } from '.'
 import { values } from '../../shared/level/HighLevel'
-import { propertiesPartition, geometryPartition } from '../../shared/level'
+import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
 
 const pathname = dir => new URL(dir, import.meta.url).pathname
 
@@ -16,7 +13,7 @@ describe('legacy', async function () {
     const entries = Object.entries(projects)
     const databases = await entries.reduce(async (acc, [key, value]) => {
       const databases = await acc
-      databases[key] = levelup(encode(memdown(), { valueEncoding: 'json' }))
+      databases[key] = leveldb({ encoding: 'json' })
       await transferProject(databases[key], value)
       return acc
     }, {})
@@ -25,7 +22,7 @@ describe('legacy', async function () {
     const acc = { layers: [], features: [], geometries: [], links: [] }
     const actual = await Object.values(databases).reduce(async (acc, db) => {
       const properties = propertiesPartition(db)
-      const geometries = geometryPartition(db)
+      const geometries = geometriesPartition(db)
       const entries = await acc
 
       entries.layers.push(...await values(properties, 'layer:'))

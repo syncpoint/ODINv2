@@ -1,8 +1,6 @@
 import assert from 'assert'
-import levelup from 'levelup'
-import memdown from 'memdown'
-import encode from 'encoding-down'
 import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from './ipc'
+import { leveldb } from '.'
 
 describe('IPCDownClient', function () {
   it('GET', async function () {
@@ -13,7 +11,7 @@ describe('IPCDownClient', function () {
       }
     })
 
-    const db = levelup(client)
+    const db = leveldb({ down: client })
     const actual = await db.get('a')
     assert.strictEqual(actual, 0)
   })
@@ -25,7 +23,7 @@ describe('IPCDownClient', function () {
       }
     })
 
-    const db = levelup(client)
+    const db = leveldb({ down: client })
     try {
       await db.get('a')
       assert.fail()
@@ -42,7 +40,7 @@ describe('IPCDownClient', function () {
       }
     })
 
-    const db = levelup(client)
+    const db = leveldb({ down: client })
     await db.put('a', 0)
     assert.strictEqual(values.a, 0)
   })
@@ -55,7 +53,7 @@ describe('IPCDownClient', function () {
       }
     })
 
-    const db = levelup(client)
+    const db = leveldb({ down: client })
     await db.del('a')
     assert.deepStrictEqual(values, {})
   })
@@ -68,7 +66,7 @@ describe('IPCDownClient', function () {
       }
     })
 
-    const db = levelup(client)
+    const db = leveldb({ down: client })
     const actual = await new Promise(resolve => {
       const acc = []
       db.createReadStream()
@@ -89,7 +87,7 @@ describe('IPCServer', function () {
   }
 
   it('GET', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = leveldb({ encoding: 'json' })
     await db.put('a', 0)
     /* eslint-disable no-new */
     new IPCServer(db, ipc)
@@ -99,7 +97,7 @@ describe('IPCServer', function () {
   })
 
   it('PUT', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = leveldb({ encoding: 'json' })
     /* eslint-disable no-new */
     new IPCServer(db, ipc)
     /* eslint-enable no-new */
@@ -109,7 +107,7 @@ describe('IPCServer', function () {
   })
 
   it('DEL', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = leveldb({ encoding: 'json' })
     await db.put('a', 0)
     /* eslint-disable no-new */
     new IPCServer(db, ipc)
@@ -125,7 +123,7 @@ describe('IPCServer', function () {
   })
 
   it('ITERATOR', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = leveldb({ encoding: 'json' })
     await db.put('a', 0)
     await db.put('b', 1)
     /* eslint-disable no-new */

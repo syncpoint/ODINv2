@@ -1,7 +1,6 @@
 import path from 'path'
 import { promises as fs } from 'fs'
-import levelup from 'levelup'
-import leveldown from 'leveldown'
+import { leveldb } from '../shared/level'
 
 export const ipc = (databases, ipcMain, projectStore) => {
 
@@ -18,10 +17,10 @@ export const ipc = (databases, ipcMain, projectStore) => {
   })
 
   ipcMain.handle('ipc:post:project', async (_, project) => {
-    // Create and close projejct database:
+    // Create and close project database:
     const uuid = project.id.split(':')[1]
     const location = path.join(databases, uuid)
-    const db = levelup(leveldown(location))
+    const db = leveldb({ location })
     await db.close()
 
     return await projectStore.putProject(project)

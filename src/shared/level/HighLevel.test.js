@@ -1,20 +1,19 @@
 import assert from 'assert'
-import levelup from 'levelup'
-import memdown from 'memdown'
-import encode from 'encoding-down'
 import { HighLevel } from './HighLevel'
+import { leveldb } from '.'
 
 describe('HighLevel', function () {
+  const createdb = () => leveldb({ encoding: 'json' })
 
   it('put :: String key, Any value => key -> value -> unit', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
     await level.put('key', 'value')
     assert.strictEqual(await db.get('key'), 'value')
   })
 
   it('put :: Object -> unit', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
     await level.put({ a: 1, b: 2, c: 3 })
     assert.strictEqual(await db.get('a'), 1)
@@ -23,7 +22,7 @@ describe('HighLevel', function () {
   })
 
   it('put :: String key, Any value => [[key, value]] -> unit', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
     await level.put([['a', 1], ['b', 2], ['c', 3]])
     assert.strictEqual(await db.get('a'), 1)
@@ -32,7 +31,7 @@ describe('HighLevel', function () {
   })
 
   it('get :: String key => key -> value', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
     await db.put('key', 'value')
     assert.strictEqual(await level.get('key'), 'value')
@@ -46,7 +45,7 @@ describe('HighLevel', function () {
   })
 
   it('get :: String key, Any default => key -> value || default', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
     await db.put('key', 'value')
 
@@ -61,7 +60,7 @@ describe('HighLevel', function () {
   })
 
   it('entries :: () -> {key -> value}', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('prefix-a', 0)
@@ -74,7 +73,7 @@ describe('HighLevel', function () {
   })
 
   it('entries :: String -> {key -> value}', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('prefix-a', 0)
@@ -87,7 +86,7 @@ describe('HighLevel', function () {
   })
 
   it('values :: () -> [value]', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('prefix-a', 0)
@@ -100,7 +99,7 @@ describe('HighLevel', function () {
   })
 
   it('values :: String -> [value]', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('prefix-a', 0)
@@ -113,7 +112,7 @@ describe('HighLevel', function () {
   })
 
   it('list :: () -> [{ key, ...value }]', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('prefix-a', { n: 0 })
@@ -131,7 +130,7 @@ describe('HighLevel', function () {
   })
 
   it('list :: String -> [{ key, ...value }]', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('prefix-a', { n: 0 })
@@ -148,7 +147,7 @@ describe('HighLevel', function () {
   })
 
   it('assign :: (key, value) -> Promise()', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = createdb()
     const level = new HighLevel(db)
 
     await db.put('key', { a: '0' })
