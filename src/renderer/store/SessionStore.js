@@ -1,8 +1,8 @@
-import Store from '../../shared/level/Store'
+import { HighLevel } from '../../shared/level/HighLevel'
 
 export function SessionStore (db, key) {
-  this._store = new Store(db)
-  this._key = key
+  this.db_ = new HighLevel(db)
+  this.key_ = key
 }
 
 /**
@@ -14,11 +14,11 @@ export function SessionStore (db, key) {
  * }
  */
 SessionStore.prototype.putViewport = async function (viewport) {
-  return this._store.assign(this._key, { viewport })
+  return this.db_.assign(this.key_, { viewport })
 }
 
 SessionStore.prototype.getViewport = async function (defaultViewport) {
-  const metadata = await this._store.get(this._key)
+  const metadata = await this.db_.get(this.key_)
   const viewport = metadata.viewport || defaultViewport
   return viewport
 }

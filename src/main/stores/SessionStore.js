@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import Store from '../../shared/level/Store'
+import { HighLevel } from '../../shared/level/HighLevel'
 
 const SESSION = 'session:'
 const RECENT = 'recent:'
@@ -7,45 +7,43 @@ const RECENT = 'recent:'
 /**
  * @constructor
  */
-function SessionStore (db) {
-  this.store_ = new Store(db)
+export const SessionStore = function (db) {
+  this.db_ = new HighLevel(db)
 }
 
 SessionStore.prototype.addProject = async function (key) {
-  const session = await this.store_.get(SESSION, { projects: [] })
-  await this.store_.put(SESSION, {
+  const session = await this.db_.get(SESSION, { projects: [] })
+  await this.db_.put(SESSION, {
     ...session,
     projects: R.uniq([...session.projects, key])
   })
 }
 
 SessionStore.prototype.removeProject = async function (key) {
-  const session = await this.store_.get(SESSION, { projects: [] })
-  await this.store_.put(SESSION, {
+  const session = await this.db_.get(SESSION, { projects: [] })
+  await this.db_.put(SESSION, {
     ...session,
     projects: session.projects.filter(_key => _key !== key)
   })
 }
 
 SessionStore.prototype.getProjects = async function () {
-  const session = await this.store_.get(SESSION, { projects: [] })
+  const session = await this.db_.get(SESSION, { projects: [] })
   const projects = session.projects
   return projects
 }
 
 SessionStore.prototype.addRecent = async function (key, name) {
-  const recent = await this.store_.get(RECENT, [])
+  const recent = await this.db_.get(RECENT, [])
   const update = recent.reverse().filter(({ key: _key }) => _key !== key)
   update.push({ key, name })
-  return this.store_.put(RECENT, R.take(7, update.reverse()))
+  return this.db_.put(RECENT, R.take(7, update.reverse()))
 }
 
 SessionStore.prototype.getRecent = async function () {
-  return this.store_.get(RECENT, [])
+  return this.db_.get(RECENT, [])
 }
 
 SessionStore.prototype.clearRecent = function () {
-  return this.store_.put(RECENT, [])
+  return this.db_.put(RECENT, [])
 }
-
-export default SessionStore

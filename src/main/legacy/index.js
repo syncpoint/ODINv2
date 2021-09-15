@@ -3,7 +3,7 @@ import levelup from 'levelup'
 import leveldown from 'leveldown'
 import { readSources } from './io'
 import { readProjects } from './projects'
-import { propertiesPartition, geometryPartition } from '../../shared/stores'
+import { propertiesPartition, geometryPartition } from '../../shared/level'
 
 
 /**

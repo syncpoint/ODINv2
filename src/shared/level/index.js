@@ -2,7 +2,7 @@ import levelup from 'levelup'
 import leveldown from 'leveldown'
 import sublevel from 'subleveldown'
 import encode from 'encoding-down'
-import { wkb } from './encoding'
+import { wkb } from '../encoding'
 
 
 /**
@@ -38,4 +38,4 @@ export const geometryPartition = db => sublevel(db, 'geometries', wkb)
  * JSON-encoded 'preferences' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const preferencesPartition = db => sublevel(db, 'tuples', { valueEncoding: 'json' })
+export const preferencesPartition = db => sublevel(db, 'preferences', { valueEncoding: 'json' })

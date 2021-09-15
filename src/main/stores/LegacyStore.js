@@ -1,4 +1,4 @@
-import Store from '../../shared/level/Store'
+import { HighLevel } from '../../shared/level/HighLevel'
 
 const BASEMAP = 'basemap:'
 const LEGACY = {
@@ -8,15 +8,15 @@ const LEGACY = {
 /**
  * @constructor
  */
-function LegacyStore (db) {
-  this.store_ = new Store(db)
+export const LegacyStore = function (db) {
+  this.db_ = new HighLevel(db)
 }
 
 /**
  * Whether or not legacy projects have been transferred.
  */
 LegacyStore.prototype.getTransferred = async function () {
-  return await this.store_.get(LEGACY.TRANSFERRED, false)
+  return await this.db_.get(LEGACY.TRANSFERRED, false)
 }
 
 /**
@@ -24,7 +24,7 @@ LegacyStore.prototype.getTransferred = async function () {
  */
 LegacyStore.prototype.transferSources = function (sources) {
   const entries = Object.entries(sources)
-  return this.store_.put(entries)
+  return this.db_.put(entries)
 }
 
 
@@ -40,12 +40,10 @@ LegacyStore.prototype.transferMetadata = async function (projects) {
     }]
   })
 
-  await this.store_.put(LEGACY.TRANSFERRED, true)
-  return this.store_.put(Object.fromEntries(entries))
+  await this.db_.put(LEGACY.TRANSFERRED, true)
+  return this.db_.put(Object.fromEntries(entries))
 }
 
 LegacyStore.prototype.getSources = function () {
-  return this.store_.entries(BASEMAP)
+  return this.db_.entries(BASEMAP)
 }
-
-export default LegacyStore

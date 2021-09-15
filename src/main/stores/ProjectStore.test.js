@@ -2,7 +2,7 @@ import assert from 'assert'
 import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
-import ProjectStore from './ProjectStore'
+import { ProjectStore } from './ProjectStore'
 
 describe('ProjectStore', async function () {
 

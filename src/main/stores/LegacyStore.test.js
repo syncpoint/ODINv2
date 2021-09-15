@@ -3,7 +3,8 @@ import levelup from 'levelup'
 import memdown from 'memdown'
 import encode from 'encoding-down'
 import { readJSON } from '../legacy/io'
-import LegacyStore from './LegacyStore'
+import { LegacyStore } from './LegacyStore'
+import { values } from '../../shared/level/HighLevel'
 
 const pathname = dir => new URL(dir, import.meta.url).pathname
 
@@ -23,7 +24,7 @@ describe('LegacyStore', async function () {
     const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
     const store = new LegacyStore(db)
     await store.transferMetadata(projects)
-    const actual = await store.store_.values('project:')
+    const actual = await values(db, 'project:')
     const expected = await readJSON(pathname('./data/metadata.json'))
     assert.deepStrictEqual(actual, expected)
   })
