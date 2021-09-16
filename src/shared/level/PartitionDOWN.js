@@ -119,27 +119,41 @@ PartitionDOWN.prototype._del = async function (key, options, callback) {
  *
  */
 PartitionDOWN.prototype._batch = async function (operations, options, callback) {
-  const [features, others] = R.partition(op => op.key.startsWith('feature:'), operations)
+  const { features, geometries, others } = R.groupBy(({ key }) => {
+    return key.startsWith('feature:')
+      ? 'features'
+      : key.startsWith('geometry:')
+        ? 'geometries'
+        : 'others'
+  }, operations)
 
   try {
-    if (others.length) await this.properties_.batch(others)
-    if (features.length) {
+    if (others && others.length) await this.properties_.batch(others)
 
+    if (features && features.length) {
       const [properties, geometries] = features.reduce((acc, op) => {
+        const [properties, geometries] = acc
+
         if (op.type === 'del') {
-          acc[0].push(op)
-          acc[1].push(op)
+          properties.push(op)
+          geometries.push(op)
         } else {
           const copy = { ...op.value }
-          acc[1].push({ type: op.type, key: op.key, value: copy.geometry })
+          geometries.push({ type: op.type, key: op.key, value: copy.geometry })
           delete copy.geometry
-          acc[0].push({ type: op.type, key: op.key, value: copy })
+          properties.push({ type: op.type, key: op.key, value: copy })
         }
 
         return acc
       }, [[], []])
-      await this.geometries_.batch(geometries)
+
       await this.properties_.batch(properties)
+      await this.geometries_.batch(geometries)
+    }
+
+    if (geometries && geometries.length) {
+      const ops = geometries.map(op => ({ ...op, key: `feature:${op.key.split(':')[1]}` }))
+      await this.geometries_.batch(ops)
     }
 
     this._nextTick(callback)

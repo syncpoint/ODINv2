@@ -43,7 +43,7 @@ export default options => {
     // NOTE: side-effect may modify feature/geometry
     (geometry.complete || (() => {}))(map, feature)
     const geoJSON = writeFeatureObject(feature)
-    store.putFeature(geoJSON)
+    store.insertFeatures([geoJSON])
     cancel()
   }
 

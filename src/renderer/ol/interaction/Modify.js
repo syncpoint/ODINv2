@@ -159,6 +159,7 @@ class Modify extends PointerInteraction {
   addFeature_ (feature) {
 
     // Ignore point geometries. They are handled by translate interaction.
+    if (!feature.getGeometry()) return
     if (feature.getGeometry().getType() === 'Point') return
 
     this.special_ = special(feature)

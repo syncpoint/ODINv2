@@ -51,7 +51,20 @@ export default projectUUID => {
   const dragAndDrop = new DragAndDrop()
 
   dragAndDrop.on('layers', async ({ layers }) => {
-    await store.importLayers(layers)
+    const values = layers.reduce((acc, layer) => {
+      const features = layer.features
+      delete layer.features
+      delete layer.type
+      acc.push(layer)
+
+      return features.reduce((acc, feature) => {
+        delete feature.properties.layerId
+        acc.push(feature)
+        return acc
+      }, acc)
+    }, [])
+
+    store.insert(values)
   })
 
   const services = {}

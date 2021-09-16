@@ -17,7 +17,6 @@ export function Sources (store, selection) {
   // Note: Source is mutable. Changes reflect more or less immediately in map.
   this.source_ = null
 
-  store.on('features/batch', ({ operations }) => this.updateFeatures_(operations))
   store.on('features/properties', ({ operations }) => this.updateProperties_(operations))
   store.on('features/geometries', ({ operations }) => this.updateGeometries_(operations))
 }
@@ -26,32 +25,22 @@ util.inherits(Sources, Emitter)
 
 
 /**
- * @private
+ *
  */
-Sources.prototype.updateFeatures_ = function (operations) {
-  if (!operations.length) return
+Sources.prototype.removeFeatureById_ = function (id) {
+  const feature = this.source_.getFeatureById(id)
+  if (!feature) return
+  this.source_.removeFeature(feature)
+}
 
-  if (!this.source_) this.source_ = new VectorSource({ features: [] })
 
-  const removeFeatureById = id => {
-    const feature = this.source_.getFeatureById(id)
-    if (!feature) return
-    this.source_.removeFeature(feature)
-  }
-
-  const addFeature = value => {
-    // TODO: ignore hidden features
-    const feature = readFeature(value)
-    this.source_.addFeature(feature)
-  }
-
-  const removals = operations.filter(op => op.type === 'del').map(op => op.key)
-  const additions = operations.filter(op => op.type === 'put').map(op => op.value)
-
-  removals.forEach(id => removeFeatureById(id))
-  additions.forEach(value => removeFeatureById(value.id))
-  additions.forEach(addFeature)
-  this.selection_.deselect(removals)
+/**
+ *
+ */
+Sources.prototype.addFeature_ = function (value) {
+  // TODO: ignore hidden features
+  const feature = readFeature(value)
+  this.source_.addFeature(feature)
 }
 
 
@@ -73,15 +62,23 @@ Sources.prototype.updateGeometries_ = function (operations) {
  * @private
  */
 Sources.prototype.updateProperties_ = function (operations) {
-  const updates = operations
-    .filter(({ key }) => this.source_.getFeatureById(key))
+  const removals = operations.filter(op => op.type === 'del').map(op => op.key)
+  removals.forEach(id => this.removeFeatureById_(id))
+  this.selection_.deselect(removals)
 
-  updates.forEach(({ key, value }) => {
-    const feature = this.source_.getFeatureById(key)
-    // Note: Does not increase revision counter
-    feature.setProperties(value.properties, true)
-    feature.changed()
-  })
+  operations
+    .filter(op => op.type === 'put')
+    .forEach(({ key, value }) => {
+      const feature = this.source_.getFeatureById(key)
+      if (!feature) {
+        // Note: Does not have a geometry yet.
+        this.addFeature_(value)
+      } else {
+        // Note: Does not increase revision counter
+        feature.setProperties(value.properties, true)
+        feature.changed()
+      }
+    })
 }
 
 
@@ -91,7 +88,7 @@ Sources.prototype.updateProperties_ = function (operations) {
  */
 Sources.prototype.getFeatureSource = async function () {
   if (this.source_) return this.source_
-  const geoJSONFeatures = await this.store_.getFeatures()
+  const geoJSONFeatures = await this.store_.selectFeatures()
   const olFeatures = readFeatures({ type: 'FeatureCollection', features: geoJSONFeatures })
   this.source_ = new VectorSource({ features: olFeatures })
   return this.source_

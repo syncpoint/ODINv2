@@ -5,14 +5,14 @@ import { leveldb } from '.'
 describe('HighLevel', function () {
   const createdb = () => leveldb({ encoding: 'json' })
 
-  it('put :: String key, Any value => key -> value -> unit', async function () {
+  it('put :: (Key k, Value v) => (k, v) -> unit', async function () {
     const db = createdb()
     const level = new HighLevel(db)
     await level.put('key', 'value')
     assert.strictEqual(await db.get('key'), 'value')
   })
 
-  it('put :: Object -> unit', async function () {
+  it('put :: (Key k, Value v) => {k: v} -> unit', async function () {
     const db = createdb()
     const level = new HighLevel(db)
     await level.put({ a: 1, b: 2, c: 3 })
@@ -21,7 +21,7 @@ describe('HighLevel', function () {
     assert.strictEqual(await db.get('c'), 3)
   })
 
-  it('put :: String key, Any value => [[key, value]] -> unit', async function () {
+  it('put :: (Key k, Value v) => [[k, v]] -> unit', async function () {
     const db = createdb()
     const level = new HighLevel(db)
     await level.put([['a', 1], ['b', 2], ['c', 3]])
@@ -30,7 +30,7 @@ describe('HighLevel', function () {
     assert.strictEqual(await db.get('c'), 3)
   })
 
-  it('get :: String key => key -> value', async function () {
+  it('get :: (Key k, Value v) => k -> v', async function () {
     const db = createdb()
     const level = new HighLevel(db)
     await db.put('key', 'value')
@@ -44,7 +44,7 @@ describe('HighLevel', function () {
     }
   })
 
-  it('get :: String key, Any default => key -> value || default', async function () {
+  it('get :: (Key k, Value v) => (k, v) -> v', async function () {
     const db = createdb()
     const level = new HighLevel(db)
     await db.put('key', 'value')
@@ -59,7 +59,7 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(await level.get('N/A', { a: 'b' }), { a: 'b' })
   })
 
-  it('entries :: () -> {key -> value}', async function () {
+  it('entries :: (Key k, Value v) => {k: v}', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 
@@ -72,7 +72,7 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('entries :: String -> {key -> value}', async function () {
+  it('entries :: (Key k, Value v) => string -> {k: v}', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 
@@ -85,7 +85,7 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('values :: () -> [value]', async function () {
+  it('values :: Value v => () -> [v]', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 
@@ -98,7 +98,7 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('values :: String -> [value]', async function () {
+  it('values :: Value v => string -> [v]', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 
@@ -111,7 +111,17 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('list :: () -> [{ key, ...value }]', async function () {
+  it('existsKey :: string -> boolean', async function () {
+    const db = createdb()
+    const level = new HighLevel(db)
+    await db.put('aaabb', 0)
+
+    assert(await level.existsKey('a'))
+    assert(await level.existsKey('aaab'))
+    assert(!await level.existsKey('b'))
+  })
+
+  it('list :: (Key k, Value v) => () -> [[k, v]]', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 
@@ -129,7 +139,7 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('list :: String -> [{ key, ...value }]', async function () {
+  it('list :: (Key k, Value v) => string -> [[k, v]]', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 
@@ -146,7 +156,7 @@ describe('HighLevel', function () {
     assert.deepStrictEqual(actual, expected)
   })
 
-  it('assign :: (key, value) -> Promise()', async function () {
+  it('assign :: (Key k, Value v) => (k, v) -> unit', async function () {
     const db = createdb()
     const level = new HighLevel(db)
 

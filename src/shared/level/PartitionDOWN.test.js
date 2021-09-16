@@ -103,6 +103,22 @@ describe('PartitionDOWN', function () {
     }
   })
 
+  it('batch [geometry]', async function () {
+    // Special handling for geometry: keys.
+    // Update only geometry without touching properties.
+
+    const db = createdb()
+
+    const key = `geometry:${feature.id.split(':')[1]}`
+    const geometry = { type: 'Point', coordinates: [1700000, 5900000] }
+    const expected = { ...feature, geometry }
+
+    await db.batch([{ type: 'put', key: feature.id, value: feature }])
+    await db.batch([{ type: 'put', key, value: geometry }])
+    const actual = await db.get(feature.id)
+    assert.deepStrictEqual(actual, expected)
+  })
+
   const list = (db, options) => new Promise((resolve, reject) => {
     const acc = []
     db.createReadStream(options)

@@ -75,7 +75,7 @@ export const Card = React.forwardRef((props, ref) => {
         }
       }
 
-      store.putValues(links)
+      store.insert(links)
     }
   }
 

@@ -22,9 +22,9 @@ export const reduce = (fn, acc) => stream => {
 
 /**
  * @async
- * put :: String key, Any value => key -> value -> unit
- * put :: {key -> value} -> unit
- * put :: String key, Any value => [[key, value]] -> unit
+ * put :: (Key k, Value v) => (k, v) -> db -> unit
+ * put :: (Key k, Value v) => {k: v} -> db -> unit
+ * put :: (Key k, Value v) => [[k, v]] -> db -> unit
  */
 export const put = (...args) => db => {
   if (args.length === 2) return db.put(args[0], args[1]) // key/value
@@ -40,8 +40,10 @@ export const put = (...args) => db => {
 
 /**
  * @async
- * get :: String key => key -> value
- * get :: String key, Any default => key -> value | default
+ * get :: (Key k, Value v) => k -> db -> v
+ * get :: (Key k, Value v) => (k, v) -> db -> v
+ *
+ * Get value for given key with optional default value if key was not found.
  */
 export const get = (key, value) => async db => {
   try {
@@ -54,8 +56,8 @@ export const get = (key, value) => async db => {
 
 /**
  * @async
- * entries :: db -> {key -> value}
- * entries :: db -> string -> {key -> value}
+ * entries :: (Key k, Value v) => db -> {k: v}
+ * entries :: (Key k, Value v) => (db, string) -> {k: v}
  */
 export const entries = (db, prefix) => {
   const stream = entriesStream(prefix)(db)
@@ -65,8 +67,8 @@ export const entries = (db, prefix) => {
 
 /**
  * @async
- * values :: db -> [value]
- * values :: db -> string -> [value]
+ * values :: Value v => db -> [v]
+ * values :: Value v => (db, string) -> [v]
  */
 export const values = (db, prefix) => {
   const stream = valuesStream(prefix)(db)
@@ -76,8 +78,20 @@ export const values = (db, prefix) => {
 
 /**
  * @async
- * keys :: db -> [key]
- * keys :: db -> string -> [key]
+ * valuesById :: (Id a, Value v) => (db, [a]) -> [v]
+ */
+export const valuesById = async (db, ids) => {
+  return ids.reduce(async (acc, id) => {
+    const xs = await acc
+    xs.push(await db.get(id))
+    return xs
+  }, [])
+}
+
+/**
+ * @async
+ * keys :: Key a => db -> [a]
+ * keys :: Key a => (db, string) -> [a]
  */
 export const keys = (db, prefix) => {
   const stream = keysStream(prefix)(db)
@@ -87,8 +101,8 @@ export const keys = (db, prefix) => {
 
 /**
  * @async
- * list :: () -> [[key, value], ...]
- * list :: String -> [[key, value], ...]
+ * list :: (Key k, Value v) => db -> [[k, v]]
+ * list :: (Key k, Value v) => (db, string) -> [[k, v]]
  */
 export const list = (db, prefix) => {
   const stream = entriesStream(prefix)(db)
@@ -105,22 +119,10 @@ export const HighLevel = function (db) {
   this.db_ = db
 }
 
-/**
- * @async
- * put :: String key, Any value => key -> value -> unit
- * put :: {key -> value} -> unit
- * put :: String key, Any value => [[key, value]] -> unit
- */
 HighLevel.prototype.put = function (...args) {
   return put(...args)(this.db_)
 }
 
-/**
- * get :: String key => key => Promise(value)
- * get :: String key, Any default => key => Promise(value || default)
- *
- * Get value for given key with optional default value if key was not found.
- */
 HighLevel.prototype.get = async function (key, value) {
   return get(key, value)(this.db_)
 }
@@ -129,12 +131,27 @@ HighLevel.prototype.del = function (key) {
   return this.db_.del(key)
 }
 
+HighLevel.prototype.batch = function (ops) {
+  return this.db_.batch(ops)
+}
+
 HighLevel.prototype.entries = function (prefix) {
   return entries(this.db_, prefix)
 }
 
-HighLevel.prototype.values = function (prefix) {
-  return values(this.db_, prefix)
+HighLevel.prototype.values = function (arg) {
+  if (Array.isArray(arg)) return valuesById(this.db_, arg)
+  else return values(this.db_, arg)
+}
+
+HighLevel.prototype.existsKey = function (prefix) {
+  return new Promise((resolve, reject) => {
+    const options = { ...keysOptions(prefix), limit: 1 }
+    readStream(options)(this.db_)
+      .on('data', () => resolve(true))
+      .on('error', reject)
+      .on('close', () => resolve(false))
+  })
 }
 
 HighLevel.prototype.keys = function (prefix) {
@@ -147,7 +164,7 @@ HighLevel.prototype.list = function (prefix) {
 
 /**
  * @async
- * assign :: key -> value -> unit
+ * assign :: (Key k, Value v) => (k, v) -> unit
  */
 HighLevel.prototype.assign = async function (key, value) {
   const target = Object.assign(await this.db_.get(key), value)

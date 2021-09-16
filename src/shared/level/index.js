@@ -10,7 +10,7 @@ const encodings = {
   wkb: wkb
 }
 
-export const leveldb = options => {
+export const leveldb = (options = {}) => {
   const encoding = encodings[options.encoding]
   if (options.down) return levelup(options.down)
   else if (options.up) return sublevel(options.up, options.prefix, encoding)

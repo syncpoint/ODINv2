@@ -95,7 +95,7 @@ export default (options, select) => {
 
       // Get complete properties set for all features:
       const ids = features.getArray().map(feature => feature.getId())
-      const properties = await store.getValues(ids)
+      const properties = await store.select(ids)
 
       // Swap geometries: feature <-> clone.
       features.getArray().forEach((feature, index) => {
@@ -112,7 +112,7 @@ export default (options, select) => {
 
       // Important: Remove clones from source before adding to store.
       clones.forEach(clone => featureSource.removeFeature(clone))
-      await store.putFeatures(json)
+      await store.insertFeatures(json)
       selection.set(clones.map(clone => clone.getId()))
     } else {
 
