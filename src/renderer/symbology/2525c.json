@@ -6165,6 +6165,7 @@
     "sidc": "G*M*OED---*****",
     "scope": "CONTROL",
     "geometry": "GeometryCollection",
+    "unsupported": true,
     "hierarchy": [
       "Tactical Graphics",
       "Mobility / Survivability",
@@ -6325,6 +6326,7 @@
     "sidc": "G*M*OHO---*****",
     "scope": "CONTROL",
     "geometry": "LineString",
+    "unsupported": true,
     "hierarchy": [
       "Tactical Graphics",
       "Mobility / Survivability",
@@ -6508,6 +6510,7 @@
     "sidc": "G*M*OT----*****",
     "scope": "CONTROL",
     "geometry": "LineString",
+    "unsupported": true,
     "hierarchy": [
       "Tactical Graphics",
       "Mobility / Survivability",
