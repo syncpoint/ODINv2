@@ -23,7 +23,7 @@ styles['G*T*H-----'] = ({ styles, lineString, width, resolution }) => {
       TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, -1], [1, 1]])))
     ])),
     styles.outlinedText(TS.startPoint(lineString), {
-      text: 'C',
+      text: 'B',
       flip: true,
       rotation
     })
