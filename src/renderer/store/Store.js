@@ -71,8 +71,8 @@ export function Store (propertiesLevel, geometryLevel, undo, selection) {
   this.updateGeometriesCommand = updateGeometriesCommand.bind(this)
 
   window.requestIdleCallback(async () => {
-    const alreadyImported = await this.db_.existsKey(this.properties_, 'symbol:')
-    if (!alreadyImported) importSymbols(this.properties_)
+    const alreadyImported = await this.db_.existsKey('symbol:')
+    if (!alreadyImported) await importSymbols(this.properties_)
   }, { timeout: 2000 })
 
 }

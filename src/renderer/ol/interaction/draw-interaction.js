@@ -119,7 +119,7 @@ const geometries = [
   /* LineString. */
   {
     match: ({ geometry }) => geometry.type === GeometryType.LINE_STRING,
-    options: descriptor => ({ type: GeometryType.LINE_STRING, maxPoints: descriptor.maxPoints })
+    options: descriptor => ({ type: GeometryType.LINE_STRING, maxPoints: descriptor.geometry.maxPoints })
   },
 
   /* GeometryCollection/orbit. */
@@ -180,7 +180,7 @@ const geometries = [
   /* GeometryCollection/corridor (2-/n-point) */
   {
     match: ({ geometry }) => geometry.layout === 'corridor',
-    options: descriptor => ({ type: GeometryType.LINE_STRING, maxPoints: descriptor.maxPoints }),
+    options: descriptor => ({ type: GeometryType.LINE_STRING, maxPoints: descriptor.geometry.maxPoints }),
     complete: (map, feature) => {
       const geometry = feature.getGeometry()
       const { read, write } = format(feature)
