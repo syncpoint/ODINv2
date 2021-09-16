@@ -1,10 +1,11 @@
 0.0.0
 
+* Fix: Draw interaction for 2-point graphics (#3).
 * Delete - Layers/features/links from list.
 * Delete - Features from map.
 * Delete - Shortcuts. DELETE key and CMD/CTRL-BACKSPACE.
 * Fix: Resolved issue with duplicate entries in symbol palette.
-* Fix: Symbol "Breach" (area Tasks) is wrong displayed on the map #5
+* Fix: Symbol "Breach" (area Tasks) is wrong displayed on the map (#5)
 * Transfer active/default layer from legacy projects.
 * Links (ex. references) - Drag'n drop for layers and features.
 * Fix: Tagging - Only support alphanumeric characters and '/' in tag names (#1).
