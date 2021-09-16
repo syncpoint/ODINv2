@@ -107,5 +107,5 @@ MiniSearchIndex.prototype.search = function (query) {
     ? searchIndex(this.index_, tokens)
     : Object.keys(this.carrera_)
 
-  return ids.map(id => this.carrera_[id]).filter(filter)
+  return R.uniq(ids).map(id => this.carrera_[id]).filter(filter)
 }

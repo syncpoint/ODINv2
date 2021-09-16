@@ -1,8 +1,10 @@
 0.0.0
 
+* Fix: Resolved issue with duplicate entries in symbol palette.
+* Fix: Symbol "Breach" (area Tasks) is wrong displayed on the map #5
 * Transfer active/default layer from legacy projects.
 * Links (ex. references) - Drag'n drop for layers and features.
-* Tagging - Only support alphanumeric characters and '/' in tag names (#1).
+* Fix: Tagging - Only support alphanumeric characters and '/' in tag names (#1).
 * Draw interaction - Drawing is initialized by double clicking symbol in palette.
 * Draw interaction - Shortscuts. Escape key cancels ongoing drawing.
 * Draw interaction - Features SEIZE and TURN are currently unsupported
