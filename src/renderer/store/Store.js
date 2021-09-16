@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
 import { writeGeometryObject } from './format'
-import { isFeatureId, isGroupId, featureId, isLayerId, layerUUID } from '../ids'
+import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID } from '../ids'
 import { importSymbols } from './symbols'
 import { HighLevel } from '../../shared/level/HighLevel'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
@@ -143,12 +143,14 @@ Store.prototype.select = function (ids) {
 }
 
 
+const deletable = id => !isSymbolId(id)
+
 /**
  * @async
  * delete :: Id a => [a] -> unit
  */
 Store.prototype.delete = async function (ids) {
-  const keys = await this.collectKeys_(ids)
+  const keys = await this.collectKeys_(ids.filter(deletable))
   const values = await this.db_.values(keys)
   this.undo_.apply(this.deleteCommand(values))
 }
@@ -301,7 +303,6 @@ const compositeCommand = async function (commands) {
     inverse: () => this.compositeCommand(resolved.reverse().map(command => command.inverse()))
   }
 }
-
 
 /**
  * insertCommand :: Value a => [a] -> Command
