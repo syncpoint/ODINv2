@@ -1,8 +1,6 @@
 import assert from 'assert'
-import levelup from 'levelup'
-import memdown from 'memdown'
-import encode from 'encoding-down'
-import ProjectStore from './ProjectStore'
+import { ProjectStore } from './ProjectStore'
+import { leveldb } from '../../shared/level'
 
 describe('ProjectStore', async function () {
 
@@ -20,7 +18,7 @@ describe('ProjectStore', async function () {
       }
     }
 
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
+    const db = leveldb({ encoding: 'json' })
     await db.put(key, project)
     const store = new ProjectStore(db)
 

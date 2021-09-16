@@ -171,7 +171,7 @@ export const Map = () => {
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
 
     // TODO: does not really belong here -> move!
-    emitter.on('command/delete', () => store.del(selection.selected()))
+    emitter.on('command/delete', () => store.delete(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

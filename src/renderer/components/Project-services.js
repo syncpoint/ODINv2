@@ -1,9 +1,7 @@
 import path from 'path'
-import levelup from 'levelup'
-import leveldown from 'leveldown'
 import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
-import { propertiesPartition, geometryPartition, preferencesPartition } from '../../shared/stores'
+import { leveldb, propertiesPartition, geometriesPartition, preferencesPartition } from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, Store, SearchIndex, PreferencesStore } from '../store'
 import { Sources, PaletteCommands } from '../model'
@@ -22,9 +20,9 @@ export default projectUUID => {
   })()
 
   const location = path.join(databases, projectUUID)
-  const db = levelup(leveldown(location))
+  const db = leveldb({ location })
   const propertiesLevel = propertiesPartition(db)
-  const geometryLevel = geometryPartition(db)
+  const geometryLevel = geometriesPartition(db)
   const preferencesLevel = preferencesPartition(db)
   const store = new Store(propertiesLevel, geometryLevel, undo, selection)
   const preferencesStore = new PreferencesStore(preferencesLevel)
@@ -53,13 +51,26 @@ export default projectUUID => {
   const dragAndDrop = new DragAndDrop()
 
   dragAndDrop.on('layers', async ({ layers }) => {
-    await store.importLayers(layers)
+    const values = layers.reduce((acc, layer) => {
+      const features = layer.features
+      delete layer.features
+      delete layer.type
+      acc.push(layer)
+
+      return features.reduce((acc, feature) => {
+        delete feature.properties.layerId
+        acc.push(feature)
+        return acc
+      }, acc)
+    }, [])
+
+    store.insert(values)
   })
 
   const services = {}
   services.emitter = emitter
   services.ipcRenderer = ipcRenderer
-  services.master = levelup(new IPCDownClient(ipcRenderer))
+  services.master = leveldb({ down: new IPCDownClient(ipcRenderer) })
   services.sessionStore = new SessionStore(services.master, `project:${projectUUID}`)
   services.undo = undo
   services.sources = new Sources(store, selection)

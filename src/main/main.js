@@ -3,7 +3,7 @@ import path from 'path'
 import os from 'os'
 import * as paths from './paths'
 import { transferLegacy } from './legacy'
-import { jsonStore } from '../shared/stores'
+import { leveldb } from '../shared/level'
 import { IPCServer } from '../shared/level/ipc'
 import { Session } from './Session'
 import { ApplicationMenu } from './menu'
@@ -36,7 +36,7 @@ const ready = async () => {
   const databases = paths.databases(app)
   console.log('databases directory:', databases)
   paths.mkdir(databases)
-  const db = jsonStore(paths.master(app))
+  const db = leveldb({ location: paths.master(app), encoding: 'json' })
 
   // Emitted when all windows have been closed and the application will quit.
   app.once('will-quit', () => db.close())

@@ -118,6 +118,7 @@ export const multiselect = {
     const focusIndex = Math.min(state.entries.length - 1, index + 1)
     const focusId = state.entries[focusIndex].id
 
+    // FIXME: SHIFT/ArrowDown after deleting entry
     const selected = shiftKey
       ? state.selected.includes(focusId)
         ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])

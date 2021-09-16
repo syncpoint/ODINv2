@@ -1,14 +1,10 @@
 import assert from 'assert'
-import levelup from 'levelup'
-import memdown from 'memdown'
-import encode from 'encoding-down'
-import sublevel from 'subleveldown'
-import { wkb } from './encoding'
+import { leveldb, geometriesPartition } from '.'
 
 describe('WKB encoding', function () {
   it('encodes/decodes GeoJSON geometry as WKB', async function () {
-    const db = levelup(encode(memdown(), { valueEncoding: 'json' }))
-    const geometries = sublevel(db, 'geometries', wkb)
+    const db = leveldb({ encoding: 'json' })
+    const geometries = geometriesPartition(db)
     const expected = {
       type: 'LineString',
       coordinates: [

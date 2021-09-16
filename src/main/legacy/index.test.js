@@ -1,11 +1,8 @@
 import assert from 'assert'
-import levelup from 'levelup'
-import memdown from 'memdown'
-import encode from 'encoding-down'
 import { readJSON } from './io'
 import { transferProject } from '.'
-import Store from '../../shared/level/Store'
-import { propertiesPartition, geometryPartition } from '../../shared/stores'
+import { values } from '../../shared/level/HighLevel'
+import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
 
 const pathname = dir => new URL(dir, import.meta.url).pathname
 
@@ -16,7 +13,7 @@ describe('legacy', async function () {
     const entries = Object.entries(projects)
     const databases = await entries.reduce(async (acc, [key, value]) => {
       const databases = await acc
-      databases[key] = levelup(encode(memdown(), { valueEncoding: 'json' }))
+      databases[key] = leveldb({ encoding: 'json' })
       await transferProject(databases[key], value)
       return acc
     }, {})
@@ -24,14 +21,14 @@ describe('legacy', async function () {
     // Read back data and compare.
     const acc = { layers: [], features: [], geometries: [], links: [] }
     const actual = await Object.values(databases).reduce(async (acc, db) => {
-      const tupleStore = new Store(propertiesPartition(db))
-      const geometryStore = new Store(geometryPartition(db))
+      const properties = propertiesPartition(db)
+      const geometries = geometriesPartition(db)
       const entries = await acc
 
-      entries.layers.push(...await tupleStore.values('layer:'))
-      entries.features.push(...await tupleStore.values('feature:'))
-      entries.links.push(...await tupleStore.values('link+'))
-      entries.geometries.push(...await geometryStore.values('feature:'))
+      entries.layers.push(...await values(properties, 'layer:'))
+      entries.features.push(...await values(properties, 'feature:'))
+      entries.links.push(...await values(properties, 'link+'))
+      entries.geometries.push(...await values(geometries, 'feature:'))
 
       return entries
     }, acc)

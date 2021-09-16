@@ -1,9 +1,7 @@
 import path from 'path'
-import levelup from 'levelup'
-import leveldown from 'leveldown'
 import { readSources } from './io'
 import { readProjects } from './projects'
-import { propertiesPartition, geometryPartition } from '../../shared/stores'
+import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
 
 
 /**
@@ -17,7 +15,7 @@ import { propertiesPartition, geometryPartition } from '../../shared/stores'
 export const transferProject = async (db, project) => {
   const { layers, links, preferences } = project
   const properties = propertiesPartition(db)
-  const geometries = geometryPartition(db)
+  const geometries = geometriesPartition(db)
 
   // Layers.
   {
@@ -78,7 +76,7 @@ export const transferLegacy = async (location, legacyStore, databases) => {
   await Promise.all(projects.map(async project => {
     const uuid = project.id.split(':')[1]
     const location = path.join(databases, uuid)
-    const db = levelup(leveldown(location))
+    const db = leveldb({ location })
     await transferProject(db, project)
     return db.close()
   }))
