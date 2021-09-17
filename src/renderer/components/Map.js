@@ -10,7 +10,6 @@ import { useServices } from './hooks'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
-import * as ids from '../ids'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -151,11 +150,13 @@ export const Map = () => {
     map.once('rendercomplete', ({ target }) => sendPreview(target))
 
     // Dim feature layer when we have a selection:
-    selection.on('selection', ({ selected }) => {
-      // Only consider selected features:
-      const features = selected.filter(id => ids.isFeatureId(id))
-      featureLayer.setOpacity(features.length ? 0.5 : 1)
-    })
+    const updateOpacity = () => {
+      const count = partition.getSelected().getFeatures().length
+      featureLayer.setOpacity(count ? 0.35 : 1)
+    }
+
+    partition.getSelected().on('addfeature', updateOpacity)
+    partition.getSelected().on('removefeature', updateOpacity)
 
     const selectAll = () => {
       const element = document.activeElement

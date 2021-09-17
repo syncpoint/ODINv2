@@ -65,11 +65,15 @@ Sources.prototype.updateGeometries_ = function (operations) {
  */
 Sources.prototype.updateProperties_ = function (operations) {
   const removals = operations
-    .filter(({ type, value }) => type === 'del' || isHidden(value))
+    .filter(({ type }) => type === 'del')
     .map(op => op.key)
-
   removals.forEach(id => this.removeFeatureById_(id))
   this.selection_.deselect(removals)
+
+  // Remove hidden features:
+  operations
+    .filter(({ type, value }) => type === 'put' && isHidden(value))
+    .forEach(({ key }) => this.removeFeatureById_(key))
 
   operations
     .filter(({ type, value }) => type === 'put' && isVisible(value))
