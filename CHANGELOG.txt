@@ -7,7 +7,7 @@
   - Enter key: toggle edititng of option title; save title
   - Escape key: cancel editing (if active); reset title
   - Escape key: deselect options (if ongoing editing)
-  - On focus lost: cancel editing; reset title
+  - On focus lost: stop editing; save title
 * Sidebar/list - Fixed possible endless loop on selection.
 * Sidebar/list - Avoid scrolling to focused option after SELECT/ALL.
 * Keep selection in sidebar when hiding layers/features.
