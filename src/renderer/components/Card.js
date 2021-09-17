@@ -103,6 +103,7 @@ Card.propTypes = {
   children: PropTypes.node.isRequired,
   focused: PropTypes.bool,
   selected: PropTypes.bool,
+  editing: PropTypes.bool,
   capabilities: PropTypes.string,
   onClick: PropTypes.func,
   onDoubleClick: PropTypes.func

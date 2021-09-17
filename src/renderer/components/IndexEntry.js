@@ -48,6 +48,7 @@ const IndexEntry = React.forwardRef((props, ref) => {
               id={props.id}
               value={entry.title}
               focused={props.focused}
+              editing={props.editing}
             />
             { description }
           </div>
@@ -66,6 +67,7 @@ IndexEntry.propTypes = {
   id: PropTypes.string.isRequired,
   focused: PropTypes.bool.isRequired,
   selected: PropTypes.bool.isRequired,
+  editing: PropTypes.bool.isRequired,
   entry: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired
 }

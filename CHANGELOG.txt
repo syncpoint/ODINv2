@@ -1,5 +1,13 @@
 0.0.0
 
+* Sidebar/list - Changed editing behavior:
+  - Removed mouse over/hover effect on option title
+  - Click on title no longer initiates title editing
+  - F2 key: initiate editing of option title
+  - Enter key: toggle edititng of option title; save title
+  - Escape key: cancel editing (if active); reset title
+  - Escape key: deselect options (if ongoing editing)
+  - On focus lost: cancel editing; reset title
 * Sidebar/list - Fixed possible endless loop on selection.
 * Sidebar/list - Avoid scrolling to focused option after SELECT/ALL.
 * Keep selection in sidebar when hiding layers/features.

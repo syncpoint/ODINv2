@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import * as R from 'ramda'
 import { useServices } from './hooks'
+import { cmdOrCtrl } from '../platform'
 
 
 /**
@@ -9,20 +11,14 @@ import { useServices } from './hooks'
 const CardTitle = props => {
   const { store } = useServices()
   const [value, setValue] = React.useState(props.value)
-  const [mode, setMode] = React.useState('display')
-
   const placeholder = value ? null : 'N/A (click to edit)'
 
   const rename = value => {
-    setMode('display')
     if (props.value === value) return
     store.rename(props.id, value)
   }
 
-  const reset = () => {
-    setMode('display')
-    setValue(props.value)
-  }
+  const reset = () => setValue(props.value)
 
   React.useEffect(() => {
     setValue(props.value)
@@ -30,21 +26,19 @@ const CardTitle = props => {
 
   const handleChange = ({ target }) => setValue(target.value)
 
-  const handleClick = () => {
-    if (mode === 'display' && props.focused) {
-      setMode('edit')
-    }
-  }
-
   const handleBlur = () => {
     if (!value) return
     rename(value.trim())
   }
 
-  // Don't let event bubble up to list.
-  // This is mainly for capturing META-A (multiselect) right here.
   const handleKeyDown = event => {
-    event.stopPropagation()
+    const stopPropagation = R.cond([
+      [({ key }) => key === ' ', R.always(true)],
+      [({ key, metaKey, ctrlKey }) => key === 'a' && cmdOrCtrl(metaKey, ctrlKey), R.always(true)],
+      [R.T, R.always(false)]
+    ])
+
+    if (stopPropagation(event)) event.stopPropagation()
 
     if (event.key === 'Escape') return reset()
     else if (event.key === 'Enter') return rename(value.trim())
@@ -60,7 +54,7 @@ const CardTitle = props => {
     onKeyDown={handleKeyDown}
   />
 
-  const spanValue = mode === 'edit'
+  const spanValue = props.editing
     ? value || ''
     : value || placeholder
 
@@ -72,16 +66,16 @@ const CardTitle = props => {
   style={spanStyle}
   className='card-title'
     placeholder={placeholder}
-    onClick={handleClick}
   >{spanValue}</span>
 
-  return mode === 'display' ? span() : input()
+  return props.editing ? input() : span()
 }
 
 CardTitle.propTypes = {
   id: PropTypes.string.isRequired,
   value: PropTypes.string,
-  focused: PropTypes.bool.isRequired
+  focused: PropTypes.bool.isRequired,
+  editing: PropTypes.bool.isRequired
 }
 
 CardTitle.whyDidYouRender = true

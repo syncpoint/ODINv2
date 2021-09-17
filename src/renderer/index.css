@@ -157,10 +157,6 @@ div {
   text-align: start;
 }
 
-.card-title:hover {
-  color: #40a9ff;
-}
-
 .card-title:focus {
   color: #40a9ff;
 }

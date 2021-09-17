@@ -195,10 +195,42 @@ export const multiselect = {
   },
 
   /**
-   * Reset selection (if any).
+   * Cancel edit; reset selection (if any).
    */
   'keydown/Escape': (state) => {
+    // Cancel edit has precedence over selection.
+    if (state.editId) return { ...state, editId: null }
+
+    // Deselect all.
     if (!state.selected || !state.selected.length) return state
     return { ...state, selected: [], scroll: 'none' }
+  },
+
+  /**
+   * Start editing of focused option.
+   */
+  'keydown/F2': (state) => {
+    if (!state.focusId) return state
+    return { ...state, editId: state.focusId }
+  },
+
+  /**
+   * Toggle editing.
+   */
+  'keydown/Enter': (state) => {
+    if (state.editId) {
+      if (state.focusId === state.editId) return { ...state, editId: null }
+      else return { ...state, editId: state.focusId }
+    } else if (state.focusId) return { ...state, editId: state.focusId }
+    else return state
+  },
+
+  /**
+   * Cancel ongoing edit (if any).
+   */
+  blur: (state) => {
+    console.log('[multiselect] blur')
+    if (state.editId) return { ...state, editId: null }
+    return state
   }
 }

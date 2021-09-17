@@ -7,7 +7,16 @@ import useVirtual from 'react-cool-virtual'
  * Abstract list. Mainly obsessed with scrolling.
  */
 const VirtualizedList = props => {
-  const { child, focusIndex, focusId, selected, scroll, entries } = props
+  const {
+    child,
+    focusIndex,
+    focusId,
+    editId,
+    selected,
+    scroll,
+    entries
+  } = props
+
   const { outerRef, innerRef, items, scrollToItem } = useVirtual({
     itemCount: entries.length,
     resetScroll: true
@@ -19,11 +28,6 @@ const VirtualizedList = props => {
     scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
   }, [scrollToItem, focusIndex, scroll])
 
-  const handleKeyDown = event => {
-    const { key } = event
-    if (key === ' ') event.preventDefault()
-  }
-
   const card = ({ index, measureRef }) => {
     // Handle 'overshooting':
     if (index >= entries.length) return null
@@ -34,6 +38,7 @@ const VirtualizedList = props => {
       id: entry.id,
       focused: focusId === entry.id,
       selected: selected.includes(entry.id),
+      editing: editId === entry.id,
       ref: measureRef
     })
   }
@@ -44,11 +49,7 @@ const VirtualizedList = props => {
 
   return (
     <div className='list-container' ref={outerRef}>
-      <div
-        ref={innerRef}
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-      >
+      <div ref={innerRef}>
         { list }
       </div>
     </div>
@@ -58,6 +59,7 @@ const VirtualizedList = props => {
 VirtualizedList.propTypes = {
   entries: PropTypes.array.isRequired,
   focusId: PropTypes.string,
+  editId: PropTypes.string,
   focusIndex: PropTypes.number.isRequired,
   selected: PropTypes.array.isRequired,
   scroll: PropTypes.string,

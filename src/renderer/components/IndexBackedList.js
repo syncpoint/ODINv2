@@ -57,6 +57,7 @@ const IndexBackedList = props => {
     entry={props.entry}
     focused={props.focused}
     selected={props.selected}
+    editing={props.editing}
     dispatch={dispatch}
   />, [dispatch])
 

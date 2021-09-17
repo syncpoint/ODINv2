@@ -15,6 +15,7 @@ const Sidebar = props => {
   const [listState, listDispatch] = useList({ multiselect: true })
   const [filter, setFilter] = React.useState('')
   const [historyEntries, historyDispatch] = useStack([props.group])
+  const ref = React.useRef()
 
   // Reset filter on each history update:
   React.useEffect(() => setFilter(''), [historyEntries])
@@ -22,6 +23,11 @@ const Sidebar = props => {
   React.useEffect(() => {
     historyDispatch({ type: 'reset', entry: props.group })
   }, [props.group, historyDispatch])
+
+  // Focus sidebar AFTER edit:
+  React.useEffect(() => {
+    if (!listState.editId) ref.current.focus()
+  }, [listState.editId])
 
   const handleClick = () => selection.set([])
 
@@ -67,13 +73,21 @@ const Sidebar = props => {
     listDispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
+  // Reset ongoing editing if anything (i.e. card title) lost focus.
+  const handleBlur = event => {
+    if (event.target === ref.current) return
+    listDispatch({ type: 'blur' })
+  }
+
   const handleFilterChange = React.useCallback(value => setFilter(value), [])
 
   return (
     <div
+      ref={ref}
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
       style={{
         display: 'flex',
         flexDirection: 'column',
