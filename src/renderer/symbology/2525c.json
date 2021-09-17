@@ -6363,7 +6363,10 @@
       "Obstacles",
       "Mines",
       "Mine Cluster"
-    ]
+    ],
+    "parameters": {
+      "maxPoints": 2
+    }
   },
   {
     "sidc": "G*M*OMD---*****",
