@@ -23,6 +23,7 @@ import { leveldb } from '../../shared/level'
  *
  * MANIFEST
  * collectKeys_ :: Id a => [a] -> [a]
+ * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
  *
  * selectFeatures :: GeoJSON/Feature a => () -> [a]
  * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
@@ -34,6 +35,8 @@ import { leveldb } from '../../shared/level'
  * rename :: (Id a, Name b) => (a, b) -> unit
  * addTag :: (Id a, Name b) => (a, b) -> unit
  * removeTag :: (Id a, Name b) => (a, b) -> unit
+ * hide :: id -> unit
+ * show :: id -> unit
  *
  * compositeCommand :: Command a => [a] -> a
  * insertCommand :: Value a => [a] -> Command
@@ -111,9 +114,14 @@ Store.prototype.updateGeometries = async function (geometries) {
  * @async
  * collectKeys_ :: Id a => [a] -> [a]
  */
-Store.prototype.collectKeys_ = async function (ids) {
-  const linkIds = id => this.properties_.keys(`link+${id}`)
+Store.prototype.collectKeys_ = async function (ids, excludes = []) {
   const featureIds = id => this.properties_.keys(`feature:${layerUUID(id)}`)
+
+  const linkIds = id => {
+    if (!excludes.includes('link')) return this.properties_.keys(`link+${id}`)
+    else return []
+  }
+
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -131,6 +139,17 @@ Store.prototype.collectKeys_ = async function (ids) {
   }
 
   return R.uniq(await collect([], ids))
+}
+
+
+/**
+ * @async
+ * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
+ */
+Store.prototype.update_ = async function (fn, keys) {
+  const values = await this.db_.values(keys)
+  const ops = values.map(value => ({ type: 'put', key: value.id, value: fn(value) }))
+  return this.properties_.batch(ops)
 }
 
 
@@ -290,6 +309,29 @@ Store.prototype.removeTag = async function (id, name) {
   const oldValues = await this.db_.values(ids)
   const newValues = oldValues.map(removeTag(name))
   this.undo_.apply(this.updateCommand(newValues, oldValues))
+}
+
+
+/**
+ * @async
+ * hide :: id -> unit
+ */
+Store.prototype.hide = async function (id) {
+  const hide = R.tap(value => { value.hidden = true })
+  const ids = R.uniq([id, ...this.selection_.selected()])
+  const keys = await this.collectKeys_(ids, ['link'])
+  return this.update_(hide, keys)
+}
+
+
+/**
+ * show :: id -> unit
+ */
+Store.prototype.show = async function (id) {
+  const show = R.tap(value => { delete value.hidden })
+  const ids = R.uniq([id, ...this.selection_.selected()])
+  const keys = await this.collectKeys_(ids, ['link'])
+  return this.update_(show, keys)
 }
 
 

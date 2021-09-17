@@ -1,5 +1,6 @@
 0.0.0
 
+* Hide/show features and layers; individual and selected.
 * Fix: Draw interaction for 2-point graphics (#3).
 * Delete - Layers/features/links from list.
 * Delete - Features from map.

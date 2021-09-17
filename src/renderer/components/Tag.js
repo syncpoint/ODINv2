@@ -22,6 +22,9 @@ export const Tag = props => {
     if (variant === 'PLUS') {
       setInputValue('')
       setMode('edit')
+    } else {
+      if (action === 'NONE') return
+      store[action](props.id)
     }
   }
 

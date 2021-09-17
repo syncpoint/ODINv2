@@ -3,6 +3,8 @@ import VectorSource from 'ol/source/Vector'
 import Emitter from '../../shared/emitter'
 import { readFeature, readFeatures, readGeometry } from '../store/format'
 
+const isVisible = feature => !feature.hidden
+const isHidden = feature => feature.hidden
 
 /**
  * @constructor
@@ -37,10 +39,10 @@ Sources.prototype.removeFeatureById_ = function (id) {
 /**
  *
  */
-Sources.prototype.addFeature_ = function (value) {
-  // TODO: ignore hidden features
-  const feature = readFeature(value)
-  this.source_.addFeature(feature)
+Sources.prototype.addFeature_ = function (feature) {
+  if (!feature) return
+  if (isHidden(feature)) return
+  this.source_.addFeature(readFeature(feature))
 }
 
 
@@ -62,12 +64,15 @@ Sources.prototype.updateGeometries_ = function (operations) {
  * @private
  */
 Sources.prototype.updateProperties_ = function (operations) {
-  const removals = operations.filter(op => op.type === 'del').map(op => op.key)
+  const removals = operations
+    .filter(({ type, value }) => type === 'del' || isHidden(value))
+    .map(op => op.key)
+
   removals.forEach(id => this.removeFeatureById_(id))
   this.selection_.deselect(removals)
 
   operations
-    .filter(op => op.type === 'put')
+    .filter(({ type, value }) => type === 'put' && isVisible(value))
     .forEach(({ key, value }) => {
       const feature = this.source_.getFeatureById(key)
       if (!feature) {
@@ -89,7 +94,8 @@ Sources.prototype.updateProperties_ = function (operations) {
 Sources.prototype.getFeatureSource = async function () {
   if (this.source_) return this.source_
   const geoJSONFeatures = await this.store_.selectFeatures()
-  const olFeatures = readFeatures({ type: 'FeatureCollection', features: geoJSONFeatures })
+  const visible = geoJSONFeatures.filter(isVisible)
+  const olFeatures = readFeatures({ type: 'FeatureCollection', features: visible })
   this.source_ = new VectorSource({ features: olFeatures })
   return this.source_
 }
