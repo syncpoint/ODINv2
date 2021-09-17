@@ -49,6 +49,10 @@ const FilterInput = props => {
     if (event.key === 'Escape') setValue('')
   }
 
+  const handleClick = event => {
+    event.stopPropagation()
+  }
+
   return <Input
     autoFocus
     allowClear
@@ -57,6 +61,7 @@ const FilterInput = props => {
     size={props.size || 'default'}
     onChange={handleChange}
     onKeyDown={handleKeyDown}
+    onClick={handleClick}
   />
 }
 
