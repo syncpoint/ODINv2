@@ -36,14 +36,11 @@ const IndexBackedList = props => {
   // =>> SELECTION
   // Sync global selection with list state and vice versa.
 
-  const handleSelection = React.useCallback(event => {
-    dispatch({ type: 'selection', event })
-  }, [dispatch])
-
   React.useEffect(() => {
-    selection.on('selection', handleSelection)
-    return () => selection.off('selection', handleSelection)
-  }, [selection, handleSelection])
+    const handler = () => dispatch({ type: 'selection', selected: selection.selected() })
+    selection.on('selection', handler)
+    return () => selection.off('selection', handler)
+  }, [selection, dispatch])
 
   React.useEffect(() => {
     selection.set(state.selected)

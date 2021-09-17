@@ -1,5 +1,6 @@
 import util from 'util'
 import * as R from 'ramda'
+import isEqual from 'react-fast-compare'
 import { error, ERR_INVALID_ARG } from '../shared/error'
 import Emitter from '../shared/emitter'
 
@@ -15,6 +16,17 @@ export function Selection () {
 
 util.inherits(Selection, Emitter)
 
+Selection.delta = (previous, current) => {
+  const removals = previous.filter(id => !current.includes(id))
+  const additions = current.filter(id => !previous.includes(id))
+  return { additions, removals }
+}
+
+Selection.isEqual = (a, b) => {
+  const as = [...a].sort()
+  const bs = [...b].sort()
+  return isEqual(as, bs)
+}
 
 Selection.prototype.isEmpty = function () {
   return this.selected_.length === 0

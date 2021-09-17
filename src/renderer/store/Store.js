@@ -35,8 +35,9 @@ import { leveldb } from '../../shared/level'
  * rename :: (Id a, Name b) => (a, b) -> unit
  * addTag :: (Id a, Name b) => (a, b) -> unit
  * removeTag :: (Id a, Name b) => (a, b) -> unit
- * hide :: id -> unit
- * show :: id -> unit
+ * hide :: (Id a) => a -> unit
+ * show :: (Id a) => a -> unit
+ * identify :: (Id a) => a -> unit
  *
  * compositeCommand :: Command a => [a] -> a
  * insertCommand :: Value a => [a] -> Command
@@ -314,7 +315,7 @@ Store.prototype.removeTag = async function (id, name) {
 
 /**
  * @async
- * hide :: id -> unit
+ * hide :: (Id a) => a -> unit
  */
 Store.prototype.hide = async function (id) {
   const hide = R.tap(value => { value.hidden = true })
@@ -325,13 +326,24 @@ Store.prototype.hide = async function (id) {
 
 
 /**
- * show :: id -> unit
+ * @sync
+ * show :: (Id a) => a -> unit
  */
 Store.prototype.show = async function (id) {
   const show = R.tap(value => { delete value.hidden })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
   return this.update_(show, keys)
+}
+
+
+/**
+ * @async
+ * identify :: (Id a) => a -> unit
+ */
+Store.prototype.identify = async function (id) {
+  const ids = R.uniq([id, ...this.selection_.selected()])
+  console.log('[Store] identitfy', ids)
 }
 
 

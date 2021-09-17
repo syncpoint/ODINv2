@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
 import { toggleSelection, indexOf, firstId, lastId } from './selection'
 import { cmdOrCtrl } from '../platform'
+import { Selection } from '../Selection'
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -86,21 +87,13 @@ export const multiselect = {
     }
   },
 
-  selection: (state, { event }) => {
-
-    // Add selected, remove deselected:
-    const selected = state.selected.concat(event.selected)
-      .filter(id => !event.deselected.includes(id))
-
-    // Return same state (reference) when selection didn't change:
-    if (isEqual(state.selected, selected)) return state
-
-    // TODO: 5ddb2139-daf4-4ca1-902d-3149e4b191cd - multiselect/selection: improve behavior
+  selection: (state, { selected }) => {
+    if (Selection.isEqual(state.selected, selected)) return state
 
     return {
       ...state,
       selected,
-      scroll: 'none' // don't scroll with changed focus (for now)
+      scroll: 'none'
     }
   },
 

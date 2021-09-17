@@ -37,6 +37,7 @@ const CardTitle = props => {
   }
 
   const handleBlur = () => {
+    if (!value) return
     rename(value.trim())
   }
 
