@@ -5,7 +5,6 @@ HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm
 
 OPEN
 Bug/selection: select-all in featues/sidebar, cmd-click option -> disco
-Multiselect: don't focus last entry after select-all on list update (only on cursor keys)
 Multiselect: test procedures
 MiniSearch: MIP Scenario - '@feature #unit 3osc' - no match ('3osc')
 MiniSearch: MIP Scenario - '@layer Phase 4A Enemy' - no match ('4a')

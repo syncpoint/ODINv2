@@ -1,5 +1,6 @@
 0.0.0
 
+* Sidebar/list - Avoid scrolling to focused option after SELECT/ALL.
 * Keep selection in sidebar when hiding layers/features.
 * Draw - Limit MINE CLUSTER to two points.
 * Hide/show features and layers; individual and selected.

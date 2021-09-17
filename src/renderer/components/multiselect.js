@@ -44,7 +44,7 @@ export const multiselect = {
       entries,
       focusIndex,
       focusId,
-      scroll: 'auto'
+      scroll: 'none'
     }
   },
 
