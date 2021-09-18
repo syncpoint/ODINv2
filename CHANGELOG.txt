@@ -7,7 +7,6 @@
   - webpack-dev-server @ 4.2.1
 
 0.0.0
-
 * Sidebar/list - Changed editing behavior:
   - Removed mouse over/hover effect on option title
   - Click on title no longer initiates title editing
