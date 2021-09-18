@@ -13,7 +13,6 @@ MiniSearch: MIP Scenario - '@layer Phase 4A Enemy' - no match ('4a')
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
 0bc82d1a-150e-4368-8b61-74df1fb0885d - symbol: make modifer text style configurable
 667f3379-b9d9-4c7c-9e83-fd7ab9ae54cf - tags: focus/center map on feature/layer
-055a9e2c-a086-448d-8b8e-8b70c324fbae - tags: highlight feature/layer
 099455f2-4bfe-489b-83ba-ca6106f35d39 - history: store/restore focused element and query
 76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
 e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing

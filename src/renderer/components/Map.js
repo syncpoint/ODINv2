@@ -5,6 +5,7 @@ import { OSM, XYZ } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import ScaleLine from 'ol/control/ScaleLine'
+import { Fill, Stroke, Circle, Style } from 'ol/style'
 import '../epsg'
 import { useServices } from './hooks'
 import { featureStyle } from '../ol/style'
@@ -50,6 +51,22 @@ export const Map = () => {
     const featureLayer = vectorLayer(partition.getDeselected())
     const selectedLayer = vectorLayer(partition.getSelected())
 
+    const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
+    const stroke = new Stroke({ color: 'black', width: 1, lineDash: [10, 5] })
+    const highlightStyle = [
+      new Style({
+        image: new Circle({ fill: fill, stroke: stroke, radius: 50 }),
+        fill: fill,
+        stroke: stroke
+      })
+    ]
+
+    const highlightLayer = new VectorLayer({
+      source: sources.getHighlightedSource(),
+      style: highlightStyle,
+      updateWhileAnimating: true
+    })
+
     // http://localhost:8000/services
     // http://localhost:8000/services/omk50_33
     // http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg
@@ -61,7 +78,8 @@ export const Map = () => {
     const layers = [
       tileLayer,
       featureLayer,
-      selectedLayer
+      selectedLayer,
+      highlightLayer
     ]
 
     view.on('change', ({ target: view }) => {

@@ -2,12 +2,13 @@ import util from 'util'
 import * as R from 'ramda'
 import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
-import { writeGeometryObject } from './format'
-import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID } from '../ids'
+import { writeGeometryObject, readGeometry } from './format'
+import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID, scope } from '../ids'
 import { importSymbols } from './symbols'
 import { HighLevel } from '../../shared/level/HighLevel'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import { leveldb } from '../../shared/level'
+import * as TS from '../ol/ts'
 
 
 /**
@@ -20,6 +21,7 @@ import { leveldb } from '../../shared/level'
  * @emits features/batch - complete features (properties and geometries)
  * @emits features/properties - feature properties only
  * @emits features/geometries - feature geometries only
+ * @emits highlight/geometries
  *
  * MANIFEST
  * collectKeys_ :: Id a => [a] -> [a]
@@ -317,7 +319,8 @@ Store.prototype.removeTag = async function (id, name) {
  * @async
  * hide :: (Id a) => a -> unit
  */
-Store.prototype.hide = async function (id) {
+Store.prototype.hide = async function (id, active) {
+  if (active !== undefined) return
   const hide = R.tap(value => { value.hidden = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
@@ -329,7 +332,8 @@ Store.prototype.hide = async function (id) {
  * @sync
  * show :: (Id a) => a -> unit
  */
-Store.prototype.show = async function (id) {
+Store.prototype.show = async function (id, active) {
+  if (active !== undefined) return
   const show = R.tap(value => { delete value.hidden })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
@@ -341,9 +345,44 @@ Store.prototype.show = async function (id) {
  * @async
  * identify :: (Id a) => a -> unit
  */
-Store.prototype.identify = async function (id) {
+Store.prototype.identify = async function (id, active) {
+  if (active === undefined) return
+
+  const read = R.compose(TS.read, readGeometry)
+  const write = TS.write
+
+  const loaders = {
+    layer: async id => {
+      const prefix = `feature:${id.split(':')[1]}`
+      const geometries = (await this.geometries_.values(prefix)).map(read)
+      const collection = TS.collect(geometries)
+      return write(TS.minimumRectangle(collection))
+    },
+    feature: async id => {
+      const geoJSON = await this.geometries_.get(id)
+      console.log(geoJSON)
+      const geometry = read(geoJSON)
+      const bounds = geoJSON.type === 'Polygon'
+        ? geometry
+        : TS.minimumRectangle(geometry)
+      return write(bounds)
+    }
+  }
+
   const ids = R.uniq([id, ...this.selection_.selected()])
-  console.log('[Store] identitfy', ids)
+
+  const load = () => ids.reduce(async (acc, id) => {
+    const rectangles = await acc
+    const loader = loaders[scope(id)]
+    if (loader) rectangles.push(await loader(id))
+    return rectangles
+  }, [])
+
+  const geometries = active
+    ? await load(ids)
+    : []
+
+  this.emit('highlight/geometries', { geometries })
 }
 
 

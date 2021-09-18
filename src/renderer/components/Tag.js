@@ -23,9 +23,19 @@ export const Tag = props => {
       setInputValue('')
       setMode('edit')
     } else {
-      if (action === 'NONE') return
-      store[action](props.id)
+      if (action === 'NONE' || !props.id) return
+      store[action] && store[action](props.id)
     }
+  }
+
+  const handleMouseDown = () => {
+    if (action === 'NONE' || !props.id) return
+    store[action] && store[action](props.id, true)
+  }
+
+  const handleMouseUp = () => {
+    if (action === 'NONE' || !props.id) return
+    store[action] && store[action](props.id, false)
   }
 
   const addTag = value => store.addTag(id, value.toLowerCase())
@@ -79,6 +89,8 @@ export const Tag = props => {
     ? <span
         className={className}
         onClick={handleClick}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
       >
         { variant === 'PLUS' && <TagIcon path={mdi.mdiPlus} size='12px'/>}
         {

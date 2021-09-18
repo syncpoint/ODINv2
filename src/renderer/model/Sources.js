@@ -1,5 +1,7 @@
 import util from 'util'
 import VectorSource from 'ol/source/Vector'
+import Collection from 'ol/Collection'
+import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
 import { readFeature, readFeatures, readGeometry } from '../store/format'
 
@@ -19,8 +21,12 @@ export function Sources (store, selection) {
   // Note: Source is mutable. Changes reflect more or less immediately in map.
   this.source_ = null
 
+  this.highlightedFeatures_ = new Collection()
+  this.highlightedSource_ = new VectorSource({ features: this.highlightedFeatures_ })
+
   store.on('features/properties', ({ operations }) => this.updateProperties_(operations))
   store.on('features/geometries', ({ operations }) => this.updateGeometries_(operations))
+  store.on('highlight/geometries', ({ geometries }) => this.highlightGeometries_(geometries))
 }
 
 util.inherits(Sources, Emitter)
@@ -102,4 +108,13 @@ Sources.prototype.getFeatureSource = async function () {
   const olFeatures = readFeatures({ type: 'FeatureCollection', features: visible })
   this.source_ = new VectorSource({ features: olFeatures })
   return this.source_
+}
+
+Sources.prototype.getHighlightedSource = function () {
+  return this.highlightedSource_
+}
+
+Sources.prototype.highlightGeometries_ = function (geometries) {
+  if (!geometries.length) this.highlightedFeatures_.clear()
+  else geometries.forEach(geometry => this.highlightedFeatures_.push(new Feature(geometry)))
 }
