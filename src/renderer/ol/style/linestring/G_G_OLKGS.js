@@ -5,10 +5,10 @@ import * as TS from '../../ts'
 // DIRECTION OF ATTACK / SUPPORTING ATTACK
 styles['LineString:G*G*OLKGS-'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
-  const segment = TS.segment(coords)
+  const segment = R.last(TS.segments(lineString))
   const angle = segment.angle()
   const length = segment.getLength()
-  const xs = TS.projectCoordinates(length, angle, coords[0])([
+  const xs = TS.projectCoordinates(length, angle, coords[coords.length - 2])([
     [0.86, -0.1], [1, 0], [0.86, 0.1]
   ])
 
