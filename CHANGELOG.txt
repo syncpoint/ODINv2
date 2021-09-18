@@ -1,4 +1,5 @@
 0.0.1
+* Fix: Direction of Attack as Multi-point, n >= 2 (#7)
 * Updated dependencies
   - @babel/eslint-parser @ 7.15.7
   - electron @ 14.0.1
@@ -28,7 +29,7 @@
 * Fix: Symbol "Breach" (area Tasks) is wrong displayed on the map (#5)
 * Transfer active/default layer from legacy projects.
 * Links (ex. references) - Drag'n drop for layers and features.
-* Fix: Tagging - Only support alphanumeric characters and '/' in tag names (#1).
+* Fix: Tagging - Only support alphanumeric characters and '/' in tag names (#1)
 * Draw interaction - Drawing is initialized by double clicking symbol in palette.
 * Draw interaction - Shortscuts. Escape key cancels ongoing drawing.
 * Draw interaction - Features SEIZE and TURN are currently unsupported
