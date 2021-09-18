@@ -57,7 +57,7 @@ const rendererConfig = (env, argv) => ({
   plugins: [
     // Title is managed by BrowserWindow title option.
     new HtmlWebpackPlugin(),
-    new webpack.IgnorePlugin(/^pg-native$/),
+    new webpack.IgnorePlugin({ resourceRegExp: /^pg-native$/ }),
     new webpack.ExternalsPlugin('commonjs', ['leveldown'])
   ]
 })
