@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import * as R from 'ramda'
 import { Input } from 'antd'
 import { cmdOrCtrl } from '../platform'
 import { useDebounce } from './hooks'
+import { matcher, stopPropagation, preventDefault } from './events'
 
 /**
  * Input component with debounced value.
@@ -15,7 +15,7 @@ const FilterInput = props => {
    * value :: string
    * Value (not debounced) is managed because it
    *  1. might be supplied through props.value
-   *  2. can actively reset by hitting escape key
+   *  2. can actively be reset by hitting escape key
    */
   const [value, setValue] = React.useState(props.value || '')
   const debouncedValue = useDebounce(value, 50)
@@ -32,25 +32,17 @@ const FilterInput = props => {
   const handleChange = ({ target }) => setValue(target.value)
 
   const handleKeyDown = event => {
-    const preventDefault = R.cond([
-      [({ key }) => key === 'Home', R.always(true)],
-      [({ key }) => key === 'End', R.always(true)],
-      [R.T, R.always(false)]
-    ])
+    matcher([
+      ({ key }) => key === 'Home',
+      ({ key }) => key === 'End'
+    ], preventDefault)(event)
 
-    const stopPropagation = R.cond([
-      [event => cmdOrCtrl(event) && event.key === 'a', R.always(true)],
-      [({ key }) => key === ' ', R.always(true)],
-      [R.T, R.always(false)]
-    ])
+    matcher([
+      event => cmdOrCtrl(event) && event.key === 'a',
+      ({ key }) => key === ' '
+    ], stopPropagation)(event)
 
-    if (preventDefault(event)) event.preventDefault()
-    if (stopPropagation(event)) event.stopPropagation()
     if (event.key === 'Escape') setValue('')
-  }
-
-  const handleClick = event => {
-    event.stopPropagation()
   }
 
   return <Input
@@ -61,7 +53,7 @@ const FilterInput = props => {
     size={props.size || 'default'}
     onChange={handleChange}
     onKeyDown={handleKeyDown}
-    onClick={handleClick}
+    onClick={stopPropagation}
   />
 }
 
@@ -81,5 +73,4 @@ FilterInput.whyDidYouRender = true
  */
 const FilterInputMemo = React.memo(FilterInput)
 FilterInputMemo.whyDidYouRender = true
-
 export { FilterInputMemo as FilterInput }

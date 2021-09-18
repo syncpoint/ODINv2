@@ -1,10 +1,10 @@
-import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
 import { TagIcon } from './TagIcon'
 import { cmdOrCtrl } from '../platform'
 import { useServices } from './hooks'
+import { matcher, stopPropagation } from './events'
 
 /**
  * A tag in different variants.
@@ -38,15 +38,12 @@ export const Tag = props => {
   const handleBlur = commitValue
 
   const handleKeyDown = event => {
-    const stopPropagation = R.cond([
-      [({ key }) => key === 'Enter', R.always(true)],
-      [({ key }) => key === 'Escape', R.always(true)],
-      [({ key }) => key === ' ', R.always(true)],
-      [event => cmdOrCtrl(event) && event.key === 'a', R.always(true)],
-      [R.T, R.always(false)]
-    ])
-
-    if (stopPropagation(event)) event.stopPropagation()
+    matcher([
+      ({ key }) => key === 'Enter',
+      ({ key }) => key === 'Escape',
+      ({ key }) => key === ' ',
+      event => cmdOrCtrl(event) && event.key === 'a'
+    ], stopPropagation)(event)
 
     switch (event.key) {
       case 'Enter': return commitValue()

@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import * as R from 'ramda'
 import { useServices } from './hooks'
 import { cmdOrCtrl } from '../platform'
+import { matcher, stopPropagation } from './events'
 
 
 /**
@@ -32,13 +32,10 @@ const CardTitle = props => {
   }
 
   const handleKeyDown = event => {
-    const stopPropagation = R.cond([
-      [({ key }) => key === ' ', R.always(true)],
-      [({ key, metaKey, ctrlKey }) => key === 'a' && cmdOrCtrl(metaKey, ctrlKey), R.always(true)],
-      [R.T, R.always(false)]
-    ])
-
-    if (stopPropagation(event)) event.stopPropagation()
+    matcher([
+      ({ key }) => key === ' ',
+      event => event.key === 'a' && cmdOrCtrl(event)
+    ], stopPropagation)(event)
 
     if (event.key === 'Escape') return reset()
     else if (event.key === 'Enter') return rename(value.trim())

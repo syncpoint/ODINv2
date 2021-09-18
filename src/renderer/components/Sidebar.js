@@ -5,6 +5,7 @@ import { FilterInput, IndexBackedList, History } from '.'
 import { useList, useStack, useServices } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
+import { matcher, preventDefault } from './events'
 
 /**
  * Top-most component, combining history. filter input and
@@ -32,13 +33,10 @@ const Sidebar = props => {
   const handleClick = () => selection.set([])
 
   const handleKeyDown = event => {
-    const preventDefault = R.cond([
-      [({ key }) => key === 'ArrowDown', R.always(true)],
-      [({ key }) => key === 'ArrowUp', R.always(true)],
-      [R.T, R.always(false)]
-    ])
-
-    if (preventDefault(event)) event.preventDefault()
+    matcher([
+      ({ key }) => key === 'ArrowDown',
+      ({ key }) => key === 'ArrowUp'
+    ], preventDefault)(event)
 
     // History: Back.
     if (cmdOrCtrl(event) && event.key === 'ArrowUp') {
