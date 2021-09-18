@@ -50,7 +50,7 @@ export default projectUUID => {
 
   const dragAndDrop = new DragAndDrop()
 
-  dragAndDrop.on('layers', async ({ layers }) => {
+  dragAndDrop.on('layers', ({ layers }) => {
     const values = layers.reduce((acc, layer) => {
       const features = layer.features
       delete layer.features
