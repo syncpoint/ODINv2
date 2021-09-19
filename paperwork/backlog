@@ -4,7 +4,11 @@ IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN
-Multiselect: test procedures
+c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: upgrade to v9.x, remove ESM dependency
+c2a22218-d1a2-4783-a1f8-0255e876fe2f - c8 coverage broken with mocha/esm: https://github.com/bcoe/c8/issues/34
+  DEPENDS: c2506526-3765-45a2-b0b1-0f383d4fb19a
+37f256e1-0260-460b-a185-31e755136d46 - Multiselect: test procedures
+  DEPENDS: c2a22218-d1a2-4783-a1f8-0255e876fe2f
 62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
 1dedb884-7b83-47b8-baeb-53a18c877f02 - translate/clone: Escape key deselects and brings ongoing translate into trouble
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
@@ -27,7 +31,6 @@ d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result 
 64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
-c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: ESM, upgrade to v9.x
 e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
 6a932e7a-bd4b-49dc-b96a-7c36b749fbd1 - feature style: cascaded (layer, feature)
   NOTE: complete replacement, no inheritance

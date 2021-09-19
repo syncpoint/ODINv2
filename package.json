@@ -11,7 +11,7 @@
     "webpack:production": "webpack --mode='production'",
     "test": "mocha 'src/**/*.test.js' --bail --require esm --recursive",
     "test:watch": "mocha --require esm --recursive --watch",
-    "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha --require esm --recursive",
+    "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --require esm --recursive",
     "lint": "eslint",
     "jsdoc:main": "jsdoc src/main -r -d jsdoc/main"
   },
