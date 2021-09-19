@@ -19,13 +19,14 @@ const VirtualizedList = props => {
 
   const { outerRef, innerRef, items, scrollToItem } = useVirtual({
     itemCount: entries.length,
-    resetScroll: true
+    resetScroll: true,
+    scrollDuration: 250
   })
 
   React.useEffect(() => {
     if (scroll === 'none') return
     if (focusIndex === -1) return
-    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: true })
   }, [scrollToItem, focusIndex, scroll])
 
   const card = ({ index, measureRef }) => {

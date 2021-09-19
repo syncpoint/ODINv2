@@ -1,0 +1,90 @@
+Scope: Multiselect list (focus)
+
+0cf18440-d412-4e2c-8444-e1098980e562 - no initial focus
+1. Display list with at least one option.
+2. No option is selected (e.g. feature on map).
+3.1 Expected: No options is focused.
+
+bbfc4235-e68d-4135-bfe0-e9a535704de1 - focus first option
+1. Display list with at least two options.
+2. No option is focused.
+3. Focus first option (arrow down key).
+4. Expected: First option is focused.
+
+e9bb5f38-f9b0-49fc-994d-d3a0c45eba28 - focus next option
+1. Display list with at least two options.
+2. First option is focused.
+3. Focus next option (arrow down key).
+4. Expected: Second option is focused.
+
+70ec2ff1-53c7-4bd6-a211-467dc9a3a345 - focus last option
+1. Display list with at least two options.
+2. No option is focused.
+3. Focus last option (arrow up key).
+4.1 Expected: Last option is focused.
+4.2 Expected: List is scrolled top bottom.
+
+9ccb3662-e426-4797-9f75-757075058a3a - focus previous option
+1. Display list with at least two options.
+2. Second option is focused.
+3. Focus previous option (arrow up key).
+4. Expected: First option is focused.
+
+b6d19139-6569-446c-a396-6a2d126dd23d - reset focus on refresh
+1. Display list with at least two options A and B.
+2. Focus option A (e.g. with arrow key).
+3. Remove option A from list (e.g. delete or filter).
+4.1 Expected: No option is focused.
+
+a56e2ed5-5c25-46f7-962a-b79a1a731d15 - focus option (click)
+1. Display list with at least one option.
+2. (Single) click option A.
+3. Expected: Option A is focused.
+
+
+Scope: Multiselect list (selection)
+
+e68f738c-580d-48aa-b66b-8f712c158c72 - forward select (shift key, no focus)
+1. Display list with at least two options
+2. No option is focused.
+3. Select first option (shift/arrow down keys).
+4. Expected: First option is focused and selected.
+
+b77edfec-0c47-4bf8-a9b4-118bf4988ca3 - forward select (shift key)
+1. Display list with at least two options
+2. First option is focused
+3. Select current and next option (shift/arrow down keys).
+4.1 Expected: First and second option are selected
+4.2 Expected: Second options is focused
+
+47d73f51-fcfd-40b1-b9ce-dc4ce5c69354 - backward select (shift key, no focus)
+1. Display list with at least two options
+2. No option is focused.
+3. Select previous option (shift/arrow up keys).
+4. Expected: Last option is focused and selected.
+
+21957ae5-5476-494d-897d-135c18471bd2 - backward select (shift key)
+1. Display list with at least two options
+2. Last option is focused
+3. Select current and previous option (shift/arrow up keys).
+4.1 Expected: Last and second to last option are selected
+4.2 Expected: Second to last options is focused
+
+
+Scope: Multiselect list (scrolling)
+
+ee11c71a-2ac6-4d76-ba14-62012dbe29c3 - focus next/first option (scroll)
+1. Display list with options for more than one page.
+2. No option is focused.
+3. Scroll to bottom (with mouse).
+4. Focus (next) option (arrow down key).
+5.1 Expected: First option is focused.
+5.2 Expected: List is scrolled to top.
+
+70045b42-5dbf-4d01-b25f-52953b6426db - focus previous/last option (scroll)
+1. Display list with options for more than one page.
+2. No option is focused.
+3. Scroll to top (with mouse).
+4. Focus (previous) option (arrow up key).
+5.1 Expected: Last option is focused.
+5.2 Expected: List is scrolled to bottom.

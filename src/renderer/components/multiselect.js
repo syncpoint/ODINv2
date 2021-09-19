@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import { toggleSelection, indexOf, firstId, lastId } from './selection'
+import { toggleSelection, indexOf, firstId, lastId, isFocusBOL, isFocusEOL } from './selection'
 import { cmdOrCtrl } from '../platform'
 import { Selection } from '../Selection'
 
@@ -25,12 +25,14 @@ import { Selection } from '../Selection'
 export const multiselect = {
 
   /**
-   * 438fe36c-5778-4684-be38-b7d76e50e34b - filter does not change selection
+   *
    */
   entries: (state, { entries }) => {
 
     // Don't update when entries are deep equal to previous state.
-    if (isEqual(state.entries, entries)) return state
+    if (isEqual(state.entries, entries)) {
+      return state
+    }
 
     const focusIndex = state.focusId
       ? indexOf(entries, state.focusId)
@@ -40,12 +42,19 @@ export const multiselect = {
       ? entries[focusIndex].id
       : null
 
+    // Only scroll when index of focused option has changed:
+    const scroll = focusIndex === -1
+      ? 'none'
+      : focusIndex === state.focusIndex
+        ? 'none'
+        : 'auto'
+
     return {
       ...state,
       entries,
       focusIndex,
       focusId,
-      scroll: 'none'
+      scroll
     }
   },
 
@@ -98,24 +107,33 @@ export const multiselect = {
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
-    if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
-    if (!state.entries || !state.entries.length) return state
-
-    if (state.focusIndex === state.entries.length - 1) {
-      // Clear selection, if any.
-      if (state.selected.length) return { ...state, selected: [], scroll: 'auto' }
-      else return state
+    // Navigation 'forward/open' not handled here:
+    if (cmdOrCtrl({ metaKey, ctrlKey })) {
+      return state
     }
 
-    const index = indexOf(state.entries, state.focusId)
-    const focusIndex = Math.min(state.entries.length - 1, index + 1)
+    // Nothing to do if list is empty:
+    if (!state.entries || !state.entries.length) {
+      return state
+    }
+
+    if (isFocusEOL(state)) {
+      if (shiftKey) return state // NOOP: shift key is pressed
+      else if (!state.selected.length) return state // NOOP: selection already clear
+      else return { ...state, selected: [], scroll: 'auto' } // clear selection
+    }
+
+    const focusIndex = state.focusId
+      ? Math.min(state.entries.length - 1, indexOf(state.entries, state.focusId) + 1)
+      : 0
+
     const focusId = state.entries[focusIndex].id
 
-    // FIXME: SHIFT/ArrowDown after deleting entry
     const selected = shiftKey
       ? state.selected.includes(focusId)
         ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])
-        : R.uniq([...state.selected, focusId, state.focusId])
+        // previous focusId might be null
+        : R.uniq([...state.selected, focusId, ...(state.focusId ? [state.focusId] : [])])
       : []
 
     return {
@@ -128,23 +146,34 @@ export const multiselect = {
   },
 
   'keydown/ArrowUp': (state, { shiftKey, metaKey, ctrlKey }) => {
-    if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
-    if (!state.entries || !state.entries.length) return state
 
-    if (state.focusIndex === 0) {
-      // Clear selection, if any.
-      if (state.selected.length) return { ...state, selected: [], scroll: 'auto' }
-      else return state
+    // Navigation 'back' not handled here:
+    if (cmdOrCtrl({ metaKey, ctrlKey })) {
+      return state
     }
 
-    const index = indexOf(state.entries, state.focusId)
-    const focusIndex = Math.max(0, index - 1)
+    // Nothing to do if list is empty:
+    if (!state.entries || !state.entries.length) {
+      return state
+    }
+
+    if (isFocusBOL(state)) {
+      if (shiftKey) return state // NOOP: shift key is pressed
+      else if (!state.selected.length) return state // NOOP: selection already clear
+      else return { ...state, selected: [], scroll: 'auto' } // clear selection
+    }
+
+    const focusIndex = state.focusId
+      ? Math.max(0, indexOf(state.entries, state.focusId) - 1)
+      : state.entries.length - 1
+
     const focusId = state.entries[focusIndex].id
 
     const selected = shiftKey
       ? state.selected.includes(focusId)
         ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])
-        : R.uniq([...state.selected, focusId, state.focusId])
+        // previous focusId might be null
+        : R.uniq([...state.selected, focusId, ...(state.focusId ? [state.focusId] : [])])
       : []
 
     return {
@@ -160,7 +189,7 @@ export const multiselect = {
     if (!state.focusId) return state
 
     // Return same state (reference) when we are already at the top.
-    if (state.focusIndex === 0) return state
+    if (isFocusBOL(state)) return state
 
     const focusId = firstId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
@@ -171,7 +200,7 @@ export const multiselect = {
     if (!state.focusId) return state
 
     // Return same state (reference) when we are already at the end.
-    if (state.focusIndex === state.entries.length - 1) return state
+    if (isFocusEOL(state)) return state
 
     const focusId = lastId(state.entries)
     const focusIndex = indexOf(state.entries, focusId)
