@@ -22,8 +22,9 @@ documents.feature = (feature, cache) => {
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
   const layer = cache(layerId(feature.id))
+  const layerName = (layer && layer.name) || ''
   const { t } = feature.properties
-  const name = feature.name || t
+  const name = feature.name || t || ''
   const links = feature.links || []
 
   const tags = ({ hidden, tags }) => [
@@ -39,7 +40,7 @@ documents.feature = (feature, cache) => {
     id: feature.id,
     scope: 'feature',
     tags: tags(feature),
-    text: `${name} ${hierarchy.join(' ')} ${layer.name}`
+    text: `${name} ${hierarchy.join(' ')} ${layerName}`.trim()
   }
 }
 

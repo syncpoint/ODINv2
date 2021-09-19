@@ -37,6 +37,8 @@ MiniSearchIndex.prototype.createIndex_ = function () {
     return documents[scope](entry, cache)
   }).filter(R.identity)
 
+  // const selection = docs.filter(doc => doc.text.includes('3OSC')).sort((a, b) => a.text.localeCompare(b.text))
+  // console.log(JSON.stringify(selection))
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)
 
@@ -92,6 +94,7 @@ MiniSearchIndex.prototype.search = function (query) {
     const conditions = scope.map(scope => {
       const [property, prefix] = split(scope)
       const prefixes = prefix.split('|')
+      console.log('prefixes', prefixes)
       return item => prefixes.some(prefix => item[property] && item[property].startsWith(prefix))
     })
 
