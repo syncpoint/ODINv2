@@ -4,11 +4,7 @@ IN PROGRESS
 HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
 
 OPEN
-c2506526-3765-45a2-b0b1-0f383d4fb19a - mocha: upgrade to v9.x, remove ESM dependency
-c2a22218-d1a2-4783-a1f8-0255e876fe2f - c8 coverage broken with mocha/esm: https://github.com/bcoe/c8/issues/34
-  DEPENDS: c2506526-3765-45a2-b0b1-0f383d4fb19a
 37f256e1-0260-460b-a185-31e755136d46 - Multiselect: test procedures
-  DEPENDS: c2a22218-d1a2-4783-a1f8-0255e876fe2f
 62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
 1dedb884-7b83-47b8-baeb-53a18c877f02 - translate/clone: Escape key deselects and brings ongoing translate into trouble
 27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)

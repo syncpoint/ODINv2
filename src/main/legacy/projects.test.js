@@ -1,8 +1,9 @@
 import assert from 'assert'
+import { resolve } from 'path'
 import { readJSON } from './io'
 import { readProjects } from './projects'
 
-const pathname = dir => new URL(dir, import.meta.url).pathname
+const pathname = dir => resolve(__dirname, dir)
 
 it('legacy-projects', async function () {
   const actual = await readProjects(pathname('./data/home'))

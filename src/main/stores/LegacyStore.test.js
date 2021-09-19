@@ -1,10 +1,11 @@
 import assert from 'assert'
+import { resolve } from 'path'
 import { readJSON } from '../legacy/io'
 import { LegacyStore } from './LegacyStore'
 import { values } from '../../shared/level/HighLevel'
 import { leveldb } from '../../shared/level'
 
-const pathname = dir => new URL(dir, import.meta.url).pathname
+const pathname = dir => resolve(__dirname, dir)
 
 describe('LegacyStore', async function () {
   const createdb = () => leveldb({ encoding: 'json' })

@@ -1,7 +1,8 @@
 import assert from 'assert'
+import { resolve } from 'path'
 import * as io from './io'
 
-const pathname = dir => new URL(dir, import.meta.url).pathname
+const pathname = dir => resolve(__dirname, dir)
 
 describe('io', function () {
 

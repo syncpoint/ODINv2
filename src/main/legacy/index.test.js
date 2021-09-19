@@ -1,10 +1,11 @@
 import assert from 'assert'
+import { resolve } from 'path'
 import { readJSON } from './io'
 import { transferProject } from '.'
 import { values } from '../../shared/level/HighLevel'
 import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
 
-const pathname = dir => new URL(dir, import.meta.url).pathname
+const pathname = dir => resolve(__dirname, dir)
 
 describe('legacy', async function () {
 
