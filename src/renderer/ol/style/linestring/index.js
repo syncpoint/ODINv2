@@ -7,6 +7,7 @@ import { smooth } from '../chaikin'
 /* eslint-disable no-multi-spaces */
 import './G_F_LT'    // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
 import './G_G_ALx'   // AVIATION / LINES
+import './G_G_GLB'   // BOUNDARIES
 import './G_G_GLC'   // LINE OF CONTACT
 import './G_G_GLF'   // FORWARD LINE OF OWN TROOPS (FLOT)
 import './G_G_OLKA'  // DIRECTION OF ATTACK / AVIATION

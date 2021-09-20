@@ -40,6 +40,10 @@ export const functionIdCode = sidc => sidc
   ? sidc.substring(FUNCTION_ID, FUNCTION_ID + 6)
   : null
 
+export const echelonCode = sidc => sidc
+  ? sidc[ECHELON]
+  : '-'
+
 export const format = (sidc, options) => {
   if (!sidc) return null
 

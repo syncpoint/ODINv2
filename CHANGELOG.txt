@@ -1,4 +1,5 @@
 0.0.1
+* Boundaries/Echelons are no displayed.
 * Fix: FTS issue with leading numbers in filter.
 * Highlight layers/features; Mouse down/up on scope tags. Supports multiselect.
 * Fix: Direction of Attack as Multi-point, n >= 2 (#7)

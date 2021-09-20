@@ -24,7 +24,6 @@ d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result 
 481d485a-83b3-4136-a819-5fcb56a14217 - OSD
 1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
 7680c0f6-1927-45f2-b871-998286481981 - feature style: render echelons as OL styles
-64fc1894-3cdf-4f34-b39b-e893bdcbb949 - TACGRP.C2GM.GNL.LNE.BNDS - BOUNDARIES
 3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
 f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
 e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
