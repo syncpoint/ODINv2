@@ -44,6 +44,7 @@ styles['LineString:G*G*GLB---'] = ({ feature, styles, resolution, lineString }) 
       textAlign: () => 'center',
       rotation: Math.PI - segment.angle(),
       fontSize: '18px',
+      fontWeight: 800,
       textStrokeWidth: 5,
       textStrokeColor: 'white'
     })
