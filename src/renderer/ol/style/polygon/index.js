@@ -3,7 +3,6 @@ import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
 import { PolygonLabels } from '../labels'
 import './G_G_GAF' // FORTIFIED AREA
-import './G_G_GAY' // LIMITED ACCESS AREA
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
 import './G_M_OGF' // OBSTACLE FREE AREA
@@ -11,6 +10,7 @@ import './G_M_OGR' // OBSTACLE RESTRICTED AREA
 import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
 import { smooth } from '../chaikin'
+import { createEchelon } from '../echelons'
 
 const textStrokeWidth = 3
 const C = (text, textStrokeWidth) => [{ text, position: 'center', textStrokeWidth }]
@@ -125,6 +125,10 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     ? smooth(simplifiedGeometry)
     : simplifiedGeometry
 
+  const echelon = styles[key]
+    ? { notchedGeometry: smoothedGeometry, text: [] }
+    : createEchelon({ sidc, resolution, geometry: smoothedGeometry })
+
   const handles = featureStyles.handles(simplifiedGeometry)
   const labels = new PolygonLabels(smoothedGeometry, feature.getProperties())
   const texts = (styles[`TEXTS:${key}`] || []).flat()
@@ -136,7 +140,7 @@ styles.Polygon = ({ feature, resolution, mode }) => {
   const guides = featureStyles.guideStroke(simplifiedGeometry)
   const style = styles[key]
     ? styles[key]({ feature, resolution, styles: featureStyles, geometry: smoothedGeometry })
-    : featureStyles.defaultStroke(smoothedGeometry, { fillPattern })
+    : featureStyles.defaultStroke(echelon.geometry, { fillPattern })
 
-  return [...style, ...texts, ...handles, ...guides]
+  return [...style, ...texts, ...handles, ...guides, ...echelon.icon]
 }
