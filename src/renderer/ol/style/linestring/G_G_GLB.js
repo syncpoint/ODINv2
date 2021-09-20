@@ -5,8 +5,8 @@ import * as MILSTD from '../../../symbology/2525c'
 const echelons = {
   A: ['∅', 2 * 12.9111328125], // TEAM/CREW
   B: ['⦁', 2 * 6.8466796875], // SQUAD
-  C: ['⦁⦁', 1.5 * 13.693359375], // SECTION
-  D: ['⦁⦁⦁', 20.5400390625], // PLATOON/DETACHMENT
+  C: ['⦁ ⦁', 1.5 * 18.6943359375], // SECTION
+  D: ['⦁ ⦁ ⦁', 30.5419921875], // PLATOON/DETACHMENT
   E: ['I', 2 * 5.0009765625], // COMPANY/BATTERY/TROOP
   F: ['I I', 1.5 * 15.0029296875], // BATALLION/SQUADRON
   G: ['I I I', 25.0048828125], // REGIMENT/GROUP
@@ -19,10 +19,8 @@ const echelons = {
   N: ['+ +', 26.0244140625] // COMMAND
 }
 
-
 // BOUNDARIES
 styles['LineString:G*G*GLB---'] = ({ feature, styles, resolution, lineString }) => {
-  console.log(resolution)
   const sidc = feature.get('sidc')
   const echelon = echelons[MILSTD.echelonCode(sidc)]
   const { stroke, text } = (() => {
