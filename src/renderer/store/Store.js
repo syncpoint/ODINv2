@@ -67,6 +67,8 @@ export function Store (propertiesLevel, geometryLevel, undo, selection) {
 
   propertiesLevel.on('batch', event => {
     const operations = event.filter(({ key }) => isFeatureId(key))
+    const removals = event.filter(({ type }) => type === 'del').map(({ key }) => key)
+    this.selection_.deselect(removals)
     if (operations.length) this.emit('features/properties', { operations })
   })
 

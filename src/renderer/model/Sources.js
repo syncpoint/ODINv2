@@ -70,17 +70,19 @@ Sources.prototype.updateGeometries_ = function (operations) {
  * @private
  */
 Sources.prototype.updateProperties_ = function (operations) {
-  const removals = operations
+
+  // Removals:
+  operations
     .filter(({ type }) => type === 'del')
     .map(op => op.key)
-  removals.forEach(id => this.removeFeatureById_(id))
-  this.selection_.deselect(removals)
+    .forEach(id => this.removeFeatureById_(id))
 
-  // Remove hidden features:
+  // Remove hidden features from source:
   operations
     .filter(({ type, value }) => type === 'put' && isHidden(value))
     .forEach(({ key }) => this.removeFeatureById_(key))
 
+  // Add features or update feature properties:
   operations
     .filter(({ type, value }) => type === 'put' && isVisible(value))
     .forEach(({ key, value }) => {
@@ -89,9 +91,9 @@ Sources.prototype.updateProperties_ = function (operations) {
         // Note: Does not have a geometry yet.
         this.addFeature_(value)
       } else {
-        // Note: Does not increase revision counter
+        // setProperties() does not increase revision counter...
         feature.setProperties(value.properties, true)
-        feature.changed()
+        feature.changed() // ... changed() does though.
       }
     })
 }
