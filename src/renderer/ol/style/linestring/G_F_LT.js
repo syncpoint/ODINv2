@@ -20,5 +20,5 @@ styles['LineString:G*F*LT----'] = ({ styles, lineString }) => {
   ]
 }
 
-styles['G*F*LTF---'] = styles['G*F*LT----'] // FINAL PROTECTIVE FIRE (FPF)
-styles['G*F*LTS---'] = styles['G*F*LT----'] // LINEAR SMOKE TARGET
+styles['LineString:G*F*LTF---'] = styles['LineString:G*F*LT----'] // FINAL PROTECTIVE FIRE (FPF)
+styles['LineString:G*F*LTS---'] = styles['LineString:G*F*LT----'] // LINEAR SMOKE TARGET
