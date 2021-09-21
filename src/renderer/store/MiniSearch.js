@@ -25,17 +25,26 @@ util.inherits(MiniSearchIndex, Emitter)
 
 
 /**
+ *
+ */
+MiniSearchIndex.prototype.document_ = function (entry, cache) {
+  if (!entry.id) return null
+  const scope = entry.id.split(':')[0]
+  const fn = documents[scope]
+  if (!fn) return null
+  return fn(entry, cache)
+}
+
+
+/**
  * Create initial index (one time only).
  */
 MiniSearchIndex.prototype.createIndex_ = function () {
   const entries = Object.values(this.carrera_)
-
   const cache = id => this.carrera_[id]
-  const docs = entries.map(entry => {
-    if (!entry.id) return null
-    const scope = entry.id.split(':')[0]
-    return documents[scope](entry, cache)
-  }).filter(R.identity)
+  const docs = entries
+    .map(entry => this.document_(entry, cache))
+    .filter(R.identity)
 
   docs.forEach(doc => (this.cache_[doc.id] = doc))
   this.index_.addAll(docs)
@@ -54,10 +63,11 @@ MiniSearchIndex.prototype.handleBatch = function (ops) {
   const removals = ops.filter(op => op.type === 'del')
 
   for (const op of updates) {
-    const scope = op.key.split(':')[0]
     const cachedDocument = this.cache_[op.key]
     if (cachedDocument) this.index_.remove(cachedDocument)
-    const document = documents[scope](op.value, cache)
+    const document = this.document_(op.value, cache)
+    if (!document) return
+
     this.cache_[op.key] = document
     this.index_.add(document)
   }
