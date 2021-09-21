@@ -126,7 +126,7 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     : simplifiedGeometry
 
   const echelon = styles[key]
-    ? { notchedGeometry: smoothedGeometry, text: [] }
+    ? { notchedGeometry: smoothedGeometry, icon: [] }
     : createEchelon({ sidc, resolution, geometry: smoothedGeometry })
 
   const handles = featureStyles.handles(simplifiedGeometry)
