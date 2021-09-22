@@ -17,7 +17,6 @@ export default options => {
     source: partition.getSelected(),
     // Allow translate while editing (with shift key pressed):
     condition: conjunction(primaryAction, noShiftKey),
-    snapToPointer: false, // FIXME: does this really prevent snapping?
     hitTolerance
   })
 

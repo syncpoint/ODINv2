@@ -4,7 +4,7 @@ import Emitter from '../../shared/emitter'
 import { MiniSearchIndex as Index } from './MiniSearch'
 import { Query } from './Query'
 import { isGroupId } from '../ids'
-import { options as createOption } from '../model/options'
+import { options } from '../model/options'
 
 
 const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
@@ -99,6 +99,11 @@ SearchIndex.prototype.query = function (terms, callback) {
 SearchIndex.prototype.search = function (query) {
   const items = this.index_.search(query)
   const cache = id => this.carrera_[id]
-  const option = item => createOption[item.id.split(':')[0]](item, cache)
-  return sort(items.map(option))
+  const option = item => {
+    const fn = options[item.id.split(':')[0]]
+    if (!fn) return null
+    return fn(item, cache)
+  }
+
+  return sort(items.map(option).filter(R.identity))
 }

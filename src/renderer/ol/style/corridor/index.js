@@ -45,6 +45,7 @@ styles['LineString:Point'] = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
+  const guides = featureStyles.guideStroke(geometry)
   const handles = featureStyles.handles(new geom.MultiPoint([
     geometry.getGeometries()[1].getCoordinates(),
     ...geometry.getGeometries()[0].getCoordinates()
@@ -73,5 +74,5 @@ styles['LineString:Point'] = ({ feature, resolution, mode }) => {
     })({ feature })
   }
 
-  return [...R.tryCatch(tryer, catcher)(), ...handles]
+  return [...R.tryCatch(tryer, catcher)(), ...handles, ...guides]
 }
