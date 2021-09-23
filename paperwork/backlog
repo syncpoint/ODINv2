@@ -1,58 +1,57 @@
-CURRENT FOCUS - Layer Management
+* milsymbol: @syncpoint/milsymbol npm deployment
+* legacy import: echelon offset
+* legacy import: offset location
+* menu: About
+* (automatic) software update (incl. menu item)
+* project list/menu: export project
+* project list/menu: import project
+* basemaps: wizard, selection, order, properties
+* menu: select/all
+* clipboard: sidebar/map (incl. undo and menu)
+* mgrs grid (incl. menu item)
+* menu/view: hide/show labels (toggle)
+* language settings
+* menu/help (manual, slack, email)
+* OSD
+* button bar (sidebar)
+* lock layer
+* sidebar/symbol palette: configure hostility, planed/anticipated
+* draw: generic line, polygon, rectangle, text
+* measurement tools: distance, area
+* preferences/project: color scheme (dark, medium, light)
+* preferences/project: default styles (stroke width, font size/weight)
+* preferences/project: symbol size (optionally echelon dependent)
+* preferences/project: simple symbol (op) status
+* screenshot incl. save as PNG
+* print map
+* link: open
+* symbol: offset location indicator
+* translate/clone: Escape key deselects and brings ongoing translate into trouble
+* symbol: make modifer text style configurable
+* tags: focus/center map on feature/layer
+* history: store/restore focused element and query
+* project list: focus new project's name for editing
+* project list: support open project without closing list
+* project list: support clipboard operations
+* project list: support undo/redo
+* UI: switch to Roboto font face
+* performance: checkout TerserPlugin/WebPack
+* query/performance: skip search if result does not contain updated ids
+* Command Palette: fuzzy search, incl. highlighting (Fuse.js)
+* Modify: label offsets, excl. polygon/center (custom interaction)
+* milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
+* preferences/project: show/hide labels
+* feature style: cascaded (layer, feature)
+* feature style: font (size, color, etc.)
+* main: show project selection on activation (macOS)
+* menu/Window: list open projects
+* list/multiselect: support SHIFT+CLICK
+* command palette: 'move to layer'
+* test: automated image comparison a la OpenLayers
+* simplfy styles while panning/zooming (custom PointerInteraction)
+* import: force polygon 'right hand rule'
+* ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
+* import: ODIN project (ZIP, DND)
 
-IN PROGRESS
-HAL - 8a18dd34-9c59-42b6-94b0-0b4a7358f65c - milsymbol: @syncpoint/milsymbol npm deployment
-
-OPEN
-37f256e1-0260-460b-a185-31e755136d46 - Multiselect: test procedures
-62acff4b-df5d-4782-945c-41df50ca3b8c - clipboard: sidebar/map (incl. undo)
-1dedb884-7b83-47b8-baeb-53a18c877f02 - translate/clone: Escape key deselects and brings ongoing translate into trouble
-27b735bd-217a-4800-956f-97f0f4c92989 - backlog grooming (recurring)
-0bc82d1a-150e-4368-8b61-74df1fb0885d - symbol: make modifer text style configurable
-667f3379-b9d9-4c7c-9e83-fd7ab9ae54cf - tags: focus/center map on feature/layer
-099455f2-4bfe-489b-83ba-ca6106f35d39 - history: store/restore focused element and query
-76f1615c-7b73-48b3-8b4f-3251e8a8fc18 - TODOs: fix and/or add to backlog (recurring)
-e66484aa-82e7-406e-98df-ae336b884d4c - project list: focus new project's name for editing
-4c3316e5-ebab-4b87-835b-35c7f88976f2 - project list: support open project without closing list
-3905a9bd-20df-4c98-845e-523bb44d1a63 - project list: export project
-12c88373-6930-47d8-a95c-41b636168a16 - project list: import project
-216fa1b9-5b91-4460-8695-21e8d427a38e - project list: support clipboard operations
-c5687f5a-3757-4ba4-9419-fb4cac441932 - project list: support undo/redo
-b73b6b06-24b8-4861-92e4-e3e5ce494588 - UI: switch to Roboto font face
-d6802e39-ee47-49b6-81dd-427026bb0950 - performance: checkout TerserPlugin/WebPack
-d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
-481d485a-83b3-4136-a819-5fcb56a14217 - OSD
-1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
-3f737223-a2fb-4d7f-8aa6-7c5d42bb505a - Modify: label offsets, excl. polygon/center (custom interaction)
-f734ac60-5976-4f46-94e3-76801acaa296 - milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
-e872d67c-7528-4ff6-9bee-b792b2a2fd7e - preferences/project: show/hide labels
-6a932e7a-bd4b-49dc-b96a-7c36b749fbd1 - feature style: cascaded (layer, feature)
-  NOTE: complete replacement, no inheritance
-245decd7-2865-43e7-867d-2133889750b9 - feature style: font (size, color, etc.)
-  NOTE: graphics only
-  DEPENDS: 6a932e7a-bd4b-49dc-b96a-7c36b749fbd1
-8cbb6c2e-7637-4603-9d2c-dd59b8252ea4 - preferences/project: color scheme (dark, medium, light)
-81c8e77a-3181-421f-8a64-8bb5590c2d34 - main: show project selection on activation (macOS)
-8ece194d-b5f3-4d6c-9746-6cc96018cd06 - menu/Window: list open projects
-9297ff3a-993d-481f-a194-02d979add9c4 - list/multiselect: support SHIFT+CLICK
-022c181d-e5a0-4ab4-b749-1068b4a95865 - command palette: 'move to layer'
-b7605468-bcbc-4c2c-8951-989703e8e2ab - test: automated image comparison a la OpenLayers
-1bcf2dd1-d1cd-4bbb-a0cd-88fa7d36577d - simplfy styles while panning/zooming (custom PointerInteraction)
-0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
-079aa0be-78a4-4330-8912-e906f7d27180 - ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
-45c75414-93eb-445d-ad6d-379cc1a075cb - import: ODIN project (ZIP, DND)
-
-DEFERRED
-18ad1ed6-c320-4b8f-b4d4-c2bda38f4587 - TACGRP.TSK.SZE - TASKS / SEIZE
-0f144c59-a9bd-4e48-8495-d16fdb7ca300 - TACGRP.MOBSU.OBST.OBSEFT.TUR - OBSTACLE EFFECT TURN
-c7c430fc-d8f2-4b9f-a9ef-68d5f40b4942 - TACGRP.C2GM.OFF.ARS.SFP - SUPPORT BY FIRE POSITION
-efb8ae43-cfe5-482d-b61d-b3cddb90d435 - TACGRP.MOBSU.OBST.TRIPWR - TRIP WIRE
-da72abdf-d76e-4c96-8634-44dfa89d118f - TACGRP.C2GM.DCPN.DMA: graphical decoy signifier
-37e3809e-1e29-4cba-a84a-49bd46b1fe5b - tagging: feature should inherit symbols user tags
-
-IDEAS/EPICS
-42b6df1b-c791-4585-baf6-eedd22b08bf3 - menu: preferences/application (if any)
-  NOTE: Preference partitions (application, project)
-
-WON'T FIX
-0ad37bcc-284d-41a0-92b6-a5f108adb378 - ODIN import: remove feature properties: geometry_max_range, geometry_mnm_range, geometry_size_angle, geometry_orient_angle:
+* recurring: TODOs and/or add to backlog
+* recurring: backlog grooming
