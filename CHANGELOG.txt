@@ -1,5 +1,5 @@
 0.0.2
-* ...
+* Added some command to edit text modifiers to command palette.
 
 0.0.1
 * Removed snap interaction due to update issue.
