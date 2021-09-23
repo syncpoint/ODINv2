@@ -1,6 +1,9 @@
-* milsymbol: @syncpoint/milsymbol npm deployment
 * legacy import: echelon offset
 * legacy import: offset location
+* interaction: move(position) label (echelon, area center)
+* symbol: offset location indicator
+* feature properties (incl. styles and links)
+* milsymbol: @syncpoint/milsymbol npm deployment
 * menu: About
 * (automatic) software update (incl. menu item)
 * project list/menu: export project
@@ -9,8 +12,7 @@
 * menu: select/all
 * clipboard: sidebar/map (incl. undo and menu)
 * mgrs grid (incl. menu item)
-* menu/view: hide/show labels (toggle)
-* language settings
+* menu/view: hide/show labels (toggle), project/preferences
 * menu/help (manual, slack, email)
 * OSD
 * button bar (sidebar)
@@ -23,35 +25,31 @@
 * preferences/project: symbol size (optionally echelon dependent)
 * preferences/project: simple symbol (op) status
 * screenshot incl. save as PNG
-* print map
 * link: open
-* symbol: offset location indicator
-* translate/clone: Escape key deselects and brings ongoing translate into trouble
 * symbol: make modifer text style configurable
-* tags: focus/center map on feature/layer
 * history: store/restore focused element and query
 * project list: focus new project's name for editing
 * project list: support open project without closing list
-* project list: support clipboard operations
-* project list: support undo/redo
-* UI: switch to Roboto font face
-* performance: checkout TerserPlugin/WebPack
-* query/performance: skip search if result does not contain updated ids
 * Command Palette: fuzzy search, incl. highlighting (Fuse.js)
-* Modify: label offsets, excl. polygon/center (custom interaction)
 * milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
-* preferences/project: show/hide labels
 * feature style: cascaded (layer, feature)
 * feature style: font (size, color, etc.)
 * main: show project selection on activation (macOS)
 * menu/Window: list open projects
 * list/multiselect: support SHIFT+CLICK
-* command palette: 'move to layer'
-* test: automated image comparison a la OpenLayers
-* simplfy styles while panning/zooming (custom PointerInteraction)
-* import: force polygon 'right hand rule'
 * ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
-* import: ODIN project (ZIP, DND)
+* print map
+
+cut off (post ODIN 2):
+* tags: focus/center map on feature/layer
+* command palette: 'move to layer'
+* UI: switch to Roboto font face
+* project list: support clipboard operations
+* project list: support undo/redo
+* language settings
+* performance: checkout TerserPlugin/WebPack
+
+
 
 * recurring: TODOs and/or add to backlog
 * recurring: backlog grooming
