@@ -75,10 +75,20 @@ PaletteCommands.prototype.getCommands = function (entries) {
   commands.push(...this.identityCommands_(entries))
   commands.push(...this.statusCommands_(entries))
   commands.push(...this.echelonCommands_(entries))
-  commands.push(...this.selectPropertyUniqueDesignation_(entries))
-
-
-  commands.sort((a, b) => a.description().localeCompare(b.description()))
+  commands.push(...this.textModifier_('Modifier: Quantity (C)', 'c').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Staff Comments (G)', 'g').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Additional Information (H)', 'h').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Higher Formation (M)', 'm').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: IFF/SIF (P)', 'p').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Direction (Q)', 'q').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Unique Designation (T)', 't').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Unique Designation (T1)', 't1').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Type (V)', 'v').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Date-Time Group (W)', 'w').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Date-Time Group (W1)', 'w1').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Altitude/Depth (X)', 'x').call(this, entries))
+  commands.push(...this.textModifier_('Modifier: Speed (Z)', 'z').call(this, entries))
+  // commands.sort((a, b) => a.description().localeCompare(b.description()))
   return commands
 }
 
@@ -247,39 +257,43 @@ PaletteCommands.prototype.styleSmoothCommands_ = function (entries) {
 /**
  *
  */
-PaletteCommands.prototype.selectPropertyUniqueDesignation_ = function (entries) {
-  const extractor = R.prop('t')
-  const features = entries.filter(entry => isFeatureId(entry.id))
-  const values = R.uniq(features.map(R.prop('properties')).map(extractor).filter(R.identity))
+PaletteCommands.prototype.textModifier_ = function (description, property) {
 
-  const value = values.length === 1
-    ? values[0] // one unique value
-    : values.length === 0
-      ? '' // undefined/no value
-      : null // multiple values
+  return function (entries) {
+    const extractor = R.prop(property)
+    const features = entries.filter(entry => isFeatureId(entry.id))
+    const values = R.uniq(features.map(R.prop('properties')).map(extractor).filter(R.identity))
 
-  const placeholder = value === null
-    ? 'M/V (edit or return to delete)'
-    : null
+    const value = values.length === 1
+      ? values[0] // one unique value
+      : values.length === 0
+        ? '' // undefined/no value
+        : null // multiple values
 
-  const callback = value => {
-    const updatedEntries = entries.map(entry => {
-      const properties = { ...entry.properties, t: value }
-      return { ...entry, properties }
+    const placeholder = value === null
+      ? 'M/V (edit or return to delete)'
+      : null
+
+    const callback = value => {
+      const updatedEntries = entries.map(entry => {
+        const properties = { ...entry.properties }
+        properties[property] = value
+        return { ...entry, properties }
+      })
+
+      this.updateEntries_(false, entries, updatedEntries)
+    }
+
+    const command = new Command({
+      description,
+      id: `property:${property}`,
+      body: (dryRun) => {
+        if (dryRun) return
+        const event = { value, callback, placeholder }
+        this.emitter_.emit('command/open-command-palette', event)
+      }
     })
 
-    this.updateEntries_(false, entries, updatedEntries)
+    return [command]
   }
-
-  const command = new Command({
-    id: 'property:t',
-    description: 'Property: Unique Designation (T)',
-    body: (dryRun) => {
-      if (dryRun) return
-      const event = { value, callback, placeholder }
-      this.emitter_.emit('command/open-command-palette', event)
-    }
-  })
-
-  return [command]
 }
