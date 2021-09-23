@@ -1,6 +1,7 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack')
 
 const hash = 'hash:base64:8'
@@ -58,7 +59,8 @@ const rendererConfig = (env, argv) => ({
     // Title is managed by BrowserWindow title option.
     new HtmlWebpackPlugin(),
     new webpack.IgnorePlugin({ resourceRegExp: /^pg-native$/ }),
-    new webpack.ExternalsPlugin('commonjs', ['leveldown'])
+    new webpack.ExternalsPlugin('commonjs', ['leveldown']),
+    // new BundleAnalyzerPlugin()
   ]
 })
 
