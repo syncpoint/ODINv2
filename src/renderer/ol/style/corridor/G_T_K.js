@@ -26,7 +26,7 @@ styles['G*T*K-----'] = ({ styles, lineString, width, resolution }) => {
       TS.union([buffer, arrow]).getBoundary(),
       TS.pointBuffer(TS.startPoint(lineString))(width / 2)
     ])),
-    styles.text(TS.point(aps[3]), {
+    styles.label(TS.point(aps[3]), {
       fontSize,
       text: 'CATK',
       flip: true,

@@ -21,7 +21,7 @@ const corridor = title => ({ styles, lineString, resolution, feature }) => {
       return R.aperture(2, coords)
         .map(TS.segment)
         .map(segment => [segment.midPoint(), segment.angle()])
-        .map(([point, angle]) => styles.text(TS.point(point), {
+        .map(([point, angle]) => styles.label(TS.point(point), {
           text,
           flip: true,
           textAlign: () => 'center',

@@ -33,7 +33,7 @@ styles['G*T*KF----'] = ({ styles, lineString, width, resolution }) => {
       TS.lineString(R.props([8, 9], aps))
     ])),
     styles.filledStroke(TS.polygon(R.props([10, 11, 12, 10], aps))),
-    styles.text(TS.point(aps[3]), {
+    styles.label(TS.point(aps[3]), {
       fontSize,
       text: 'CATK',
       flip: true,

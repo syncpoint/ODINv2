@@ -97,10 +97,10 @@ PolygonLabels.prototype.evaluate = function (position) {
   switch (position) {
     case 'topRight': return this.topRightLeft()
     case 'topLeft': return this.topRightLeft()
-    case 'right': return this.hIntersect()
     case 'left': return this.hIntersect()
-    case 'bottom': return this.vIntersect()
+    case 'right': return this.hIntersect()
     case 'top': return this.vIntersect()
+    case 'bottom': return this.vIntersect()
   }
 }
 

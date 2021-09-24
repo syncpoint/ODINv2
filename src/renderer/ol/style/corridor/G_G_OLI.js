@@ -7,7 +7,7 @@ styles['G*G*OLI---'] = ({ styles, lineString, width, feature }) => {
   const anchor = segments[0].pointAlong(0.5)
 
   return [
-    styles.text(TS.point(anchor), {
+    styles.label(TS.point(anchor), {
       textAlign: () => 'center',
       rotation: Math.PI - segments[0].angle(),
       text: feature.get('t'),
