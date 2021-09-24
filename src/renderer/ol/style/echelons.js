@@ -5,23 +5,6 @@ import * as TS from '../ts'
 import { echelonCode } from '../../symbology/2525c'
 import urls from './echelons.json'
 
-const corrections = {
-  A: 0, // 0
-  B: 40, // *
-  C: 30, // * (2)
-  D: 20, // * (3)
-  E: 50, // |
-  F: 40, // | (2)
-  G: 30, // | (3)
-  H: 20, // X
-  I: -70, // X(2)
-  J: -100, // X(3)
-  K: -150, // X(4)
-  L: -200, // X(5)
-  M: -260, // X(6)
-  N: -50 // ++
-}
-
 export const createEchelon = options => {
   const { sidc, geometry, resolution } = options
   const code = echelonCode(sidc)
@@ -36,8 +19,7 @@ export const createEchelon = options => {
   const lineString = TS.lineString(coords)
   const line = TS.lengthIndexedLine(lineString)
   const scale = 0.15
-  const correction = corrections[code] ? corrections[code] : 0
-  const width = (echelon.width + correction) * resolution / 8
+  const width = resolution * Math.sqrt(echelon.width) * 1.5
   const length = line.getEndIndex()
   const A = line.extractPoint(length / 2 - width)
   const B = line.extractPoint(length / 2 + width)
