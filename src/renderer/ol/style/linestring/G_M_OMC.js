@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // MINE CLUSTER
-styles['LineString:G*M*OMC---'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*M*OMC---'] = ({ styles, lineString }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()

@@ -1,5 +1,6 @@
 import { StyleCache } from './StyleCache'
-import { styles, geometryType } from './styles'
+import { styles } from './styles'
+import { geometryType } from '../geometry'
 import './point'
 import './linestring'
 import './polygon'

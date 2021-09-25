@@ -21,21 +21,13 @@ const corridor = title => ({ styles, lineString, resolution, feature }) => {
       return R.aperture(2, coords)
         .map(TS.segment)
         .map(segment => [segment.midPoint(), segment.angle()])
-        .map(([point, angle]) => styles.label(TS.point(point), {
+        .map(([point, angle]) => styles.text(TS.point(point), {
           text,
-          flip: true,
-          textAlign: () => 'center',
-          rotation: Math.PI - angle
+          angle,
+          textAlign: 'center'
         }))
     }
   })()
-
-  // NOTE: cut start/end cap
-  // const corridor = TS.collect([
-  //   TS.difference([R.head(segments).getBoundary(), TS.pointBuffer(TS.startPoint(lineString))(width * 1.01)]),
-  //   ...R.take(segments.length - 2, R.drop(1, segments)),
-  //   TS.difference([R.last(segments).getBoundary(), TS.pointBuffer(TS.endPoint(lineString))(width * 1.01)])
-  // ])
 
   return [
     styles.solidStroke(TS.collect(segments)),

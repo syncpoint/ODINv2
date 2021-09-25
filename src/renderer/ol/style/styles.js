@@ -1,46 +1,41 @@
 import * as geom from 'ol/geom'
-import Feature from 'ol/Feature'
-import Geometry from 'ol/geom/Geometry'
-import GeometryCollection from 'ol/geom/GeometryCollection'
 import * as Style from 'ol/style'
 import ms from 'milsymbol'
 import * as Colors from './color-schemes'
 import { identityCode, statusCode } from '../../symbology/2525c'
 import * as pattern from './styles-pattern'
 
+const makeStroke = options => new Style.Stroke(options)
+const makeText = options => new Style.Text(options)
+const makeCircle = options => new Style.Circle(options)
+const makeFill = options => new Style.Fill(options)
+const makeRegularShape = options => new Style.RegularShape(options)
+const makeIcon = options => new Style.Icon(options)
 
-/**
- *
- */
-const STYLE = {
-  stroke: options => new Style.Stroke(options),
-  style: options => new Style.Style(options),
-  text: options => new Style.Text(options),
-  circle: options => new Style.Circle(options),
-  fill: options => new Style.Fill(options),
-  regularShape: options => new Style.RegularShape(options),
-  icon: options => new Style.Icon(options)
-}
+const makeStyle = options => Array.isArray(options)
+  ? options.map(makeStyle)
+  : new Style.Style(options)
 
 
-// TODO: move up one level (ol/)
-export const geometryType = arg => {
-  if (arg instanceof Feature) return geometryType(arg.getGeometry())
-  else if (arg instanceof GeometryCollection) return arg.getGeometries().map(geometryType).join(':')
-  else if (arg instanceof Geometry) return arg.getType()
-  else return null
-}
-
-// 8cbb6c2e-7637-4603-9d2c-dd59b8252ea4 - preferences/project: color scheme (dark, medium, light)
 const SCHEME_DEFAULT = 'medium'
 const COLOR_WHITE_40 = 'rgba(255,255,255,0.4)'
-const COLOR_CAROLINA_BLUE = '#3399CC' // https://coolors.co/3399cc
-const FILL_WHITE_40 = STYLE.fill({ color: COLOR_WHITE_40 })
-const STROKE_CAROLINA_BLUE = STYLE.stroke({ color: COLOR_CAROLINA_BLUE, width: 1.25 })
-const LINE_DASH_DEFAULT = [20, 10]
+const COLOR_RED_60 = 'rgba(255,0,0,0.6)'
+const COLOR_CAROLINA_BLUE = '#C' // https://coolors.co/3399cc
+const FILL_WHITE_100 = makeFill({ color: 'white' })
+const FILL_WHITE_40 = makeFill({ color: COLOR_WHITE_40 })
+const FILL_RED_60 = makeFill({ color: COLOR_RED_60 })
+const STROKE_CAROLINA_BLUE = makeStroke({ color: COLOR_CAROLINA_BLUE, width: 1.25 })
+const STROKE_WHITE_3 = makeStroke({ color: 'white', width: 3 })
+const STROKE_BLACK_1 = makeStroke({ color: 'black', width: 1 })
+const LINE_DASH_20_10 = [20, 10]
+const LINE_DASH_8_8 = [8, 8]
+const LINE_DASH_10_10 = [10, 10]
+const LINE_DASH_20_8_2_8 = [20, 8, 2, 8]
 
-const STYLE_OL = STYLE.style({
-  image: STYLE.circle({
+export const styles = {}
+
+styles.DEFAULT = () => makeStyle({
+  image: makeCircle({
     fill: FILL_WHITE_40,
     stroke: STROKE_CAROLINA_BLUE,
     radius: 5
@@ -49,94 +44,33 @@ const STYLE_OL = STYLE.style({
   stroke: STROKE_CAROLINA_BLUE
 })
 
-export const styles = {}
-
-styles.DEFAULT = () => STYLE_OL
-
-// TODO: think about general stroke cache
-
-const STROKE_WHITE_3 = STYLE.stroke({ color: 'white', width: 3 })
-const MULTI_SELECT_HANDLE = STYLE.regularShape({
-  fill: STYLE.fill({ color: 'white' }),
-  stroke: STYLE.stroke({ color: 'black', width: 1 }),
+const HANDLE_MULTI_SELECT = makeRegularShape({
+  fill: FILL_WHITE_100,
+  stroke: STROKE_BLACK_1,
   radius: 6,
   points: 4,
   angle: Math.PI / 4
+})
+
+const HANDLE_SINGLE_SELECT = makeCircle({
+  fill: FILL_RED_60,
+  stroke: STROKE_WHITE_3,
+  radius: 7
 })
 
 
 /**
  *
  */
-const text = (geometry, options = {}) => {
-
-  const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
-  const textAlign = options.flip
-    ? options.textAlign && options.textAlign(flip(options.rotation))
-    : options.textAlign
-
-  const rotation = options.flip
-    ? flip(options.rotation)
-      ? options.rotation - Math.PI
-      : options.rotation
-    : options.rotation
-
-  const offsetX = options.flip
-    ? options.offsetX && options.offsetX(flip(options.rotation))
-    : options.offsetX
-
-  const font = options.font || `${options.fontWeight} ${options.fontSize} ${options.fontFamily}`
-
-  // Text stroke is optional:
-  const textStroke = options.textStrokeWidth
-    ? STYLE.stroke({ width: options.textStrokeWidth, color: options.textStrokeColor })
-    : null
-
-  return STYLE.style({
-    geometry,
-    text: STYLE.text({
-      ...options,
-      font,
-      stroke: textStroke,
-      fill: STYLE.fill({ color: options.textFillColor }),
-      textAlign,
-      rotation,
-      offsetX,
-      overflow: true
-    })
-  })
-}
-
-
-const symbol = (geometry, sidc, options) => {
-  const symbol = new ms.Symbol(sidc, { ...options })
-  const { width, height } = symbol.getSize()
-
-  const image = STYLE.icon({
-    anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
-    imgSize: [Math.floor(width), Math.floor(height)],
-    img: symbol.asCanvas(),
-    anchorXUnits: 'pixels',
-    anchorYUnits: 'pixels',
-    scale: 0.5
-  })
-
-  return STYLE.style({ geometry, image })
-}
-
-export const makeStyles = (sidcLike, mode = 'default') => {
-  if (!sidcLike) return null
-  if (sidcLike instanceof Feature) return makeStyles(sidcLike.get('sidc'), mode)
-  if (!(typeof sidcLike === 'string')) return null
-
-  const sidc = sidcLike
+export const makeStyles = (feature, mode = 'default') => {
+  const sidc = feature.get('sidc')
   const standardIdentity = identityCode(sidc)
   const status = statusCode(sidc)
 
   const props = {
     strokeColor: Colors.stroke(standardIdentity),
     strokeFillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
-    lineDash: status === 'A' ? LINE_DASH_DEFAULT : null,
+    lineDash: status === 'A' ? LINE_DASH_20_10 : null,
     fillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
     fontWeight: 'normal',
     fontSize: '12px',
@@ -150,177 +84,210 @@ export const makeStyles = (sidcLike, mode = 'default') => {
 
   const styles = {}
 
-  styles.defaultStroke = (geometry, options = {}) => {
-    const fill = options.fillPattern && pattern.fill({ ...props, ...options.fillPattern })
 
-    return [
-      STYLE.style({
-        geometry,
-        stroke: STYLE.stroke({
-          color: props.strokeColor,
-          width: props.strokeWidth,
-          lineDash: props.lineDash
-        })
-      }),
-      STYLE.style({
-        geometry,
-        stroke: STYLE.stroke({
-          color: props.strokeFillColor,
-          width: props.strokeFillWidth,
-          lineDash: props.lineDash
-        }),
-        fill: fill && STYLE.fill({ color: fill })
-      })
-    ]
+  const PI = Math.PI
+  const TWO_PI = 2 * Math.PI
+  const HALF_PI = Math.PI / 2
+  const TEXT_ALIGN = {
+    start: 'end',
+    end: 'start',
+    left: 'right',
+    right: 'left',
+    center: 'center'
   }
 
-  styles.filledStroke = geometry => ([
-    STYLE.style({
-      geometry,
-      stroke: STYLE.stroke({ color: props.strokeColor, width: props.strokeWidth })
-    }),
-    STYLE.style({
-      geometry,
-      stroke: STYLE.stroke({ color: props.strokeFillColor, width: props.strokeFillWidth }),
-      fill: STYLE.fill({ color: props.fillColor })
-    })
-  ])
-
-  styles.dashedStroke = (geometry, options = {}) => {
-    const lineDash = options.lineDash || [8, 8]
-
-    return [
-      STYLE.style({
-        geometry,
-        stroke: STYLE.stroke({ color: props.strokeColor, width: props.strokeWidth, lineDash })
-      }),
-      STYLE.style({
-        geometry,
-        stroke: STYLE.stroke({ color: props.strokeFillColor, width: props.strokeFillWidth, lineDash })
-      })
-    ]
-  }
-
-  styles.solidStroke = geometry => ([
-    STYLE.style({
-      geometry,
-      stroke: STYLE.stroke({ color: props.strokeColor, width: props.strokeWidth })
-    }),
-    STYLE.style({
-      geometry,
-      stroke: STYLE.stroke({ color: props.strokeFillColor, width: props.strokeFillWidth })
-    })
-  ])
-
-  styles.waspStroke = geometry => ([
-    STYLE.style({
-      geometry,
-      stroke: STYLE.stroke({ color: 'black', width: props.strokeWidth })
-    }),
-    STYLE.style({
-      geometry,
-      stroke: STYLE.stroke({ color: 'yellow', width: props.strokeFillWidth, lineDash: [10, 10] })
-    })
-  ])
-
-  styles.guideStroke = geometry => mode === 'selected'
-    ? [
-        STYLE.style({
-          geometry,
-          stroke: STYLE.stroke({ color: 'red', width: 1.5, lineDash: [20, 8, 2, 8] })
-        })
-      ]
-    : []
-
-
-  /**
-   *
-   */
-  styles.label = (geometry, options = {}) => {
-    // TODO: symbol
-    // TODO: echelon
-    // TODO: text
-
-    if (options.symbol) {
-      return styles.symbol(geometry, { sidc: options.symbol, infoFields: false })
-    } else {
-      return styles.text(geometry, options)
-    }
-  }
-
-  styles.text = (geometry, options = {}) => {
-    return text(geometry, {
-      ...options,
-      fontWeight: options.fontWeight || props.fontWeight,
-      fontSize: options.fontSize || props.fontSize,
-      fontFamily: options.fontFamily || props.fontFamily,
-      textFillColor: options.textFillColor || props.textFillColor,
-      textStrokeColor: options.textStrokeColor || props.textStrokeColor
-    })
-  }
-
-  styles.outlinedText = (geometry, options = {}) => {
-    const flip = α => α > Math.PI / 2 && α < 3 * Math.PI / 2
-    const textAlign = options.flip
-      ? options.textAlign && options.textAlign(flip(options.rotation))
-      : options.textAlign
-
-    const rotation = options.flip
-      ? flip(options.rotation)
-        ? options.rotation - Math.PI
-        : options.rotation
-      : options.rotation
-
-    const offsetX = options.flip
-      ? options.offsetX && options.offsetX(flip(options.rotation))
-      : options.offsetX
-
-    // TODO: 245decd7-2865-43e7-867d-2133889750b9 - style (layer/feature): font (size, color, etc.)
-
+  const textOptions = options => {
     const fontWeight = options.fontWeight || props.fontWeight
     const fontSize = options.fontSize || props.fontSize
     const fontFamily = options.fontFamily || props.fontFamily
     const font = options.font || `${fontWeight} ${fontSize} ${fontFamily}`
+    const { text, angle, textAlign, offsetX, offsetY } = options
+    const flipped = angle ? angle < -HALF_PI || angle > HALF_PI : false
+
+    return {
+      text,
+      font,
+      overflow: true,
+
+      // Adjust some options depending on rotation angle:
+      rotation: angle ? flipped ? PI - angle : TWO_PI - angle : null,
+      textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
+      offsetX: offsetX ? flipped ? -1 * offsetX : offsetX : 0,
+      offsetY: offsetY || 0
+    }
+  }
+
+  const symbolOptions = (options) => {
+    const size = 60 // TODO: make configurable
+    const symbol = new ms.Symbol(options.sidc, { ...options, size })
+    const { width, height } = symbol.getSize()
+
+    return {
+      anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
+      imgSize: [Math.floor(width), Math.floor(height)],
+      img: symbol.asCanvas(),
+      anchorXUnits: 'pixels',
+      anchorYUnits: 'pixels',
+      scale: 0.5
+    }
+  }
+
+  /**
+   *
+   */
+  styles.labels = (labelOptions = []) => {
+    return labelOptions.map(options => {
+      if (options.textOptions) {
+        const text = makeText(textOptions(options.textOptions))
+        return makeStyle({ geometry: options.geometry, text })
+      } else {
+        const image = makeIcon(symbolOptions(options.symbolOptions))
+        return makeStyle({ geometry: options.geometry, image })
+      }
+    })
+  }
+
+  styles.text = (geometry, options = {}) => {
+    const text = makeText(textOptions(options))
+    return [makeStyle({ geometry, text })]
+  }
+
+  styles.outlinedText = (geometry, options = {}) => {
     const textStrokeWidth = options.textStrokeWidth || props.textStrokeWidth
     const textStrokeColor = options.textStrokeColor || props.textStrokeColor
     const textFillColor = options.textFillColor || props.textFillColor
 
-    return STYLE.style({
-      geometry,
-      text: STYLE.text({
-        ...options,
-        font,
-        stroke: STYLE.stroke({ width: textStrokeWidth, color: textStrokeColor }),
-        fill: STYLE.fill({ color: textFillColor }),
-        textAlign,
-        rotation,
-        offsetX,
-        overflow: true
-      })
+    const text = makeText({
+      ...textOptions(options),
+      stroke: makeStroke({ width: textStrokeWidth, color: textStrokeColor }),
+      fill: makeFill({ color: textFillColor })
     })
+
+    return [makeStyle({ geometry, text })]
   }
 
   styles.symbol = (geometry, options) => {
-    const size = 60 // TODO: make configurable
-    return symbol(geometry, sidc, { ...options, size })
+    const image = makeIcon(symbolOptions({ ...options, sidc }))
+    return makeStyle({ geometry, image })
   }
 
-  styles.handles = (geometry, options = {}) => {
-    return mode === 'selected'
-      ? [STYLE.style({
-          geometry,
-          image: STYLE.circle({
-            fill: STYLE.fill({ color: options.color || 'rgba(255,0,0,0.6)' }),
-            stroke: STROKE_WHITE_3,
-            radius: 7
-          })
-        })]
-      : mode === 'multiple'
-        ? [STYLE.style({
-            geometry: new geom.Point(geometry.getFirstCoordinate()),
-            image: MULTI_SELECT_HANDLE
-          })]
-        : []
+  /**
+   *
+   */
+  styles.handles = geometry => {
+    const styleOptions = {
+      multiple: [{
+        geometry: new geom.Point(geometry.getFirstCoordinate()),
+        image: HANDLE_MULTI_SELECT
+      }],
+      selected: [{
+        geometry,
+        image: HANDLE_SINGLE_SELECT
+      }]
+    }
+
+    return makeStyle(styleOptions[mode] || [])
+  }
+
+  const strokeStyle = (geometry, options) => options
+    .map(options => ({ geometry, stroke: makeStroke(options) }))
+    .map(makeStyle)
+
+
+  styles.defaultStroke = (geometry, options = {}) => {
+    const fill = options.fillPattern && pattern.fill({
+      ...props, ...options.fillPattern
+    })
+
+    const styleOptions = [
+      {
+        geometry,
+        stroke: makeStroke({
+          color: props.strokeColor,
+          width: props.strokeWidth,
+          lineDash: props.lineDash
+        })
+      },
+      {
+        geometry,
+        stroke: makeStroke({
+          color: props.strokeFillColor,
+          width: props.strokeFillWidth,
+          lineDash: props.lineDash
+        }),
+        fill: fill && makeFill({ color: fill })
+      }
+    ]
+
+    return makeStyle(styleOptions)
+  }
+
+  /**
+   *
+   */
+  styles.solidStroke = geometry => {
+    const strokeOptions = [
+      { color: props.strokeColor, width: props.strokeWidth },
+      { color: props.strokeFillColor, width: props.strokeFillWidth }
+    ]
+
+    return strokeStyle(geometry, strokeOptions)
+  }
+
+  /**
+   *
+   */
+  styles.dashedStroke = (geometry, options = {}) => {
+    const lineDash = options.lineDash || LINE_DASH_8_8
+    const strokeOptions = [
+      { color: props.strokeColor, width: props.strokeWidth, lineDash },
+      { color: props.strokeFillColor, width: props.strokeFillWidth, lineDash }
+    ]
+
+    return strokeStyle(geometry, strokeOptions)
+  }
+
+  /**
+   *
+   */
+  styles.waspStroke = geometry => {
+    const strokeOptions = [
+      { color: 'black', width: props.strokeWidth },
+      { color: 'yellow', width: props.strokeFillWidth, lineDash: LINE_DASH_10_10 }
+    ]
+
+    return strokeStyle(geometry, strokeOptions)
+  }
+
+  /**
+   *
+   */
+  styles.guideStroke = geometry => {
+    const styleOptions = {
+      selected: [{
+        geometry,
+        stroke: makeStroke({ color: 'red', width: 1.5, lineDash: LINE_DASH_20_8_2_8 })
+      }]
+    }
+
+    return makeStyle(styleOptions[mode] || [])
+  }
+
+  /**
+   *
+   */
+  styles.filledStroke = geometry => {
+    const styleOptions = [{
+      geometry,
+      stroke: makeStroke({ color: props.strokeColor, width: props.strokeWidth })
+    },
+    {
+      geometry,
+      stroke: makeStroke({ color: props.strokeFillColor, width: props.strokeFillWidth }),
+      fill: makeFill({ color: props.fillColor })
+    }]
+
+    return makeStyle(styleOptions)
   }
 
   return styles

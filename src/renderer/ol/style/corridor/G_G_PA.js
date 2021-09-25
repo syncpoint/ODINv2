@@ -30,13 +30,12 @@ styles['G*G*PA----'] = ({ styles, lineString, width, resolution, feature }) => {
   const uniqueDesignation = (() => {
     const t = feature.get('t')
     if (!t) return []
-    return styles.label(TS.point(aps[3]), {
+    return styles.text(TS.point(aps[3]), {
       font,
-      textAlign: flipped => flipped ? 'end' : 'start',
-      offsetX: flipped => flipped ? -10 : 10,
-      rotation: Math.PI - lastSegment.angle(),
       text: t,
-      flip: true
+      textAlign: 'end',
+      offsetX: -10,
+      angle: lastSegment.angle()
     })
   })()
 

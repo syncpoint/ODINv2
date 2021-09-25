@@ -26,18 +26,15 @@ styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
     TS.segmentize(TS.segment(p01, p11), n).filter((_, i) => i % 2 !== 0)
   ))
 
+  const path = TS.collect([
+    TS.lineString([coords[0], p0]),
+    TS.lineString([p0, ...x, p1]),
+    TS.lineString([p1, coords[1]]),
+    TS.lineString([xs[0], xs[1], xs[2]])
+  ])
+
   return [
-    styles.defaultStroke(TS.collect([
-      TS.lineString([coords[0], p0]),
-      TS.lineString([p0, ...x, p1]),
-      TS.lineString([p1, coords[1]]),
-      TS.lineString([xs[0], xs[1], xs[2]])
-    ])),
-    styles.outlinedText(TS.point(xs[3]), {
-      text: 'F',
-      flip: true,
-      rotation: Math.PI - segment.angle(),
-      textAlign: () => 'center'
-    })
+    styles.defaultStroke(path),
+    styles.outlinedText(TS.point(xs[3]), { angle, text: 'F' })
   ]
 }

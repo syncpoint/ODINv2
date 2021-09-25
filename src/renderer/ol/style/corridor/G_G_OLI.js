@@ -7,11 +7,10 @@ styles['G*G*OLI---'] = ({ styles, lineString, width, feature }) => {
   const anchor = segments[0].pointAlong(0.5)
 
   return [
-    styles.label(TS.point(anchor), {
-      textAlign: () => 'center',
-      rotation: Math.PI - segments[0].angle(),
+    styles.text(TS.point(anchor), {
       text: feature.get('t'),
-      flip: true
+      textAlign: 'center',
+      angle: segments[0].angle()
     }),
     styles.solidStroke(TS.difference([
       TS.boundary(TS.lineBuffer(lineString)(width / 2)),

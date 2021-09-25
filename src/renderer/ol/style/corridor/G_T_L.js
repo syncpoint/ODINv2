@@ -17,17 +17,15 @@ const withdrawLike = text => ({ styles, point, lineString, width, resolution }) 
     TS.polygon([coords[0], p0, p1, coords[1], coords[0]])
   ])
 
+  const path = TS.collect([
+    lineString,
+    openArrow(resolution, angle, coords[1]),
+    arc
+  ])
+
   return [
-    styles.defaultStroke(TS.collect([
-      lineString,
-      openArrow(resolution, angle, coords[1]),
-      arc
-    ])),
-    styles.outlinedText(TS.point(segment.midPoint()), {
-      text,
-      flip: true,
-      rotation: Math.PI - angle
-    })
+    styles.defaultStroke(path),
+    styles.outlinedText(TS.point(segment.midPoint()), { angle, text })
   ]
 }
 

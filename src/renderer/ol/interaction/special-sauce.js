@@ -1,7 +1,7 @@
 import { geometry } from '../../symbology/2525c'
 import corridor from './corridor'
 import fan from './fan'
-import { geometryType } from '../style/styles'
+import { geometryType } from '../geometry'
 
 const layouts = {
   'LineString:Point': corridor,

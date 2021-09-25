@@ -8,15 +8,13 @@ styles['G*T*B-----'] = ({ styles, lineString, width }) => {
   const angle = segment.angle()
   const fractions = [[0, 1], [0, -1]]
 
+  const path = TS.collect([
+    lineString,
+    TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
+  ])
+
   return [
-    styles.defaultStroke(TS.collect([
-      lineString,
-      TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
-    ])),
-    styles.outlinedText(TS.point(segment.midPoint()), {
-      text: 'B',
-      flip: true,
-      rotation: Math.PI - angle
-    })
+    styles.defaultStroke(path),
+    styles.outlinedText(TS.point(segment.midPoint()), { angle, text: 'B' })
   ]
 }

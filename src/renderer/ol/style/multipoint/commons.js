@@ -31,7 +31,5 @@ export const deg2rad = Math.PI / 180
 
 export const arcText = styles => (anchor, angle, text) => styles.outlinedText(anchor, {
   text,
-  flip: true,
-  textAlign: () => 'center',
-  rotation: Math.PI - angle + 330 / 2 * deg2rad
+  angle: angle - 330 / 2 * deg2rad
 })

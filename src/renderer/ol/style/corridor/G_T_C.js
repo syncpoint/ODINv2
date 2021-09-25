@@ -15,16 +15,14 @@ styles['G*T*C-----'] = ({ styles, lineString, width, resolution }) => {
     TS.pointBuffer(TS.endPoint(lineString))(width / 2)
   ])
 
+  const path = TS.collect([
+    openCorridor,
+    TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p0)([[-1, -1], [1, 1]]))),
+    TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, 1], [1, -1]])))
+  ])
+
   return [
-    styles.defaultStroke(TS.collect([
-      openCorridor,
-      TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p0)([[-1, -1], [1, 1]]))),
-      TS.lineString(R.props([0, 1], TS.projectCoordinates(distance, angle, p1)([[-1, 1], [1, -1]])))
-    ])),
-    styles.outlinedText(TS.startPoint(lineString), {
-      text: 'C',
-      flip: true,
-      rotation: Math.PI - angle
-    })
+    styles.defaultStroke(path),
+    styles.outlinedText(TS.startPoint(lineString), { angle, text: 'C' })
   ]
 }

@@ -1,8 +1,7 @@
 import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
-import '../styles-labels'
+import * as Labels from '../styles-labels'
 import { transform } from './commons'
-import { LineStringLabels } from '../labels'
 import { smooth } from '../chaikin'
 
 /* eslint-disable no-multi-spaces */
@@ -50,6 +49,7 @@ styles.LineString = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
+  const properties = feature.getProperties()
 
   const simplifiedGeometry = geometry.getCoordinates().length > 100
     ? geometry.simplify(resolution)
@@ -59,12 +59,11 @@ styles.LineString = ({ feature, resolution, mode }) => {
     ? smooth(simplifiedGeometry)
     : simplifiedGeometry
 
-  const handles = featureStyles.handles(simplifiedGeometry)
-  const labels = new LineStringLabels(smoothedGeometry, feature.getProperties())
-  const texts = (styles[`LABELS:${key}`] || []).flat()
-    .map(labels.label.bind(labels))
-    .map(({ geometry, options }) => featureStyles.label(geometry, options))
+  const labels = (styles[`LABELS:${key}`] || []).flat()
+  const labelOptions = Labels.styleOptions(smoothedGeometry, properties)(labels)
+  const texts = featureStyles.labels(labelOptions)
 
+  const handles = featureStyles.handles(simplifiedGeometry)
   const guides = featureStyles.guideStroke(simplifiedGeometry)
   const style = styles[`LineString:${key}`]
     ? transform(styles[`LineString:${key}`])({

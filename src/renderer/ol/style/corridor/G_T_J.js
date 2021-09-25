@@ -8,7 +8,6 @@ styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
-  const rotation = Math.PI - angle
 
   const cutout = TS.polygon(R.props([0, 1, 3, 2, 0], [
     ...TS.projectCoordinates(width, angle, coords[0])([[0, 1], [0, -1]]),
@@ -26,17 +25,15 @@ styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
 
   const [p1] = TS.projectCoordinates(width / 2, angle, coords[1])([[1, 0]])
 
+  const path = TS.collect([
+    lineString,
+    arcs[0],
+    ...spikes,
+    openArrow(resolution, angle, coords[1])
+  ])
+
   return [
-    styles.defaultStroke(TS.collect([
-      lineString,
-      arcs[0],
-      ...spikes,
-      openArrow(resolution, angle, coords[1])
-    ])),
-    styles.outlinedText(TS.point(p1), {
-      text: 'C',
-      flip: true,
-      rotation
-    })
+    styles.defaultStroke(path),
+    styles.outlinedText(TS.point(p1), { angle, text: 'C' })
   ]
 }

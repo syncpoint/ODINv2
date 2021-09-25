@@ -1,7 +1,5 @@
-import * as R from 'ramda'
 import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
-import { PolygonLabels } from '../labels'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
@@ -11,6 +9,7 @@ import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
 import { smooth } from '../chaikin'
 import { createEchelon } from '../echelons'
+import * as Labels from '../styles-labels'
 
 styles['FILL:HATCH'] = { pattern: 'hatch', angle: 45, size: 2, spacing: 12 }
 styles['FILL:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
@@ -28,6 +27,7 @@ styles.Polygon = ({ feature, resolution, mode }) => {
 
   const featureStyles = makeStyles(feature, mode)
   const geometry = feature.getGeometry()
+  const properties = feature.getProperties()
 
   const simplifiedGeometry = geometry.getCoordinates()[0].length > 50
     ? geometry.simplify(resolution)
@@ -37,17 +37,15 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     ? smooth(simplifiedGeometry)
     : simplifiedGeometry
 
+  const labels = (styles[`LABELS:${key}`] || []).flat()
+  const labelOptions = Labels.styleOptions(smoothedGeometry, properties)(labels)
+  const texts = featureStyles.labels(labelOptions)
+
   const echelon = styles[key]
     ? { notchedGeometry: smoothedGeometry, icon: [] }
     : createEchelon({ sidc, resolution, geometry: smoothedGeometry })
 
   const handles = featureStyles.handles(simplifiedGeometry)
-  const labels = new PolygonLabels(smoothedGeometry, feature.getProperties())
-  const texts = (styles[`LABELS:${key}`] || []).flat()
-    .map(text => ({ ...labels.label(text), ...text }))
-    .filter(R.identity)
-    .map(({ geometry, options }) => featureStyles.label(geometry, options))
-
   const fillPattern = styles[`FILL:${key}`]
   const guides = featureStyles.guideStroke(simplifiedGeometry)
   const style = styles[key]

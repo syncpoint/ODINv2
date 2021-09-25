@@ -33,13 +33,12 @@ styles['G*T*KF----'] = ({ styles, lineString, width, resolution }) => {
       TS.lineString(R.props([8, 9], aps))
     ])),
     styles.filledStroke(TS.polygon(R.props([10, 11, 12, 10], aps))),
-    styles.label(TS.point(aps[3]), {
+    styles.text(TS.point(aps[3]), {
       fontSize,
       text: 'CATK',
-      flip: true,
-      textAlign: flipped => flipped ? 'end' : 'start',
-      offsetX: flipped => flipped ? -10 : 10,
-      rotation: Math.PI - lastSegment.angle()
+      textAlign: 'end',
+      offsetX: -10,
+      angle: lastSegment.angle()
     })
   ]
 }

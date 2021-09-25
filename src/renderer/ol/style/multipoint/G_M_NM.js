@@ -5,14 +5,10 @@ import * as TS from '../../ts'
 styles['MultiPoint:G*M*NM----'] = ({ styles, feature, points }) => {
   const [C, A] = TS.coordinates(points)
   const segment = TS.segment([C, A])
+  const text = feature.get('t')
 
   return [
     styles.defaultStroke(TS.pointBuffer(TS.point(C))(segment.getLength())),
-    feature.get('t')
-      ? styles.outlinedText(TS.point(A), {
-        text: feature.get('t'),
-        flip: false
-      })
-      : []
+    text ? styles.outlinedText(TS.point(A), { text }) : []
   ]
 }

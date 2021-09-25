@@ -66,9 +66,8 @@ styles['LineString:Point'] = ({ feature, resolution, mode }) => {
         featureStyles.outlinedText(TS.point(segments[0].midPoint()), {
           text: `invalid geometry\n${err.message}`.toUpperCase(),
           textFillColor: 'red',
-          flip: true,
-          textAlign: () => 'center',
-          rotation: Math.PI - segments[0].angle()
+          textAlign: 'center',
+          angle: segments[0].angle()
         })
       ]
     })({ feature })
