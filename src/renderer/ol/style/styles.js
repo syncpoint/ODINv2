@@ -67,7 +67,7 @@ export const makeStyles = (feature, mode = 'default') => {
   const standardIdentity = identityCode(sidc)
   const status = statusCode(sidc)
 
-  const props = {
+  const defaults = {
     strokeColor: Colors.stroke(standardIdentity),
     strokeFillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
     lineDash: status === 'A' ? LINE_DASH_20_10 : null,
@@ -82,7 +82,15 @@ export const makeStyles = (feature, mode = 'default') => {
     strokeFillWidth: 2
   }
 
+
   const styles = {}
+
+  styles.font = options => {
+    const fontWeight = options.fontWeight || defaults.fontWeight
+    const fontSize = options.fontSize || defaults.fontSize
+    const fontFamily = options.fontFamily || defaults.fontFamily
+    return options.font || `${fontWeight} ${fontSize} ${fontFamily}`
+  }
 
 
   const PI = Math.PI
@@ -97,16 +105,12 @@ export const makeStyles = (feature, mode = 'default') => {
   }
 
   const textOptions = options => {
-    const fontWeight = options.fontWeight || props.fontWeight
-    const fontSize = options.fontSize || props.fontSize
-    const fontFamily = options.fontFamily || props.fontFamily
-    const font = options.font || `${fontWeight} ${fontSize} ${fontFamily}`
     const { text, angle, textAlign, offsetX, offsetY } = options
     const flipped = angle ? angle < -HALF_PI || angle > HALF_PI : false
 
     return {
       text,
-      font,
+      font: styles.font(options),
       overflow: true,
 
       // Adjust some options depending on rotation angle:
@@ -153,9 +157,9 @@ export const makeStyles = (feature, mode = 'default') => {
   }
 
   styles.outlinedText = (geometry, options = {}) => {
-    const textStrokeWidth = options.textStrokeWidth || props.textStrokeWidth
-    const textStrokeColor = options.textStrokeColor || props.textStrokeColor
-    const textFillColor = options.textFillColor || props.textFillColor
+    const textStrokeWidth = options.textStrokeWidth || defaults.textStrokeWidth
+    const textStrokeColor = options.textStrokeColor || defaults.textStrokeColor
+    const textFillColor = options.textFillColor || defaults.textFillColor
 
     const text = makeText({
       ...textOptions(options),
@@ -196,24 +200,24 @@ export const makeStyles = (feature, mode = 'default') => {
 
   styles.defaultStroke = (geometry, options = {}) => {
     const fill = options.fillPattern && pattern.fill({
-      ...props, ...options.fillPattern
+      ...defaults, ...options.fillPattern
     })
 
     const styleOptions = [
       {
         geometry,
         stroke: makeStroke({
-          color: props.strokeColor,
-          width: props.strokeWidth,
-          lineDash: props.lineDash
+          color: defaults.strokeColor,
+          width: defaults.strokeWidth,
+          lineDash: defaults.lineDash
         })
       },
       {
         geometry,
         stroke: makeStroke({
-          color: props.strokeFillColor,
-          width: props.strokeFillWidth,
-          lineDash: props.lineDash
+          color: defaults.strokeFillColor,
+          width: defaults.strokeFillWidth,
+          lineDash: defaults.lineDash
         }),
         fill: fill && makeFill({ color: fill })
       }
@@ -227,8 +231,8 @@ export const makeStyles = (feature, mode = 'default') => {
    */
   styles.solidStroke = geometry => {
     const strokeOptions = [
-      { color: props.strokeColor, width: props.strokeWidth },
-      { color: props.strokeFillColor, width: props.strokeFillWidth }
+      { color: defaults.strokeColor, width: defaults.strokeWidth },
+      { color: defaults.strokeFillColor, width: defaults.strokeFillWidth }
     ]
 
     return strokeStyle(geometry, strokeOptions)
@@ -240,8 +244,8 @@ export const makeStyles = (feature, mode = 'default') => {
   styles.dashedStroke = (geometry, options = {}) => {
     const lineDash = options.lineDash || LINE_DASH_8_8
     const strokeOptions = [
-      { color: props.strokeColor, width: props.strokeWidth, lineDash },
-      { color: props.strokeFillColor, width: props.strokeFillWidth, lineDash }
+      { color: defaults.strokeColor, width: defaults.strokeWidth, lineDash },
+      { color: defaults.strokeFillColor, width: defaults.strokeFillWidth, lineDash }
     ]
 
     return strokeStyle(geometry, strokeOptions)
@@ -252,8 +256,8 @@ export const makeStyles = (feature, mode = 'default') => {
    */
   styles.waspStroke = geometry => {
     const strokeOptions = [
-      { color: 'black', width: props.strokeWidth },
-      { color: 'yellow', width: props.strokeFillWidth, lineDash: LINE_DASH_10_10 }
+      { color: 'black', width: defaults.strokeWidth },
+      { color: 'yellow', width: defaults.strokeFillWidth, lineDash: LINE_DASH_10_10 }
     ]
 
     return strokeStyle(geometry, strokeOptions)
@@ -279,12 +283,12 @@ export const makeStyles = (feature, mode = 'default') => {
   styles.filledStroke = geometry => {
     const styleOptions = [{
       geometry,
-      stroke: makeStroke({ color: props.strokeColor, width: props.strokeWidth })
+      stroke: makeStroke({ color: defaults.strokeColor, width: defaults.strokeWidth })
     },
     {
       geometry,
-      stroke: makeStroke({ color: props.strokeFillColor, width: props.strokeFillWidth }),
-      fill: makeFill({ color: props.fillColor })
+      stroke: makeStroke({ color: defaults.strokeFillColor, width: defaults.strokeFillWidth }),
+      fill: makeFill({ color: defaults.fillColor })
     }]
 
     return makeStyle(styleOptions)

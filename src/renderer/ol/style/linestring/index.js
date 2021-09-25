@@ -3,6 +3,7 @@ import { styles, makeStyles } from '../styles'
 import * as Labels from '../styles-labels'
 import { transform } from './commons'
 import { smooth } from '../chaikin'
+import './labels'
 
 /* eslint-disable no-multi-spaces */
 import './G_F_LT'    // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
@@ -60,8 +61,8 @@ styles.LineString = ({ feature, resolution, mode }) => {
     : simplifiedGeometry
 
   const labels = (styles[`LABELS:${key}`] || []).flat()
-  const labelOptions = Labels.styleOptions(smoothedGeometry, properties)(labels)
-  const texts = featureStyles.labels(labelOptions)
+  const labelOptions = Labels.styleOptions(smoothedGeometry, properties, featureStyles)
+  const texts = featureStyles.labels(labelOptions(labels))
 
   const handles = featureStyles.handles(simplifiedGeometry)
   const guides = featureStyles.guideStroke(simplifiedGeometry)

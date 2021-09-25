@@ -1,5 +1,6 @@
 import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
+import './labels'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
@@ -38,7 +39,7 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     : simplifiedGeometry
 
   const labels = (styles[`LABELS:${key}`] || []).flat()
-  const labelOptions = Labels.styleOptions(smoothedGeometry, properties)(labels)
+  const labelOptions = Labels.styleOptions(smoothedGeometry, properties, featureStyles)(labels)
   const texts = featureStyles.labels(labelOptions)
 
   const echelon = styles[key]
