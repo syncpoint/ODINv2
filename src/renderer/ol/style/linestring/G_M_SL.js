@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // FORTIFIED LINE
 styles['LineString:G*M*SL----'] = ({ styles, resolution, lineString }) => {
@@ -20,8 +21,8 @@ styles['LineString:G*M*SL----'] = ({ styles, resolution, lineString }) => {
     .map(([a, b, c, d]) => [a, b, c, d, TS.segment([b, c]).angle()])
     .map(([a, b, c, d, angle]) => [
       a, b, c, d,
-      TS.projectCoordinate(b)([angle + Math.PI / 2, width]),
-      TS.projectCoordinate(c)([angle + Math.PI / 2, width])
+      TS.projectCoordinate(b)([angle + PI_OVER_2, width]),
+      TS.projectCoordinate(c)([angle + PI_OVER_2, width])
     ])
     .map(([a, b, c, d, x, y]) => TS.lineString([a, b, x, y, c, d]))
 

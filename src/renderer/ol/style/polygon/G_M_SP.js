@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as TS from '../../ts'
 import { styles } from '../styles'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // STRONG POINT
 styles['G*M*SP----'] = ({ styles, resolution, geometry }) => {
@@ -20,7 +21,7 @@ styles['G*M*SP----'] = ({ styles, resolution, geometry }) => {
     const P1 = indexedLine.extractPoint((a + b) / 2)
     const [A, B] = [indexedLine.extractPoint(a), indexedLine.extractPoint(b)]
     const segment = TS.segment([A, B])
-    const angle = segment.angle() - Math.PI / 2
+    const angle = segment.angle() - PI_OVER_2
     const P2 = TS.projectCoordinate(P1)([angle, delta * 0.75])
     return TS.lineString([P1, P2])
   })))

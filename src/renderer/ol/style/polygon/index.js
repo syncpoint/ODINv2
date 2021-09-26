@@ -39,7 +39,13 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     : simplifiedGeometry
 
   const labels = (styles[`LABELS:${key}`] || []).flat()
-  const labelOptions = Labels.styleOptions(smoothedGeometry, properties, featureStyles)(labels)
+  console.log('[Polygon] labels', labels)
+  const labelOptions = Labels.styleOptions({
+    resolution,
+    properties,
+    geometry: smoothedGeometry,
+    styles: featureStyles
+  })(labels)
   const texts = featureStyles.labels(labelOptions)
 
   const echelon = styles[key]

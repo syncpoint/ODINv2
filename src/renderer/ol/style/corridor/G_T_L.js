@@ -7,6 +7,7 @@ const withdrawLike = text => ({ styles, point, lineString, width, resolution }) 
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
   const angle = segment.angle()
+  const midPoint = TS.point(segment.midPoint())
 
   const [px] = TS.projectCoordinates(width / 4, angle, coords[0])([[0, -orientation]])
   const [p0] = TS.projectCoordinates(width / 2, angle, coords[0])([[0, -orientation]])
@@ -18,18 +19,21 @@ const withdrawLike = text => ({ styles, point, lineString, width, resolution }) 
   ])
 
   const path = TS.collect([
-    lineString,
+    TS.difference([lineString, TS.pointBuffer(midPoint)(resolution * 8)]),
     openArrow(resolution, angle, coords[1]),
     arc
   ])
 
   return [
     styles.defaultStroke(path),
-    styles.outlinedText(TS.point(segment.midPoint()), { angle, text })
+    styles.outlinedText(midPoint, {
+      rotation: TS.rotation(segment),
+      text
+    })
   ]
 }
 
-styles['G*T*L-----'] = withdrawLike('D') // TASKS / CANALIZE
+styles['G*T*L-----'] = withdrawLike('D') // TASKS / DELAY
 styles['G*T*M-----'] = withdrawLike('R') // TASKS / RETIREMENT
 styles['G*T*W-----'] = withdrawLike('W') // TASKS / WITHDRAW
 styles['G*T*WP----'] = withdrawLike('WP') // WITHDRAW UNDER PRESSURE

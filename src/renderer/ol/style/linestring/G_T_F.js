@@ -14,6 +14,7 @@ styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
     [0.1, 0]
   ])
 
+  const textAnchor = TS.point(xs[3])
   const [p0, p1] = [segment.pointAlong(0.2), segment.pointAlong(0.8)]
   const [p00, p01, p10, p11] = [
     ...TS.projectCoordinates(resolution * 8, angle, p0)([[0, -1], [0, 1]]),
@@ -27,7 +28,7 @@ styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
   ))
 
   const path = TS.collect([
-    TS.lineString([coords[0], p0]),
+    TS.difference([TS.lineString([coords[0], p0]), TS.pointBuffer(textAnchor)(resolution * 7)]),
     TS.lineString([p0, ...x, p1]),
     TS.lineString([p1, coords[1]]),
     TS.lineString([xs[0], xs[1], xs[2]])
@@ -35,6 +36,9 @@ styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
 
   return [
     styles.defaultStroke(path),
-    styles.outlinedText(TS.point(xs[3]), { angle, text: 'F' })
+    styles.outlinedText(textAnchor, {
+      rotation: TS.rotation(segment),
+      text: 'F'
+    })
   ]
 }

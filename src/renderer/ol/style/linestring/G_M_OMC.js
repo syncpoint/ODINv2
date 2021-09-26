@@ -1,6 +1,8 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
+import { PI } from '../../../../shared/Math'
+
 
 // MINE CLUSTER
 styles['LineString:G*M*OMC---'] = ({ styles, lineString }) => {
@@ -11,7 +13,7 @@ styles['LineString:G*M*OMC---'] = ({ styles, lineString }) => {
   const radius = segment.getLength() / 2
 
   const points = R.range(0, 17)
-    .map(i => Math.PI / 16 * i + angle)
+    .map(i => PI / 16 * i + angle)
     .map(angle => TS.projectCoordinate(center)([angle, radius]))
 
   const geometry = TS.collect([lineString, TS.lineString(points)])

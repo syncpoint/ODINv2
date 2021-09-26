@@ -24,7 +24,7 @@ const fanLike = label => options => {
   ]
 
   const text = segment => styles.outlinedText(TS.point(segment.pointAlong(0.3)), {
-    angle: segment.angle(),
+    rotation: TS.rotation(segment),
     text: label
   })
 

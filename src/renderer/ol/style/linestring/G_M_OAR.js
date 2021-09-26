@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
+import { PI_OVER_2, PI_OVER_3 } from '../../../../shared/Math'
 
 // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
 styles['LineString:G*M*OAR---'] = ({ styles, resolution, lineString }) => {
@@ -24,8 +25,8 @@ styles['LineString:G*M*OAR---'] = ({ styles, resolution, lineString }) => {
       a,
       coords,
       d,
-      TS.projectCoordinate(R.head(coords))([angle - Math.PI / 3, width]),
-      TS.projectCoordinate(d)([angle - Math.PI / 2, width / 2])
+      TS.projectCoordinate(R.head(coords))([angle - PI_OVER_3, width]),
+      TS.projectCoordinate(d)([angle - PI_OVER_2, width / 2])
     ])
     .flatMap(([a, coords, d, x, c]) => {
       return [

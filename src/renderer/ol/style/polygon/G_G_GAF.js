@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as TS from '../../ts'
 import { styles } from '../styles'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // FORTIFIED AREA
 styles['G*G*GAF---'] = ({ styles, resolution, geometry }) => {
@@ -20,7 +21,7 @@ styles['G*G*GAF---'] = ({ styles, resolution, geometry }) => {
       acc.push(A1, B1)
     } else {
       const segment = TS.segment([A1, B1])
-      const angle = segment.angle() - Math.PI / 2
+      const angle = segment.angle() - PI_OVER_2
       const A2 = TS.projectCoordinate(A1)([angle, delta * 0.75])
       const B2 = TS.projectCoordinate(B1)([angle, delta * 0.75])
       acc.push(A2, B2)

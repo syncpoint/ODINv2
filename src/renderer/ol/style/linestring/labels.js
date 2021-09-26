@@ -8,7 +8,7 @@ const BOTTOM = 25
 
 const MT = text => [{ text, align: 0.5, offsetY: TOP }]
 const MB = text => [{ text, align: 0.5, offsetY: BOTTOM }]
-const MM = text => [{ text, align: 0.5, textStrokeWidth }]
+const MM = text => [{ text, align: 0.5, textStrokeWidth, clip: true }]
 const SE = text => ['start', 'end'].map(align => ({ text, align }))
 const PL = title => ['start', 'end'].map(align => ({ text: [`"${title}"`, 't ? "(PL " + t + ")" : null'], align }))
 
@@ -31,7 +31,7 @@ const RFL = [
 ]
 
 const MFP = [
-  { text: '"MFP"', align: 0.5, textStrokeWidth },
+  { text: '"MFP"', align: 0.5, textStrokeWidth, clip: true },
   { text: ['w', 'w1'], align: 'left', offsetY: BOTTOM }
 ]
 

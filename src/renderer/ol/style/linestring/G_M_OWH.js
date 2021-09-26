@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import { fenceX, fenceLine } from './commons'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // HIGH WIRE FENCE
 styles['LineString:G*M*OWH---'] = ({ styles, resolution, lineString }) => {
@@ -18,11 +19,11 @@ styles['LineString:G*M*OWH---'] = ({ styles, resolution, lineString }) => {
 
   const startPoint = TS.projectCoordinate(
     TS.coordinate(TS.startPoint(lineString))
-  )([startSegment.angle() + Math.PI / 2, width / 2])
+  )([startSegment.angle() + PI_OVER_2, width / 2])
 
   const endPoint = TS.projectCoordinate(
     TS.coordinate(TS.endPoint(lineString))
-  )([endSegment.angle() + Math.PI / 2, width / 2])
+  )([endSegment.angle() + PI_OVER_2, width / 2])
 
   const buffer = TS.singleSidedLineBuffer(lineString)(width)
   const geometry = TS.difference([

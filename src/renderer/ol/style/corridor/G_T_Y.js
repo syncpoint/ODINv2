@@ -12,7 +12,8 @@ styles['G*T*Y-----'] = ({ styles, lineString, width, resolution }) => {
   const geometry = TS.collect([
     TS.difference([
       TS.boundary(TS.lineBuffer(lineString)(width / 2)),
-      TS.pointBuffer(TS.endPoint(lineString))(width / 2)
+      TS.pointBuffer(TS.endPoint(lineString))(width / 2),
+      TS.pointBuffer(TS.startPoint(lineString))(resolution * 7)
     ]),
     openArrow(resolution, angle, p0),
     openArrow(resolution, angle, p1)
@@ -20,6 +21,9 @@ styles['G*T*Y-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(geometry),
-    styles.outlinedText(TS.startPoint(lineString), { angle, text: 'B' })
+    styles.outlinedText(TS.startPoint(lineString), {
+      rotation: TS.rotation(segment),
+      text: 'B'
+    })
   ]
 }

@@ -31,7 +31,7 @@ import './G_T_H' // TASKS / BREACH
 import './G_T_J' // TASKS / CONTAIN
 import './G_T_K' // COUNTERATTACK (CATK)
 import './G_T_KF' // COUNTERATTACK BY FIRE
-import './G_T_L' // TASKS / CANALIZE, RETIREMENT, WITHDRAW (UNDER PRESSURE)
+import './G_T_L' // TASKS / DELAY, RETIREMENT, WITHDRAW (UNDER PRESSURE)
 import './G_T_P' // TASKS / PENETRATE
 import './G_T_R' // TASKS / RELIEF IN PLACE (RIP)
 import './G_T_T' // TASKS / DISRUPT
@@ -67,7 +67,7 @@ styles['LineString:Point'] = ({ feature, resolution, mode }) => {
           text: `invalid geometry\n${err.message}`.toUpperCase(),
           textFillColor: 'red',
           textAlign: 'center',
-          angle: segments[0].angle()
+          rotation: TS.rotation(segments[0])
         })
       ]
     })({ feature })

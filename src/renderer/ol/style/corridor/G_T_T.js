@@ -8,6 +8,7 @@ styles['G*T*T-----'] = ({ styles, lineString, width, resolution }) => {
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
+  const midPoint = TS.point(segment.midPoint())
 
   const interpolate = ([fraction, segment]) => {
     segment.p1 = segment.pointAlong(fraction)
@@ -25,7 +26,7 @@ styles['G*T*T-----'] = ({ styles, lineString, width, resolution }) => {
 
   const geometry = TS.collect([
     TS.lineString(segments[0]),
-    TS.lineString(segments[1]),
+    TS.difference([TS.lineString(segments[1]), TS.pointBuffer(midPoint)(resolution * 7)]),
     TS.lineString(segments[2]),
     TS.lineString([segments[0].p0, segments[2].p0]),
     TS.lineString([segments[1].pointAlong(-0.25), segments[1].p0]),
@@ -34,6 +35,9 @@ styles['G*T*T-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(geometry),
-    styles.outlinedText(TS.point(segment.midPoint()), { angle, text: 'D' })
+    styles.outlinedText(midPoint, {
+      rotation: TS.rotation(segment),
+      text: 'D'
+    })
   ]
 }

@@ -172,7 +172,7 @@ export const geometries = geometryCollection => R
   .map(i => geometryCollection.getGeometryN(i))
 
 export const translate = (angle, geometry) => distance => {
-  const α = 2 * Math.PI - angle
+  const α = Angle.PI_TIMES_2 - angle
   const [tx, ty] = [-Math.cos(α) * distance, Math.sin(α) * distance]
   const transform = AffineTransformation.translationInstance(tx, ty)
   const translated = geometry.copy()
@@ -215,11 +215,35 @@ export const bearingDistance = (...args) => {
   return [Angle.normalizePositive(s.angle()), s.getLength()]
 }
 
+/**
+ * Segment.angle() - COUNTERCLOCKWISE
+ *
+ *           π/2
+ *            |
+ *  +/- π ----+---- +/- 0
+ *            |
+ *         - π/2
+ *
+ *
+ * Text rotation - CLOCKWISE
+ *
+ *          upright
+ *           +/- 0
+ *             |
+ *  - π/2 -----+----- π/2
+ *  slanted    |  slanted
+ *  backwards  |  fowards
+ *             π
+ *           upside
+ *           down
+ */
+
 export const angle = (p0, p1) => Angle.angle(p0, p1)
+export const rotation = segment => Angle.normalize(Angle.PI_TIMES_2 - segment.angle())
 
 const appendHead = ([head, ...tail]) => [head, ...tail, head]
 export const circle = ({ x, y }, radius, n) => appendHead(R.range(0, n))
-  .map(i => (2 * Math.PI / n) * i)
+  .map(i => (Angle.PI_TIMES_2 / n) * i)
   .map(α => [x + radius * Math.cos(α), y + radius * Math.sin(α)])
   .map(coordinate)
 

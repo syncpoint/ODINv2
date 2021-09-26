@@ -31,7 +31,7 @@ styles['G*T*K-----'] = ({ styles, lineString, width, resolution }) => {
       text: 'CATK',
       textAlign: 'end',
       offsetX: -10,
-      angle: lastSegment.angle()
+      rotation: TS.rotation(lastSegment)
     })
   ]
 }

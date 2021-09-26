@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import { arrowCoordinates } from './commons'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // AXIS OF ADVANCE / AIRBORNE
 styles['G*G*OLAA--'] = ({ styles, lineString, width }) => {
@@ -21,8 +22,8 @@ styles['G*G*OLAA--'] = ({ styles, lineString, width }) => {
     const point = TS.point(points[points.length - 2])
     const bearing = average(R.drop(segments.length - 2, segments).map(angle))
     return TS.lineString(TS.coordinates([
-      TS.translate(bearing + Math.PI / 2, point)(width),
-      TS.translate(bearing - Math.PI / 2, point)(width)
+      TS.translate(bearing + PI_OVER_2, point)(width),
+      TS.translate(bearing - PI_OVER_2, point)(width)
     ]))
   })()
 

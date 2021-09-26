@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as TS from '../../ts'
 import { styles } from '../styles'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // OBSTACLE RESTRICTED AREA
 styles['G*M*OGR---'] = ({ styles, resolution, geometry }) => {
@@ -25,7 +26,7 @@ styles['G*M*OGR---'] = ({ styles, resolution, geometry }) => {
         segment.getCoordinate(0),
         ...R.splitEvery(3, xs).flatMap(([a, b, c]) => [
           a,
-          TS.projectCoordinate(b)([segment.angle() + Math.PI / 2, delta / 3]),
+          TS.projectCoordinate(b)([segment.angle() + PI_OVER_2, delta / 3]),
           c
         ]),
         segment.getCoordinate(1)

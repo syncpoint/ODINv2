@@ -12,7 +12,8 @@ styles['G*T*C-----'] = ({ styles, lineString, width, resolution }) => {
 
   const openCorridor = TS.difference([
     TS.boundary(TS.lineBuffer(lineString)(width / 2)),
-    TS.pointBuffer(TS.endPoint(lineString))(width / 2)
+    TS.pointBuffer(TS.endPoint(lineString))(width / 2),
+    TS.pointBuffer(TS.startPoint(lineString))(resolution * 7)
   ])
 
   const path = TS.collect([
@@ -23,6 +24,9 @@ styles['G*T*C-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(path),
-    styles.outlinedText(TS.startPoint(lineString), { angle, text: 'C' })
+    styles.outlinedText(TS.startPoint(lineString), {
+      rotation: TS.rotation(segment),
+      text: 'C'
+    })
   ]
 }

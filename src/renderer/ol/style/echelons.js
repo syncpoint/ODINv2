@@ -4,6 +4,7 @@ import { Icon, Style } from 'ol/style'
 import * as TS from '../ts'
 import { echelonCode } from '../../symbology/2525c'
 import urls from './echelons.json'
+import { PI } from '../../../shared/Math'
 
 export const createEchelon = options => {
   const { sidc, geometry, resolution } = options
@@ -36,7 +37,7 @@ export const createEchelon = options => {
     geometry: anchor,
     image: new Icon({
       scale,
-      rotation: Math.PI - angle,
+      rotation: PI - angle,
       src: echelon.url
     })
   })

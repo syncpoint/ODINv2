@@ -1,6 +1,8 @@
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import { openArrow } from './commons'
+import { PI } from '../../../../shared/Math'
+
 
 // TASKS / RELIEF IN PLACE (RIP)
 styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
@@ -8,6 +10,7 @@ styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
   const angle = segment.angle()
+  const midPoint = TS.point(segment.midPoint())
 
   const [px] = TS.projectCoordinates(width / 4, angle, coords[1])([[0, -orientation]])
   const [p0] = TS.projectCoordinates(width / 2, angle, coords[0])([[0, -orientation]])
@@ -19,15 +22,18 @@ styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
   ])
 
   const geometry = TS.collect([
-    lineString,
+    TS.difference([lineString, TS.pointBuffer(midPoint)(resolution * 11)]),
     TS.lineString([p1, p0]),
     openArrow(resolution, angle, coords[1]),
-    openArrow(resolution, angle + Math.PI, p0),
+    openArrow(resolution, angle + PI, p0),
     arc
   ])
 
   return [
     styles.defaultStroke(geometry),
-    styles.outlinedText(TS.point(segment.midPoint()), { angle, text: 'RIP' })
+    styles.outlinedText(midPoint, {
+      rotation: TS.rotation(segment),
+      text: 'RIP'
+    })
   ]
 }

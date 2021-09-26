@@ -23,6 +23,9 @@ styles['G*T*X-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(geometry),
-    styles.outlinedText(TS.point(segment.midPoint()), { angle, text: 'C' })
+    styles.outlinedText(TS.point(segment.midPoint()), {
+      rotation: TS.rotation(segment),
+      text: 'C'
+    })
   ]
 }

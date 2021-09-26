@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
+import { PI_OVER_3 } from '../../../../shared/Math'
 
 const teeth = (lineString, resolution) => {
   const width = resolution * 10
@@ -12,7 +13,7 @@ const teeth = (lineString, resolution) => {
     .aperture(2, R.range(0, count + 1).map(i => offset + width * i))
     .map(([a, b]) => [line.extractPoint(a), line.extractPoint(b), line.extractLine(a, b)])
     .map(([a, b, line]) => [a, TS.segment([a, b]).angle(), TS.coordinates(line)])
-    .map(([a, angle, coords]) => [TS.projectCoordinate(a)([angle + Math.PI / 3, width]), coords])
+    .map(([a, angle, coords]) => [TS.projectCoordinate(a)([angle + PI_OVER_3, width]), coords])
     .map(([c, coords]) => TS.polygon([c, ...coords, c]))
 }
 

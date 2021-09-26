@@ -4,6 +4,7 @@ import ms from 'milsymbol'
 import * as Colors from './color-schemes'
 import { identityCode, statusCode } from '../../symbology/2525c'
 import * as pattern from './styles-pattern'
+import { PI, PI_OVER_2, PI_OVER_4 } from '../../../shared/Math'
 
 const makeStroke = options => new Style.Stroke(options)
 const makeText = options => new Style.Text(options)
@@ -49,7 +50,7 @@ const HANDLE_MULTI_SELECT = makeRegularShape({
   stroke: STROKE_BLACK_1,
   radius: 6,
   points: 4,
-  angle: Math.PI / 4
+  angle: PI_OVER_4
 })
 
 const HANDLE_SINGLE_SELECT = makeCircle({
@@ -92,10 +93,6 @@ export const makeStyles = (feature, mode = 'default') => {
     return options.font || `${fontWeight} ${fontSize} ${fontFamily}`
   }
 
-
-  const PI = Math.PI
-  const TWO_PI = 2 * Math.PI
-  const HALF_PI = Math.PI / 2
   const TEXT_ALIGN = {
     start: 'end',
     end: 'start',
@@ -105,8 +102,8 @@ export const makeStyles = (feature, mode = 'default') => {
   }
 
   const textOptions = options => {
-    const { text, angle, textAlign, offsetX, offsetY } = options
-    const flipped = angle ? angle < -HALF_PI || angle > HALF_PI : false
+    const { text, rotation, textAlign, offsetX, offsetY } = options
+    const flipped = rotation ? rotation < -PI_OVER_2 || rotation > PI_OVER_2 : false
 
     return {
       text,
@@ -114,7 +111,7 @@ export const makeStyles = (feature, mode = 'default') => {
       overflow: true,
 
       // Adjust some options depending on rotation angle:
-      rotation: angle ? flipped ? PI - angle : TWO_PI - angle : null,
+      rotation: rotation ? flipped ? rotation + PI : rotation : null,
       textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
       offsetX: offsetX ? flipped ? -1 * offsetX : offsetX : 0,
       offsetY: offsetY || 0
@@ -140,6 +137,7 @@ export const makeStyles = (feature, mode = 'default') => {
    *
    */
   styles.labels = (labelOptions = []) => {
+    console.log('labels', labelOptions)
     return labelOptions.map(options => {
       if (options.textOptions) {
         const text = makeText(textOptions(options.textOptions))

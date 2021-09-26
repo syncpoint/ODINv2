@@ -3,11 +3,14 @@ import * as geom from 'ol/geom'
 import { containsXY } from 'ol/extent'
 import { Jexl } from 'jexl'
 import * as math from 'mathjs'
+import * as AF from 'transformation-matrix' // affine transformations
+import { Angle } from '../ts'
 
 const canvas = document.createElement('canvas')
 const context = canvas.getContext('2d')
 
 const jexl = new Jexl()
+
 const atan2 = delta => Math.atan2(delta[0], delta[1])
 const vector = points => [points[1][1] - points[0][1], points[1][0] - points[0][0]]
 const segmentAngle = R.compose(atan2, vector)
@@ -28,6 +31,31 @@ const text = (properties, { text }) => Array.isArray(text)
   : jexl.evalSync(text, properties)
 
 
+const makeClipBox = (resolution, geometry, textOptions) => {
+  const { rotation, metrics } = textOptions
+  const [x, y] = geometry.getCoordinates()
+  const padding = 5
+  const width = resolution * (padding + metrics.width / 2)
+  const height = resolution * (padding + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) / 2)
+  const points = [
+    [x - width, y - height],
+    [x + width, y - height],
+    [x + width, y + height],
+    [x - width, y + height],
+    [x - width, y - height]
+  ]
+
+  const transform = AF.compose(
+    AF.translate(x, y),
+    AF.rotate(2 * Math.PI - rotation),
+    AF.translate(resolution * textOptions.offsetX, resolution * textOptions.offsetY),
+    AF.translate(-x, -y)
+  )
+
+  return new geom.Polygon([AF.applyToPoints(transform, points)])
+}
+
+
 /**
  * Horizontal and vertical label placement
  *
@@ -40,7 +68,8 @@ const text = (properties, { text }) => Array.isArray(text)
  *                    |  P1                |              P2 |
  * BOTTOM             |  |                 |              |  |
  */
-const lineString = (geometry, properties, styles) => {
+const lineString = options => {
+  const { geometry, properties, styles, resolution } = options
   const segments = R.aperture(2, geometry.getCoordinates())
 
   const segment = fraction => [
@@ -64,31 +93,38 @@ const lineString = (geometry, properties, styles) => {
     [R.T, ({ align }) => geometry.getCoordinateAt(align)]
   ])
 
-  const textOptions = label => {
-    context.font = styles.font(label)
-
+  const makeTextOptions = label => {
     const options = {
       text: text(properties, label),
-      angle: angle(label),
+      rotation: Angle.normalize(Angle.PI_TIMES_2 - angle(label)),
       textAlign: textAlign[label.align] || null,
       offsetY: label.offsetY || 0,
       offsetX: offsetX[label.align] || 0
     }
 
-    return {
-      textOptions: options,
-      metrics: context.measureText(options.text)
+    if (label.clip) {
+      context.font = styles.font(label)
+      options.metrics = context.measureText(options.text)
     }
+
+    return options
   }
 
   return labels => {
     if (!labels || !labels.length) return []
 
     const textLabels = labels.filter(({ text }) => text)
-    const options = textLabels.map(label => ({
-      geometry: new geom.Point(coordinate(label)),
-      ...textOptions(label)
-    }))
+    const options = textLabels.map(label => {
+      const geometry = new geom.Point(coordinate(label))
+      const textOptions = makeTextOptions(label)
+      const options = {
+        geometry,
+        textOptions
+      }
+
+      if (label.clip) options.clipBox = makeClipBox(resolution, geometry, textOptions)
+      return options
+    })
 
     return options
   }
@@ -98,7 +134,8 @@ const lineString = (geometry, properties, styles) => {
 /**
  *
  */
-const polygon = (geometry, properties, styles) => {
+const polygon = options => {
+  const { geometry, properties, styles } = options
   const ring = geometry.getLinearRing(0)
   const box = ring.getExtent()
   const coords = ring.getCoordinates()
@@ -141,6 +178,7 @@ const polygon = (geometry, properties, styles) => {
   }
 
   const hIntersect = function () {
+    console.log('hIntersect', coords, box, centerCoords)
     const xs = axisIntersect(
       coords,
       [box[0], centerCoords[1]], [box[2], centerCoords[1]]
@@ -162,7 +200,7 @@ const polygon = (geometry, properties, styles) => {
     positions.top = new geom.Point(xs[0][1] > xs[1][1] ? xs[0] : xs[1])
   }
 
-  const calculate = ({ position }) => {
+  const calculate = position => {
     switch (position) {
       case 'topRight': return topRightLeft()
       case 'topLeft': return topRightLeft()
@@ -208,7 +246,7 @@ const polygon = (geometry, properties, styles) => {
   }
 }
 
-export const styleOptions = (geometry, properties, styles) =>
-  geometry.getType() === 'LineString'
-    ? lineString(geometry, properties, styles)
-    : polygon(geometry, properties, styles)
+export const styleOptions = options =>
+  options.geometry.getType() === 'LineString'
+    ? lineString(options)
+    : polygon(options)

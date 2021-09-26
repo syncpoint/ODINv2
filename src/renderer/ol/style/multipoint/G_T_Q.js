@@ -1,11 +1,12 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
-import { deg2rad, quads, arcText } from './commons'
+import { quads, arcText } from './commons'
 import * as TS from '../../ts'
+import { DEG2RAD, PI_OVER_2 } from '../../../../shared/Math'
 
 // TASKS / RETAIN
 styles['MultiPoint:G*T*Q-----'] = ({ styles, points, resolution }) => {
-  const delta = 330 * deg2rad
+  const delta = 330 * DEG2RAD
   const coords = TS.coordinates(points)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -21,7 +22,7 @@ styles['MultiPoint:G*T*Q-----'] = ({ styles, points, resolution }) => {
     .map(i => [arcs[0][i], arcs[1][i]])
     .map(coords => TS.lineString(coords))
 
-  const xs = TS.projectCoordinates(radius, angle - delta + Math.PI / 2, R.last(arcs[1]))([
+  const xs = TS.projectCoordinates(radius, angle - delta + PI_OVER_2, R.last(arcs[1]))([
     [0.2, -0.2], [0, 0], [0.2, 0.2]
   ])
 
@@ -32,7 +33,7 @@ styles['MultiPoint:G*T*Q-----'] = ({ styles, points, resolution }) => {
   ])
 
   return [
-    arcText(styles)(textAnchor, angle, 'R'),
+    arcText(styles)(textAnchor, TS.rotation(segment), 'R'),
     styles.defaultStroke(TS.union([geometry, TS.lineString(xs)]))
   ]
 }

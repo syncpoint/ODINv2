@@ -35,7 +35,7 @@ styles['G*G*PA----'] = ({ styles, lineString, width, resolution, feature }) => {
       text: t,
       textAlign: 'end',
       offsetX: -10,
-      angle: lastSegment.angle()
+      rotation: TS.rotation(lastSegment)
     })
   })()
 

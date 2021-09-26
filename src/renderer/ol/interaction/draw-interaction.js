@@ -6,6 +6,7 @@ import * as MILSTD from '../../symbology/2525c'
 import { writeFeatureObject } from '../../store/format'
 import * as TS from '../ts'
 import * as EPSG from '../../epsg'
+import { PI_OVER_2, PI_OVER_4 } from '../../../shared/Math'
 
 
 /**
@@ -132,7 +133,7 @@ const geometries = [
       const line = read(geometry)
       const coordinates = TS.coordinates(line)
       const segment = TS.segment(coordinates)
-      const angle = segment.angle() + Math.PI / 2
+      const angle = segment.angle() + PI_OVER_2
       const distance = segment.getLength() / goldenRatio
 
       const C = TS.projectCoordinate(coordinates[0])([angle, distance])
@@ -154,7 +155,7 @@ const geometries = [
 
       const C = TS.coordinate(point)
       const A = TS.projectCoordinate(C)([0, distance])
-      const B = TS.projectCoordinate(C)([Math.PI / 4, distance])
+      const B = TS.projectCoordinate(C)([PI_OVER_4, distance])
       feature.setGeometry(write(TS.multiPoint([C, A, B].map(TS.point))))
     }
   },
@@ -190,7 +191,7 @@ const geometries = [
       const minLength = segments.map(segment => segment.getLength()).reduce(min)
       const width = Math.min(minLength / 2, map.getView().getResolution() * 50)
       const A = TS.coordinate(TS.startPoint(line))
-      const angle = segments[0].angle() - Math.PI / 2
+      const angle = segments[0].angle() - PI_OVER_2
       const point = TS.point(TS.projectCoordinate(A)([angle, width / 2]))
       feature.setGeometry(write(TS.geometryCollection([line, point])))
     }

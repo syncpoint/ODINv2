@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { parameterized } from '../../../symbology/2525c'
 import { styles, makeStyles } from '../styles'
 import * as Labels from '../styles-labels'
@@ -61,8 +62,18 @@ styles.LineString = ({ feature, resolution, mode }) => {
     : simplifiedGeometry
 
   const labels = (styles[`LABELS:${key}`] || []).flat()
-  const labelOptions = Labels.styleOptions(smoothedGeometry, properties, featureStyles)
-  const texts = featureStyles.labels(labelOptions(labels))
+  const labelOptions = Labels.styleOptions({
+    properties,
+    resolution,
+    geometry: smoothedGeometry,
+    styles: featureStyles
+  })(labels)
+
+  const texts = featureStyles.labels(labelOptions)
+  const clipBoxes = labelOptions
+    .filter(R.prop('clipBox'))
+    .map(({ clipBox }) => featureStyles.defaultStroke(clipBox))
+    .flat()
 
   const handles = featureStyles.handles(simplifiedGeometry)
   const guides = featureStyles.guideStroke(simplifiedGeometry)
@@ -75,5 +86,5 @@ styles.LineString = ({ feature, resolution, mode }) => {
     })
     : featureStyles.defaultStroke(smoothedGeometry)
 
-  return [...style, ...texts, ...handles, ...guides]
+  return [...style, ...texts, ...handles, ...guides, ...clipBoxes]
 }

@@ -1,4 +1,5 @@
 import { DEVICE_PIXEL_RATIO } from 'ol/has'
+import { DEG2RAD } from '../../../shared/Math'
 
 const patterns = {
   hatch: {
@@ -19,7 +20,7 @@ const patternDescriptor = options => {
 
   let a = Math.round(((options.angle || 0) - 90) % 360)
   if (a > 180) a -= 360
-  a *= Math.PI / 180
+  a *= DEG2RAD
   const cos = Math.cos(a)
   const sin = Math.sin(a)
   if (Math.abs(sin) < 0.0001) {

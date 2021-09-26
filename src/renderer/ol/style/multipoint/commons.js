@@ -1,5 +1,6 @@
 import { codeUTM } from '../../../epsg'
 import * as TS from '../../ts'
+import { PI } from '../../../../shared/Math'
 
 /**
  * Decorate existing style function with these cross-cutting concerns:
@@ -27,9 +28,8 @@ export const transform = fn => args => {
 }
 
 export const quads = 64
-export const deg2rad = Math.PI / 180
 
-export const arcText = styles => (anchor, angle, text) => styles.outlinedText(anchor, {
+export const arcText = styles => (anchor, rotation, text) => styles.outlinedText(anchor, {
   text,
-  angle: angle - 330 / 2 * deg2rad
+  rotation: rotation - PI / 12
 })

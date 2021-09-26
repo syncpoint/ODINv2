@@ -34,6 +34,9 @@ styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
 
   return [
     styles.defaultStroke(path),
-    styles.outlinedText(TS.point(p1), { angle, text: 'C' })
+    styles.outlinedText(TS.point(p1), {
+      rotation: TS.rotation(segment),
+      text: 'C'
+    })
   ]
 }

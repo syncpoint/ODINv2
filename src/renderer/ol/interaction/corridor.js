@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as TS from '../ts'
 import * as EPSG from '../../epsg'
+import { PI_OVER_2 } from '../../../shared/Math'
 
 export default (feature, descriptor) => {
   const [lineString, point] = feature.getGeometry().getGeometries()
@@ -45,7 +46,7 @@ export default (feature, descriptor) => {
     const { center, orientation, width } = params
     const [A, B] = R.take(2, TS.coordinates([center]))
     const bearing = TS.segment([A, B]).angle()
-    const point = TS.point(TS.projectCoordinate(A)([bearing + orientation * Math.PI / 2, width]))
+    const point = TS.point(TS.projectCoordinate(A)([bearing + orientation * PI_OVER_2, width]))
     const copy = properties => create({ ...params, ...properties })
 
     geometries.CENTER.setCoordinates(write(center).getCoordinates())

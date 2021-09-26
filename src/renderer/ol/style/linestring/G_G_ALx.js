@@ -20,10 +20,10 @@ const corridor = title => ({ styles, lineString, resolution, feature }) => {
       const text = `${title} ${feature.get('t')}`
       return R.aperture(2, coords)
         .map(TS.segment)
-        .map(segment => [segment.midPoint(), segment.angle()])
-        .map(([point, angle]) => styles.text(TS.point(point), {
+        .map(segment => [segment.midPoint(), TS.rotation(segment)])
+        .map(([point, rotation]) => styles.text(TS.point(point), {
           text,
-          angle,
+          rotation,
           textAlign: 'center'
         }))
     }

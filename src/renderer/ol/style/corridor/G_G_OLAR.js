@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import { arrowCoordinates } from './commons'
+import { PI, PI_OVER_2 } from '../../../../shared/Math'
 
 // AXIS OF ADVANCE / ATTACK, ROTARY WING
 styles['G*G*OLAR--'] = ({ styles, lineString, width }) => {
@@ -21,8 +22,8 @@ styles['G*G*OLAR--'] = ({ styles, lineString, width }) => {
     const point = TS.point(points[points.length - 2])
     const bearing = average(R.drop(segments.length - 2, segments).map(angle))
     return TS.lineString(TS.coordinates([
-      TS.translate(bearing + Math.PI / 2, point)(width),
-      TS.translate(bearing - Math.PI / 2, point)(width)
+      TS.translate(bearing + PI_OVER_2, point)(width),
+      TS.translate(bearing - PI_OVER_2, point)(width)
     ]))
   })()
 
@@ -69,7 +70,7 @@ styles['G*G*OLAR--'] = ({ styles, lineString, width }) => {
 
     const verticalLines = () => {
       const offset = TS.segment([mp, TS.coordinate(intersection)]).getLength() * 0.5
-      return [+Math.PI, -Math.PI]
+      return [+PI, -PI]
         .map(angle => TS.translate(segment.angle() + angle / 2, TS.lineString(segment))(offset))
         .map(line => line.intersection(cross))
         .map(TS.coordinates)
