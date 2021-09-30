@@ -1,9 +1,10 @@
+import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as Style from 'ol/style'
 import ms from 'milsymbol'
 import * as Colors from './color-schemes'
 import { identityCode, statusCode } from '../../symbology/2525c'
-import * as pattern from './styles-pattern'
+import * as patterns from './patterns'
 import { PI, PI_OVER_2, PI_OVER_4 } from '../../../shared/Math'
 
 const makeStroke = options => new Style.Stroke(options)
@@ -59,6 +60,39 @@ const HANDLE_SINGLE_SELECT = makeCircle({
   radius: 7
 })
 
+export const Props = {
+  textAnchor: R.prop('text-anchor'),
+  textClipping: R.prop('text-clipping'),
+  textColor: R.prop('text-color'),
+  textField: R.prop('text-field'),
+  textFillColor: R.prop('text-fill-color'),
+  textFont: R.prop('text-font'),
+  textHaloColor: R.prop('text-halo-color'),
+  textHaloWidth: R.prop('text-halo-width'),
+  textJustify: R.prop('text-justify'),
+  textLineColor: R.prop('text-line-color'),
+  textLineWidth: R.prop('text-line-width'),
+  textOffset: R.prop('text-offset'),
+  textPadding: R.prop('text-padding'),
+  textRotate: R.prop('text-rotate')
+}
+
+export const makeMilitaryStyles = feature => {
+  const sidc = feature.get('sidc')
+  const identity = identityCode(sidc)
+  const status = statusCode(sidc)
+
+  // TODO: fill pattern
+
+  return {
+    'line-cap': 'square',
+    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
+    'line-dash-array': status === 'A' ? LINE_DASH_20_10 : null,
+    'line-halo-color': Colors.stroke(identity),
+    'line-halo-width': 1,
+    'line-width': 2
+  }
+}
 
 /**
  *
@@ -86,7 +120,36 @@ export const makeStyles = (feature, mode = 'default') => {
 
   const styles = {}
 
-  styles.font = options => {
+  styles.lineStyle = (geometry, props) => {
+    const styleOptions = []
+
+    if (props['line-halo-color']) {
+      styleOptions.push({
+        geometry,
+        stroke: makeStroke({
+          color: props['line-halo-color'],
+          lineDash: props['line-dash-array'],
+          lineCap: props['line-cap'],
+          width: props['line-width'] + props['line-halo-width']
+        })
+      })
+    }
+
+    styleOptions.push({
+      // TODO: fill pattern
+      geometry,
+      stroke: makeStroke({
+        color: props['line-color'],
+        lineCap: props['line-cap'],
+        lineDash: props['line-dash-array'],
+        width: props['line-width']
+      })
+    })
+
+    return makeStyle(styleOptions)
+  }
+
+  styles.font = (options = {}) => {
     const fontWeight = options.fontWeight || defaults.fontWeight
     const fontSize = options.fontSize || defaults.fontSize
     const fontFamily = options.fontFamily || defaults.fontFamily
@@ -114,7 +177,12 @@ export const makeStyles = (feature, mode = 'default') => {
       rotation: rotation ? flipped ? rotation + PI : rotation : null,
       textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
       offsetX: offsetX ? flipped ? -1 * offsetX : offsetX : 0,
-      offsetY: offsetY || 0
+      offsetY: offsetY || 0,
+      padding: options.padding,
+      fill: options.fill,
+      stroke: options.stroke,
+      backgroundFill: options.backgroundFill,
+      backgroundStroke: options.backgroundStroke
     }
   }
 
@@ -137,7 +205,6 @@ export const makeStyles = (feature, mode = 'default') => {
    *
    */
   styles.labels = (labelOptions = []) => {
-    console.log('labels', labelOptions)
     return labelOptions.map(options => {
       if (options.textOptions) {
         const text = makeText(textOptions(options.textOptions))
@@ -147,6 +214,38 @@ export const makeStyles = (feature, mode = 'default') => {
         return makeStyle({ geometry: options.geometry, image })
       }
     })
+  }
+
+  styles.label = label => {
+    const rotation = Props.textRotate(label)
+    const flipped = rotation ? rotation < -PI_OVER_2 || rotation > PI_OVER_2 : false
+    const textAlign = Props.textJustify(label) || null
+    const textOffset = Props.textOffset(label) || [0, 0]
+    const offsetX = textOffset[0]
+    const offsetY = textOffset[1]
+
+    const options = {
+      text: Props.textField(label),
+      font: Props.textFont(label),
+      rotation: rotation ? flipped ? rotation + PI : rotation : null,
+      textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
+      offsetX: flipped ? -1 * offsetX : offsetX,
+      offsetY: offsetY,
+      padding: Props.textPadding(label) && new Array(4).fill(Props.textPadding(label)),
+      fill: new Style.Fill({ color: Props.textColor(label) }),
+      stroke: Props.textHaloColor(label) && new Style.Stroke({
+        color: Props.textHaloColor(label),
+        width: Props.textHaloWidth(label)
+      }),
+      backgroundFill: Props.textFillColor(label) && new Style.Fill({ color: Props.textFillColor(label) }),
+      backgroundStroke: Props.textLineColor(label) && new Style.Stroke({
+        color: Props.textLineColor(label),
+        width: Props.textLineWidth(label)
+      })
+    }
+
+    const text = makeText(options)
+    return makeStyle({ geometry: label.geometry, text })
   }
 
   styles.text = (geometry, options = {}) => {
@@ -197,7 +296,7 @@ export const makeStyles = (feature, mode = 'default') => {
 
 
   styles.defaultStroke = (geometry, options = {}) => {
-    const fill = options.fillPattern && pattern.fill({
+    const fill = options.fillPattern && patterns.fill({
       ...defaults, ...options.fillPattern
     })
 

@@ -1,0 +1,59 @@
+```
+makeStyle ::
+	k = geometry | fill | image | stroke | text,
+  geometry = ol/Feature | ol/geom/Geometry | ol/Feature -> ol/geom/Geometry =>
+	{k, v} -> ol/style/Style
+
+makeFill ::
+	k = color =>
+	{k, v} -> ol/style/Fill
+
+makeImage ::
+	k = opacity | rotation | scale =>
+  {k, v} -> ol/style/Image
+
+makeStroke ::
+	k = color | line{Cap | Join | Dash | DashOffset} | width =>
+  {k, v} -> ol/style/Stroke
+
+makeText ::
+	k = font | offset{X | Y} | overflow | scale | rotation | fill | stroke | text |
+	    background{Fill | Stroke} | padding =>
+  {k, v} -> ol/style/text
+
+```
+
+## Style Specification
+
+fill-color :: string
+fill-pattern :: hatch | cross
+fill-pattern-angle :: number, degrees
+fill-pattern-size :: number
+fill-pattern-spacing :: number
+line-cap :: butt | round | square
+line-color :: string
+line-dash-array :: [number]
+line-dash-offset :: number, default 0
+line-halo-color :: string
+line-halo-width :: number
+line-join :: bevel | round | miter
+line-miter-limit :: number, default 10
+line-width :: number
+text-anchor :: 'center' | 'left' | 'right' |
+	'top' | 'top-left' | 'top-right' |
+	'bottom' | 'bottom-left' | 'bottom-right' |
+	number, [0, 1]
+text-color :: string
+text-fill-color :: string
+text-field :: string
+text-font :: string
+text-font-familiy :: string
+text-font-size :: number
+text-font-weight :: string
+text-halo-color :: string
+text-halo-width :: number
+text-justify :: 'start' | 'end' | 'center'
+text-line-color :: string
+text-line-width :: number
+text-offset :: [X, Y] - pixel offset
+text-padding :: number

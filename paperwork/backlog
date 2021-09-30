@@ -1,3 +1,5 @@
+* styles: echelon labels
+* styles: polygon fill
 * legacy import: echelon offset
 * legacy import: offset location
 * interaction: move(position) label (echelon, area center)

@@ -7,8 +7,6 @@ import { PI_OVER_2 } from '../../../../shared/Math'
 // FORTIFIED AREA
 styles['G*G*GAF---'] = ({ styles, resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
-
-  // Note: We are still (and remain) in Web Mercator (not UTM).
   const lineString = TS.read(new geom.LineString(coordinates[0]))
   const indexedLine = TS.lengthIndexedLine(lineString)
   const endIndex = indexedLine.getEndIndex()
