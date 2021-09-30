@@ -5,7 +5,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // FORTIFIED AREA
-styles['G*G*GAF---'] = ({ styles, resolution, geometry }) => {
+styles['G*G*GAF---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
   const lineString = TS.read(new geom.LineString(coordinates[0]))
   const indexedLine = TS.lengthIndexedLine(lineString)
@@ -29,5 +29,5 @@ styles['G*G*GAF---'] = ({ styles, resolution, geometry }) => {
   }, [])
 
   points.push(points[0])
-  return styles.solidStroke(TS.write(TS.polygon(points)))
+  return [['style:2525c/solid-stroke', TS.write(TS.polygon(points))]]
 }

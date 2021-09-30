@@ -239,13 +239,12 @@ styles.Polygon = ({ feature, resolution, mode }) => {
     return TS.write(TS.difference([lineString, ...boxes]))
   })()
 
-  const militaryStyle = makeMilitaryStyles(feature)
   const style = styles[key]
     ? styles[key]({ feature, resolution, styles: styleFactory, geometry: smoothedGeometry })
-    : styleFactory.lineStyle(clippedGeometry, militaryStyle)
+    : [['style:2525c/default-stroke', clippedGeometry]]
 
   return [
-    ...style,
+    ...style.map(styleFactory.makeStyle),
     ...labels.map(styleFactory.label),
     ...styleFactory.handles(simplifiedGeometry),
     ...styleFactory.guideStroke(simplifiedGeometry)

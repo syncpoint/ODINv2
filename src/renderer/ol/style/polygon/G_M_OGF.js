@@ -5,7 +5,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // OBSTACLE FREE AREA
-styles['G*M*OGF---'] = ({ styles, resolution, geometry }) => {
+styles['G*M*OGF---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
 
   // Note: We are still (and remain) in Web Mercator (not UTM).
@@ -34,5 +34,5 @@ styles['G*M*OGF---'] = ({ styles, resolution, geometry }) => {
     })
 
   points.push(points[0])
-  return styles.solidStroke(TS.write(TS.lineString(points)))
+  return [['style:2525c/solid-stroke', TS.write(TS.lineString(points))]]
 }

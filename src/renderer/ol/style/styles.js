@@ -61,6 +61,18 @@ const HANDLE_SINGLE_SELECT = makeCircle({
 })
 
 export const Props = {
+  fillPattern: R.prop('fill-pattern'),
+  fillPatternAngle: R.prop('fill-pattern-angle'),
+  fillPatternSize: R.prop('fill-pattern-size'),
+  fillPatternSpacing: R.prop('fill-pattern-spacing'),
+
+  lineCap: R.prop('line-cap'),
+  lineColor: R.prop('line-color'),
+  lineDashArray: R.prop('line-dash-array'),
+  lineHaloColor: R.prop('line-halo-color'),
+  lineHaloWidth: R.prop('line-halo-width'),
+  lineWidth: R.prop('line-width'),
+
   textAnchor: R.prop('text-anchor'),
   textClipping: R.prop('text-clipping'),
   textColor: R.prop('text-color'),
@@ -99,14 +111,14 @@ export const makeMilitaryStyles = feature => {
  */
 export const makeStyles = (feature, mode = 'default') => {
   const sidc = feature.get('sidc')
-  const standardIdentity = identityCode(sidc)
+  const identity = identityCode(sidc)
   const status = statusCode(sidc)
 
   const defaults = {
-    strokeColor: Colors.stroke(standardIdentity),
-    strokeFillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
+    strokeColor: Colors.stroke(identity),
+    strokeFillColor: Colors.fill(SCHEME_DEFAULT)(identity),
     lineDash: status === 'A' ? LINE_DASH_20_10 : null,
-    fillColor: Colors.fill(SCHEME_DEFAULT)(standardIdentity),
+    fillColor: Colors.fill(SCHEME_DEFAULT)(identity),
     fontWeight: 'normal',
     fontSize: '12px',
     fontFamily: 'sans-serif',
@@ -117,6 +129,36 @@ export const makeStyles = (feature, mode = 'default') => {
     strokeFillWidth: 2
   }
 
+  const registry = {}
+
+  registry['style:2525c/default-stroke'] = {
+    'line-cap': 'square',
+    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
+    'line-dash-array': status === 'A' ? LINE_DASH_20_10 : null,
+    'line-halo-color': Colors.stroke(identity),
+    'line-halo-width': 1,
+    'line-width': 2
+  }
+
+  registry['style:2525c/solid-stroke'] = {
+    'line-cap': 'square',
+    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
+    'line-halo-color': Colors.stroke(identity),
+    'line-halo-width': 1,
+    'line-width': 2
+  }
+
+  registry['style:2525c/filled-stroke'] = {
+    'line-cap': 'square',
+    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
+    'line-halo-color': Colors.stroke(identity),
+    'line-halo-width': 1,
+    'line-width': 2,
+    'fill-pattern': 'hatch',
+    'fill-pattern-angle': 45,
+    'fill-pattern-size': 2,
+    'fill-pattern-spacing': 12
+  }
 
   const styles = {}
 
@@ -387,6 +429,56 @@ export const makeStyles = (feature, mode = 'default') => {
       stroke: makeStroke({ color: defaults.strokeFillColor, width: defaults.strokeFillWidth }),
       fill: makeFill({ color: defaults.fillColor })
     }]
+
+    return makeStyle(styleOptions)
+  }
+
+  styles.makeStyle = ([id, geometry]) => {
+    console.log('[styles/style]', id)
+
+    const props = registry[id]
+    if (!props) return null
+
+    const styleOptions = []
+    if (Props.lineHaloWidth(props)) {
+      styleOptions.push({
+        geometry,
+        stroke: makeStroke({
+          color: Props.lineHaloColor(props),
+          lineDash: Props.lineDashArray(props),
+          lineCap: Props.lineCap(props),
+          width: Props.lineWidth(props) + Props.lineHaloWidth(props)
+        })
+      })
+    }
+
+    const fill = (() => {
+      if (!Props.fillPattern(props)) return null
+
+      const color = patterns.fill({
+        pattern: Props.fillPattern(props),
+        angle: Props.fillPatternAngle(props),
+        size: Props.fillPatternSize(props),
+        spacing: Props.fillPatternSpacing(props),
+        strokeColor: Props.lineHaloColor(props),
+        strokeWidth: Props.lineHaloWidth(props) + Props.lineWidth(props),
+        strokeFillColor: Props.lineColor(props),
+        strokeFillWidth: Props.lineWidth(props)
+      })
+
+      return makeFill({ color })
+    })()
+
+    styleOptions.push({
+      geometry,
+      fill,
+      stroke: makeStroke({
+        color: Props.lineColor(props),
+        lineCap: Props.lineCap(props),
+        lineDash: Props.lineDashArray(props),
+        width: Props.lineWidth(props)
+      })
+    })
 
     return makeStyle(styleOptions)
   }

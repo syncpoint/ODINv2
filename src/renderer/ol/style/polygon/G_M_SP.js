@@ -5,7 +5,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // STRONG POINT
-styles['G*M*SP----'] = ({ styles, resolution, geometry }) => {
+styles['G*M*SP----'] = ({ resolution, geometry }) => {
 
   // TODO: 0f263f77-3e54-4930-8289-bb868882e48c - import: force polygon 'right hand rule'
   const coordinates = geometry.getCoordinates(true)
@@ -27,7 +27,7 @@ styles['G*M*SP----'] = ({ styles, resolution, geometry }) => {
   })))
 
   return [
-    styles.solidStroke(geometry),
-    styles.solidStroke(spikes)
+    ['style:2525c/solid-stroke', geometry],
+    ['style:2525c/solid-stroke', spikes]
   ]
 }

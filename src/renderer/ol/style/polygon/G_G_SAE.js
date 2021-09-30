@@ -5,7 +5,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // ENCIRCLEMENT
-styles['G*G*SAE---'] = ({ styles, resolution, geometry }) => {
+styles['G*G*SAE---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
   const lineString = TS.read(new geom.LineString(coordinates[0]))
   const indexedLine = TS.lengthIndexedLine(lineString)
@@ -29,5 +29,5 @@ styles['G*G*SAE---'] = ({ styles, resolution, geometry }) => {
 
   points.push(points[0])
   const collection = TS.collect([TS.polygon(points), lineString])
-  return styles.solidStroke(TS.write(collection))
+  return [['style:2525c/solid-stroke', TS.write(collection)]]
 }

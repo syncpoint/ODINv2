@@ -5,7 +5,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // OBSTACLE RESTRICTED AREA
-styles['G*M*OGR---'] = ({ styles, resolution, geometry }) => {
+styles['G*M*OGR---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
 
   // Note: We are still (and remain) in Web Mercator (not UTM).
@@ -34,6 +34,5 @@ styles['G*M*OGR---'] = ({ styles, resolution, geometry }) => {
     })
 
   points.push(points[0])
-  const fillPattern = { pattern: 'hatch', angle: 45, size: 2, spacing: 12 }
-  return styles.defaultStroke(TS.write(TS.polygon(points)), { fillPattern })
+  return [['style:2525c/filled-stroke', TS.write(TS.polygon(points))]]
 }
