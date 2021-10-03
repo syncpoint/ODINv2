@@ -2,23 +2,28 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TASKS / BLOCK
-styles['G*T*B-----'] = ({ styles, lineString, width, resolution }) => {
+styles['LineString:Point:G*T*B-----'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
   const fractions = [[0, 1], [0, -1]]
   const midPoint = TS.point(segment.midPoint())
 
-  const path = TS.collect([
-    TS.difference([lineString, TS.pointBuffer(midPoint)(resolution * 7)]),
+  const path = TS.multiLineString([
+    lineString,
     TS.lineString(TS.projectCoordinates(width / 2, angle, coords[1])(fractions))
   ])
 
   return [
-    styles.defaultStroke(path),
-    styles.outlinedText(midPoint, {
-      rotation: TS.rotation(segment),
-      text: 'B'
-    })
+    { id: 'style:2525c/default-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      geometry: midPoint,
+      'text-field': '"B"',
+      'text-padding': 3,
+      'text-rotate': TS.rotation(segment)
+    }
   ]
 }

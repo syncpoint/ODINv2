@@ -4,7 +4,9 @@ import * as TS from '../../ts'
 import { arrowCoordinates } from './commons'
 
 // AXIS OF ADVANCE FOR FEINT
-styles['G*G*PA----'] = ({ styles, lineString, width, resolution, feature }) => {
+styles['LineString:Point:G*G*PA----'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (30 / 26))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -27,21 +29,18 @@ styles['G*G*PA----'] = ({ styles, lineString, width, resolution, feature }) => {
   const lastSegment = R.last(R.aperture(2, linePoints).map(TS.segment))
   const font = `${width / resolution / 2}px sans-serif`
 
-  const uniqueDesignation = (() => {
-    const t = feature.get('t')
-    if (!t) return []
-    return styles.text(TS.point(aps[3]), {
-      font,
-      text: t,
-      textAlign: 'end',
-      offsetX: -10,
-      rotation: TS.rotation(lastSegment)
-    })
-  })()
-
   return [
-    styles.solidStroke(corridor),
-    styles.dashedStroke(TS.lineString(R.props([4, 5, 6], aps))),
-    uniqueDesignation
+    { id: 'style:2525c/solid-stroke', geometry: corridor },
+    { id: 'style:2525c/dashed-stroke', geometry: TS.lineString(R.props([4, 5, 6], aps)) },
+    {
+      id: 'style:default-text',
+      geometry: TS.point(aps[3]),
+      'text-field': 't',
+      'text-font': font,
+      'text-anchor': 'center',
+      'text-justify': 'end',
+      'text-padding': 3,
+      'text-rotate': TS.rotation(lastSegment)
+    }
   ]
 }

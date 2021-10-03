@@ -1,13 +1,12 @@
 import * as R from 'ramda'
-import * as geom from 'ol/geom'
 import * as TS from '../../ts'
 import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // FORTIFIED AREA
 styles['G*G*GAF---'] = ({ resolution, geometry }) => {
-  const coordinates = geometry.getCoordinates(true)
-  const lineString = TS.read(new geom.LineString(coordinates[0]))
+  const coordinates = geometry.getCoordinates()
+  const lineString = TS.lineString(coordinates)
   const indexedLine = TS.lengthIndexedLine(lineString)
   const endIndex = indexedLine.getEndIndex()
   const delta = resolution * 20
@@ -29,5 +28,6 @@ styles['G*G*GAF---'] = ({ resolution, geometry }) => {
   }, [])
 
   points.push(points[0])
-  return [['style:2525c/solid-stroke', TS.write(TS.polygon(points))]]
+  const path = TS.polygon(points)
+  return [{ id: 'style:2525c/solid-stroke', geometry: path }]
 }

@@ -1,9 +1,8 @@
 import * as R from 'ramda'
-import * as geom from 'ol/geom'
 import { parameterized } from '../../../symbology/2525c'
-import * as TS from '../../ts'
 import { styles, makeStyles } from '../styles'
-import { transform } from './commons'
+import { transform } from '../../geometry'
+import * as Clipping from '../clipping'
 import './G_G_OAF' // ATTACK BY FIRE POSITION
 import './G_G_OLAA' // AXIS OF ADVANCE / AIRBORNE
 import './G_G_OLAGM' // AXIS OF ADVANCE / MAIN ATTACK
@@ -38,40 +37,61 @@ import './G_T_T' // TASKS / DISRUPT
 import './G_T_X' // TASKS / CLEAR
 import './G_T_Y' // TASKS / BYPASS
 
+styles['LineString:Point:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
+
 styles['LineString:Point'] = ({ feature, resolution, mode }) => {
+  const { read, write } = transform(feature.getGeometry())
+  const geometry = read(feature.getGeometry())
   const sidc = feature.get('sidc')
-  const key = parameterized(sidc)
-  if (!key || !styles[key]) return styles.DEFAULT()
+  const key = parameterized(sidc) || 'DEFAULT'
+  const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
+  const styleFactory = makeStyles(feature, mode)
 
-  const featureStyles = makeStyles(feature, mode)
-  const geometry = feature.getGeometry()
-  const guides = featureStyles.guideStroke(geometry)
-  const handles = featureStyles.handles(new geom.MultiPoint([
-    geometry.getGeometries()[1].getCoordinates(),
-    ...geometry.getGeometries()[0].getCoordinates()
-  ]))
+  const pipeline = R.compose(
+    options => options.map(styleFactory.makeStyle),
+    options => options.map(writeGeometry),
+    Clipping.clipLabels(resolution),
+    options => options.map(styleFactory.evalTextField),
+    styles[`LineString:Point:${key}`] || styles['LineString:Point:DEFAULT']
+  )
 
-  const tryer = () => transform(styles[key])({
-    feature,
-    resolution,
-    styles: featureStyles
-  })
+  return [
+    ...pipeline({ resolution, geometry })
+  ]
 
-  const catcher = err => {
-    return transform(({ lineString, width }) => {
-      // Get longest segment to place error message:
-      const segments = TS.segments(lineString).sort((a, b) => b.getLength() - a.getLength())
-      return [
-        featureStyles.waspStroke(TS.lineBuffer(lineString)(width / 2)),
-        featureStyles.outlinedText(TS.point(segments[0].midPoint()), {
-          text: `invalid geometry\n${err.message}`.toUpperCase(),
-          textFillColor: 'red',
-          textAlign: 'center',
-          rotation: TS.rotation(segments[0])
-        })
-      ]
-    })({ feature })
-  }
+  // const sidc = feature.get('sidc')
+  // const key = parameterized(sidc)
+  // if (!key || !styles[key]) return styles.DEFAULT()
 
-  return [...R.tryCatch(tryer, catcher)(), ...handles, ...guides]
+  // const featureStyles = makeStyles(feature, mode)
+  // const geometry = feature.getGeometry()
+  // const guides = featureStyles.guideStroke(geometry)
+  // const handles = featureStyles.handles(new geom.MultiPoint([
+  //   geometry.getGeometries()[1].getCoordinates(),
+  //   ...geometry.getGeometries()[0].getCoordinates()
+  // ]))
+
+  // const tryer = () => transform(styles[key])({
+  //   feature,
+  //   resolution,
+  //   styles: featureStyles
+  // })
+
+  // const catcher = err => {
+  //   return transform(({ lineString, width }) => {
+  //     // Get longest segment to place error message:
+  //     const segments = TS.segments(lineString).sort((a, b) => b.getLength() - a.getLength())
+  //     return [
+  //       featureStyles.waspStroke(TS.lineBuffer(lineString)(width / 2)),
+  //       featureStyles.outlinedText(TS.point(segments[0].midPoint()), {
+  //         text: `invalid geometry\n${err.message}`.toUpperCase(),
+  //         textFillColor: 'red',
+  //         textAlign: 'center',
+  //         rotation: TS.rotation(segments[0])
+  //       })
+  //     ]
+  //   })({ feature })
+  // }
+
+  // return [...R.tryCatch(tryer, catcher)(), ...handles, ...guides]
 }

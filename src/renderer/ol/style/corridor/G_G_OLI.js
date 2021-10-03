@@ -2,20 +2,27 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // INFILTRATION LANE
-styles['G*G*OLI---'] = ({ styles, lineString, width, feature }) => {
+styles['LineString:Point:G*G*OLI---'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const segments = TS.segments(lineString)
-  const anchor = segments[0].pointAlong(0.5)
+  const anchor = TS.point(segments[0].pointAlong(0.5))
+
+  const path = TS.difference([
+    TS.boundary(TS.lineBuffer(lineString)(width / 2)),
+    TS.pointBuffer(TS.startPoint(lineString))(width / 2),
+    TS.pointBuffer(TS.endPoint(lineString))(width / 2)
+  ])
 
   return [
-    styles.text(TS.point(anchor), {
-      text: feature.get('t'),
-      textAlign: 'center',
-      rotation: TS.rotation(segments[0])
-    }),
-    styles.solidStroke(TS.difference([
-      TS.boundary(TS.lineBuffer(lineString)(width / 2)),
-      TS.pointBuffer(TS.startPoint(lineString))(width / 2),
-      TS.pointBuffer(TS.endPoint(lineString))(width / 2)
-    ]))
+    { id: 'style:2525c/solid-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      geometry: anchor,
+      'text-field': 't',
+      'text-anchor': 'center',
+      'text-padding': 3,
+      'text-rotate': TS.rotation(segments[0])
+    }
   ]
 }

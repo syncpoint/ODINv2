@@ -1,10 +1,7 @@
 import * as R from 'ramda'
-import * as geom from 'ol/geom'
-import { containsXY } from 'ol/extent'
-import * as math from 'mathjs'
-import { Jexl } from 'jexl'
 import { parameterized } from '../../../symbology/2525c'
-import { styles, makeStyles, makeMilitaryStyles, Props } from '../styles'
+import { styles, makeStyles, Props } from '../styles'
+import { transform } from '../../geometry'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
@@ -16,18 +13,19 @@ import { smooth } from '../chaikin'
 import * as Clipping from '../clipping'
 import * as TS from '../../ts'
 
-const C = text => [{ 'text-field': text, 'text-anchor': 'center', 'text-padding': 5 }]
-const T = text => [{ 'text-field': text, 'text-anchor': 'top' }]
-const B = text => [{ 'text-field': text, 'text-anchor': 'bottom' }]
-const F = text => [{ 'text-field': text, 'text-anchor': 'below', offsetY: 20 }]
-const LR = text => ['left', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 5 }))
-const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 5 }))
+const C = (text, options) => [{ 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
+const T = text => [{ 'text-field': text, 'text-anchor': 'top', 'text-padding': 3, 'text-clipping': 'line' }]
+const B = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 3, 'text-clipping': 'line' }]
+const F = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
+const LR = text => ['left', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
+const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
   ? [`"${title}"`, 't', 'h', ALT_LINE, DTG_LINE]
   : ['t', 'h', ALT_LINE, DTG_LINE]
 
+styles['Polygon:DEFAULT'] = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
 styles['LABELS:POLYGON'] = C(ALL_LINES())
 styles['LABELS:G*G*GAG---'] = styles['LABELS:POLYGON'] // GENERAL AREA
 styles['LABELS:G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
@@ -64,7 +62,7 @@ styles['LABELS:G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (
 styles['LABELS:G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
 styles['LABELS:G*M*OGZ---'] = styles['LABELS:POLYGON'] // GENERAL ZONE (OBSTACLES)
 styles['LABELS:G*M*OGF---'] = C(ALL_LINES('FREE')) // OBSTACLE FREE AREA
-styles['LABELS:G*M*OGR---'] = C(ALL_LINES()) // OBSTACLE RESTRICTED AREA
+styles['LABELS:G*M*OGR---'] = C(ALL_LINES(), { 'text-clipping': 'actual', 'text-padding': 3 }) // OBSTACLE RESTRICTED AREA
 // TODO: G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
 styles['LABELS:G*M*OFA---'] = TLBR('"M"') // MINED AREA
 styles['LABELS:G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
@@ -113,140 +111,88 @@ styles['FILL:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
 styles['FILL:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
 
 const labelAnchors = geometry => {
-  const ring = geometry.getLinearRing(0)
-  const box = ring.getExtent()
-  const coords = ring.getCoordinates()
+  const ring = geometry.getExteriorRing()
+  const envelope = ring.getEnvelopeInternal()
+  const centroid = TS.centroid(ring)
 
-  const positions = {}
-  positions.center = geometry.getInteriorPoint()
-  const centerCoords = positions.center.getCoordinates() // XYM layout
-  positions.below = new geom.Point([centerCoords[0], box[1]])
+  const lazy = function (fn) {
+    let evaluated = false
+    let value
 
-
-  /**
-   * segmentIntersect :: ([x, y], [x, y]) -> [[x0, y0], [x1, y1]] -> [x, y]
-   * Intersection point of two line segments yz and segment.
-   */
-  const segmentIntersect = (y, z) => segment => {
-    const intersection = math.intersect(segment[0], segment[1], y, z)
-    if (!intersection) return []
-    const extent = new geom.LineString(segment).getExtent()
-    if (!containsXY(extent, intersection[0], intersection[1])) return []
-    return [intersection]
-  }
-
-  /**
-   * axisIntersect :: ([[x, y]], [x, y], [x, y]) -> [[x, y]] -> [[x, y]]
-   * Maximum of two intersection points of line segment yz
-   * with all segments formed by points.
-   */
-  const axisIntersect = (points, y, z) => R
-    .aperture(2, points)
-    .map(segment => segmentIntersect(y, z)(segment))
-    .reduce((acc, intersections) => acc.concat(intersections), [])
-
-  const topRightLeft = function () {
-    const y = box[1] + (box[3] - box[1]) * 0.95
-    const xs = axisIntersect(coords, [box[0], y], [box[2], y])
-
-    if (xs.length !== 2) return
-    positions.topRight = new geom.Point(xs[0][0] > xs[1][0] ? xs[0] : xs[1])
-    positions.topLeft = new geom.Point(xs[0][0] > xs[1][0] ? xs[1] : xs[0])
-  }
-
-  const hIntersect = function () {
-    const xs = axisIntersect(
-      coords,
-      [box[0], centerCoords[1]], [box[2], centerCoords[1]]
-    )
-
-    if (xs.length !== 2) return
-    positions.right = new geom.Point(xs[0][0] > xs[1][0] ? xs[0] : xs[1])
-    positions.left = new geom.Point(xs[0][0] > xs[1][0] ? xs[1] : xs[0])
-  }
-
-  const vIntersect = function () {
-    const xs = axisIntersect(
-      coords,
-      [centerCoords[0], box[1]], [centerCoords[0], box[3]]
-    )
-
-    if (xs.length !== 2) return
-    positions.bottom = new geom.Point(xs[0][1] > xs[1][1] ? xs[1] : xs[0])
-    positions.top = new geom.Point(xs[0][1] > xs[1][1] ? xs[0] : xs[1])
-  }
-
-  const calculate = anchor => {
-    switch (anchor) {
-      case 'top-right': return topRightLeft()
-      case 'top-left': return topRightLeft()
-      case 'left': return hIntersect()
-      case 'right': return hIntersect()
-      case 'top': return vIntersect()
-      case 'bottom': return vIntersect()
+    return function () {
+      if (evaluated) return value
+      value = fn.apply(this, arguments)
+      evaluated = true
+      return value
     }
   }
 
-  return label => {
-    const anchor = Props.textAnchor(label)
-    if (!positions[anchor]) calculate(anchor)
-    if (!positions[anchor]) return null
-    return { geometry: positions[anchor] }
+  const xIntersection = lazy(() => {
+    const axis = TS.lineString([
+      TS.coordinate(envelope.getMinX(), centroid.y),
+      TS.coordinate(envelope.getMaxX(), centroid.y)
+    ])
+
+    return geometry.intersection(axis).getCoordinates()
+  })
+
+  const yIntersection = lazy(() => {
+    const axis = TS.lineString([
+      TS.coordinate(centroid.x, envelope.getMinY()),
+      TS.coordinate(centroid.x, envelope.getMaxY())
+    ])
+
+    return geometry.intersection(axis).getCoordinates()
+  })
+
+  const center = lazy(() => TS.point(centroid))
+  const left = lazy(() => TS.point(xIntersection()[0]))
+  const right = lazy(() => TS.point(xIntersection()[1]))
+  const bottom = lazy(() => TS.point(yIntersection()[0]))
+  const top = lazy(() => TS.point(yIntersection()[1]))
+
+  const positions = { center, top, bottom, right, left }
+
+  return options => {
+    return options.map(label => {
+      if (!Props.textField(label)) return label
+      const anchor = Props.textAnchor(label)
+      const geometry = positions[anchor]()
+      if (!geometry) {
+        console.warn('unknown anchor position', anchor)
+        return label
+      } else return { ...label, geometry }
+    })
   }
 }
 
-const jexl = new Jexl()
-export const textFields = properties => label => {
-  const text = Props.textField(label)
-  return Array.isArray(text)
-    ? text.map(text => jexl.evalSync(text, properties)).filter(R.identity).join('\n')
-    : jexl.evalSync(text, properties)
-}
-
 styles.Polygon = ({ feature, resolution, mode }) => {
-  const sidc = feature.get('sidc')
-  const key = parameterized(sidc)
-  if (!key) return styles.DEFAULT()
-
-  const styleFactory = makeStyles(feature, mode)
-  const geometry = feature.getGeometry()
-  const properties = feature.getProperties()
-
-  const simplifiedGeometry = geometry.getCoordinates()[0].length > 50
-    ? geometry.simplify(resolution)
+  const smoothGeometry = geometry => feature.get('style') && feature.get('style').smooth
+    ? smooth(geometry)
     : geometry
 
-  const smoothedGeometry = feature.get('style') && feature.get('style').smooth
-    ? smooth(simplifiedGeometry)
-    : simplifiedGeometry
+  const { read, write } = transform(feature.getGeometry())
+  const geometry = read(smoothGeometry(feature.getGeometry()))
+  const sidc = feature.get('sidc')
+  const key = parameterized(sidc) || 'DEFAULT'
 
-  const anchor = labelAnchors(smoothedGeometry)
-  const textField = textFields(properties)
-  const labels = (styles[`LABELS:${key}`] || [])
-    .flat()
-    .map(label => ({
-      ...label,
-      ...anchor(label),
-      'text-field': textField(label),
-      'text-font': Props.textFont(label) || styleFactory.font()
-    }))
+  const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
+  const styleFactory = makeStyles(feature, mode)
 
-  const clipBoxes = labels.map(Clipping.boundingBox(resolution)).filter(Boolean)
-  const clippedGeometry = (() => {
-    const polygon = TS.read(smoothedGeometry)
-    const lineString = TS.lineString(polygon.getCoordinates())
-    const boxes = clipBoxes.map(TS.read)
-    return TS.write(TS.difference([lineString, ...boxes]))
-  })()
-
-  const style = styles[key]
-    ? styles[key]({ feature, resolution, styles: styleFactory, geometry: smoothedGeometry })
-    : [['style:2525c/default-stroke', clippedGeometry]]
+  // TODO: handles
+  // TODO: guides
+  // TODO: simplify: length > 50
+  const pipeline = R.compose(
+    options => options.map(styleFactory.makeStyle),
+    options => options.map(writeGeometry),
+    Clipping.clipLabels(resolution),
+    options => options.map(styleFactory.evalTextField),
+    options => options.filter(options => options.geometry),
+    labelAnchors(geometry),
+    options => (styles[key] || styles['Polygon:DEFAULT'])(options).concat((styles[`LABELS:${key}`] || []))
+  )
 
   return [
-    ...style.map(styleFactory.makeStyle),
-    ...labels.map(styleFactory.label),
-    ...styleFactory.handles(simplifiedGeometry),
-    ...styleFactory.guideStroke(simplifiedGeometry)
+    ...pipeline({ resolution, geometry })
   ]
 }

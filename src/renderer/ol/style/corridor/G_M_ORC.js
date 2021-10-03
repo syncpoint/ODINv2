@@ -2,7 +2,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TACGRP.MOBSU.OBST.RCBB.EXCD - BLOWN BRIDGES / EXECUTED
-styles['G*M*ORC---'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*M*ORC---'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const A = TS.difference([
     TS.boundary(TS.lineBuffer(lineString)(width / 2)),
     TS.pointBuffer(TS.startPoint(lineString))(width / 2),
@@ -14,5 +16,7 @@ styles['G*M*ORC---'] = ({ styles, lineString, width }) => {
   const { x, y } = segment.midPoint()
   const B = TS.reflect(0, y, x, y)(A)
 
-  return styles.solidStroke(TS.collect([A, B]))
+  return [
+    { id: 'style:2525c/solid-stroke', geometry: TS.collect([A, B]) }
+  ]
 }

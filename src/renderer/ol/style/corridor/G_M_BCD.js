@@ -3,7 +3,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TACGRP.MOBSU.OBSTBP.CSGSTE.FRDDFT - FORD DIFFICULT
-styles['G*M*BCD---'] = ({ styles, lineString, width, resolution }) => {
+styles['LineString:Point:G*M*BCD---'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -21,12 +23,14 @@ styles['G*M*BCD---'] = ({ styles, lineString, width, resolution }) => {
     TS.segmentize(TS.segment(p01, p11), n).filter((_, i) => i % 2 !== 0)
   ))
 
+  const path = TS.difference([
+    TS.boundary(TS.lineBuffer(lineString)(width / 2)),
+    TS.pointBuffer(TS.startPoint(lineString))(width / 2),
+    TS.pointBuffer(TS.endPoint(lineString))(width / 2)
+  ])
+
   return [
-    styles.dashedStroke(TS.difference([
-      TS.boundary(TS.lineBuffer(lineString)(width / 2)),
-      TS.pointBuffer(TS.startPoint(lineString))(width / 2),
-      TS.pointBuffer(TS.endPoint(lineString))(width / 2)
-    ])),
-    styles.solidStroke(TS.lineString(x))
+    { id: 'style:2525c/dashed-stroke', geometry: path },
+    { id: 'style:2525c/solid-stroke', geometry: TS.lineString(x) }
   ]
 }

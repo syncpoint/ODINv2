@@ -3,7 +3,9 @@ import * as TS from '../../ts'
 import { closedArrow } from './commons'
 
 // TACGRP.MOBSU.OBSTBP.DFTY.IMP - BYPASS IMPOSSIBLE
-styles['G*M*BDI---'] = ({ styles, lineString, width, resolution }) => {
+styles['LineString:Point:G*M*BDI---'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -17,17 +19,19 @@ styles['G*M*BDI---'] = ({ styles, lineString, width, resolution }) => {
     [[-d, d], [d, d], [-d, -d], [d, -d]]
   )
 
+  const path = TS.collect([
+    TS.difference([
+      TS.boundary(TS.lineBuffer(lineString)(width / 2)),
+      TS.pointBuffer(TS.endPoint(lineString))(width / 2),
+      TS.pointBuffer(TS.startPoint(lineString))(distance),
+      ...arrows
+    ]),
+    TS.lineString([p00, p01]),
+    TS.lineString([p10, p11])
+  ])
+
   return [
-    styles.filledStroke(TS.union(arrows)),
-    styles.solidStroke(TS.collect([
-      TS.difference([
-        TS.boundary(TS.lineBuffer(lineString)(width / 2)),
-        TS.pointBuffer(TS.endPoint(lineString))(width / 2),
-        TS.pointBuffer(TS.startPoint(lineString))(distance),
-        ...arrows
-      ]),
-      TS.lineString([p00, p01]),
-      TS.lineString([p10, p11])
-    ]))
+    { id: 'style:2525c/solid-fill', geometry: TS.union(arrows) },
+    { id: 'style:2525c/solid-stroke', geometry: path }
   ]
 }

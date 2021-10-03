@@ -4,7 +4,9 @@ import * as TS from '../../ts'
 import { arrowCoordinates } from './commons'
 
 // AXIS OF ADVANCE / SUPPORTING ATTACK
-styles['G*G*OLAGS-'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*G*OLAGS-'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (3 / 4))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -17,10 +19,12 @@ styles['G*G*OLAGS-'] = ({ styles, lineString, width }) => {
   const arrow = TS.polygon(R.props([0, 2, 1, 0], aps))
   const centerline = TS.lineString([...R.init(lineString.getCoordinates()), aps[3]])
   const buffer = TS.lineBuffer(centerline)(width / 2).buffer(1)
-  const corridor = TS.difference([
+  const path = TS.difference([
     TS.union([buffer, arrow]).getBoundary(),
     TS.pointBuffer(TS.startPoint(lineString))(width / 2)
   ])
 
-  return styles.solidStroke(corridor)
+  return [
+    { id: 'style:2525c/solid-stroke', geometry: path }
+  ]
 }

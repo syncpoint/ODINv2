@@ -25,11 +25,17 @@ makeText ::
 
 ## Style Specification
 
+circle-fill-color :: string
+circle-line-color :: string
+circle-line-width :: number
+circle-radius :: number,
+
 fill-color :: string
 fill-pattern :: hatch | cross
 fill-pattern-angle :: number, degrees
 fill-pattern-size :: number
 fill-pattern-spacing :: number
+
 line-cap :: butt | round | square
 line-color :: string
 line-dash-array :: [number]
@@ -39,10 +45,12 @@ line-halo-width :: number
 line-join :: bevel | round | miter
 line-miter-limit :: number, default 10
 line-width :: number
+
 text-anchor :: 'center' | 'left' | 'right' |
 	'top' | 'top-left' | 'top-right' |
 	'bottom' | 'bottom-left' | 'bottom-right' |
 	number, [0, 1]
+text-clipping :: 'none' | 'line' | 'actual' (default)
 text-color :: string
 text-fill-color :: string
 text-field :: string

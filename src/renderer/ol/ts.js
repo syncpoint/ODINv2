@@ -8,7 +8,9 @@ const Types = {
   isNumber: v => typeof v === 'number',
   isArray: Array.isArray,
   isCoordinate: v => v instanceof jsts.geom.Coordinate,
-  isLineSegment: v => v instanceof jsts.geom.LineSegment
+  isLineSegment: v => v instanceof jsts.geom.LineSegment,
+  isEnvelope: v => v instanceof jsts.geom.Envelope,
+  isPolygon: v => v instanceof jsts.geom.Polygon
 }
 
 /**
@@ -114,6 +116,7 @@ export const lineString = (...args) => {
   } else return geometryFactory.createLineString(...args)
 }
 
+export const multiLineString = lineStrings => geometryFactory.createMultiLineString(lineStrings)
 export const point = coordinate => geometryFactory.createPoint(coordinate)
 export const multiPoint = points => geometryFactory.createMultiPoint(points)
 export const lengthIndexedLine = geometry => new LengthIndexedLine(geometry)
@@ -251,3 +254,13 @@ export const arc = ({ x, y }, radius, α1, α2, n) => R.range(0, n)
   .map(i => α1 - α2 / n * i)
   .map(α => [x + radius * Math.cos(α), y + radius * Math.sin(α)])
   .map(coordinate)
+
+export const extent = envelope => {
+  console.log(Types.isPolygon(envelope))
+  return [
+    envelope.getMinX(), envelope.getMinY(),
+    envelope.getMaxX(), envelope.getMaxY()
+  ]
+}
+
+export const centroid = geometry => jsts.algorithm.Centroid.getCentroid(geometry)

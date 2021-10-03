@@ -3,7 +3,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // ATTACK BY FIRE POSITION
-styles['G*G*OAF---'] = ({ styles, lineString, width, resolution }) => {
+styles['LineString:Point:G*G*OAF---'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
 
@@ -19,5 +21,8 @@ styles['G*G*OAF---'] = ({ styles, lineString, width, resolution }) => {
     return TS.lineString(R.props([0, 1, 2], ps))
   })()
 
-  return styles.defaultStroke(TS.collect([lineString, A, B]))
+  const path = TS.collect([geometry, A, B])
+  return [
+    { id: 'style:2525c/default-stroke', geometry: path }
+  ]
 }

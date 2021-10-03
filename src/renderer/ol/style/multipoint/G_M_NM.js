@@ -2,13 +2,21 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // MINIMUM SAFE DISTANCE ZONES
-styles['MultiPoint:G*M*NM----'] = ({ styles, feature, points }) => {
-  const [C, A] = TS.coordinates(points)
+styles['MultiPoint:G*M*NM----'] = ({ geometry }) => {
+  const [C, A] = TS.coordinates(geometry)
   const segment = TS.segment([C, A])
-  const text = feature.get('t')
+  const path = TS.pointBuffer(TS.point(C))(segment.getLength())
+  const anchor = TS.point(A)
 
   return [
-    styles.defaultStroke(TS.pointBuffer(TS.point(C))(segment.getLength())),
-    text ? styles.outlinedText(TS.point(A), { text }) : []
+    { id: 'style:2525c/default-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      geometry: anchor,
+      'text-field': 't',
+      'text-anchor': 0,
+      'text-padding': 3,
+      'text-clipping': 'line'
+    }
   ]
 }

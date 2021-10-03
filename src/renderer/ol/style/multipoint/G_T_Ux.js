@@ -1,9 +1,8 @@
 import { styles } from '../styles'
 import * as TS from '../../ts'
 
-const fanLike = label => options => {
-  const { resolution, styles, points } = options
-  const [C, A, B] = TS.coordinates(points)
+const fanLike = label => ({ resolution, geometry }) => {
+  const [C, A, B] = TS.coordinates(geometry)
   const segmentA = TS.segment([C, A])
   const segmentB = TS.segment([C, B])
   const angleA = segmentA.angle()
@@ -23,22 +22,23 @@ const fanLike = label => options => {
     TS.projectCoordinates(segmentB.getLength(), angleB, B)(arrowOffsets)
   ]
 
-  const text = segment => styles.outlinedText(TS.point(segment.pointAlong(0.3)), {
-    rotation: TS.rotation(segment),
-    text: label
+  const path = TS.lineString([A, A2, A1, C, B1, B2, B])
+
+  const text = segment => ({
+    geometry: TS.point(segment.pointAlong(0.3)),
+    'text-field': label,
+    'text-rotate': TS.rotation(segment),
+    'text-padding': 3
   })
 
   return [
-    styles.defaultStroke(TS.collect([
-      TS.lineString([C, A1, A2, A]),
-      TS.lineString([C, B1, B2, B]),
-      ...arrows.map(coords => TS.lineString(coords))
-    ])),
+    { id: 'style:2525c/default-stroke', geometry: path },
+    { id: 'style:2525c/default-stroke', geometry: TS.collect(arrows.map(coords => TS.lineString(coords))) },
     ...(label ? [TS.segment([C, A1]), TS.segment([C, B1])].map(text) : [])
   ]
 }
 
-styles['MultiPoint:G*T*US----'] = fanLike('S') // TASKS / SCREEN
-styles['MultiPoint:G*T*UG----'] = fanLike('G') // TASKS / GUARD
-styles['MultiPoint:G*T*UC----'] = fanLike('C') // TASKS / COVER
-styles['MultiPoint:G*G*GAS---'] = fanLike(null) // SEARCH AREA/RECONNAISSANCE AREA
+styles['MultiPoint:G*T*US----'] = fanLike('"S"') // TASKS / SCREEN
+styles['MultiPoint:G*T*UG----'] = fanLike('"G"') // TASKS / GUARD
+styles['MultiPoint:G*T*UC----'] = fanLike('"C"') // TASKS / COVER
+styles['MultiPoint:G*G*GAS---'] = fanLike(null) // SEARCH/RECONNAISSANCE AREA

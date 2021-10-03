@@ -4,7 +4,9 @@ import * as TS from '../../ts'
 import { openArrow } from './commons'
 
 // TASKS / CONTAIN
-styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
+styles['LineString:Point:G*T*J-----'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -25,18 +27,21 @@ styles['G*T*J-----'] = ({ styles, lineString, width, resolution }) => {
 
   const [p1] = TS.projectCoordinates(width / 2, angle, coords[1])([[1, 0]])
 
-  const path = TS.collect([
+  const path = TS.multiLineString([
     lineString,
-    arcs[0],
+    ...TS.geometries(arcs[0]),
     ...spikes,
     openArrow(resolution, angle, coords[1])
   ])
 
   return [
-    styles.defaultStroke(path),
-    styles.outlinedText(TS.point(p1), {
-      rotation: TS.rotation(segment),
-      text: 'C'
-    })
+    { id: 'style:2525c/default-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      geometry: TS.point(p1),
+      'text-field': '"C"',
+      'text-padding': 3,
+      'text-rotate': TS.rotation(segment)
+    }
   ]
 }

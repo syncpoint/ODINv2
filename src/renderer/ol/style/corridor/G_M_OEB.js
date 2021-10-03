@@ -2,13 +2,19 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TACGRP.MOBSU.OBST.OBSEFT.BLK - OBSTACLE EFFECT / BLOCK
-styles['G*M*OEB---'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*M*OEB---'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
 
-  return styles.solidStroke(TS.collect([
+  const path = TS.collect([
     lineString,
     TS.lineString(TS.projectCoordinates(width / 2, angle, coords[0])([[0, 1], [0, -1]]))
-  ]))
+  ])
+
+  return [
+    { id: 'style:2525c/solid-stroke', geometry: path }
+  ]
 }

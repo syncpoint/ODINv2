@@ -3,9 +3,10 @@ import * as TS from '../../ts'
 import { openArrow } from './commons'
 import { PI } from '../../../../shared/Math'
 
-
 // TASKS / RELIEF IN PLACE (RIP)
-styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
+styles['LineString:Point:G*T*R-----'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const orientation = segment.orientationIndex(TS.coordinate(point))
@@ -21,19 +22,22 @@ styles['G*T*R-----'] = ({ styles, point, lineString, width, resolution }) => {
     TS.polygon([coords[0], p0, p1, coords[1], coords[0]])
   ])
 
-  const geometry = TS.collect([
-    TS.difference([lineString, TS.pointBuffer(midPoint)(resolution * 11)]),
+  const path = TS.multiLineString([
+    lineString,
     TS.lineString([p1, p0]),
     openArrow(resolution, angle, coords[1]),
     openArrow(resolution, angle + PI, p0),
-    arc
+    ...TS.geometries(arc)
   ])
 
   return [
-    styles.defaultStroke(geometry),
-    styles.outlinedText(midPoint, {
-      rotation: TS.rotation(segment),
-      text: 'RIP'
-    })
+    { id: 'style:2525c/default-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      geometry: midPoint,
+      'text-field': '"RIP"',
+      'text-padding': 3,
+      'text-rotate': TS.rotation(segment)
+    }
   ]
 }

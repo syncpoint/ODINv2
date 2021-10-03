@@ -5,7 +5,9 @@ import { arrowCoordinates } from './commons'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // AXIS OF ADVANCE / AIRBORNE
-styles['G*G*OLAA--'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*G*OLAA--'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (3 / 4))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -48,7 +50,7 @@ styles['G*G*OLAA--'] = ({ styles, lineString, width }) => {
     return TS.union([a, b])
   })()
 
-  return styles.solidStroke(TS.union([
+  const path = TS.union([
     crossing,
     TS.lineString(R.props([4, 5, 0, 1, 2], aps)),
     TS.difference([
@@ -59,5 +61,9 @@ styles['G*G*OLAA--'] = ({ styles, lineString, width }) => {
         .geometryCollection([bisection, TS.point(aps[1]), TS.point(aps[5])])
         .convexHull()
     ])
-  ]))
+  ])
+
+  return [
+    { id: 'style:2525c/default-stroke', geometry: path }
+  ]
 }

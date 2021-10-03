@@ -1,5 +1,4 @@
 import * as R from 'ramda'
-import * as geom from 'ol/geom'
 import * as TS from '../../ts'
 import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
@@ -7,7 +6,7 @@ import { PI_OVER_2 } from '../../../../shared/Math'
 // ENCIRCLEMENT
 styles['G*G*SAE---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
-  const lineString = TS.read(new geom.LineString(coordinates[0]))
+  const lineString = TS.lineString(coordinates)
   const indexedLine = TS.lengthIndexedLine(lineString)
   const endIndex = indexedLine.getEndIndex()
   const delta = resolution * 20
@@ -28,6 +27,6 @@ styles['G*G*SAE---'] = ({ resolution, geometry }) => {
   }, [])
 
   points.push(points[0])
-  const collection = TS.collect([TS.polygon(points), lineString])
-  return [['style:2525c/solid-stroke', TS.write(collection)]]
+  const path = TS.collect([TS.polygon(points), lineString])
+  return [{ id: 'style:2525c/solid-stroke', geometry: path }]
 }

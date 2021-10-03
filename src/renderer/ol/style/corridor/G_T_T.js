@@ -4,7 +4,9 @@ import * as TS from '../../ts'
 import { openArrow } from './commons'
 
 // TASKS / DISRUPT
-styles['G*T*T-----'] = ({ styles, lineString, width, resolution }) => {
+styles['LineString:Point:G*T*T-----'] = ({ geometry, resolution }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -23,21 +25,21 @@ styles['G*T*T-----'] = ({ styles, lineString, width, resolution }) => {
     .map(interpolate)
 
   const arrows = segments.map(segment => openArrow(resolution, angle, segment.p1))
-
-  const geometry = TS.collect([
-    TS.lineString(segments[0]),
-    TS.difference([TS.lineString(segments[1]), TS.pointBuffer(midPoint)(resolution * 7)]),
-    TS.lineString(segments[2]),
+  const path = TS.multiLineString([
+    ...segments.map(segment => TS.lineString(segment)),
     TS.lineString([segments[0].p0, segments[2].p0]),
     TS.lineString([segments[1].pointAlong(-0.25), segments[1].p0]),
     ...arrows
   ])
 
   return [
-    styles.defaultStroke(geometry),
-    styles.outlinedText(midPoint, {
-      rotation: TS.rotation(segment),
-      text: 'D'
-    })
+    { id: 'style:2525c/default-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      geometry: midPoint,
+      'text-field': '"D"',
+      'text-padding': 3,
+      'text-rotate': TS.rotation(segment)
+    }
   ]
 }

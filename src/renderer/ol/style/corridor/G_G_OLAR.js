@@ -5,7 +5,9 @@ import { arrowCoordinates } from './commons'
 import { PI, PI_OVER_2 } from '../../../../shared/Math'
 
 // AXIS OF ADVANCE / ATTACK, ROTARY WING
-styles['G*G*OLAR--'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const segments = TS.segments(lineString)
   const arrowRatio = Math.min(1, (R.last(segments).getLength() / width) / (3 / 4))
   if (arrowRatio < 1) throw new Error('segment too short')
@@ -88,19 +90,21 @@ styles['G*G*OLAR--'] = ({ styles, lineString, width }) => {
     ])
   })()
 
+  const path = TS.union([
+    cross,
+    TS.lineString(R.props([4, 5, 0, 1, 2], aps)),
+    TS.difference([
+      TS.boundary(buffer),
+      TS.polygon(R.props([0, 1, 5, 0], aps)),
+      TS.pointBuffer(TS.startPoint(lineString))(width / 2),
+      TS
+        .geometryCollection([bisection, TS.point(aps[1]), TS.point(aps[5])])
+        .convexHull()
+    ])
+  ])
+
   return [
-    styles.solidStroke(rotarySymbol),
-    styles.solidStroke(TS.union([
-      cross,
-      TS.lineString(R.props([4, 5, 0, 1, 2], aps)),
-      TS.difference([
-        TS.boundary(buffer),
-        TS.polygon(R.props([0, 1, 5, 0], aps)),
-        TS.pointBuffer(TS.startPoint(lineString))(width / 2),
-        TS
-          .geometryCollection([bisection, TS.point(aps[1]), TS.point(aps[5])])
-          .convexHull()
-      ])
-    ]))
+    { id: 'style:2525c/solid-stroke', geometry: rotarySymbol },
+    { id: 'style:2525c/solid-stroke', geometry: path }
   ]
 }

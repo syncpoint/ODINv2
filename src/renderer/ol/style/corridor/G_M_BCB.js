@@ -1,4 +1,4 @@
 import { styles } from '../styles'
 
-// ASSAULT CROSSING AREA
-styles['G*M*BCB---'] = styles['G*M*BCA---']
+// CROSSING SITE/WATER CROSSING / BRIDGE OR GAP
+styles['LineString:Point:G*M*BCB---'] = styles['LineString:Point:G*M*BCA---']

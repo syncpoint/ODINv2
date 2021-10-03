@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as Style from 'ol/style'
 import ms from 'milsymbol'
+import { Jexl } from 'jexl'
 import * as Colors from './color-schemes'
 import { identityCode, statusCode } from '../../symbology/2525c'
 import * as patterns from './patterns'
@@ -22,7 +23,7 @@ const makeStyle = options => Array.isArray(options)
 const SCHEME_DEFAULT = 'medium'
 const COLOR_WHITE_40 = 'rgba(255,255,255,0.4)'
 const COLOR_RED_60 = 'rgba(255,0,0,0.6)'
-const COLOR_CAROLINA_BLUE = '#C' // https://coolors.co/3399cc
+const COLOR_CAROLINA_BLUE = '#3399CC' // https://coolors.co/3399cc
 const FILL_WHITE_100 = makeFill({ color: 'white' })
 const FILL_WHITE_40 = makeFill({ color: COLOR_WHITE_40 })
 const FILL_RED_60 = makeFill({ color: COLOR_RED_60 })
@@ -61,6 +62,12 @@ const HANDLE_SINGLE_SELECT = makeCircle({
 })
 
 export const Props = {
+  circleFillColor: R.prop('circle-fill-color'),
+  circleLineColor: R.prop('circle-line-color'),
+  circleLineWidth: R.prop('circle-line-width'),
+  circleRadius: R.prop('circle-radius'),
+
+  fillColor: R.prop('fill-color'),
   fillPattern: R.prop('fill-pattern'),
   fillPatternAngle: R.prop('fill-pattern-angle'),
   fillPatternSize: R.prop('fill-pattern-size'),
@@ -131,6 +138,23 @@ export const makeStyles = (feature, mode = 'default') => {
 
   const registry = {}
 
+  registry['style:default'] = {
+    'line-color': COLOR_CAROLINA_BLUE,
+    'line-width': 1.25,
+    'fill-color': COLOR_CAROLINA_BLUE,
+    'circle-radius': 5,
+    'circle-line-color': COLOR_CAROLINA_BLUE,
+    'circle-line-width': 1.25,
+    'circle-fill-color': COLOR_WHITE_40
+  }
+
+  registry['style:default-text'] = {
+    'text-font': `${defaults.fontWeight} ${defaults.fontSize} ${defaults.fontFamily}`,
+    'text-color': defaults.textFillColor,
+    'text-justify': 'center',
+    'text-padding': 5
+  }
+
   registry['style:2525c/default-stroke'] = {
     'line-cap': 'square',
     'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
@@ -148,13 +172,34 @@ export const makeStyles = (feature, mode = 'default') => {
     'line-width': 2
   }
 
-  registry['style:2525c/filled-stroke'] = {
+  registry['style:2525c/dashed-stroke'] = {
+    'line-cap': 'square',
+    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
+    'line-dash-array': LINE_DASH_8_8,
+    'line-halo-color': Colors.stroke(identity),
+    'line-halo-width': 1,
+    'line-width': 2
+  }
+
+  registry['style:2525c/hatch-fill'] = {
     'line-cap': 'square',
     'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
     'line-halo-color': Colors.stroke(identity),
     'line-halo-width': 1,
     'line-width': 2,
     'fill-pattern': 'hatch',
+    'fill-pattern-angle': 45,
+    'fill-pattern-size': 2,
+    'fill-pattern-spacing': 12
+  }
+
+  registry['style:2525c/solid-fill'] = {
+    'line-cap': 'square',
+    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
+    'line-halo-color': Colors.stroke(identity),
+    'line-halo-width': 1,
+    'line-width': 2,
+    'fill-color': Colors.fill(SCHEME_DEFAULT)(identity),
     'fill-pattern-angle': 45,
     'fill-pattern-size': 2,
     'fill-pattern-spacing': 12
@@ -433,16 +478,13 @@ export const makeStyles = (feature, mode = 'default') => {
     return makeStyle(styleOptions)
   }
 
-  styles.makeStyle = ([id, geometry]) => {
-    console.log('[styles/style]', id)
-
-    const props = registry[id]
-    if (!props) return null
-
+  styles.makeStyle = options => {
     const styleOptions = []
+    const props = { ...(registry[options.id] || {}), ...options }
+
     if (Props.lineHaloWidth(props)) {
       styleOptions.push({
-        geometry,
+        geometry: props.geometry,
         stroke: makeStroke({
           color: Props.lineHaloColor(props),
           lineDash: Props.lineDashArray(props),
@@ -453,35 +495,107 @@ export const makeStyles = (feature, mode = 'default') => {
     }
 
     const fill = (() => {
-      if (!Props.fillPattern(props)) return null
+      if (Props.fillColor(props)) {
+        return makeFill({ color: Props.fillColor(props) })
+      } else if (Props.fillPattern(props)) {
+        const color = patterns.fill({
+          pattern: Props.fillPattern(props),
+          angle: Props.fillPatternAngle(props),
+          size: Props.fillPatternSize(props),
+          spacing: Props.fillPatternSpacing(props),
+          strokeColor: Props.lineHaloColor(props),
+          strokeWidth: Props.lineHaloWidth(props) + Props.lineWidth(props),
+          strokeFillColor: Props.lineColor(props),
+          strokeFillWidth: Props.lineWidth(props)
+        })
 
-      const color = patterns.fill({
-        pattern: Props.fillPattern(props),
-        angle: Props.fillPatternAngle(props),
-        size: Props.fillPatternSize(props),
-        spacing: Props.fillPatternSpacing(props),
-        strokeColor: Props.lineHaloColor(props),
-        strokeWidth: Props.lineHaloWidth(props) + Props.lineWidth(props),
-        strokeFillColor: Props.lineColor(props),
-        strokeFillWidth: Props.lineWidth(props)
-      })
+        return makeFill({ color })
+      }
 
-      return makeFill({ color })
+      return null
     })()
 
-    styleOptions.push({
-      geometry,
-      fill,
-      stroke: makeStroke({
+    const image = (() => {
+      if (!Props.circleRadius(props)) return null
+
+      const fill = makeFill({ color: Props.circleFillColor(props) })
+      const stroke = makeStroke({
+        color: Props.circleLineColor(props),
+        width: Props.circleLineWidth(props)
+      })
+
+      return makeCircle({
+        fill,
+        stroke,
+        radius: Props.circleRadius(props)
+      })
+    })()
+
+    const text = (() => {
+      if (!Props.textField(props)) return null
+
+      const rotation = Props.textRotate(props)
+      const flipped = rotation ? rotation < -PI_OVER_2 || rotation > PI_OVER_2 : false
+      const textAlign = Props.textJustify(props) || null
+      const textOffset = Props.textOffset(props) || [0, 0]
+      const offsetX = textOffset[0]
+      const offsetY = textOffset[1]
+
+      return makeText({
+        text: Props.textField(props),
+        font: Props.textFont(props),
+        rotation: rotation ? flipped ? rotation + PI : rotation : null,
+        textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
+        offsetX: flipped ? -1 * offsetX : offsetX,
+        offsetY: offsetY,
+        padding: Props.textPadding(props) && new Array(4).fill(Props.textPadding(props)),
+        fill: new Style.Fill({ color: Props.textColor(props) }),
+        stroke: Props.textHaloColor(props) && new Style.Stroke({
+          color: Props.textHaloColor(props),
+          width: Props.textHaloWidth(props)
+        }),
+        backgroundFill: Props.textFillColor(props) && makeFill({ color: Props.textFillColor(props) }),
+        backgroundStroke: Props.textLineColor(props) && makeStroke({
+          color: Props.textLineColor(props),
+          width: Props.textLineWidth(props)
+        })
+      })
+    })()
+
+    const stroke = (() => {
+      if (!Props.lineWidth(props)) return null
+      return makeStroke({
         color: Props.lineColor(props),
         lineCap: Props.lineCap(props),
         lineDash: Props.lineDashArray(props),
         width: Props.lineWidth(props)
       })
+    })()
+
+    styleOptions.push({
+      geometry: props.geometry,
+      fill,
+      image,
+      stroke,
+      text
     })
 
     return makeStyle(styleOptions)
   }
+
+  const jexl = new Jexl()
+
+  const evalSync = properties => text =>
+    Array.isArray(text)
+      ? text.map(evalSync(properties)).filter(Boolean).join('\n')
+      : jexl.evalSync(text, properties)
+
+  const evalTextField = properties => option =>
+    Props.textField(option)
+      ? { ...option, 'text-field': evalSync(properties)(Props.textField(option)) }
+      : option
+
+  styles.evalTextField = evalTextField(feature.getProperties())
 
   return styles
 }

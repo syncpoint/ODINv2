@@ -2,7 +2,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TACGRP.MOBSU.OBSTBP.CSGSTE - ASSAULT CROSSING AREA
-styles['G*M*BCA---'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*M*BCA---'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
   const coords = TS.coordinates(lineString)
   const segment = TS.segment(coords)
   const angle = segment.angle()
@@ -18,8 +20,12 @@ styles['G*M*BCA---'] = ({ styles, lineString, width }) => {
     ...TS.projectCoordinates(distance, angle, bs[1])([[1, 1]])
   ]
 
+  const path = TS.collect([
+    TS.lineString([xs[0], as[0], bs[0], xs[2]]),
+    TS.lineString([xs[1], as[1], bs[1], xs[3]])
+  ])
+
   return [
-    styles.solidStroke(TS.lineString([xs[0], as[0], bs[0], xs[2]])),
-    styles.solidStroke(TS.lineString([xs[1], as[1], bs[1], xs[3]]))
+    { id: 'style:2525c/solid-stroke', geometry: path }
   ]
 }

@@ -2,7 +2,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TACGRP.MOBSU.OBST.RCBB.SAFE - BLOWN BRIDGES / SAFE
-styles['G*M*ORS---'] = ({ styles, lineString, width }) => {
+styles['LineString:Point:G*M*ORS---'] = ({ geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
 
   // NOTE: Picking 2 out of 3 geometries might not be an exact science:
   const [...geometries] = TS.geometries(TS.difference([
@@ -12,7 +14,7 @@ styles['G*M*ORS---'] = ({ styles, lineString, width }) => {
   ]))
 
   return [
-    styles.dashedStroke(geometries[1]),
-    styles.solidStroke(geometries[2])
+    { id: 'style:2525c/dashed-stroke', geometry: geometries[1] },
+    { id: 'style:2525c/solid-stroke', geometry: geometries[2] }
   ]
 }
