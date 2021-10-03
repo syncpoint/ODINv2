@@ -19,19 +19,31 @@ styles.MultiPoint = ({ feature, resolution, mode }) => {
   const sidc = feature.get('sidc')
   const key = parameterized(sidc) || 'DEFAULT'
 
-  const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
+  const writeGeometry = option => (option.geometry = write(option.geometry))
   const styleFactory = makeStyles(feature, mode)
 
+  const handleOptions = {
+    multiple: geometry => ({ id: 'style:rectangle-handle', geometry: geometry.getGeometryN(0) }),
+    selected: geometry => ({ id: 'style:circle-handle', geometry })
+  }
+
   const pipeline = R.compose(
-    options => options.map(styleFactory.makeStyle),
-    options => options.map(writeGeometry),
-    Clipping.clipLabels(resolution),
-    options => options.map(styleFactory.evalTextField),
-    styles[`MultiPoint:${key}`] || styles['MultiPoint:DEFAULT']
+    ({ options }) => options.map(styleFactory.makeStyle),
+    R.tap(console.log),
+    R.tap(({ options }) => options.map(writeGeometry)),
+    R.tap(({ options }) => Clipping.clipLabels(resolution)(options)),
+    R.tap(({ options }) => options.map(styleFactory.resolveTextField)),
+    R.tap(context => {
+      const options = (styles[`MultiPoint:${key}`] || styles['MultiPoint:DEFAULT'])(context)
+      context.options = options
+      const handle = handleOptions[mode] || (() => [])
+      context.options = context.options.concat(handle(context.geometry))
+    })
   )
 
+  const context = { resolution, geometry }
+
   return [
-    ...pipeline({ resolution, geometry }),
-    ...styleFactory.handles(write(geometry))
+    ...pipeline(context)
   ]
 }

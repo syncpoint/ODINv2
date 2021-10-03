@@ -65,3 +65,16 @@ text-line-color :: string
 text-line-width :: number
 text-offset :: [X, Y] - pixel offset
 text-padding :: number
+text-rotate :: number
+
+shape-angle :: number
+shape-fill-color :: string
+shape-line-color :: string
+shape-line-width :: number
+shape-offset :: [number, number]
+shape-points :: number
+shape-radius :: number
+shape-radius-1 :: number
+shape-radius-2 :: number
+shape-rotate :: number
+shape-scale :: [number, number]

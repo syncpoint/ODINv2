@@ -14,7 +14,6 @@ const makeCircle = options => new Style.Circle(options)
 const makeFill = options => new Style.Fill(options)
 const makeRegularShape = options => new Style.RegularShape(options)
 const makeIcon = options => new Style.Icon(options)
-
 const makeStyle = options => Array.isArray(options)
   ? options.map(makeStyle)
   : new Style.Style(options)
@@ -93,7 +92,19 @@ export const Props = {
   textLineWidth: R.prop('text-line-width'),
   textOffset: R.prop('text-offset'),
   textPadding: R.prop('text-padding'),
-  textRotate: R.prop('text-rotate')
+  textRotate: R.prop('text-rotate'),
+
+  shapeAngle: R.prop('shape-angle'),
+  shapeFillColor: R.prop('shape-fill-color'),
+  shapeLineColor: R.prop('shape-line-color'),
+  shapeLineWidth: R.prop('shape-line-width'),
+  shapeOffset: R.prop('shape-offset'),
+  shapePoints: R.prop('shape-points'),
+  shapeRadius: R.prop('shape-radius'),
+  shapeRadius1: R.prop('shape-radius-1'),
+  shapeRadius2: R.prop('shape-radius-2'),
+  shapeRotate: R.prop('shape-rotate'),
+  shapeScale: R.prop('shape-scale')
 }
 
 export const makeMilitaryStyles = feature => {
@@ -203,6 +214,22 @@ export const makeStyles = (feature, mode = 'default') => {
     'fill-pattern-angle': 45,
     'fill-pattern-size': 2,
     'fill-pattern-spacing': 12
+  }
+
+  registry['style:circle-handle'] = {
+    'circle-fill-color': COLOR_RED_60,
+    'circle-line-color': 'white',
+    'circle-line-width': 3,
+    'circle-radius': 7
+  }
+
+  registry['style:rectangle-handle'] = {
+    'shape-fill-color': 'white',
+    'shape-line-color': 'black',
+    'shape-line-width': 1,
+    'shape-radius': 6,
+    'shape-points': 4,
+    'shape-angle': PI_OVER_4
   }
 
   const styles = {}
@@ -516,19 +543,31 @@ export const makeStyles = (feature, mode = 'default') => {
     })()
 
     const image = (() => {
-      if (!Props.circleRadius(props)) return null
+      if (Props.circleRadius(props)) {
+        const fill = makeFill({ color: Props.circleFillColor(props) })
+        const stroke = Props.circleLineColor(props)
+          ? makeStroke({
+            color: Props.circleLineColor(props),
+            width: Props.circleLineWidth(props)
+          })
+          : null
 
-      const fill = makeFill({ color: Props.circleFillColor(props) })
-      const stroke = makeStroke({
-        color: Props.circleLineColor(props),
-        width: Props.circleLineWidth(props)
-      })
-
-      return makeCircle({
-        fill,
-        stroke,
-        radius: Props.circleRadius(props)
-      })
+        return makeCircle({
+          fill,
+          stroke,
+          radius: Props.circleRadius(props)
+        })
+      } else if (Props.shapeRadius(props)) {
+        const fill = makeFill({ color: Props.shapeFillColor(props) })
+        const stroke = makeStroke({ color: Props.shapeLineColor(props), width: Props.shapeLineWidth(props) })
+        return makeRegularShape({
+          fill: fill,
+          stroke: stroke,
+          radius: Props.shapeRadius(props),
+          points: Props.shapePoints(props),
+          angle: Props.shapeAngle(props)
+        })
+      } else return null
     })()
 
     const text = (() => {
@@ -596,6 +635,11 @@ export const makeStyles = (feature, mode = 'default') => {
       : option
 
   styles.evalTextField = evalTextField(feature.getProperties())
+  styles.resolveTextField = option => {
+    const textField = Props.textField(option)
+    if (!textField) return
+    option['text-field'] = evalSync(feature.getProperties())(textField)
+  }
 
   return styles
 }

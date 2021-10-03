@@ -25,6 +25,7 @@ const fanLike = label => ({ resolution, geometry }) => {
   const path = TS.lineString([A, A2, A1, C, B1, B2, B])
 
   const text = segment => ({
+    id: 'style:default-text',
     geometry: TS.point(segment.pointAlong(0.3)),
     'text-field': label,
     'text-rotate': TS.rotation(segment),
