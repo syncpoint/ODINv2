@@ -1,46 +1,21 @@
 import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
-import { fenceX, fenceLine } from './commons'
-import { PI_OVER_2 } from '../../../../shared/Math'
+import { fenceX, fencePoints } from './commons'
 
 // HIGH WIRE FENCE
-styles['LineString:G*M*OWH---'] = ({ styles, resolution, lineString }) => {
-  const lil = TS.lengthIndexedLine(lineString)
-  const length = lil.getEndIndex()
-  const n = length / (resolution * 16)
-  const delta = Math.floor(length / n)
-  const offset = (length - delta * n) / 2
-
-  const width = resolution * 15
-  const segments = TS.segments(lineString)
-  const startSegment = R.head(segments)
-  const endSegment = R.last(segments)
-
-  const startPoint = TS.projectCoordinate(
-    TS.coordinate(TS.startPoint(lineString))
-  )([startSegment.angle() + PI_OVER_2, width / 2])
-
-  const endPoint = TS.projectCoordinate(
-    TS.coordinate(TS.endPoint(lineString))
-  )([endSegment.angle() + PI_OVER_2, width / 2])
-
-  const buffer = TS.singleSidedLineBuffer(lineString)(width)
-  const geometry = TS.difference([
+styles['LineString:G*M*OWH---'] = ({ resolution, geometry }) => {
+  const width = resolution * 7
+  const points = TS.points(geometry)
+  const buffer = TS.lineBuffer(geometry)(width)
+  const path = TS.difference([
     TS.boundary(buffer),
-    TS.pointBuffer(TS.point(startPoint))(width / 2),
-    TS.pointBuffer(TS.point(endPoint))(width / 2)
+    TS.pointBuffer(R.head(points))(width),
+    TS.pointBuffer(R.last(points))(width)
   ])
 
-  const pointOptions = i => {
-    const A = lil.extractPoint(offset + i * delta - offset)
-    const B = lil.extractPoint(offset + i * delta + offset)
-    const segment = TS.segment([A, B])
-    return [lil.extractPoint(offset + i * delta), segment.angle(), [0, -8]]
-  }
-
   return [
-    fenceLine(geometry),
-    ...R.range(1, n).map(pointOptions).map(fenceX)
+    { id: 'style:2525c/fence-stroke', geometry: path },
+    ...fencePoints(geometry, resolution, 16).map(fenceX)
   ]
 }

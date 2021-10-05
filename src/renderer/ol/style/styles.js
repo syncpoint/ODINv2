@@ -191,6 +191,12 @@ export const makeStyles = (feature, mode = 'default') => {
     'line-width': 2
   }
 
+  registry['style:2525c/fence-stroke'] = {
+    'line-cap': 'square',
+    'line-color': 'black',
+    'line-width': 3
+  }
+
   registry['style:2525c/hatch-fill'] = {
     'line-cap': 'square',
     'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
@@ -563,14 +569,20 @@ export const makeStyles = (feature, mode = 'default') => {
           radius: Props.circleRadius(props)
         })
       } else if (Props.shapeRadius(props)) {
-        const fill = makeFill({ color: Props.shapeFillColor(props) })
+        const fillColor = Props.shapeFillColor(props)
+        const fill = fillColor ? makeFill({ color: fillColor }) : null
         const stroke = makeStroke({ color: Props.shapeLineColor(props), width: Props.shapeLineWidth(props) })
         return makeRegularShape({
           fill: fill,
           stroke: stroke,
           radius: Props.shapeRadius(props),
+          radius1: Props.shapeRadius1(props),
+          radius2: Props.shapeRadius2(props),
           points: Props.shapePoints(props),
-          angle: Props.shapeAngle(props)
+          angle: Props.shapeAngle(props),
+          rotation: Props.shapeRotate(props),
+          scale: Props.shapeScale(props),
+          displacement: Props.shapeOffset(props)
         })
       } else return null
     })()
