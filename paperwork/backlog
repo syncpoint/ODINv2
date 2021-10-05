@@ -2,7 +2,6 @@
 * echelon (boundaries, polygon)
 * drop feature (relative size)
 * drop labels (relative size)
-* fill (polygon/hatch)
 * simplify (line string, polygon)
 * chaikin (line string, polygon)
 * modify interaction: clear vertex properly (pointer distance)

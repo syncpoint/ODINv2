@@ -78,3 +78,12 @@ shape-radius-1 :: number
 shape-radius-2 :: number
 shape-rotate :: number
 shape-scale :: [number, number]
+
+symbol-anchor :: string - unsupported
+symbol-color :: string
+symbol-halo-color :: string
+symbol-halo-width :: string
+symbol-offset :: [number, number] - unsupported
+symbol-rotate :: number
+symbol-sidc :: string
+symbol-size :: number

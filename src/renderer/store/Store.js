@@ -362,7 +362,6 @@ Store.prototype.identify = async function (id, active) {
     },
     feature: async id => {
       const geoJSON = await this.geometries_.get(id)
-      console.log(geoJSON)
       const geometry = read(geoJSON)
       const bounds = geoJSON.type === 'Polygon'
         ? geometry

@@ -1,8 +1,5 @@
-import * as R from 'ramda'
-import { parameterized } from '../../../symbology/2525c'
 import { pipeline } from '../pipeline'
-import { styles, makeStyles, Props } from '../styles'
-import { transform } from '../../geometry'
+import { styles } from '../styles'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
@@ -10,9 +7,6 @@ import './G_M_OGF' // OBSTACLE FREE AREA
 import './G_M_OGR' // OBSTACLE RESTRICTED AREA
 import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
-import { smooth } from '../chaikin'
-import * as Clipping from '../clipping'
-import * as TS from '../../ts'
 
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
 const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 3, 'text-clipping': 'line' }]
@@ -36,7 +30,7 @@ styles['LABELS:G*G*GAD---'] = C(ALL_LINES('DZ')) // DROP ZONE
 styles['LABELS:G*G*GAX---'] = C(ALL_LINES('EZ')) // EXTRACTION ZONE (EZ)
 styles['LABELS:G*G*GAL---'] = C(ALL_LINES('LZ')) // LANDING ZONE (LZ)
 styles['LABELS:G*G*GAP---'] = C(ALL_LINES('PZ')) // PICKUP ZONE (PZ)
-styles['LABELS:G*G*GAY---'] = C('h') // LIMITED ACCESS AREA
+styles['LABELS:G*G*GAY---'] = C('h', { 'text-halo-color': 'white', 'text-halo-width': 5 }) // LIMITED ACCESS AREA
 // TODO: G*G*GAZ--- : AIRFIELD ZONE
 styles['LABELS:G*G*AAR---'] = C(ALL_LINES('ROZ')) // RESTRICTED OPERATIONS ZONE (ROZ)
 styles['LABELS:G*G*AAF---'] = C(ALL_LINES('SHORADEZ')) // SHORT-RANGE AIR DEFENSE ENGAGEMENT ZONE (SHORADEZ)
@@ -63,7 +57,7 @@ styles['LABELS:G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (
 styles['LABELS:G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
 styles['LABELS:G*M*OGZ---'] = styles['LABELS:POLYGON'] // GENERAL ZONE (OBSTACLES)
 styles['LABELS:G*M*OGF---'] = C(ALL_LINES('FREE')) // OBSTACLE FREE AREA
-styles['LABELS:G*M*OGR---'] = C(ALL_LINES(), { 'text-clipping': 'actual', 'text-padding': 3 }) // OBSTACLE RESTRICTED AREA
+styles['LABELS:G*M*OGR---'] = C(ALL_LINES(), { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }) // OBSTACLE RESTRICTED AREA
 // TODO: G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
 styles['LABELS:G*M*OFA---'] = TLBR('"M"') // MINED AREA
 styles['LABELS:G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
@@ -90,8 +84,8 @@ styles['LABELS:G*F*AZII--'] = C(ALL_LINES('ATI ZONE')) // ARTILLERY TARGET INTEL
 styles['LABELS:G*F*AZXI--'] = C(ALL_LINES('CFF ZONE')) // CALL FOR FIRE ZONE (CFFZ)
 styles['LABELS:G*F*AZCI--'] = C(ALL_LINES('CENSOR ZONE')) // CENSOR ZONE
 styles['LABELS:G*F*AZFI--'] = C(ALL_LINES('CF ZONE')) // CRITICAL FRI'end'LY ZONE (CFZ)
-styles['LABELS:G*F*AKBI--'] = C(ALL_LINES('BKB')) // KILL BOX / BLUE
-styles['LABELS:G*F*AKPI--'] = C(ALL_LINES('PKB')) // KILL BOX / PURPLE
+styles['LABELS:G*F*AKBI--'] = C(ALL_LINES('BKB'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // KILL BOX / BLUE
+styles['LABELS:G*F*AKPI--'] = C(ALL_LINES('PKB'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // KILL BOX / PURPLE
 styles['LABELS:G*S*AD----'] = C(ALL_LINES('DETAINEE\nHOLDING\nAREA')) // DETAINEE HOLDING AREA
 styles['LABELS:G*S*AE----'] = C(ALL_LINES('EPW\nHOLDING\nAREA')) // ENEMY PRISONER OF WAR (EPW) HOLDING AREA
 styles['LABELS:G*S*AR----'] = C(ALL_LINES('FARP')) // FORWARD ARMING AND REFUELING AREA (FARP)
@@ -99,49 +93,17 @@ styles['LABELS:G*S*AH----'] = C(ALL_LINES('REFUGEE\nHOLDING\nAREA')) // REFUGEE 
 styles['LABELS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA)
 styles['LABELS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['LABELS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
-styles['LABELS:G*M*NR----'] = [{ sidc: 'GFMPNZ----', 'text-anchor': 'center' }] // RADIOACTIVE AREA
-styles['LABELS:G*M*NB----'] = [{ sidc: 'GFMPNEB---', 'text-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
-styles['LABELS:G*M*NC----'] = [{ sidc: 'GFMPNEC---', 'text-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
-styles['FILL:HATCH'] = { pattern: 'hatch', angle: 45, size: 4, spacing: 12 }
-styles['FILL:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
-styles['FILL:G*M*OGR---'] = styles['FILL:HATCH'] // OBSTACLE RESTRICTED AREA
-styles['FILL:G*M*NB----'] = styles['FILL:HATCH'] // BIOLOGICALLY CONTAMINATED AREA
-styles['FILL:G*M*NC----'] = styles['FILL:HATCH'] // CHEMICALLY CONTAMINATED AREA
-styles['FILL:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
-styles['FILL:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
-styles['FILL:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
-
+styles['LABELS:G*M*NR----'] = [{ 'symbol-sidc': 'GFMPNZ----', 'symbol-anchor': 'center' }] // RADIOACTIVE AREA
+styles['LABELS:G*M*NB----'] = [{ 'symbol-sidc': 'GFMPNEB---', 'symbol-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
+styles['LABELS:G*M*NC----'] = [{ 'symbol-sidc': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
+styles['FILL:HATCH'] = ({ geometry }) => [{ id: 'style:2525c/hatch-fill', geometry }]
+styles['Polygon:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
+styles['Polygon:G*M*NB----'] = styles['FILL:HATCH'] // BIOLOGICALLY CONTAMINATED AREA
+styles['Polygon:G*M*NC----'] = styles['FILL:HATCH'] // CHEMICALLY CONTAMINATED AREA
+styles['Polygon:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
+styles['Polygon:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
+styles['Polygon:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
 
 styles.Polygon = options => {
   return pipeline(styles, options)
-
-
-  // const smoothedGeometry = geometry => feature.get('style') && feature.get('style').smooth
-  //   ? smooth(geometry)
-  //   : geometry
-
-  // const { read, write } = transform(feature.getGeometry())
-  // const geometry = read(smoothedGeometry(feature.getGeometry()))
-  // const sidc = feature.get('sidc')
-  // const key = parameterized(sidc) || 'DEFAULT'
-
-  // const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
-  // const styleFactory = makeStyles(feature, mode)
-
-  // // TODO: handles
-  // // TODO: guides
-  // // TODO: simplify
-  // const pipeline = R.compose(
-  //   options => options.map(styleFactory.makeStyle),
-  //   options => options.map(writeGeometry),
-  //   Clipping.clipLabels(resolution),
-  //   options => options.map(styleFactory.evalTextField),
-  //   options => options.filter(options => options.geometry),
-  //   labelAnchors(geometry),
-  //   options => (styles[key] || styles['Polygon:DEFAULT'])(options).concat((styles[`LABELS:${key}`] || []))
-  // )
-
-  // return [
-  //   ...pipeline({ resolution, geometry })
-  // ]
 }

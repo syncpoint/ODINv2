@@ -125,10 +125,10 @@ const polygonAnchors = geometry => {
 
   return styles => {
     return styles.map(label => {
-      if (!Props.textField(label)) return label
       if (label.geometry) return label
+      const anchor = Props.textAnchor(label) || Props.symbolAnchor(label)
+      if (!anchor) return label
 
-      const anchor = Props.textAnchor(label)
       const geometry = positions[anchor]()
       if (!geometry) {
         console.warn('unknown anchor position', anchor)
@@ -163,7 +163,7 @@ const lineStringAnchors = geometry => {
   }
 
   const anchor = label => {
-    const anchor = Props.textAnchor(label)
+    const anchor = Props.textAnchor(label) || Props.symbolAnchor(label)
     if (!anchor) return pointAt(0.5)
 
     if (isNaN(anchor)) {

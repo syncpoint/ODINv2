@@ -103,24 +103,16 @@ export const Props = {
   shapeRadius1: R.prop('shape-radius-1'),
   shapeRadius2: R.prop('shape-radius-2'),
   shapeRotate: R.prop('shape-rotate'),
-  shapeScale: R.prop('shape-scale')
-}
+  shapeScale: R.prop('shape-scale'),
 
-export const makeMilitaryStyles = feature => {
-  const sidc = feature.get('sidc')
-  const identity = identityCode(sidc)
-  const status = statusCode(sidc)
-
-  // TODO: fill pattern
-
-  return {
-    'line-cap': 'square',
-    'line-color': Colors.fill(SCHEME_DEFAULT)(identity),
-    'line-dash-array': status === 'A' ? LINE_DASH_20_10 : null,
-    'line-halo-color': Colors.stroke(identity),
-    'line-halo-width': 1,
-    'line-width': 2
-  }
+  symbolAnchor: R.prop('symbol-anchor'),
+  symbolColor: R.prop('symbol-color'),
+  symbolHaloColor: R.prop('symbol-halo-color'),
+  symbolHaloWidth: R.prop('symbol-halo-width'),
+  symbolOffset: R.prop('symbol-offset'),
+  symbolRotate: R.prop('symbol-rotate'),
+  symbolSIDC: R.prop('symbol-sidc'),
+  symbolSize: R.prop('symbol-size')
 }
 
 /**
@@ -583,6 +575,19 @@ export const makeStyles = (feature, mode = 'default') => {
           rotation: Props.shapeRotate(props),
           scale: Props.shapeScale(props),
           displacement: Props.shapeOffset(props)
+        })
+      } else if (Props.symbolSIDC(props)) {
+        const size = 60 // TODO: make configurable
+        const symbol = new ms.Symbol(Props.symbolSIDC(props), { size })
+        const { width, height } = symbol.getSize()
+
+        return makeIcon({
+          anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
+          imgSize: [Math.floor(width), Math.floor(height)],
+          img: symbol.asCanvas(),
+          anchorXUnits: 'pixels',
+          anchorYUnits: 'pixels',
+          scale: 0.5
         })
       } else return null
     })()
