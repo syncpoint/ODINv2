@@ -3,8 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // TASKS / FIX
-styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
-  const coords = TS.coordinates(lineString)
+styles['LineString:G*T*F-----'] = ({ resolution, geometry }) => {
+  const coords = TS.coordinates(geometry)
   const segment = TS.segment(coords)
   const angle = segment.angle()
   const length = segment.getLength()
@@ -27,18 +27,21 @@ styles['LineString:G*T*F-----'] = ({ styles, resolution, lineString }) => {
     TS.segmentize(TS.segment(p01, p11), n).filter((_, i) => i % 2 !== 0)
   ))
 
-  const path = TS.collect([
-    TS.difference([TS.lineString([coords[0], p0]), TS.pointBuffer(textAnchor)(resolution * 7)]),
+  const path = TS.multiLineString([
+    TS.lineString([coords[0], p0]),
     TS.lineString([p0, ...x, p1]),
     TS.lineString([p1, coords[1]]),
     TS.lineString([xs[0], xs[1], xs[2]])
   ])
 
   return [
-    styles.defaultStroke(path),
-    styles.outlinedText(textAnchor, {
-      rotation: TS.rotation(segment),
-      text: 'F'
-    })
+    { id: 'style:2525c/default-stroke', geometry: path },
+    {
+      id: 'style:default-text',
+      'text-field': '"F"',
+      'text-rotate': TS.rotation(segment),
+      'text-padding': 3,
+      geometry: textAnchor
+    }
   ]
 }

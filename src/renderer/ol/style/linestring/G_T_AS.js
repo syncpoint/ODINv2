@@ -3,8 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FOLLOW AND SUPPORT
-styles['LineString:G*T*AS----'] = ({ styles, lineString }) => {
-  const coords = TS.coordinates(lineString)
+styles['LineString:G*T*AS----'] = ({ styles, geometry }) => {
+  const coords = TS.coordinates(geometry)
   const segment = TS.segment(coords)
 
   // TODO: pequeño gordito tiene que peder peso rápidamente
@@ -15,13 +15,13 @@ styles['LineString:G*T*AS----'] = ({ styles, lineString }) => {
   ])
 
   const arrow = TS.polygon(R.props([6, 7, 8, 6], xs))
-  const geometry = TS.collect([
+  const path = TS.collect([
     TS.lineString(R.props([3, 9], xs)),
     TS.polygon(R.props([0, 1, 2, 3, 4, 5, 0], xs))
   ])
 
   return [
-    styles.defaultStroke(geometry),
-    styles.filledStroke(arrow)
+    { id: 'style:2525c/default-stroke', geometry: path },
+    { id: 'style:2525c/solid-fill', geometry: arrow }
   ]
 }

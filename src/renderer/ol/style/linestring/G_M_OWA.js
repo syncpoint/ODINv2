@@ -4,8 +4,8 @@ import * as TS from '../../ts'
 import { fenceX, fenceLine } from './commons'
 
 // DOUBLE APRON FENCE
-styles['LineString:G*M*OWA---'] = ({ styles, resolution, lineString }) => {
-  const lil = TS.lengthIndexedLine(lineString)
+styles['LineString:G*M*OWA---'] = ({ resolution, geometry }) => {
+  const lil = TS.lengthIndexedLine(geometry)
   const length = lil.getEndIndex()
   const n = length / (resolution * 16)
   const delta = Math.floor(length / n)
@@ -19,7 +19,7 @@ styles['LineString:G*M*OWA---'] = ({ styles, resolution, lineString }) => {
   }
 
   return [
-    fenceLine(lineString),
+    fenceLine(geometry),
     ...R.range(1, n).map(pointOptions).map(fenceX)
   ]
 }

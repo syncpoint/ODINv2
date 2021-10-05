@@ -2,9 +2,9 @@ import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
 
-const corridor = title => ({ styles, lineString, resolution, feature }) => {
+const corridor = title => ({ geometry, resolution }) => {
   const width = resolution * 10
-  const coords = TS.coordinates(lineString)
+  const coords = TS.coordinates(geometry)
   const options = {
     joinStyle: TS.BufferParameters.JOIN_ROUND,
     endCapStyle: TS.BufferParameters.CAP_ROUND
@@ -14,24 +14,23 @@ const corridor = title => ({ styles, lineString, resolution, feature }) => {
     .map(points => TS.lineString(points))
     .map(line => TS.buffer(options)(line)(width))
 
-  const texts = (() => {
-    if (!feature.get('t')) return []
-    else {
-      const text = `${title} ${feature.get('t')}`
-      return R.aperture(2, coords)
-        .map(TS.segment)
-        .map(segment => [segment.midPoint(), TS.rotation(segment)])
-        .map(([point, rotation]) => styles.text(TS.point(point), {
-          text,
-          rotation,
-          textAlign: 'center'
-        }))
-    }
-  })()
+  const labels = R.aperture(2, coords)
+    .map(TS.segment)
+    .map(segment => [segment.midPoint(), TS.rotation(segment)])
+    .map(([point, rotation]) => ({
+      id: 'style:default-text',
+      'text-field': `t ? "${title} " + t : "${title}"`,
+      'text-justify': 'center',
+      'text-rotate': rotation,
+      'text-clipping': 'none',
+      geometry: TS.point(point)
+    }))
+
+  const path = TS.collect(segments)
 
   return [
-    styles.solidStroke(TS.collect(segments)),
-    ...texts
+    { id: 'style:2525c/solid-stroke', geometry: path },
+    ...labels
   ]
 }
 

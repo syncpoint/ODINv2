@@ -4,9 +4,9 @@ import * as TS from '../../ts'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // FORTIFIED LINE
-styles['LineString:G*M*SL----'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*M*SL----'] = ({ resolution, geometry }) => {
   const width = resolution * 10
-  const line = TS.lengthIndexedLine(lineString)
+  const line = TS.lengthIndexedLine(geometry)
   const count = Math.floor(line.getEndIndex() / (width * 2))
   const offset = (line.getEndIndex() - 2 * count * width) / 2
 
@@ -26,5 +26,7 @@ styles['LineString:G*M*SL----'] = ({ styles, resolution, lineString }) => {
     ])
     .map(([a, b, c, d, x, y]) => TS.lineString([a, b, x, y, c, d]))
 
-  return styles.defaultStroke(TS.collect(teeth))
+  const path = TS.collect(teeth)
+
+  return [{ id: 'style:2525c/default-stroke', geometry: path }]
 }

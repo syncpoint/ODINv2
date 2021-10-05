@@ -1,8 +1,5 @@
-import * as R from 'ramda'
-import { parameterized } from '../../../symbology/2525c'
-import { styles, makeStyles } from '../styles'
-import { transform } from '../../geometry'
-import * as Clipping from '../clipping'
+import { styles } from '../styles'
+import { pipeline } from '../pipeline'
 import './G_G_OAF' // ATTACK BY FIRE POSITION
 import './G_G_OLAA' // AXIS OF ADVANCE / AIRBORNE
 import './G_G_OLAGM' // AXIS OF ADVANCE / MAIN ATTACK
@@ -39,25 +36,8 @@ import './G_T_Y' // TASKS / BYPASS
 
 styles['LineString:Point:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
 
-styles['LineString:Point'] = ({ feature, resolution, mode }) => {
-  const { read, write } = transform(feature.getGeometry())
-  const geometry = read(feature.getGeometry())
-  const sidc = feature.get('sidc')
-  const key = parameterized(sidc) || 'DEFAULT'
-  const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
-  const styleFactory = makeStyles(feature, mode)
-
-  const pipeline = R.compose(
-    options => options.map(styleFactory.makeStyle),
-    options => options.map(writeGeometry),
-    Clipping.clipLabels(resolution),
-    options => options.map(styleFactory.evalTextField),
-    styles[`LineString:Point:${key}`] || styles['LineString:Point:DEFAULT']
-  )
-
-  return [
-    ...pipeline({ resolution, geometry })
-  ]
+styles['LineString:Point'] = options => {
+  return pipeline(styles, options)
 
   // const sidc = feature.get('sidc')
   // const key = parameterized(sidc)

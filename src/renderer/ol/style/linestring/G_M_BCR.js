@@ -3,8 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // RAFT SITE
-styles['LineString:G*M*BCR---'] = ({ styles, lineString }) => {
-  const coords = TS.coordinates(lineString)
+styles['LineString:G*M*BCR---'] = ({ geometry }) => {
+  const coords = TS.coordinates(geometry)
   const segment = TS.segment(coords)
   const angle = segment.angle()
   const length = segment.getLength()
@@ -13,9 +13,13 @@ styles['LineString:G*M*BCR---'] = ({ styles, lineString }) => {
     [1.09, -0.2], [1, 0], [1.09, 0.2]
   ])
 
-  return styles.defaultStroke(TS.collect([
-    lineString,
+  const path = TS.collect([
+    geometry,
     TS.lineString(R.props([0, 1, 2], xs)),
     TS.lineString(R.props([3, 4, 5], xs))
-  ]))
+  ])
+
+  return [
+    { id: 'style:2525c/default-stroke', geometry: path }
+  ]
 }

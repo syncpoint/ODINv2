@@ -3,8 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // OBSTACLE EFFECT / FIX
-styles['LineString:G*M*OEF---'] = ({ styles, resolution, lineString }) => {
-  const coords = TS.coordinates(lineString)
+styles['LineString:G*M*OEF---'] = ({ resolution, geometry }) => {
+  const coords = TS.coordinates(geometry)
   const segment = TS.segment(coords)
   const angle = segment.angle()
   const length = segment.getLength()
@@ -25,12 +25,14 @@ styles['LineString:G*M*OEF---'] = ({ styles, resolution, lineString }) => {
     TS.segmentize(TS.segment(p01, p11), n).filter((_, i) => i % 2 !== 0)
   ))
 
+  const path = TS.collect([
+    TS.lineString([coords[0], p0]),
+    TS.lineString([p0, ...x, p1]),
+    TS.lineString([p1, xs[2]])
+  ])
+
   return [
-    styles.solidStroke(TS.collect([
-      TS.lineString([coords[0], p0]),
-      TS.lineString([p0, ...x, p1]),
-      TS.lineString([p1, xs[2]])
-    ])),
-    styles.filledStroke(TS.polygon(xs))
+    { id: 'style:2525c/solid-stroke', geometry: path },
+    { id: 'style:2525c/solid-fill', geometry: TS.polygon(xs) }
   ]
 }

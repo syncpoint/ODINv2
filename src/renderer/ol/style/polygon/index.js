@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import { parameterized } from '../../../symbology/2525c'
+import { pipeline } from '../pipeline'
 import { styles, makeStyles, Props } from '../styles'
 import { transform } from '../../geometry'
 import './G_G_GAF' // FORTIFIED AREA
@@ -13,12 +14,12 @@ import { smooth } from '../chaikin'
 import * as Clipping from '../clipping'
 import * as TS from '../../ts'
 
-const C = (text, options) => [{ 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
-const T = text => [{ 'text-field': text, 'text-anchor': 'top', 'text-padding': 3, 'text-clipping': 'line' }]
-const B = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 3, 'text-clipping': 'line' }]
-const F = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
-const LR = text => ['left', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
-const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
+const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
+const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 3, 'text-clipping': 'line' }]
+const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 3, 'text-clipping': 'line' }]
+const F = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
+const LR = text => ['left', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
+const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
@@ -110,89 +111,37 @@ styles['FILL:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RA
 styles['FILL:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
 styles['FILL:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
 
-const labelAnchors = geometry => {
-  const ring = geometry.getExteriorRing()
-  const envelope = ring.getEnvelopeInternal()
-  const centroid = TS.centroid(ring)
 
-  const lazy = function (fn) {
-    let evaluated = false
-    let value
+styles.Polygon = options => {
+  return pipeline(styles, options)
 
-    return function () {
-      if (evaluated) return value
-      value = fn.apply(this, arguments)
-      evaluated = true
-      return value
-    }
-  }
 
-  const xIntersection = lazy(() => {
-    const axis = TS.lineString([
-      TS.coordinate(envelope.getMinX(), centroid.y),
-      TS.coordinate(envelope.getMaxX(), centroid.y)
-    ])
+  // const smoothedGeometry = geometry => feature.get('style') && feature.get('style').smooth
+  //   ? smooth(geometry)
+  //   : geometry
 
-    return geometry.intersection(axis).getCoordinates()
-  })
+  // const { read, write } = transform(feature.getGeometry())
+  // const geometry = read(smoothedGeometry(feature.getGeometry()))
+  // const sidc = feature.get('sidc')
+  // const key = parameterized(sidc) || 'DEFAULT'
 
-  const yIntersection = lazy(() => {
-    const axis = TS.lineString([
-      TS.coordinate(centroid.x, envelope.getMinY()),
-      TS.coordinate(centroid.x, envelope.getMaxY())
-    ])
+  // const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
+  // const styleFactory = makeStyles(feature, mode)
 
-    return geometry.intersection(axis).getCoordinates()
-  })
+  // // TODO: handles
+  // // TODO: guides
+  // // TODO: simplify
+  // const pipeline = R.compose(
+  //   options => options.map(styleFactory.makeStyle),
+  //   options => options.map(writeGeometry),
+  //   Clipping.clipLabels(resolution),
+  //   options => options.map(styleFactory.evalTextField),
+  //   options => options.filter(options => options.geometry),
+  //   labelAnchors(geometry),
+  //   options => (styles[key] || styles['Polygon:DEFAULT'])(options).concat((styles[`LABELS:${key}`] || []))
+  // )
 
-  const center = lazy(() => TS.point(centroid))
-  const left = lazy(() => TS.point(xIntersection()[0]))
-  const right = lazy(() => TS.point(xIntersection()[1]))
-  const bottom = lazy(() => TS.point(yIntersection()[0]))
-  const top = lazy(() => TS.point(yIntersection()[1]))
-
-  const positions = { center, top, bottom, right, left }
-
-  return options => {
-    return options.map(label => {
-      if (!Props.textField(label)) return label
-      const anchor = Props.textAnchor(label)
-      const geometry = positions[anchor]()
-      if (!geometry) {
-        console.warn('unknown anchor position', anchor)
-        return label
-      } else return { ...label, geometry }
-    })
-  }
-}
-
-styles.Polygon = ({ feature, resolution, mode }) => {
-  const smoothGeometry = geometry => feature.get('style') && feature.get('style').smooth
-    ? smooth(geometry)
-    : geometry
-
-  const { read, write } = transform(feature.getGeometry())
-  const geometry = read(smoothGeometry(feature.getGeometry()))
-  const sidc = feature.get('sidc')
-  const key = parameterized(sidc) || 'DEFAULT'
-
-  const writeGeometry = option => ({ ...option, geometry: write(option.geometry) })
-  const styleFactory = makeStyles(feature, mode)
-
-  // TODO: handles
-  // TODO: guides
-  // TODO: simplify: length > 50
-  const pipeline = R.compose(
-    options => options.map(styleFactory.makeStyle),
-    options => options.map(writeGeometry),
-    Clipping.clipLabels(resolution),
-    options => options.map(styleFactory.evalTextField),
-    options => options.filter(options => options.geometry),
-    labelAnchors(geometry),
-    options => (styles[key] || styles['Polygon:DEFAULT'])(options).concat((styles[`LABELS:${key}`] || []))
-  )
-
-  return [
-    ...pipeline({ resolution, geometry })
-  ]
+  // return [
+  //   ...pipeline({ resolution, geometry })
+  // ]
 }

@@ -165,6 +165,8 @@ export const geometryN = n => geometry => geometry.getGeometryN(n)
 export const geometry0 = geometryN(0)
 export const startPoint = geometry => geometry.getStartPoint()
 export const endPoint = geometry => geometry.getEndPoint()
+
+/** @deprecated - use points :: geometry */
 export const linePoints = line => R.range(0, line.getNumPoints()).map(i => line.getPointN(i))
 export const minimumRectangle = geometry => MinimumDiameter.getMinimumRectangle(geometry)
 export const endCoordinate = R.compose(coordinate, endPoint)
@@ -255,12 +257,26 @@ export const arc = ({ x, y }, radius, α1, α2, n) => R.range(0, n)
   .map(α => [x + radius * Math.cos(α), y + radius * Math.sin(α)])
   .map(coordinate)
 
-export const extent = envelope => {
-  console.log(Types.isPolygon(envelope))
-  return [
-    envelope.getMinX(), envelope.getMinY(),
-    envelope.getMaxX(), envelope.getMaxY()
-  ]
-}
+export const extent = envelope => [
+  envelope.getMinX(), envelope.getMinY(),
+  envelope.getMaxX(), envelope.getMaxY()
+]
 
 export const centroid = geometry => jsts.algorithm.Centroid.getCentroid(geometry)
+
+export const points = geometry => {
+  const type = geometry.getGeometryType()
+
+  switch (type) {
+    case 'Point': return [geometry]
+    case 'MultiPoint': return geometries(geometry)
+    case 'LineString': return R.range(0, geometry.getNumPoints()).map(i => geometry.getPointN(i))
+    case 'LinearRing': return R.range(0, geometry.getNumPoints()).map(i => geometry.getPointN(i))
+    case 'Polygon': return points(geometry.getExteriorRing())
+    case 'GeometryCollection': return geometries(geometry).reduce((acc, geometry) => {
+      acc.push(...points(geometry))
+      return acc
+    }, [])
+    default: return []
+  }
+}

@@ -3,10 +3,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 import { PI, PI_OVER_2 } from '../../../../shared/Math'
 
-
 // FORWARD LINE OF OWN TROOPS (FLOT)
-styles['LineString:G*G*GLF---'] = ({ styles, resolution, lineString }) => {
-  const line = TS.lengthIndexedLine(lineString)
+styles['LineString:G*G*GLF---'] = ({ geometry, resolution }) => {
+  const line = TS.lengthIndexedLine(geometry)
   const length = line.getEndIndex()
   const width = resolution * 15
   const n = Math.floor(length / width)
@@ -21,7 +20,8 @@ styles['LineString:G*G*GLF---'] = ({ styles, resolution, lineString }) => {
     .map(([C, α]) => TS.arc(C, width / 2, α + PI, PI, 16))
     .map(coords => TS.lineString(coords))
 
+  const path = TS.collect(segments)
   return [
-    styles.defaultStroke(TS.collect(segments))
+    { id: 'style:2525c/default-stroke', geometry: path }
   ]
 }

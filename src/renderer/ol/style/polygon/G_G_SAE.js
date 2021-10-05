@@ -4,7 +4,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // ENCIRCLEMENT
-styles['G*G*SAE---'] = ({ resolution, geometry }) => {
+styles['Polygon:G*G*SAE---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates(true)
   const lineString = TS.lineString(coordinates)
   const indexedLine = TS.lengthIndexedLine(lineString)

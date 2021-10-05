@@ -4,7 +4,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // OBSTACLES / GENERAL / BELT
-styles['G*M*OGB---'] = ({ resolution, geometry }) => {
+styles['Polygon:G*M*OGB---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates()
   const lineString = TS.lineString(coordinates)
   const delta = resolution * 60

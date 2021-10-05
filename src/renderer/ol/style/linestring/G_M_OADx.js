@@ -3,9 +3,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 import { PI_OVER_3 } from '../../../../shared/Math'
 
-const teeth = (lineString, resolution) => {
+const teeth = (geometry, resolution) => {
   const width = resolution * 10
-  const line = TS.lengthIndexedLine(lineString)
+  const line = TS.lengthIndexedLine(geometry)
   const count = Math.floor(line.getEndIndex() / width)
   const offset = (line.getEndIndex() - count * width) / 2
 
@@ -18,17 +18,17 @@ const teeth = (lineString, resolution) => {
 }
 
 // ANTITANK DITCH / UNDER CONSTRUCTION
-styles['LineString:G*M*OADU--'] = ({ styles, resolution, lineString }) => {
-  return styles.solidStroke(TS.collect([
-    lineString,
-    ...teeth(lineString, resolution)])
-  )
+styles['LineString:G*M*OADU--'] = ({ resolution, geometry }) => {
+  const path = TS.collect([geometry, ...teeth(geometry, resolution)])
+  return [
+    { id: 'style:2525c/solid-stroke', geometry: path }
+  ]
 }
 
 // ANTITANK DITCH / COMPLETE
-styles['LineString:G*M*OADC--'] = ({ styles, resolution, lineString }) => {
-  return styles.filledStroke(TS.collect([
-    lineString,
-    ...teeth(lineString, resolution)])
-  )
+styles['LineString:G*M*OADC--'] = ({ resolution, geometry }) => {
+  const path = TS.collect([geometry, ...teeth(geometry, resolution)])
+  return [
+    { id: 'style:2525c/solid-fill', geometry: path }
+  ]
 }

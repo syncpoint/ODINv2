@@ -4,8 +4,8 @@ import * as TS from '../../ts'
 import { PI, PI_OVER_2 } from '../../../../shared/Math'
 
 // LINE OF CONTACT
-styles['LineString:G*G*GLC---'] = ({ styles, resolution, lineString }) => {
-  const line = TS.lengthIndexedLine(lineString)
+styles['LineString:G*G*GLC---'] = ({ geometry, resolution }) => {
+  const line = TS.lengthIndexedLine(geometry)
   const length = line.getEndIndex()
   const width = resolution * 15
   const n = Math.floor(length / width)
@@ -28,8 +28,10 @@ styles['LineString:G*G*GLC---'] = ({ styles, resolution, lineString }) => {
     .map(([C, α]) => TS.arc(C, width / 2, α + PI, PI, 16))
     .map(coords => TS.lineString(coords))
 
+  const path = TS.collect([...segmentsA, ...segmentsB])
+
   return [
-    styles.defaultStroke(TS.collect([...segmentsA, ...segmentsB]))
+    { id: 'style:2525c/default-stroke', geometry: path }
   ]
 }
 

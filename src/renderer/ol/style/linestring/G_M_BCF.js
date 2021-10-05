@@ -3,8 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FERRY
-styles['LineString:G*M*BCF---'] = ({ styles, lineString }) => {
-  const coords = TS.coordinates(lineString)
+styles['LineString:G*M*BCF---'] = ({ geometry }) => {
+  const coords = TS.coordinates(geometry)
   const segment = TS.segment(coords)
   const length = segment.getLength()
   const angle = segment.angle()
@@ -14,11 +14,14 @@ styles['LineString:G*M*BCF---'] = ({ styles, lineString }) => {
     [1, 0], [0.92, -0.06], [0.92, 0], [0.92, 0.06]
   ])
 
+  const path1 = TS.lineString([xs[2], xs[6]])
+  const path2 = TS.collect([
+    TS.polygon(R.props([0, 1, 2, 3, 0], xs)),
+    TS.polygon(R.props([4, 5, 6, 7, 4], xs))
+  ])
+
   return [
-    styles.solidStroke(TS.lineString([xs[2], xs[6]])),
-    styles.filledStroke(TS.collect([
-      TS.polygon(R.props([0, 1, 2, 3, 0], xs)),
-      TS.polygon(R.props([4, 5, 6, 7, 4], xs))
-    ]))
+    { id: 'style:2525c/solid-stroke', geometry: path1 },
+    { id: 'style:2525c/solid-fill', geometry: path2 }
   ]
 }

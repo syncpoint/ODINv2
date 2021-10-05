@@ -37,11 +37,12 @@ export const featureStyle = (selection, featureSource) => {
         : 'default'
 
       const style = () => {
-        const styleKey = geometryType(feature.getGeometry())
-        const style = (styles[styleKey] || styles.DEFAULT)({
+        const key = geometryType(feature.getGeometry())
+        const style = (styles[key] || styles.DEFAULT)({
           feature,
           resolution,
-          mode
+          mode,
+          geometryType: key
         })
 
         if (!style) return

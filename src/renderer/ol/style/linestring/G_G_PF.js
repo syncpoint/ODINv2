@@ -3,9 +3,9 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // DIRECTION OF ATTACK FOR FEINT
-styles['LineString:G*G*PF----'] = ({ styles, lineString }) => {
-  const coords = TS.coordinates(lineString)
-  const segment = R.last(TS.segments(lineString))
+styles['LineString:G*G*PF----'] = ({ geometry }) => {
+  const coords = TS.coordinates(geometry)
+  const segment = R.last(TS.segments(geometry))
   const angle = segment.angle()
   const length = segment.getLength()
   const xs = TS.projectCoordinates(length, angle, coords[coords.length - 2])([
@@ -13,7 +13,7 @@ styles['LineString:G*G*PF----'] = ({ styles, lineString }) => {
     [0.8, -0.136], [0.94, 0], [0.8, 0.136] // solid
   ])
 
-  const geometry = coords.length > 2
+  const path = coords.length > 2
     ? TS.collect([
       TS.lineString(R.dropLast(1, coords)),
       TS.lineString(R.props([3, 4, 5], xs)),
@@ -25,7 +25,7 @@ styles['LineString:G*G*PF----'] = ({ styles, lineString }) => {
     ])
 
   return [
-    styles.solidStroke(geometry),
-    styles.dashedStroke(TS.lineString(R.props([0, 1, 2], xs)))
+    { id: 'style:2525c/solid-stroke', geometry: path },
+    { id: 'style:2525c/dashed-stroke', geometry: TS.lineString(R.props([0, 1, 2], xs)) }
   ]
 }

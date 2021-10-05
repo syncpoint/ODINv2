@@ -2,7 +2,6 @@ import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import * as Style from 'ol/style'
 import ms from 'milsymbol'
-import { Jexl } from 'jexl'
 import * as Colors from './color-schemes'
 import { identityCode, statusCode } from '../../symbology/2525c'
 import * as patterns from './patterns'
@@ -230,6 +229,12 @@ export const makeStyles = (feature, mode = 'default') => {
     'shape-radius': 6,
     'shape-points': 4,
     'shape-angle': PI_OVER_4
+  }
+
+  registry['style:guide-stroke'] = {
+    'line-color': 'red',
+    'line-dash-array': LINE_DASH_20_8_2_8,
+    'line-width': 1.5
   }
 
   const styles = {}
@@ -620,25 +625,6 @@ export const makeStyles = (feature, mode = 'default') => {
     })
 
     return makeStyle(styleOptions)
-  }
-
-  const jexl = new Jexl()
-
-  const evalSync = properties => text =>
-    Array.isArray(text)
-      ? text.map(evalSync(properties)).filter(Boolean).join('\n')
-      : jexl.evalSync(text, properties)
-
-  const evalTextField = properties => option =>
-    Props.textField(option)
-      ? { ...option, 'text-field': evalSync(properties)(Props.textField(option)) }
-      : option
-
-  styles.evalTextField = evalTextField(feature.getProperties())
-  styles.resolveTextField = option => {
-    const textField = Props.textField(option)
-    if (!textField) return
-    option['text-field'] = evalSync(feature.getProperties())(textField)
   }
 
   return styles

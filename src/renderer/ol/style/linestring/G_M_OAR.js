@@ -4,9 +4,9 @@ import * as TS from '../../ts'
 import { PI_OVER_2, PI_OVER_3 } from '../../../../shared/Math'
 
 // ANTITANK DITCH REINFORCED WITH ANTITANK MINES
-styles['LineString:G*M*OAR---'] = ({ styles, resolution, lineString }) => {
+styles['LineString:G*M*OAR---'] = ({ resolution, geometry }) => {
   const width = resolution * 10
-  const line = TS.lengthIndexedLine(lineString)
+  const line = TS.lengthIndexedLine(geometry)
   const count = Math.floor(line.getEndIndex() / (width * 2))
   const offset = (line.getEndIndex() - 2 * count * width) / 2
 
@@ -14,7 +14,7 @@ styles['LineString:G*M*OAR---'] = ({ styles, resolution, lineString }) => {
     .aperture(2, R.range(0, count + 1).map(i => offset + 2 * width * i))
     .map(([a, b]) => [a, a + width / 2, b - width / 2, b])
 
-  const geometry = TS.collect(segmentPoints
+  const path = TS.collect(segmentPoints
     .map(([a, b, c, d]) => [
       line.extractPoint(a),
       TS.coordinates(line.extractLine(b, c)),
@@ -38,5 +38,7 @@ styles['LineString:G*M*OAR---'] = ({ styles, resolution, lineString }) => {
     })
   )
 
-  return styles.filledStroke(geometry)
+  return [
+    { id: 'style:2525c/solid-fill', geometry: path }
+  ]
 }

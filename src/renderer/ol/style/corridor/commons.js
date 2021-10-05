@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import * as TS from '../../ts'
-import { codeUTM, toUTM, fromUTM } from '../../../epsg'
 
 // TODO: replace with TS.projectCoordinate
 export const arrowCoordinates = (width, line, offset = 1) => {
@@ -22,29 +21,3 @@ export const openArrow = (resolution, angle, point) =>
 
 export const closedArrow = (resolution, angle, point) =>
   TS.polygon(R.props([0, 1, 2, 0], arrowPoints(resolution, angle, point)))
-
-/**
- * Decorate existing style function with these cross-cutting concerns:
- * - in/call: project from web mercator to UTM (feature/geometry)
- * - in/call: convert feature geometry from OpenLayers to (J)TS
- * - in/call: extract and forwards line string, point and (corridor) width
- * - out/return: convert style geometry from (J)TS to OpenLayers
- * - out/return: project UTM to web mercator
- *
- * @param {function} fn original style function
- */
-export const transform = fn => args => {
-  const geometry = args.feature.getGeometry()
-  const code = codeUTM(geometry)
-  const clone = toUTM(code, geometry)
-  const [lineString, point] = TS.geometries(TS.read(clone))
-  const width = 2 * TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
-
-  return fn({ ...args, lineString, point, width })
-    .flat()
-    .map(style => {
-      const geometry = TS.write(style.getGeometry())
-      style.setGeometry(fromUTM(code, geometry))
-      return style
-    })
-}

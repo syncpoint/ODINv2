@@ -4,7 +4,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // FORTIFIED AREA
-styles['G*G*GAF---'] = ({ resolution, geometry }) => {
+styles['Polygon:G*G*GAF---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates()
   const lineString = TS.lineString(coordinates)
   const indexedLine = TS.lengthIndexedLine(lineString)

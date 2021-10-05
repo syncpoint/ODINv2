@@ -4,7 +4,7 @@ import { styles } from '../styles'
 import { PI_OVER_2 } from '../../../../shared/Math'
 
 // OBSTACLE RESTRICTED AREA
-styles['G*M*OGR---'] = ({ resolution, geometry }) => {
+styles['Polygon:G*M*OGR---'] = ({ resolution, geometry }) => {
   const coordinates = geometry.getCoordinates()
   const lineString = TS.lineString(coordinates)
   const delta = resolution * 60

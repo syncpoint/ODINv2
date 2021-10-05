@@ -4,9 +4,9 @@ import * as TS from '../../ts'
 import { PI_OVER_3 } from '../../../../shared/Math'
 
 
-const teeth = direction => (lineString, resolution) => {
+const teeth = direction => (geometry, resolution) => {
   const width = resolution * 10
-  const line = TS.lengthIndexedLine(lineString)
+  const line = TS.lengthIndexedLine(geometry)
   const count = Math.floor(line.getEndIndex() / (width * 2))
   const offset = (line.getEndIndex() - 2 * count * width) / 2
 
@@ -24,12 +24,14 @@ const teeth = direction => (lineString, resolution) => {
 }
 
 // OBSTACLES / GENERAL / LINE
-styles['LineString:G*M*OGL---'] = ({ styles, resolution, lineString }) => {
-  return styles.filledStroke(TS.collect(teeth(1)(lineString, resolution)))
+styles['LineString:G*M*OGL---'] = ({ resolution, geometry }) => {
+  const path = TS.collect(teeth(1)(geometry, resolution))
+  return [{ id: 'style:2525c/solid-fill', geometry: path }]
 }
 
 // ANTITANK WALL
-styles['LineString:G*M*OAW---'] = ({ styles, resolution, lineString }) => {
-  return styles.filledStroke(TS.collect(teeth(-1)(lineString, resolution)))
+styles['LineString:G*M*OAW---'] = ({ resolution, geometry }) => {
+  const path = TS.collect(teeth(-1)(geometry, resolution))
+  return [{ id: 'style:2525c/solid-fill', geometry: path }]
 }
 
