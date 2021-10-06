@@ -96,6 +96,7 @@ styles['LABELS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL 
 styles['LABELS:G*M*NR----'] = [{ 'symbol-sidc': 'GFMPNZ----', 'symbol-anchor': 'center' }] // RADIOACTIVE AREA
 styles['LABELS:G*M*NB----'] = [{ 'symbol-sidc': 'GFMPNEB---', 'symbol-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
 styles['LABELS:G*M*NC----'] = [{ 'symbol-sidc': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
+
 styles['FILL:HATCH'] = ({ geometry }) => [{ id: 'style:2525c/hatch-fill', geometry }]
 styles['Polygon:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
 styles['Polygon:G*M*NB----'] = styles['FILL:HATCH'] // BIOLOGICALLY CONTAMINATED AREA

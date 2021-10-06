@@ -71,6 +71,15 @@ export const Props = {
   fillPatternSize: R.prop('fill-pattern-size'),
   fillPatternSpacing: R.prop('fill-pattern-spacing'),
 
+  iconAnchor: R.prop('icon-anchor'),
+  iconHeight: R.prop('icon-height'),
+  iconImage: R.prop('icon-image'),
+  iconPadding: R.prop('icon-padding'),
+  iconRotate: R.prop('icon-rotate'),
+  iconScale: R.prop('icon-scale'),
+  iconUrl: R.prop('icon-url'),
+  iconWidth: R.prop('icon-width'),
+
   lineCap: R.prop('line-cap'),
   lineColor: R.prop('line-color'),
   lineDashArray: R.prop('line-dash-array'),
@@ -588,6 +597,12 @@ export const makeStyles = (feature, mode = 'default') => {
           anchorXUnits: 'pixels',
           anchorYUnits: 'pixels',
           scale: 0.5
+        })
+      } else if (Props.iconUrl(props)) {
+        return makeIcon({
+          src: Props.iconUrl(props),
+          scale: Props.iconScale(props) || 1,
+          rotation: Props.iconRotate(props) || 0
         })
       } else return null
     })()

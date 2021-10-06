@@ -69,6 +69,11 @@ styles['LineString:DEFAULT'] = ({ geometry }) => [{ id: 'style:2525c/default-str
 styles['LABELS:LINE_STRING'] = []
 styles['LABELS:G*T*A-----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND ASSUME
 styles['LABELS:G*T*AS----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND SUPPORT
+styles['LABELS:G*G*GLB---'] = [
+  { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] },
+  { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW] },
+  { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 5 }
+]
 styles['LABELS:G*G*GLP---'] = SE('t ? "PL " + t : "PL"') // PHASE LINE
 styles['LABELS:G*G*GLL---'] = PL('LL') // LIGHT LINE
 styles['LABELS:G*G*PF----'] = MT('t') // DIRECTION OF ATTACK FOR FEINT

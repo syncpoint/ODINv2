@@ -15,7 +15,6 @@ const chaikinLine = (coords, n) => {
     .map(([x1, y1], index) => [[x1, y1], coords[index + 1]])
     .flatMap(lerpXY)
 
-
   return chaikinLine([R.head(coords), ...xs, R.last(coords)], n - 1)
 }
 

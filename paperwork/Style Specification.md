@@ -36,6 +36,14 @@ fill-pattern-angle :: number, degrees
 fill-pattern-size :: number
 fill-pattern-spacing :: number
 
+icon-anchor :: number
+icon-height :: number
+icon-padding :: number
+icon-rotate :: number
+icon-scale :: number
+icon-url :: stirng
+icon-width :: number
+
 line-cap :: butt | round | square
 line-color :: string
 line-dash-array :: [number]

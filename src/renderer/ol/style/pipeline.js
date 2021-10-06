@@ -3,9 +3,11 @@ import { Jexl } from 'jexl'
 import * as AF from 'transformation-matrix' // affine transformations
 import * as TS from '../ts'
 import { PI_OVER_2 } from '../../../shared/Math'
-import { transform } from '../geometry'
+import { transform, geometryType } from '../geometry'
 import { makeStyles, Props } from './styles'
-import { parameterized } from '../../symbology/2525c'
+import { parameterized, echelonCode } from '../../symbology/2525c'
+import echelons from './echelons.json'
+import { smooth } from './chaikin'
 
 const canvas = document.createElement('canvas')
 const context = canvas.getContext('2d')
@@ -60,7 +62,7 @@ const boundingBox = resolution => label => {
 const clipLabels = ({ resolution, styles }) => {
   if (!styles || !styles.length) return styles
 
-  // Subsequent labels are clipped again first geometry, only.
+  // Subsequent labels are clipped against first geometry, only.
   // First geometry is modified accordingly.
 
   // For polygon geometries we have the option to convert it to
@@ -120,21 +122,11 @@ const polygonAnchors = geometry => {
   const right = lazy(() => TS.point(xIntersection()[1]))
   const bottom = lazy(() => TS.point(yIntersection()[0]))
   const top = lazy(() => TS.point(yIntersection()[1]))
-
   const positions = { center, top, bottom, right, left }
 
-  return styles => {
-    return styles.map(label => {
-      if (label.geometry) return label
-      const anchor = Props.textAnchor(label) || Props.symbolAnchor(label)
-      if (!anchor) return label
-
-      const geometry = positions[anchor]()
-      if (!geometry) {
-        console.warn('unknown anchor position', anchor)
-        return label
-      } else return { ...label, geometry }
-    })
+  return {
+    anchorPoint: anchor => positions[anchor](),
+    angle: () => null
   }
 }
 
@@ -162,10 +154,7 @@ const lineStringAnchors = geometry => {
     } else segment(anchor).angle()
   }
 
-  const anchor = label => {
-    const anchor = Props.textAnchor(label) || Props.symbolAnchor(label)
-    if (!anchor) return pointAt(0.5)
-
+  const anchorPoint = anchor => {
     if (isNaN(anchor)) {
       if (anchor.includes('center')) return pointAt(0.5)
       else if (anchor.includes('left')) return geometry.getPointN(0)
@@ -174,37 +163,50 @@ const lineStringAnchors = geometry => {
     } else return pointAt(anchor)
   }
 
-  return styles => {
-    return styles.map(label => {
-      if (!Props.textField(label)) return label
-      if (label.geometry) return label
-
-      const textAnchor = Props.textAnchor(label)
-      const geometry = anchor(label)
-      if (!geometry) {
-        console.warn('unknown anchor position', textAnchor)
-        return label
-      } else {
-        label.geometry = geometry
-        label['text-rotate'] = TS.Angle.normalize(TS.Angle.PI_TIMES_2 - angle(label))
-        return label
-      }
-    })
-  }
+  return { anchorPoint, angle }
 }
 
 const labelAnchors = ({ styles, geometry }) => {
-  const geometryType = geometry.getGeometryType()
-  switch (geometryType) {
-    case 'Polygon': return polygonAnchors(geometry)(styles)
-    case 'LineString': return lineStringAnchors(geometry)(styles)
-    default: return styles
+  const normalize = angle => TS.Angle.normalize(TS.Angle.PI_TIMES_2 - angle)
+  const nullAnchors = () => ({ anchorPoint: () => null, angle: () => null })
+  const factories = {
+    Polygon: polygonAnchors,
+    LineString: lineStringAnchors
   }
+
+  const geometryType = geometry.getGeometryType()
+  const factory = (factories[geometryType] || nullAnchors)(geometry)
+
+  return styles.map(label => {
+    const clone = { ...label }
+    if (clone.geometry) return clone
+
+    const textField = Props.textField(clone)
+    const anchor = Props.textAnchor(clone) ||
+      Props.symbolAnchor(clone) ||
+      Props.iconAnchor(clone) ||
+      // anchor is optional for text labels
+      (textField ? 'center' : null)
+
+    if (anchor === null) return clone
+
+    const geometry = factory.anchorPoint(anchor)
+    if (geometry) clone.geometry = geometry
+    const angle = factory.angle(anchor)
+    if (angle !== null) {
+      const property = Props.textAnchor(clone)
+        ? 'text-rotate'
+        : 'icon-rotate'
+      clone[property] = normalize(angle)
+    }
+
+    return clone
+  })
 }
 
 const jexl = new Jexl()
 
-const resolveLabelTexts = (properties, styles) => {
+const labelTexts = (properties, styles) => {
   const evalSync = textField => Array.isArray(textField)
     ? textField.map(evalSync).filter(Boolean).join('\n')
     : jexl.evalSync(textField, properties)
@@ -221,13 +223,15 @@ const handleStyles = {
   multiple: 'style:rectangle-handle'
 }
 
-const handles = ({ styles, mode, geometry }) => {
+const handles = context => {
+  const { styles, mode, simplifiedGeometry, simplified } = context
+  if (simplified && mode !== 'multiple') return
   if (!handleStyles[mode]) return
 
   const points = () => {
     switch (mode) {
-      case 'selected': return TS.multiPoint(TS.points(geometry))
-      case 'multiple': return TS.points(geometry)[0]
+      case 'selected': return TS.multiPoint(TS.points(simplifiedGeometry))
+      case 'multiple': return TS.points(simplifiedGeometry)[0]
     }
   }
 
@@ -235,32 +239,85 @@ const handles = ({ styles, mode, geometry }) => {
 }
 
 const guideLines = context => {
-  if (context.mode !== 'selected') return
-  context.styles.push({ id: 'style:guide-stroke', geometry: context.geometry })
+  const { styles, mode, simplified, simplifiedGeometry } = context
+  if (simplified) return
+  if (mode !== 'selected') return
+  styles.push({ id: 'style:guide-stroke', geometry: simplifiedGeometry })
 }
 
-export const pipeline = (styles, { feature, resolution, mode, geometryType }) => {
-  const { read, write } = transform(feature.getGeometry())
-  const geometry = read(feature.getGeometry())
-  const properties = feature.getProperties()
-  const writeGeometry = styles => styles.map(style => ({ ...style, geometry: write(style.geometry) }))
-  const styleFactory = makeStyles(feature, mode)
-  const sidc = parameterized(feature.get('sidc'))
-  const key = styles[`${geometryType}:${sidc}`]
-    ? `${geometryType}:${sidc}`
-    : `${geometryType}:DEFAULT`
+const readGeometry = context => {
+  const { feature, resolution } = context
 
-  // TODO: polygon fill
-  // TODO: smoothed geometry
+  const geometry = feature.getGeometry()
+  const { read, write } = transform(geometry)
+  context.read = read
+  context.write = write
+  context.geometryType = geometryType(geometry)
+  context.properties = feature.getProperties()
+
+  context.simplified = context.geometryType === 'Polygon'
+    ? geometry.getCoordinates()[0].length > 50
+    : context.geometryType === 'LineString'
+      ? geometry.getCoordinates().length > 50
+      : false
+
+  const simplifiedGeometry = context.simplified
+    ? geometry.simplify(resolution)
+    : geometry
+
+  context.smoothed = feature.get('style') && feature.get('style').smooth
+  const smoothedGeometry = context.smoothed
+    ? smooth(simplifiedGeometry)
+    : simplifiedGeometry
+
+  context.geometry = read(smoothedGeometry)
+  context.simplifiedGeometry = context.smoothed
+    ? read(simplifiedGeometry)
+    : context.geometry
+}
+
+const writeGeometries = context => {
+  context.styles = context.styles.map(style => ({ ...style, geometry: context.write(style.geometry) }))
+}
+
+const labelEchelon = context => {
+  const icon = context.styles.find(label => Props.iconImage(label))
+  if (!icon) return
+
+  const code = echelonCode(context.properties.sidc)
+  const echelon = echelons[code]
+  if (!echelon) return
+
+  icon['icon-height'] = echelon.height
+  icon['icon-width'] = echelon.width
+  icon['icon-url'] = echelon.url
+  icon['icon-scale'] = 0.15
+}
+
+export const pipeline = (styles, { feature, resolution, mode }) => {
   return R.compose(
-    ({ styles }) => styles.map(styleFactory.makeStyle),
-    R.tap(context => (context.styles = writeGeometry(context.styles))),
+    ({ feature, styles, mode }) => {
+      const styleFactory = makeStyles(feature, mode)
+      return styles.map(styleFactory.makeStyle)
+    },
+    R.tap(writeGeometries),
     R.tap(guideLines),
     R.tap(handles),
     R.tap(clipLabels),
-    R.tap(context => (context.styles = resolveLabelTexts(properties, context.styles))),
+    R.tap(labelEchelon),
+    R.tap(context => (context.styles = labelTexts(context.properties, context.styles))),
     R.tap(context => (context.styles = labelAnchors(context))),
-    R.tap(context => context.styles.push(...(styles[`LABELS:${sidc}`] || []).flat())),
-    R.tap(context => (context.styles = styles[`${key}`](context)))
-  )(({ resolution, geometry, mode }))
+    R.tap(context => context.styles.push(...(styles[`LABELS:${context.sidc}`] || []).flat())),
+    R.tap(context => {
+      const { geometryType } = context
+      const sidc = parameterized(feature.get('sidc'))
+      const key = styles[`${geometryType}:${sidc}`]
+        ? `${geometryType}:${sidc}`
+        : `${geometryType}:DEFAULT`
+
+      context.sidc = sidc
+      context.styles = styles[`${key}`](context)
+    }),
+    R.tap(readGeometry)
+  )(({ feature, resolution, mode }))
 }
