@@ -6,28 +6,24 @@ import { PI_OVER_2 } from '../../../shared/Math'
 import { transform, geometryType } from '../geometry'
 import { makeStyles, Props } from './styles'
 import { parameterized, echelonCode } from '../../symbology/2525c'
-import echelons from './echelons.json'
+import { echelons } from './echelons'
 import { smooth } from './chaikin'
 
 const canvas = document.createElement('canvas')
 const context = canvas.getContext('2d')
 
-/**
- *
- */
-const boundingBox = resolution => label => {
+const textBoundingBox = (resolution, label) => {
   const textField = Props.textField(label)
   if (!textField) return null
   if (Props.textClipping(label) === 'none') return null
 
-  const { geometry } = label
   const textFont = Props.textFont(label)
   const textJustify = Props.textJustify(label)
-  const textRotate = Props.textRotate(label) || 0
-  const textPadding = Props.textPadding(label) || 0
+  const rotate = Props.textRotate(label) || 0
+  const padding = Props.textPadding(label) || 0
   const [offsetX, offsetY] = Props.textOffset(label) || [0, 0]
-  const { x, y } = geometry.getCoordinates()[0]
-  const flipY = textRotate < -PI_OVER_2 || textRotate > PI_OVER_2 ? -1 : 1
+  const { x, y } = label.geometry.getCoordinates()[0]
+  const flipY = rotate < -PI_OVER_2 || rotate > PI_OVER_2 ? -1 : 1
   const flipX = textJustify ? textJustify === 'start' ? -1 : 1 : 0
 
   const lines = textField.split('\n')
@@ -41,21 +37,53 @@ const boundingBox = resolution => label => {
     return acc
   }, [0, 0])
 
-  const x1 = x - width - textPadding * resolution
-  const x2 = x + width + textPadding * resolution
-  const y1 = y - height - textPadding * resolution
-  const y2 = y + height + textPadding * resolution
+  const x1 = x - width - padding * resolution
+  const x2 = x + width + padding * resolution
+  const y1 = y - height - padding * resolution
+  const y2 = y + height + padding * resolution
   const points = [[x1, y1], [x2, y1], [x2, y2], [x1, y2], [x1, y1]]
   const tx = width * flipX - offsetX * resolution
   const ty = offsetY * resolution * flipY
 
   const transform = AF.compose(
     AF.translate(x, y),
-    AF.rotate(2 * Math.PI - textRotate),
+    AF.rotate(2 * Math.PI - rotate),
     AF.translate(-(x + tx), -(y + ty))
   )
 
   return TS.polygon(AF.applyToPoints(transform, points).map(TS.coordinate))
+}
+
+const iconBoundingBox = (resolution, label) => {
+  const scale = Props.iconScale(label)
+  const width = Props.iconWidth(label) * scale / 4
+  const height = Props.iconHeight(label) * scale / 4
+  const rotate = Props.iconRotate(label) || 0
+  const padding = Props.iconPadding(label) || 0
+  const { x, y } = label.geometry.getCoordinates()[0]
+
+  const x1 = x - (width + padding) * resolution
+  const x2 = x + (width + padding) * resolution
+  const y1 = y - (height + padding) * resolution
+  const y2 = y + (height + padding) * resolution
+  const points = [[x1, y1], [x2, y1], [x2, y2], [x1, y2], [x1, y1]]
+
+  const transform = AF.compose(
+    AF.translate(x, y),
+    AF.rotate(2 * Math.PI - rotate),
+    AF.translate(-x, -y)
+  )
+
+  return TS.polygon(AF.applyToPoints(transform, points).map(TS.coordinate))
+}
+
+/**
+ *
+ */
+const boundingBox = resolution => label => {
+  if (Props.textField(label)) return textBoundingBox(resolution, label)
+  else if (Props.iconImage(label)) return iconBoundingBox(resolution, label)
+  else return null
 }
 
 
@@ -280,18 +308,21 @@ const writeGeometries = context => {
   context.styles = context.styles.map(style => ({ ...style, geometry: context.write(style.geometry) }))
 }
 
-const labelEchelon = context => {
-  const icon = context.styles.find(label => Props.iconImage(label))
-  if (!icon) return
+const echelonLabels = context => {
+  const [icons, others] = R.partition(label => Props.iconImage(label), context.styles)
+  context.styles = others
 
-  const code = echelonCode(context.properties.sidc)
-  const echelon = echelons[code]
-  if (!echelon) return
+  icons.forEach(icon => {
+    const code = echelonCode(context.properties.sidc)
+    const echelon = echelons[code]
+    if (!echelon) return // filter echelon style
 
-  icon['icon-height'] = echelon.height
-  icon['icon-width'] = echelon.width
-  icon['icon-url'] = echelon.url
-  icon['icon-scale'] = 0.15
+    icon['icon-height'] = echelon.height
+    icon['icon-width'] = echelon.width
+    icon['icon-url'] = echelon.url
+    icon['icon-scale'] = 0.4
+    context.styles.push(icon)
+  })
 }
 
 export const pipeline = (styles, { feature, resolution, mode }) => {
@@ -304,7 +335,7 @@ export const pipeline = (styles, { feature, resolution, mode }) => {
     R.tap(guideLines),
     R.tap(handles),
     R.tap(clipLabels),
-    R.tap(labelEchelon),
+    R.tap(echelonLabels),
     R.tap(context => (context.styles = labelTexts(context.properties, context.styles))),
     R.tap(context => (context.styles = labelAnchors(context))),
     R.tap(context => context.styles.push(...(styles[`LABELS:${context.sidc}`] || []).flat())),

@@ -1,46 +1,31 @@
-import * as R from 'ramda'
-import { Geometry } from 'ol/geom'
-import { Icon, Style } from 'ol/style'
-import * as TS from '../ts'
-import { echelonCode } from '../../symbology/2525c'
-import urls from './echelons.json'
-import { PI } from '../../../shared/Math'
+import A from './resources/A.png'
+import B from './resources/B.png'
+import C from './resources/C.png'
+import D from './resources/D.png'
+import E from './resources/E.png'
+import F from './resources/F.png'
+import G from './resources/G.png'
+import H from './resources/H.png'
+import I from './resources/I.png'
+import J from './resources/J.png'
+import K from './resources/K.png'
+import L from './resources/L.png'
+import M from './resources/M.png'
+import N from './resources/N.png'
 
-export const createEchelon = options => {
-  const { sidc, geometry, resolution } = options
-  const code = echelonCode(sidc)
-  const echelon = urls[code]
-  if (!echelon) return { geometry, icon: [] }
-
-  const [read, write] = (geometry instanceof Geometry)
-    ? [TS.read, TS.write] // ol/Geometry
-    : [R.identity, R.identity] // JSTS/Geometry
-
-  const coords = TS.coordinates(read(geometry))
-  const lineString = TS.lineString(coords)
-  const line = TS.lengthIndexedLine(lineString)
-  const scale = 0.15
-  const width = resolution * Math.sqrt(echelon.width) * 1.5
-  const length = line.getEndIndex()
-  const A = line.extractPoint(length / 2 - width)
-  const B = line.extractPoint(length / 2 + width)
-  const angle = TS.segment(
-    line.extractPoint(length / 2 - 20),
-    line.extractPoint(length / 2 + 20)
-  ).angle()
-
-  const notch = TS.lineBuffer(TS.lineString([A, B]))(resolution * 10)
-  const notchedGeometry = TS.difference([lineString, notch])
-  const anchor = write(TS.point(line.extractPoint(length / 2)))
-
-  const icon = new Style({
-    geometry: anchor,
-    image: new Icon({
-      scale,
-      rotation: PI - angle,
-      src: echelon.url
-    })
-  })
-
-  return { geometry: write(notchedGeometry), icon: [icon] }
+export const echelons = {
+  A: { width: 24, height: 25, url: A },
+  B: { width: 12, height: 12, url: B },
+  C: { width: 26, height: 12, url: C },
+  D: { width: 40, height: 12, url: D },
+  E: { width: 6, height: 29, url: E },
+  F: { width: 28, height: 29, url: F },
+  G: { width: 50, height: 29, url: G },
+  H: { width: 26, height: 29, url: H },
+  I: { width: 64, height: 29, url: I },
+  J: { width: 101, height: 29, url: J },
+  K: { width: 138, height: 29, url: K },
+  L: { width: 176, height: 29, url: L },
+  M: { width: 213, height: 29, url: M },
+  N: { width: 65, height: 24, url: N }
 }
