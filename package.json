@@ -59,7 +59,6 @@
     "lodash.debounce": "^4.0.8",
     "lru-ttl-cache": "^2.4.2",
     "luxon": "^2.0.2",
-    "mathjs": "^9.4.5",
     "milsymbol": "^2.0.0",
     "minisearch": "^3.1.0",
     "mousetrap": "^1.6.5",
