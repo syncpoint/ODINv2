@@ -1,13 +1,8 @@
-* boundaries (echelon, T/T1)
-* echelon (boundaries, polygon)
+* echelon (polygons)
 * drop feature (relative size)
 * drop labels (relative size)
-* simplify (line string, polygon)
-* chaikin (line string, polygon)
 * modify interaction: clear vertex properly (pointer distance)
 * SUPPORT BY FIRE POSITION
-* styles: echelon labels
-* styles: polygon fill
 * legacy import: echelon offset
 * legacy import: offset location
 * interaction: move(position) label (echelon, area center)

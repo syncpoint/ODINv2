@@ -2,24 +2,24 @@
 makeStyle ::
 	k = geometry | fill | image | stroke | text,
   geometry = ol/Feature | ol/geom/Geometry | ol/Feature -> ol/geom/Geometry =>
-	{k, v} -> ol/style/Style
+	{k: v} -> ol/style/Style
 
 makeFill ::
 	k = color =>
-	{k, v} -> ol/style/Fill
+	{k: v} -> ol/style/Fill
 
 makeImage ::
 	k = opacity | rotation | scale =>
-  {k, v} -> ol/style/Image
+  {k: v} -> ol/style/Image
 
 makeStroke ::
 	k = color | line{Cap | Join | Dash | DashOffset} | width =>
-  {k, v} -> ol/style/Stroke
+  {k: v} -> ol/style/Stroke
 
 makeText ::
 	k = font | offset{X | Y} | overflow | scale | rotation | fill | stroke | text |
 	    background{Fill | Stroke} | padding =>
-  {k, v} -> ol/style/text
+  {k: v} -> ol/style/text
 
 ```
 
@@ -88,10 +88,16 @@ shape-rotate :: number
 shape-scale :: [number, number]
 
 symbol-anchor :: string - unsupported
+symbol-code :: string
 symbol-color :: string
+symbol-color-scheme :: 'dark' | 'medium' | 'light'
+symbol-fill-opacity :: numberq
 symbol-halo-color :: string
 symbol-halo-width :: string
+symbol-line-width :: number
+symbol-modifiers :: {k: v}
 symbol-offset :: [number, number] - unsupported
 symbol-rotate :: number
-symbol-sidc :: string
 symbol-size :: number
+symbol-text-color :: string
+symbol-text-size :: number

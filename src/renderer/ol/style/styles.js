@@ -115,13 +115,19 @@ export const Props = {
   shapeScale: R.prop('shape-scale'),
 
   symbolAnchor: R.prop('symbol-anchor'),
+  symbolCode: R.prop('symbol-code'),
   symbolColor: R.prop('symbol-color'),
+  symbolColorScheme: R.prop('symbol-color-scheme'),
+  symbolFillOpacity: R.prop('symbol-fill-opacity'),
   symbolHaloColor: R.prop('symbol-halo-color'),
   symbolHaloWidth: R.prop('symbol-halo-width'),
+  symbolLineWidth: R.prop('symbol-line-width'),
+  symbolModifiers: R.prop('symbol-modifiers'),
   symbolOffset: R.prop('symbol-offset'),
   symbolRotate: R.prop('symbol-rotate'),
-  symbolSIDC: R.prop('symbol-sidc'),
-  symbolSize: R.prop('symbol-size')
+  symbolSize: R.prop('symbol-size'),
+  symbolTextColor: R.prop('symbol-text-color'),
+  symbolTextSize: R.prop('symbol-text-size')
 }
 
 /**
@@ -585,9 +591,30 @@ export const makeStyles = (feature, mode = 'default') => {
           scale: Props.shapeScale(props),
           displacement: Props.shapeOffset(props)
         })
-      } else if (Props.symbolSIDC(props)) {
+      } else if (Props.symbolCode(props)) {
+        const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
         const size = 60 // TODO: make configurable
-        const symbol = new ms.Symbol(Props.symbolSIDC(props), { size })
+        const outlineColor = Props.symbolHaloColor(props)
+        const outlineWidth = Props.symbolHaloWidth(props)
+        const colorMode = modes[Props.symbolColorScheme(props)]
+        const monoColor = Props.symbolColor(props)
+        const infoSize = Props.symbolTextSize(props)
+        const infoColor = Props.symbolTextColor(props)
+        const strokeWidth = Props.symbolLineWidth(props)
+        const fillOpacity = Props.symbolFillOpacity(props)
+
+        const options = { ...Props.symbolModifiers(props) }
+
+        if (outlineColor) options.outlineColor = outlineColor
+        if (outlineWidth) options.outlineWidth = outlineWidth
+        if (colorMode) options.colorMode = colorMode
+        if (monoColor) options.monoColor = monoColor
+        if (infoSize) options.infoSize = infoSize
+        if (infoColor) options.infoColor = infoColor
+        if (strokeWidth) options.strokeWidth = strokeWidth
+        if (fillOpacity) options.fillOpacity = fillOpacity
+
+        const symbol = new ms.Symbol(Props.symbolCode(props), { size, ...options })
         const { width, height } = symbol.getSize()
 
         return makeIcon({
