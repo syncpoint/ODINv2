@@ -1,23 +1,27 @@
-import * as R from 'ramda'
 import Feature from 'ol/Feature'
-import Geometry from 'ol/geom/Geometry'
-import GeometryCollection from 'ol/geom/GeometryCollection'
+import * as geom from 'ol/geom'
+import { getPointResolution } from 'ol/proj'
 import * as TS from './ts'
-import { codeUTM } from '../epsg'
+import { codeUTM, firstCoordinate } from '../epsg'
 
 export const geometryType = arg => {
   if (arg instanceof Feature) return geometryType(arg.getGeometry())
-  else if (arg instanceof GeometryCollection) return arg.getGeometries().map(geometryType).join(':')
-  else if (arg instanceof Geometry) return arg.getType()
+  else if (arg instanceof geom.GeometryCollection) return arg.getGeometries().map(geometryType).join(':')
+  else if (arg instanceof geom.Geometry) return arg.getType()
   else return null
 }
 
 // Convert to/from JTS geometry.
 
 export const transform = (olGeometry, target) => {
-  const code = target !== 'EPSG:3857' ? codeUTM(olGeometry) : null
+  const origin = firstCoordinate(olGeometry)
+  const code = target !== 'EPSG:3857' ? codeUTM(origin) : null
 
   return {
+    pointResolution: resolution => {
+      return getPointResolution('EPSG:3857', resolution, origin)
+    },
+
     read: olGeometry => {
       return TS.read(
         code
@@ -34,8 +38,3 @@ export const transform = (olGeometry, target) => {
     }
   }
 }
-
-export const identity = () => ({
-  read: R.identity,
-  write: R.identity
-})

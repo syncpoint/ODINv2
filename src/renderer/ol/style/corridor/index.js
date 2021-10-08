@@ -1,5 +1,5 @@
 import { styles } from '../styles'
-import { pipeline } from '../pipeline'
+import * as TS from '../..//ts'
 import './G_G_OAF' // ATTACK BY FIRE POSITION
 import './G_G_OLAA' // AXIS OF ADVANCE / AIRBORNE
 import './G_G_OLAGM' // AXIS OF ADVANCE / MAIN ATTACK
@@ -36,42 +36,9 @@ import './G_T_Y' // TASKS / BYPASS
 
 styles['LineString:Point:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
 
-styles['LineString:Point'] = options => {
-  return pipeline(styles, options)
-
-  // const sidc = feature.get('sidc')
-  // const key = parameterized(sidc)
-  // if (!key || !styles[key]) return styles.DEFAULT()
-
-  // const featureStyles = makeStyles(feature, mode)
-  // const geometry = feature.getGeometry()
-  // const guides = featureStyles.guideStroke(geometry)
-  // const handles = featureStyles.handles(new geom.MultiPoint([
-  //   geometry.getGeometries()[1].getCoordinates(),
-  //   ...geometry.getGeometries()[0].getCoordinates()
-  // ]))
-
-  // const tryer = () => transform(styles[key])({
-  //   feature,
-  //   resolution,
-  //   styles: featureStyles
-  // })
-
-  // const catcher = err => {
-  //   return transform(({ lineString, width }) => {
-  //     // Get longest segment to place error message:
-  //     const segments = TS.segments(lineString).sort((a, b) => b.getLength() - a.getLength())
-  //     return [
-  //       featureStyles.waspStroke(TS.lineBuffer(lineString)(width / 2)),
-  //       featureStyles.outlinedText(TS.point(segments[0].midPoint()), {
-  //         text: `invalid geometry\n${err.message}`.toUpperCase(),
-  //         textFillColor: 'red',
-  //         textAlign: 'center',
-  //         rotation: TS.rotation(segments[0])
-  //       })
-  //     ]
-  //   })({ feature })
-  // }
-
-  // return [...R.tryCatch(tryer, catcher)(), ...handles, ...guides]
+styles['LineString:Point:ERROR'] = context => {
+  const [lineString, point] = TS.geometries(context.geometry)
+  const width = TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
+  const geometry = TS.lineBuffer(lineString)(width)
+  return [{ id: 'style:wasp-stroke', geometry }]
 }

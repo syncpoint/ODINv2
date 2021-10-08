@@ -1,11 +1,83 @@
+import * as R from 'ramda'
+import { styles, makeStyles } from './styles'
+import { parameterized } from '../../symbology/2525c'
+import * as geoms from './geometries'
+import { makeGuideLines } from './guides'
+import { makeHandles } from './handles'
+import * as labels from './labels'
+import { makeEchelonLabels } from './echelons'
 import { StyleCache } from './StyleCache'
-import { styles } from './styles'
-import { geometryType } from '../geometry'
 import './point'
 import './linestring'
 import './polygon'
 import './corridor'
 import './multipoint'
+
+const createStyleFactory = context => {
+  const { feature } = context
+  context.makeStyles = makeStyles(feature)
+  return context
+}
+
+const collectStyles = styles => context => {
+  const { geometryType, feature } = context
+  const sidc = parameterized(feature.get('sidc'))
+  const key = styles[`${geometryType}:${sidc}`]
+    ? `${geometryType}:${sidc}`
+    : `${geometryType}:DEFAULT`
+
+  context.sidc = sidc
+  context.styles = styles[`${key}`](context)
+
+  return context
+}
+
+const collectLabels = styles => context => {
+  context.styles.push(...(styles[`LABELS:${context.sidc}`] || []).flat())
+  return context
+}
+
+const mapStyles = ({ styles, makeStyles }) => {
+  return styles.map(makeStyles)
+}
+
+const writeGeometries = context => {
+  const { styles, write } = context
+  context.styles = geoms.writeGeometries(styles, write)
+  return context
+}
+
+const pipeline = R.compose(
+  mapStyles,
+  writeGeometries,
+  makeGuideLines,
+  makeHandles,
+  labels.clip,
+  labels.texts,
+  labels.anchors,
+  makeEchelonLabels,
+  collectLabels(styles),
+  collectStyles(styles),
+  geoms.readGeometry,
+  createStyleFactory
+)
+
+const collectErrorStyles = styles => context => {
+  const { geometryType } = context
+  const defaultStyle = ({ geometry }) => [{ id: 'style:wasp-stroke', geometry }]
+  const fn = styles[`${geometryType}:ERROR`] || defaultStyle
+  context.styles = fn(context)
+  return context
+}
+
+const errorPipeline = R.compose(
+  R.tap(console.log),
+  mapStyles,
+  writeGeometries,
+  collectErrorStyles(styles),
+  geoms.readGeometry,
+  createStyleFactory
+)
 
 /**
  *
@@ -29,21 +101,16 @@ export const featureStyle = (selection, featureSource) => {
       cache.clear()
     }
 
-    try {
-      const mode = selection.isSelected(feature.getId())
-        ? selection.selected().length > 1
-          ? 'multiple'
-          : 'selected'
-        : 'default'
+    const mode = selection.isSelected(feature.getId())
+      ? selection.selected().length > 1
+        ? 'multiple'
+        : 'selected'
+      : 'default'
+    const options = { feature, resolution, mode }
 
+    try {
       const style = () => {
-        const key = geometryType(feature.getGeometry())
-        const style = (styles[key] || styles.DEFAULT)({
-          feature,
-          resolution,
-          mode,
-          geometryType: key
-        })
+        const style = pipeline(options)
 
         if (!style) return
         return Array.isArray(style) ? style.flat() : style
@@ -52,7 +119,8 @@ export const featureStyle = (selection, featureSource) => {
       const cacheKey = `${feature.getRevision()}:${mode}:${feature.getId()}`
       return cache.entry(cacheKey, style)
     } catch (err) {
-      console.error('[style]', err, feature)
+      console.warn('[style]', err.message, feature)
+      return errorPipeline(options).flat()
     }
   }
 }

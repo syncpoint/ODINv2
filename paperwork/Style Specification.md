@@ -49,6 +49,7 @@ line-color :: string
 line-dash-array :: [number]
 line-dash-offset :: number, default 0
 line-halo-color :: string
+line-halo-dash-array :: [number]
 line-halo-width :: number
 line-join :: bevel | round | miter
 line-miter-limit :: number, default 10

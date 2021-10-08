@@ -1,3 +1,6 @@
+import * as R from 'ramda'
+import { echelonCode } from '../../symbology/2525c'
+import Props from './style-props'
 import A from './resources/A.png'
 import B from './resources/B.png'
 import C from './resources/C.png'
@@ -28,4 +31,24 @@ export const echelons = {
   L: { width: 176, height: 29, url: L },
   M: { width: 213, height: 29, url: M },
   N: { width: 65, height: 24, url: N }
+}
+
+export const makeEchelonLabels = context => {
+  const { styles, properties } = context
+  const [icons, others] = R.partition(label => Props.iconImage(label), styles)
+  context.styles = others
+
+  icons.forEach(icon => {
+    const code = echelonCode(properties.sidc)
+    const echelon = echelons[code]
+    if (!echelon) return // filter echelon style
+
+    icon['icon-height'] = echelon.height
+    icon['icon-width'] = echelon.width
+    icon['icon-url'] = echelon.url
+    icon['icon-scale'] = 0.4
+    styles.push(icon)
+  })
+
+  return context
 }

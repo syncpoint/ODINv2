@@ -1,4 +1,3 @@
-import { pipeline } from '../pipeline'
 import { styles } from '../styles'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_SAE' // ENCIRCLEMENT
@@ -9,11 +8,11 @@ import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
 
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
-const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 3, 'text-clipping': 'line' }]
-const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 3, 'text-clipping': 'line' }]
+const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 5, 'text-clipping': 'line' }]
+const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
 const F = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
-const LR = text => ['left', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
-const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 3, 'text-clipping': 'line' }))
+const LR = text => ['left', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
+const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
@@ -104,7 +103,3 @@ styles['Polygon:G*M*NC----'] = styles['FILL:HATCH'] // CHEMICALLY CONTAMINATED A
 styles['Polygon:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
 styles['Polygon:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
 styles['Polygon:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
-
-styles.Polygon = options => {
-  return pipeline(styles, options)
-}

@@ -1,5 +1,4 @@
 import { styles } from '../styles'
-import { pipeline } from '../pipeline'
 
 /* eslint-disable no-multi-spaces */
 import './G_F_LT'    // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
@@ -72,7 +71,7 @@ styles['LABELS:G*T*AS----'] = [{ id: 'style:default-text', 'text-field': 't', 't
 styles['LABELS:G*G*GLB---'] = [
   { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] },
   { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW] },
-  { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 5 }
+  { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 3 }
 ]
 styles['LABELS:G*G*GLP---'] = SE('t ? "PL " + t : "PL"') // PHASE LINE
 styles['LABELS:G*G*GLL---'] = PL('LL') // LIGHT LINE
@@ -104,11 +103,3 @@ styles['LABELS:G*O*BE----'] = MM('"E"') // BEARING LINE / ELECTRONIC
 styles['LABELS:G*O*BA----'] = MM('"A"') // BEARING LINE / ACOUSTIC
 styles['LABELS:G*O*BT----'] = MM('"T"') // BEARING LINE / TORPEDO
 styles['LABELS:G*O*BO----'] = MM('"O"') // BEARING LINE / ELECTRO-OPTICAL INTERCEPT
-
-
-/**
- *
- */
-styles.LineString = options => {
-  return pipeline(styles, options)
-}

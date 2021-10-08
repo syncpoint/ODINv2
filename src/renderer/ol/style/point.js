@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import { styles } from './styles'
-import { pipeline } from './pipeline'
 import { MODIFIERS } from '../../symbology/2525c'
 
 const modifiers = properties => Object.entries(properties)
@@ -14,7 +13,3 @@ styles['Point:DEFAULT'] = ({ feature, geometry, properties }) => [{
   'symbol-modifiers': modifiers(properties),
   'symbol-color-scheme': 'light'
 }]
-
-styles.Point = options => {
-  return pipeline(styles, options)
-}
