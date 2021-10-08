@@ -1,3 +1,4 @@
+* leveldb: migrate towards db.getMany()
 * echelon (polygons)
 * drop feature (relative size)
 * drop labels (relative size)
