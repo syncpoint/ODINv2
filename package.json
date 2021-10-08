@@ -29,7 +29,7 @@
     "babel-loader": "^8.1.0",
     "c8": "^7.10.0",
     "css-loader": "^6.3.0",
-    "electron": "^14.0.1",
+    "electron": "^15.1.1",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-react": "^7.26.1",
