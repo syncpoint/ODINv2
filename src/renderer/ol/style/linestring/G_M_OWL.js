@@ -5,8 +5,8 @@ import { fenceX, fencePoints } from './commons'
 styles['LineString:G*M*OWL---'] = ({ resolution, geometry }) => {
   return [
     { id: 'style:2525c/fence-stroke', geometry },
-    ...fencePoints(geometry, resolution, 16)
-      .map(options => [...options, [0, -8]])
+    ...fencePoints(geometry, resolution, 24)
+      .map(options => [...options, [0, -7]])
       .map(fenceX)
   ]
 }

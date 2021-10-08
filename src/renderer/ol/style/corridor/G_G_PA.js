@@ -39,7 +39,7 @@ styles['LineString:Point:G*G*PA----'] = ({ geometry, resolution }) => {
       'text-font': font,
       'text-anchor': 'center',
       'text-justify': 'end',
-      'text-padding': 3,
+      'text-padding': 5,
       'text-rotate': TS.rotation(lastSegment)
     }
   ]

@@ -28,7 +28,7 @@ styles['MultiPoint:G*T*S-----'] = ({ geometry }) => {
       geometry: anchor,
       'text-field': '"S"',
       'text-rotate': rotate,
-      'text-padding': 3
+      'text-padding': 5
     }
   ]
 }

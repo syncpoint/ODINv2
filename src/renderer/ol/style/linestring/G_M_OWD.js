@@ -5,6 +5,6 @@ import { fenceXX, fencePoints } from './commons'
 styles['LineString:G*M*OWD---'] = ({ resolution, geometry }) => {
   return [
     { id: 'style:2525c/fence-stroke', geometry },
-    ...fencePoints(geometry, resolution, 48).map(fenceXX)
+    ...fencePoints(geometry, resolution, 60).map(fenceXX)
   ].flat()
 }

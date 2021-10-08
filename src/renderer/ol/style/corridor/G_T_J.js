@@ -40,7 +40,7 @@ styles['LineString:Point:G*T*J-----'] = ({ geometry, resolution }) => {
       id: 'style:default-text',
       geometry: TS.point(p1),
       'text-field': '"C"',
-      'text-padding': 3,
+      'text-padding': 5,
       'text-rotate': TS.rotation(segment)
     }
   ]

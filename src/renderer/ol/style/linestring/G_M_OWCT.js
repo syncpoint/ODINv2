@@ -5,7 +5,7 @@ import { fenceO, fencePoints } from './commons'
 
 // TRIPLE STRAND CONCERTINA
 styles['LineString:G*M*OWCT--'] = ({ resolution, geometry }) => {
-  const width = resolution * 7
+  const width = resolution * 12
   const points = TS.points(geometry)
   const buffer = TS.lineBuffer(geometry)(width)
   const path = TS.difference([
@@ -16,6 +16,6 @@ styles['LineString:G*M*OWCT--'] = ({ resolution, geometry }) => {
 
   return [
     { id: 'style:2525c/fence-stroke', geometry: path },
-    ...fencePoints(geometry, resolution, 16).map(fenceO)
+    ...fencePoints(geometry, resolution, 24).map(fenceO)
   ]
 }

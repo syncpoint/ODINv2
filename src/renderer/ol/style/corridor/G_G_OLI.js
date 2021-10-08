@@ -21,7 +21,7 @@ styles['LineString:Point:G*G*OLI---'] = ({ geometry }) => {
       geometry: anchor,
       'text-field': 't',
       'text-anchor': 'center',
-      'text-padding': 3,
+      'text-padding': 5,
       'text-rotate': TS.rotation(segments[0])
     }
   ]

@@ -34,7 +34,7 @@ const withdrawLike = text => ({ geometry, resolution }) => {
       'text-field': text,
       'text-anchor': 'center',
       'text-justify': 'end',
-      'text-padding': 3,
+      'text-padding': 5,
       'text-rotate': TS.rotation(segment)
     }
   ]

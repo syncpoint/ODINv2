@@ -226,7 +226,27 @@ const register = defaults => ({
   'style:2525c/fence-stroke': {
     'line-cap': 'square',
     'line-color': 'black',
-    'line-width': 3
+    'line-width': 2
+  },
+
+  'style:2525c/fence-o': {
+    'shape-line-color': 'black',
+    'shape-line-width': 2,
+    'shape-points': 8,
+    'shape-radius': 8,
+    'shape-radius-2': 8,
+    'shape-angle': PI_OVER_4,
+    'shape-scale': [0.8, 1.4]
+  },
+
+  'style:2525c/fence-x': {
+    'shape-line-color': 'black',
+    'shape-line-width': 2,
+    'shape-points': 4,
+    'shape-radius': 8,
+    'shape-radius-2': 0,
+    'shape-angle': PI_OVER_4,
+    'shape-scale': [1, 1.4]
   },
 
   'style:2525c/hatch-fill': {

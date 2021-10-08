@@ -22,7 +22,7 @@ styles['LineString:Point:G*T*B-----'] = ({ geometry }) => {
       id: 'style:default-text',
       geometry: midPoint,
       'text-field': '"B"',
-      'text-padding': 3,
+      'text-padding': 5,
       'text-rotate': TS.rotation(segment)
     }
   ]

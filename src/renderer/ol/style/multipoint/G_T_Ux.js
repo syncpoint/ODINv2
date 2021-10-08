@@ -29,7 +29,7 @@ const fanLike = label => ({ resolution, geometry }) => {
     geometry: TS.point(segment.pointAlong(0.3)),
     'text-field': label,
     'text-rotate': TS.rotation(segment),
-    'text-padding': 3
+    'text-padding': 5
   })
 
   return [

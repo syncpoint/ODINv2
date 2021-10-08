@@ -1,56 +1,32 @@
 import * as R from 'ramda'
 import * as TS from '../../ts'
-import { PI, PI_OVER_4 } from '../../../../shared/Math'
+import { PI } from '../../../../shared/Math'
 
 export const fenceX = ([point, angle, displacement]) => ({
+  id: 'style:2525c/fence-x',
   geometry: TS.point(point),
-  'shape-line-color': 'black',
-  'shape-line-width': 3,
-  'shape-points': 4,
-  'shape-radius': 8,
-  'shape-radius-2': 0,
-  'shape-angle': PI_OVER_4,
   'shape-rotate': PI - angle,
-  'shape-scale': [1, 1.4],
   'shape-offset': displacement || [0, 0]
 })
 
 export const fenceO = ([point, angle, displacement]) => ({
+  id: 'style:2525c/fence-o',
   geometry: TS.point(point),
-  'shape-line-color': 'black',
-  'shape-line-width': 3,
-  'shape-points': 8,
-  'shape-radius': 8,
-  'shape-radius-2': 8,
-  'shape-angle': PI_OVER_4,
   'shape-rotate': PI - angle,
-  'shape-scale': [0.8, 1.4],
   'shape-offset': displacement || [0, 0]
 })
 
 export const fenceXX = ([point, angle]) => [
   {
+    id: 'style:2525c/fence-x',
     geometry: TS.point(point),
-    'shape-line-color': 'black',
-    'shape-line-width': 3,
-    'shape-points': 4,
-    'shape-radius': 8,
-    'shape-radius-2': 0,
-    'shape-angle': PI_OVER_4,
     'shape-rotate': PI - angle,
-    'shape-scale': [1, 1.4],
     'shape-offset': [-8, 0]
   },
   {
+    id: 'style:2525c/fence-x',
     geometry: TS.point(point),
-    'shape-line-color': 'black',
-    'shape-line-width': 3,
-    'shape-points': 4,
-    'shape-radius': 8,
-    'shape-radius-2': 0,
-    'shape-angle': PI_OVER_4,
     'shape-rotate': PI - angle,
-    'shape-scale': [1, 1.4],
     'shape-offset': [8, 0]
   }
 ]

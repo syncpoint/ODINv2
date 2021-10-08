@@ -15,7 +15,7 @@ styles['MultiPoint:G*M*NM----'] = ({ geometry }) => {
       geometry: anchor,
       'text-field': 't',
       'text-anchor': 0,
-      'text-padding': 3,
+      'text-padding': 5,
       'text-clipping': 'line'
     }
   ]

@@ -40,7 +40,7 @@ styles['LineString:G*T*F-----'] = ({ resolution, geometry }) => {
       id: 'style:default-text',
       'text-field': '"F"',
       'text-rotate': TS.rotation(segment),
-      'text-padding': 3,
+      'text-padding': 5,
       geometry: textAnchor
     }
   ]

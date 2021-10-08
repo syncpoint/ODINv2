@@ -6,7 +6,7 @@ import { PI_OVER_2 } from '../../../../shared/Math'
 
 // DOUBLE STRAND CONCERTINA
 styles['LineString:G*M*OWCD--'] = ({ resolution, geometry }) => {
-  const width = resolution * 7
+  const width = resolution * 11
   const segments = TS.segments(geometry)
   const startSegment = R.head(segments)
   const endSegment = R.last(segments)
@@ -28,7 +28,7 @@ styles['LineString:G*M*OWCD--'] = ({ resolution, geometry }) => {
 
   return [
     { id: 'style:2525c/fence-stroke', geometry: path },
-    ...fencePoints(geometry, resolution, 16)
+    ...fencePoints(geometry, resolution, 24)
       .map(options => [...options, [0, -8]])
       .map(fenceO)
   ]

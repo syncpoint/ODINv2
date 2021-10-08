@@ -35,7 +35,7 @@ styles['MultiPoint:G*T*E-----'] = ({ geometry }) => {
       geometry: anchor,
       'text-field': '"I"',
       'text-rotate': rotate,
-      'text-padding': 3
+      'text-padding': 5
     }
   ]
 }

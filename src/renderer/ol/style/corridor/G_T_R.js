@@ -36,7 +36,7 @@ styles['LineString:Point:G*T*R-----'] = ({ geometry, resolution }) => {
       id: 'style:default-text',
       geometry: midPoint,
       'text-field': '"RIP"',
-      'text-padding': 3,
+      'text-padding': 5,
       'text-rotate': TS.rotation(segment)
     }
   ]
