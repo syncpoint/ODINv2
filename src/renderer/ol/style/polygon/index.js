@@ -37,7 +37,7 @@ styles['LABELS:G*G*AAH---'] = C(ALL_LINES('HIDACZ')) // HIGH DENSITY AIRSPACE CO
 styles['LABELS:G*G*AAM---'] = C(ALL_LINES('MEZ')) // MISSILE ENGAGEMENT ZONE (MEZ)
 styles['LABELS:G*G*AAML--'] = C(ALL_LINES('LOMEZ')) // LOW ALTITUDE MEZ
 styles['LABELS:G*G*AAMH--'] = C(ALL_LINES('HIMEZ')) // HIGH ALTITUDE MEZ
-styles['LABELS:G*G*AAW---'] = C(ALL_LINES('WFZ')) // WEAPONS FREE ZONE
+styles['LABELS:G*G*AAW---'] = C(ALL_LINES('WFZ'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // WEAPONS FREE ZONE
 styles['LABELS:G*G*PM----'] = TLBR('"M"') // DECOY MINED AREA
 // TODO: G*G*PY---- : DECOY MINED AREA, FENCED
 // TODO: G*G*PC---- : DUMMY MINEFIELD (DYNAMIC)
@@ -97,9 +97,10 @@ styles['LABELS:G*M*NB----'] = [{ 'symbol-sidc': 'GFMPNEB---', 'symbol-anchor': '
 styles['LABELS:G*M*NC----'] = [{ 'symbol-sidc': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
 
 styles['FILL:HATCH'] = ({ geometry }) => [{ id: 'style:2525c/hatch-fill', geometry }]
+styles['Polygon:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
+styles['Polygon:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
+styles['Polygon:G*G*AAW---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
 styles['Polygon:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
 styles['Polygon:G*M*NB----'] = styles['FILL:HATCH'] // BIOLOGICALLY CONTAMINATED AREA
 styles['Polygon:G*M*NC----'] = styles['FILL:HATCH'] // CHEMICALLY CONTAMINATED AREA
 styles['Polygon:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
-styles['Polygon:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
-styles['Polygon:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
