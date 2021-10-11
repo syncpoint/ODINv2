@@ -225,12 +225,12 @@ const register = defaults => ({
 
   'style:2525c/fence-stroke': {
     'line-cap': 'square',
-    'line-color': 'black',
+    'line-color': defaults.strokeSimpleFillColor,
     'line-width': 2
   },
 
   'style:2525c/fence-o': {
-    'shape-line-color': 'black',
+    'shape-line-color': defaults.strokeSimpleFillColor,
     'shape-line-width': 2,
     'shape-points': 8,
     'shape-radius': 8,
@@ -240,7 +240,7 @@ const register = defaults => ({
   },
 
   'style:2525c/fence-x': {
-    'shape-line-color': 'black',
+    'shape-line-color': defaults.strokeSimpleFillColor,
     'shape-line-width': 2,
     'shape-points': 4,
     'shape-radius': 8,
@@ -313,9 +313,17 @@ export const makeStyles = feature => {
   const identity = identityCode(sidc)
   const status = statusCode(sidc)
 
+  console.log('identity', identity)
+  const simpleIdentity = identity === 'H' || identity === 'S'
+    ? 'H'
+    : '-'
+
   const defaults = {
     strokeColor: Colors.stroke(identity),
     strokeFillColor: Colors.fill(SCHEME_DEFAULT)(identity),
+
+    // Black or red:
+    strokeSimpleFillColor: Colors.fill(SCHEME_DEFAULT)(simpleIdentity),
     lineDash: status === 'A' ? LINE_DASH_20_10 : null,
     fillColor: Colors.fill(SCHEME_DEFAULT)(identity),
     fontWeight: 'normal',
