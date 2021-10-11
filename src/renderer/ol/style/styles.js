@@ -313,7 +313,6 @@ export const makeStyles = feature => {
   const identity = identityCode(sidc)
   const status = statusCode(sidc)
 
-  console.log('identity', identity)
   const simpleIdentity = identity === 'H' || identity === 'S'
     ? 'H'
     : '-'
