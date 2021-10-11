@@ -201,6 +201,7 @@ const register = defaults => ({
     'line-color': defaults.strokeFillColor,
     'line-dash-array': defaults.lineDash,
     'line-halo-color': defaults.strokeColor,
+    'line-halo-dash-array': defaults.lineDash,
     'line-halo-width': 1,
     'line-width': 2
   },

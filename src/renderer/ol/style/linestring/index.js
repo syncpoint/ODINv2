@@ -63,16 +63,16 @@ const RFL_2 = [ABOVE_LEFT_START, ABOVE_RIGHT_END].map(props => ({ 'text-field': 
 const RFL = [FSCL_1, RFL_2, FSCL_3]
 const MFP_1 = { id: 'style:default-text', 'text-field': '"MFP"', 'text-anchor': 'center', 'text-padding': 5 }
 const MFP = [MFP_1, FSCL_3]
+const BND_1 = { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] }
+const BND_2 = { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW] }
+const BND_3 = { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 3 }
+const BND = [BND_1, BND_2, BND_3]
 
 styles['LineString:DEFAULT'] = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
 styles['LABELS:LINE_STRING'] = []
 styles['LABELS:G*T*A-----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND ASSUME
 styles['LABELS:G*T*AS----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND SUPPORT
-styles['LABELS:G*G*GLB---'] = [
-  { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] },
-  { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW] },
-  { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 3 }
-]
+styles['LABELS:G*G*GLB---'] = BND // BOUNDARIES
 styles['LABELS:G*G*GLP---'] = SE('t ? "PL " + t : "PL"') // PHASE LINE
 styles['LABELS:G*G*GLL---'] = PL('LL') // LIGHT LINE
 styles['LABELS:G*G*PF----'] = MT('t') // DIRECTION OF ATTACK FOR FEINT
