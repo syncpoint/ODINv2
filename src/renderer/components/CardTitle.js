@@ -59,11 +59,12 @@ const CardTitle = props => {
     ? { color: 'grey' }
     : {}
 
-  const span = () => <span
-  style={spanStyle}
-  className='card-title'
-    placeholder={placeholder}
-  >{spanValue}</span>
+  const span = () =>
+    <span
+      style={spanStyle}
+      className='card-title'
+      placeholder={placeholder}
+    >{spanValue}</span>
 
   return props.editing ? input() : span()
 }

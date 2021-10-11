@@ -142,6 +142,7 @@ div {
 }
 
 .card-content {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -174,6 +175,7 @@ div {
 
 .card-avatar {
   margin-right: 8px;
+  margin-left: 8px;
 }
 
 .avatar-image {
