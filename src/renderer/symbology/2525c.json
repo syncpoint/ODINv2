@@ -5674,6 +5674,7 @@
   {
     "sidc": "G*G*SLB---*****",
     "scope": "CONTROL",
+    "geometry": "LineString",
     "dimensions": "C2",
     "hierarchy": [
       "Tactical Graphics",
