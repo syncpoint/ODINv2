@@ -1,3 +1,6 @@
+2.1.0-alpha
+* Fix: Card: Layout issue for long names (#10)
+
 0.0.2
 * Added some command to edit text modifiers to command palette.
 
