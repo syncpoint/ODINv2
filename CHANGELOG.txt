@@ -2,6 +2,7 @@
 * Fix: Card: Layout issue for long names (#10)
 * Fix: Hostility Status is missing by Mobility/Survivability (#11)
 * Fix: Weapons Free Zone (WFZ) is displayed only as a normal area (#15)
+* Fix: Area symbols missing (#21)
 
 0.0.2
 * Added some command to edit text modifiers to command palette.

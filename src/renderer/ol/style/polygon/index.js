@@ -92,9 +92,9 @@ styles['LABELS:G*S*AH----'] = C(ALL_LINES('REFUGEE\nHOLDING\nAREA')) // REFUGEE 
 styles['LABELS:G*S*ASB---'] = C(ALL_LINES('BSA')) // SUPPORT AREAS / BRIGADE (BSA)
 styles['LABELS:G*S*ASD---'] = C(ALL_LINES('DSA')) // SUPPORT AREAS / DIVISON (DSA)
 styles['LABELS:G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
-styles['LABELS:G*M*NR----'] = [{ 'symbol-sidc': 'GFMPNZ----', 'symbol-anchor': 'center' }] // RADIOACTIVE AREA
-styles['LABELS:G*M*NB----'] = [{ 'symbol-sidc': 'GFMPNEB---', 'symbol-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
-styles['LABELS:G*M*NC----'] = [{ 'symbol-sidc': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
+styles['LABELS:G*M*NR----'] = [{ 'symbol-code': 'GFMPNZ----', 'symbol-anchor': 'center' }] // RADIOACTIVE AREA
+styles['LABELS:G*M*NB----'] = [{ 'symbol-code': 'GFMPNEB---', 'symbol-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
+styles['LABELS:G*M*NC----'] = [{ 'symbol-code': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
 
 styles['FILL:HATCH'] = ({ geometry }) => [{ id: 'style:2525c/hatch-fill', geometry }]
 styles['Polygon:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
