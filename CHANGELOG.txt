@@ -7,6 +7,7 @@
 * New: Aligned labeling for Holding/Release Line with 2525D  (#24)
 * New: Support Circular Areas (#25)
 * New: Support Rectangular Areas (#26)
+* Fix: Improved highlighting (#19, #23)
 
 0.0.2
 * Added some command to edit text modifiers to command palette.

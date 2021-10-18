@@ -11,7 +11,7 @@ const isHidden = feature => feature.hidden
 /**
  * @constructor
  */
-export function Sources (store, selection) {
+export function Sources (store, selection, highlight) {
   Emitter.call(this)
   this.store_ = store
   this.selection_ = selection
@@ -26,7 +26,7 @@ export function Sources (store, selection) {
 
   store.on('features/properties', ({ operations }) => this.updateProperties_(operations))
   store.on('features/geometries', ({ operations }) => this.updateGeometries_(operations))
-  store.on('highlight/geometries', ({ geometries }) => this.highlightGeometries_(geometries))
+  highlight.on('highlight/geometries', ({ geometries }) => this.highlightGeometries_(geometries))
 }
 
 util.inherits(Sources, Emitter)

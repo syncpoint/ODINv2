@@ -45,6 +45,8 @@ export const readGeometry = context => {
  *
  */
 export const writeGeometries = (styles, write) => {
+  if (!styles) return []
+
   return styles
     .filter(R.prop('geometry'))
     .map(style => ({ ...style, geometry: write(style.geometry) }))

@@ -31,7 +31,8 @@ export const Map = () => {
     dragAndDrop,
     store,
     undo,
-    emitter
+    emitter,
+    viewMemento
   } = useServices()
 
   const effect = async () => {
@@ -82,13 +83,7 @@ export const Map = () => {
       highlightLayer
     ]
 
-    view.on('change', ({ target: view }) => {
-      sessionStore.putViewport({
-        center: view.getCenter(),
-        resolution: view.getResolution(),
-        rotation: view.getRotation()
-      })
-    })
+    view.on('change', ({ target: view }) => viewMemento.update(view))
 
     const map = new ol.Map({
       target,

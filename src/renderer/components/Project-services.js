@@ -4,7 +4,7 @@ import { IPCDownClient } from '../../shared/level/ipc'
 import { leveldb, propertiesPartition, geometriesPartition, preferencesPartition } from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, Store, SearchIndex, PreferencesStore } from '../store'
-import { Sources, PaletteCommands } from '../model'
+import { Sources, PaletteCommands, Highlight, ViewMemento } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
@@ -19,15 +19,19 @@ export default projectUUID => {
     if (entry) return entry.split('=')[1]
   })()
 
+  const master = leveldb({ down: new IPCDownClient(ipcRenderer) })
+  const sessionStore = new SessionStore(master, `project:${projectUUID}`)
+  const viewMemento = new ViewMemento(sessionStore)
+  const emitter = new EventEmitter()
   const location = path.join(databases, projectUUID)
   const db = leveldb({ location })
   const propertiesLevel = propertiesPartition(db)
   const geometryLevel = geometriesPartition(db)
   const preferencesLevel = preferencesPartition(db)
-  const store = new Store(propertiesLevel, geometryLevel, undo, selection)
+  const store = new Store(propertiesLevel, geometryLevel, undo, selection, emitter)
+  const highlight = new Highlight(store, selection, emitter, viewMemento)
   const preferencesStore = new PreferencesStore(preferencesLevel)
   const searchIndex = new SearchIndex(propertiesLevel)
-  const emitter = new EventEmitter()
 
   // Key bindings.
   bindings(emitter)
@@ -70,16 +74,18 @@ export default projectUUID => {
   const services = {}
   services.emitter = emitter
   services.ipcRenderer = ipcRenderer
-  services.master = leveldb({ down: new IPCDownClient(ipcRenderer) })
-  services.sessionStore = new SessionStore(services.master, `project:${projectUUID}`)
+  services.master = master
+  services.sessionStore = sessionStore
+  services.viewMemento = viewMemento
   services.undo = undo
-  services.sources = new Sources(store, selection)
+  services.sources = new Sources(store, selection, highlight)
   services.selection = selection
   services.dragAndDrop = dragAndDrop
   services.store = store
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
   services.paletteCommands = new PaletteCommands(store, emitter)
+  services.highlight = highlight
 
   return services
 }

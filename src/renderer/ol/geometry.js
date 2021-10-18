@@ -5,9 +5,13 @@ import * as TS from './ts'
 import { codeUTM, firstCoordinate } from '../epsg'
 
 export const geometryType = arg => {
+  // OpenLayers:
   if (arg instanceof Feature) return geometryType(arg.getGeometry())
   else if (arg instanceof geom.GeometryCollection) return arg.getGeometries().map(geometryType).join(':')
   else if (arg instanceof geom.Geometry) return arg.getType()
+  // GeoJSON:
+  else if (arg.type === 'GeometryCollection') return arg.geometries.map(geometryType).join(':')
+  else if (arg.type) return arg.type
   else return null
 }
 

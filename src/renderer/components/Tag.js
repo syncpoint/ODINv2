@@ -10,7 +10,7 @@ import { matcher, stopPropagation } from './events'
  * A tag in different variants.
  */
 export const Tag = props => {
-  const { store } = useServices()
+  const { store, emitter } = useServices()
   const { id, spec } = props
   const [variant, label, action, path] = spec.split(':')
   const closable = variant === 'USER'
@@ -24,18 +24,18 @@ export const Tag = props => {
       setMode('edit')
     } else {
       if (action === 'NONE' || !props.id) return
-      store[action] && store[action](props.id)
+      emitter.emit(`${props.id}/${action}`)
     }
   }
 
   const handleMouseDown = () => {
     if (action === 'NONE' || !props.id) return
-    store[action] && store[action](props.id, true)
+    emitter.emit(`${props.id}/${action}/down`)
   }
 
   const handleMouseUp = () => {
     if (action === 'NONE' || !props.id) return
-    store[action] && store[action](props.id, false)
+    emitter.emit(`${props.id}/${action}/up`)
   }
 
   const addTag = value => store.addTag(id, value.toLowerCase())

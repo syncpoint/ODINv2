@@ -33,6 +33,7 @@ const collectStyles = styles => context => {
 }
 
 const mapStyles = ({ styles, makeStyles }) => {
+  if (!makeStyles) return []
   return styles.map(makeStyles)
 }
 
@@ -112,6 +113,7 @@ export const featureStyle = (selection, featureSource) => {
       return cache.entry(cacheKey, style)
     } catch (err) {
       console.warn('[style]', err.message, feature)
+      console.error('[style]', err)
       return errorPipeline(options).flat()
     }
   }

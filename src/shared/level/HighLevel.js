@@ -67,10 +67,10 @@ export const entries = (db, prefix) => {
 
 /**
  * @async
- * values :: Value v => db -> [v]
- * values :: Value v => (db, string) -> [v]
+ * valuesByPrefix :: Value v => db -> [v]
+ * valuesByPrefix :: Value v => (db, string) -> [v]
  */
-export const values = (db, prefix) => {
+export const valuesByPrefix = (db, prefix) => {
   const stream = valuesStream(prefix)(db)
   const fn = (acc, value) => acc.push(value)
   return reduce(fn, [])(stream)
@@ -141,7 +141,7 @@ HighLevel.prototype.entries = function (prefix) {
 
 HighLevel.prototype.values = function (arg) {
   if (Array.isArray(arg)) return valuesById(this.db_, arg)
-  else return values(this.db_, arg)
+  else return valuesByPrefix(this.db_, arg)
 }
 
 HighLevel.prototype.existsKey = function (prefix) {

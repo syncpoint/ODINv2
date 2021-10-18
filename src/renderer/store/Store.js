@@ -2,13 +2,12 @@ import util from 'util'
 import * as R from 'ramda'
 import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
-import { readGeometry } from './format'
 import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID, scope } from '../ids'
 import { importSymbols } from './symbols'
 import { HighLevel } from '../../shared/level/HighLevel'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import { leveldb } from '../../shared/level'
-import * as TS from '../ol/ts'
+import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
 
 
 /**
@@ -28,6 +27,8 @@ import * as TS from '../ol/ts'
  * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
  *
  * selectFeatures :: GeoJSON/Feature a => () -> [a]
+ * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
+ * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
  * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
  * delete :: Id a => [a] -> unit
  * insert :: Value a => [a] -> unit
@@ -39,7 +40,6 @@ import * as TS from '../ol/ts'
  * removeTag :: (Id a, Name b) => (a, b) -> unit
  * hide :: (Id a) => a -> unit
  * show :: (Id a) => a -> unit
- * identify :: (Id a) => a -> unit
  *
  * compositeCommand :: Command a => [a] -> a
  * insertCommand :: Value a => [a] -> Command
@@ -47,7 +47,7 @@ import * as TS from '../ol/ts'
  * updateCommand :: Value a => ([a], [a]) -> Command
  * updateGeometriesCommand :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> Command
  */
-export function Store (propertiesLevel, geometryLevel, undo, selection) {
+export function Store (propertiesLevel, geometryLevel, undo, selection, emitter) {
   Emitter.call(this)
 
   this.properties_ = new HighLevel(propertiesLevel)
@@ -72,6 +72,8 @@ export function Store (propertiesLevel, geometryLevel, undo, selection) {
   propertiesLevel.on('batch', event => {
     const operations = event.filter(({ key }) => isFeatureId(key))
     const removals = event.filter(({ type }) => type === 'del').map(({ key }) => key)
+
+    // FIXME: probably not the right place for selection handling
     this.selection_.deselect(removals)
     if (operations.length) this.emit('features/properties', { operations })
   })
@@ -81,6 +83,11 @@ export function Store (propertiesLevel, geometryLevel, undo, selection) {
   this.insertCommand = insertCommand.bind(this)
   this.updateCommand = updateCommand.bind(this)
   this.updateGeometriesCommand = updateGeometriesCommand.bind(this)
+
+  emitter.on(`:id(${LAYER_ID})/hide`, ({ id }) => this.hide(id))
+  emitter.on(`:id(${FEATURE_ID})/hide`, ({ id }) => this.hide(id))
+  emitter.on(`:id(${LAYER_ID})/show`, ({ id }) => this.show(id))
+  emitter.on(`:id(${FEATURE_ID})/show`, ({ id }) => this.show(id))
 
   window.requestIdleCallback(async () => {
     const alreadyImported = await this.db_.existsKey('symbol:')
@@ -98,6 +105,18 @@ util.inherits(Store, Emitter)
  */
 Store.prototype.selectFeatures = function () {
   return this.db_.values('feature:')
+}
+
+
+/**
+ * @async
+ * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
+ * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
+ */
+Store.prototype.selectGeometries = function (arg) {
+  if (Array.isArray(arg)) return this.geometries_.values(arg)
+  else if (isLayerId(arg)) return this.geometries_.values(`feature:${arg.split(':')[1]}`)
+  else this.geometries_.values([arg])
 }
 
 
@@ -344,50 +363,6 @@ Store.prototype.show = async function (id, active) {
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
   return this.update_(show, keys)
-}
-
-
-/**
- * @async
- * identify :: (Id a) => a -> unit
- */
-Store.prototype.identify = async function (id, active) {
-  if (active === undefined) return
-
-  const read = R.compose(TS.read, readGeometry)
-  const write = TS.write
-
-  const loaders = {
-    layer: async id => {
-      const prefix = `feature:${id.split(':')[1]}`
-      const geometries = (await this.geometries_.values(prefix)).map(read)
-      const collection = TS.collect(geometries)
-      return write(TS.minimumRectangle(collection))
-    },
-    feature: async id => {
-      const geoJSON = await this.geometries_.get(id)
-      const geometry = read(geoJSON)
-      const bounds = geoJSON.type === 'Polygon'
-        ? geometry
-        : TS.minimumRectangle(geometry)
-      return write(bounds)
-    }
-  }
-
-  const ids = R.uniq([id, ...this.selection_.selected()])
-
-  const load = () => ids.reduce(async (acc, id) => {
-    const rectangles = await acc
-    const loader = loaders[scope(id)]
-    if (loader) rectangles.push(await loader(id))
-    return rectangles
-  }, [])
-
-  const geometries = active
-    ? await load(ids)
-    : []
-
-  this.emit('highlight/geometries', { geometries })
 }
 
 
