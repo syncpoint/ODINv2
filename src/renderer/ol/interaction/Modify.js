@@ -162,7 +162,7 @@ class Modify extends PointerInteraction {
     if (!feature.getGeometry()) return
     if (feature.getGeometry().getType() === 'Point') return
 
-    this.special_ = special(feature)
+    this.special_ = special(feature, this.overlay_)
     this.special_.roles().forEach(role => {
       const geometry = this.special_.geometry(role)
       const writer = indexWriters[geometry.getType()]
@@ -182,9 +182,12 @@ class Modify extends PointerInteraction {
     this.removeFeatureSegmentData_(feature)
 
     // Remove the vertex feature if the collection of canditate features is empty.
-    if (this.vertexFeature_ && this.features_.getLength() === 0) {
+    if (this.vertexFeature_) {
       this.overlay_.getSource().removeFeature(this.vertexFeature_)
       this.vertexFeature_ = null
+
+      // Clear overlay after when feature was removed.
+      if (this.features_.getLength()) this.overlay_.getSource().clear()
     }
 
     feature.removeEventListener(
@@ -311,7 +314,7 @@ class Modify extends PointerInteraction {
       }
 
       for (let j = insertVertices.length - 1; j >= 0; --j) {
-        this.insertVertex_(insertVertices[j], vertex)
+        this.insertVertex_(insertVertices[j], vertex, event)
       }
     }
 
@@ -326,7 +329,8 @@ class Modify extends PointerInteraction {
   handleUpEvent (event) {
     for (let i = this.dragSegments_.length - 1; i >= 0; --i) {
       const segmentData = this.dragSegments_[i][0]
-      this.index_.update(Extent.boundingExtent(segmentData.segment), segmentData)
+      const boundingExtent = Extent.boundingExtent(segmentData.segment)
+      this.index_.update(boundingExtent, segmentData)
     }
 
     if (this.featuresBeingModified_) {
@@ -350,10 +354,14 @@ class Modify extends PointerInteraction {
     this.ignoreNextSingleClick_ = false
     this.willModifyFeatures_(event, this.dragSegments_)
 
-    const vertex = this.special_.capture([
+    const role = this.dragSegments_[0][0].role
+    const coord = [
       event.coordinate[0] + this.delta_[0],
       event.coordinate[1] + this.delta_[1]
-    ], this.dragSegments_)
+    ]
+
+    const segments = this.dragSegments_.map(segment => segment[0])
+    const vertex = this.special_.capture(role, coord, segments, event)
 
     for (let i = 0, ii = this.dragSegments_.length; i < ii; ++i) {
       const dragSegment = this.dragSegments_[i]
@@ -370,7 +378,7 @@ class Modify extends PointerInteraction {
 
       if (segmentUpdaters[geometry.getType()]) {
         const coordinates = segmentUpdaters[geometry.getType()](vertex, dragSegment)
-        this.setGeometryCoordinates_(role, geometry, feature, coordinates)
+        this.setGeometryCoordinates_(role, feature, coordinates, event)
       }
     }
 
@@ -439,7 +447,7 @@ class Modify extends PointerInteraction {
   }
 
 
-  insertVertex_ (segmentData, vertex) {
+  insertVertex_ (segmentData, vertex, event) {
     const role = segmentData.role
     const segment = segmentData.segment
     const feature = segmentData.feature
@@ -473,7 +481,7 @@ class Modify extends PointerInteraction {
         return
     }
 
-    this.setGeometryCoordinates_(role, geometry, feature, coordinates)
+    this.setGeometryCoordinates_(role, feature, coordinates, event)
     this.index_.remove(segmentData)
     this.updateSegmentIndices_(geometry, index, depth, 1)
 
@@ -504,7 +512,7 @@ class Modify extends PointerInteraction {
   }
 
 
-  removeVertex_ () {
+  removeVertex_ (event) {
 
     // TODO: ugly - clean up!
 
@@ -594,7 +602,7 @@ class Modify extends PointerInteraction {
 
       if (deleted) {
 
-        this.setGeometryCoordinates_(segmentData.role, geometry, segmentData.feature, coordinates)
+        this.setGeometryCoordinates_(segmentData.role, segmentData.feature, coordinates, event)
         const segments = []
 
         if (left !== undefined) {
@@ -637,10 +645,11 @@ class Modify extends PointerInteraction {
   }
 
 
-  setGeometryCoordinates_ (role, geometry, feature, coordinates) {
-
+  setGeometryCoordinates_ (role, feature, coordinates, event) {
     this.changingFeature_ = true
-    const roles = this.special_.updateCoordinates(role, geometry, coordinates) || []
+
+    const segments = this.dragSegments_.map(segment => segment[0])
+    const roles = this.special_.updateCoordinates(role, coordinates, segments, event) || []
 
     // Re-index geometries for given roles:
     roles.forEach(role => {
@@ -686,7 +695,7 @@ class Modify extends PointerInteraction {
     ) {
       const event = this.lastPointerEvent_
       this.willModifyFeatures_(event, this.dragSegments_)
-      const removed = this.removeVertex_()
+      const removed = this.removeVertex_(event)
       this.dispatchEvent(
         new ModifyEvent(
           ModifyEventType.MODIFYEND,

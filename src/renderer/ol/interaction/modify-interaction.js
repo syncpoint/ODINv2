@@ -1,5 +1,7 @@
 import { primaryAction } from 'ol/events/condition'
+import isEqual from 'react-fast-compare'
 import Modify from './Modify'
+import { writeFeatureCollection } from '../../store/format'
 
 const noShiftKey = ({ originalEvent }) => originalEvent.shiftKey !== true
 const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
@@ -11,7 +13,7 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
  */
 export default options => {
   const { store, partition, hitTolerance } = options
-  let clones = [] // Cloned geometries BEFORE modify.
+  let clones = [] // Cloned features BEFORE modify.
 
   const interaction = new Modify({
     source: partition.getSelected(),
@@ -21,19 +23,19 @@ export default options => {
   })
 
   interaction.on('modifystart', ({ features }) => {
-    clones = features.getArray().map(feature => feature.getGeometry().clone())
+    const geoJSON = writeFeatureCollection(features.getArray())
+    clones = geoJSON.features
   })
 
-  interaction.on('modifyend', ({ features }) => {
-    const geometries = features.getArray().reduce((acc, feature, index) => {
-      acc[feature.getId()] = [
-        feature.getGeometry(),
-        clones[index]
-      ]
+  interaction.on('modifyend', event => {
+    const { features } = writeFeatureCollection(event.features.getArray())
+    const [newValues, oldValues] = features.reduce((acc, feature, index) => {
+      acc[0].push(feature)
+      acc[1].push(clones[index])
       return acc
-    }, {})
+    }, ([[], []]))
 
-    store.updateGeometries(geometries)
+    store.update(newValues, oldValues)
   })
 
   return interaction

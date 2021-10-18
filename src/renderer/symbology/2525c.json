@@ -2340,7 +2340,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Airspace Coordination Area (ACA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACAI--*****",
@@ -2363,7 +2368,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Airspace Coordination Area (ACA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACBC--*****",
@@ -2374,7 +2382,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Target Build-up Area (TBA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACBI--*****",
@@ -2397,7 +2410,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Target Build-up Area (TBA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACDC--*****",
@@ -2408,7 +2424,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Dead Space Area (DA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACDI--*****",
@@ -2431,7 +2452,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Dead Space Area (DA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACEC--*****",
@@ -2442,7 +2466,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Sensor Zone - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACEI--*****",
@@ -2465,7 +2494,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Sensor Zone - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACFC--*****",
@@ -2476,7 +2508,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Free Fire Area (FFA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACFI--*****",
@@ -2499,7 +2536,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Free Fire Area (FFA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACNC--*****",
@@ -2510,7 +2550,12 @@
       "Fire Support",
       "Command & Control Areas",
       "No Fire Area (NFA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACNI--*****",
@@ -2533,7 +2578,10 @@
       "Fire Support",
       "Command & Control Areas",
       "No Fire Area (NFA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACPC--*****",
@@ -2544,7 +2592,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Position Area For Artillery (PAA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACPR--*****",
@@ -2556,7 +2609,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Position Area For Artillery (PAA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACRC--*****",
@@ -2567,7 +2623,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Restrictive Fire Area (RFA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACRI--*****",
@@ -2590,7 +2651,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Restrictive Fire Area (RFA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACSC--*****",
@@ -2601,7 +2665,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Fire Support Area (FSA) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACSI--*****",
@@ -2624,7 +2693,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Fire Support Area (FSA) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACT---*****",
@@ -2647,7 +2719,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Target Value Area (TVAR) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACVI--*****",
@@ -2670,7 +2747,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Target Value Area (TVAR) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ACZC--*****",
@@ -2681,7 +2761,12 @@
       "Fire Support",
       "Command & Control Areas",
       "Zone of Responsibility (ZOR) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ACZI--*****",
@@ -2704,7 +2789,10 @@
       "Fire Support",
       "Command & Control Areas",
       "Zone of Responsibility (ZOR) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*AKBC--*****",
@@ -2715,7 +2803,12 @@
       "Fire Support",
       "Areas",
       "Blue Kill Box (BKB) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*AKBI--*****",
@@ -2738,7 +2831,10 @@
       "Fire Support",
       "Areas",
       "Blue Kill Box (BKB) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*AKPC--*****",
@@ -2749,7 +2845,12 @@
       "Fire Support",
       "Areas",
       "Purple Kill Box (PKB) - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*AKPI--*****",
@@ -2772,7 +2873,10 @@
       "Fire Support",
       "Areas",
       "Purple Kill Box (PKB) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*AT----*****",
@@ -2809,7 +2913,12 @@
       "Areas",
       "Area Target",
       "Circular Target"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*ATG---*****",
@@ -2834,7 +2943,10 @@
       "Areas",
       "Area Target",
       "Rectangular Target"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*ATS---*****",
@@ -2858,7 +2970,12 @@
       "Fire Support",
       "Areas",
       "Weapons / Sensor Range Fans - Circular"
-    ]
+    ],
+    "parameters": {
+      "layout": "fan",
+      "maxPoints": 2,
+      "minPoints": 2
+    }
   },
   {
     "sidc": "G*F*AXS---*****",
@@ -2894,7 +3011,10 @@
       "Areas",
       "Target Acquistion Zones",
       "Censor Zone - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*AZFI--*****",
@@ -2919,7 +3039,10 @@
       "Areas",
       "Target Acquistion Zones",
       "Critical Friendly Zone (CFZ) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*AZII--*****",
@@ -2944,7 +3067,10 @@
       "Areas",
       "Target Acquistion Zones",
       "Artillery Target Intelligence (ATI) Zone - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*AZXI--*****",
@@ -2969,7 +3095,10 @@
       "Areas",
       "Target Acquistion Zones",
       "Call For Fire Zone (CFFZ) - Rectangular"
-    ]
+    ],
+    "parameters": {
+      "layout": "rectangle"
+    }
   },
   {
     "sidc": "G*F*LCC---*****",

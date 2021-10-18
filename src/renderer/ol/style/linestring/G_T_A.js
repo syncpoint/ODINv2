@@ -3,8 +3,8 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FOLLOW AND ASSUME
-styles['LineString:G*T*A-----'] = ({ styles, geometry }) => {
-  const coords = TS.coordinates(geometry)
+styles['LineString:G*T*A-----'] = context => {
+  const coords = TS.coordinates(context.geometry)
   const segment = TS.segment(coords)
   const angle = segment.angle()
   const length = segment.getLength()
@@ -17,11 +17,14 @@ styles['LineString:G*T*A-----'] = ({ styles, geometry }) => {
     [0.16, 0]
   ])
 
-  const path = TS.collect([
+  const geometry = TS.collect([
     TS.lineString(R.props([3, 9], xs)),
     TS.polygon(R.props([0, 1, 2, 3, 4, 0], xs)),
     TS.polygon(R.props([5, 6, 7, 8, 9, 10, 5], xs))
   ])
 
-  return [{ id: 'style:2525c/default-stroke', geometry: path }]
+  return [
+    { id: 'style:2525c/default-stroke', geometry },
+    ...styles['LABELS:G*T*A-----']
+  ]
 }

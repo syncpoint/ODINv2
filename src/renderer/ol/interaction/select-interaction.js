@@ -18,16 +18,15 @@ export default options => {
     multi: false // don't select all features under cursor at once.
   })
 
-  interaction.on('select', () => {
-    // Propagate to global selection.
-    // NOTE: selected, deselected are deltas/changes.
-    const ids = features => features.map(feature => feature.getId())
-    selection.set(ids(interaction.getFeatures().getArray()))
-  })
+  const features = () => interaction.getFeatures().getArray()
+  const selected = () => features().map(feature => feature.getId())
+
+  // Propagate to global selection.
+  // NOTE: selected, deselected are deltas/changes.
+  interaction.on('select', () => selection.set(selected()))
 
   partition.getSelected().on('addfeature', ({ feature }) => {
-    const features = interaction.getFeatures().getArray()
-    if (!features.includes(feature)) interaction.getFeatures().push(feature)
+    if (!features().includes(feature)) interaction.getFeatures().push(feature)
   })
 
   partition.getSelected().on('removefeature', ({ feature }) => {

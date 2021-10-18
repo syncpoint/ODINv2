@@ -1,8 +1,8 @@
 import { styles } from '../styles'
 import * as TS from '../../ts'
 
-// MINIMUM SAFE DISTANCE ZONES
-styles['MultiPoint:G*M*NM----'] = ({ geometry }) => {
+// SENSOR RANGE FAN
+styles['MultiPoint:G*F*AXC---'] = ({ geometry }) => {
   const [C, A] = TS.coordinates(geometry)
   const segment = TS.segment([C, A])
   const path = TS.pointBuffer(TS.point(C))(segment.getLength())
@@ -13,7 +13,7 @@ styles['MultiPoint:G*M*NM----'] = ({ geometry }) => {
     {
       id: 'style:default-text',
       geometry: anchor,
-      'text-field': 't',
+      'text-field': ['am ? "RANGE " + am : ""', 'x ? "ALTITUDE " + x : ""'],
       'text-padding': 10,
       'text-clipping': 'line'
     }

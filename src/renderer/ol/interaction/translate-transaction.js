@@ -58,7 +58,7 @@ export default (options, select) => {
     return value
   }
 
-  interaction.on('translatestart', ({ features }) => {
+  interaction.on('translatestart', event => {
     const updateCursor = set('updateCursor', cursor => {
       const map = interaction.getMap()
       const target = map.getViewport()
@@ -66,7 +66,7 @@ export default (options, select) => {
     })
 
     // Clone features with new identities:
-    clones = features.getArray().map(feature => {
+    clones = event.features.getArray().map(feature => {
       const layerUUID = ids.layerUUID(feature.getId())
       const clone = feature.clone()
       const id = `feature:${layerUUID}/${uuid()}`
@@ -86,7 +86,9 @@ export default (options, select) => {
     }
   })
 
-  interaction.on('translateend', async ({ features }) => {
+  interaction.on('translateend', async event => {
+    const features = event.features.getArray()
+
     const cloning = unset('cloning')
     const updateCursor = unset('updateCursor')
     updateCursor(null)
@@ -94,11 +96,11 @@ export default (options, select) => {
     if (cloning) {
 
       // Get complete properties set for all features:
-      const ids = features.getArray().map(feature => feature.getId())
+      const ids = features.map(feature => feature.getId())
       const properties = await store.select(ids)
 
       // Swap geometries: feature <-> clone.
-      features.getArray().forEach((feature, index) => {
+      features.forEach((feature, index) => {
         const geometry = feature.getGeometry()
         feature.setGeometry(clones[index].getGeometry())
         clones[index].setGeometry(geometry)
@@ -117,10 +119,10 @@ export default (options, select) => {
     } else {
 
       // geometries :: { id -> [new, old] }
-      const geometries = features.getArray().reduce((acc, feature, index) => {
+      const geometries = features.reduce((acc, feature, index) => {
         acc[feature.getId()] = [
-          feature.getGeometry(), // new geometry
-          clones[index].getGeometry() // old geometry
+          writeGeometryObject(feature.getGeometry()), // new geometry
+          writeGeometryObject(clones[index].getGeometry()) // old geometry
         ]
         return acc
       }, {})

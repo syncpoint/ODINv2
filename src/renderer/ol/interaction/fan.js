@@ -43,7 +43,7 @@ export default (feature, descriptor) => {
     return { center, points, copy, geometry }
   })(params())
 
-  const updateCoordinates = (role, _, coordinates) => {
+  const updateCoordinates = (role, coordinates) => {
     geometries[role].setCoordinates(coordinates)
 
     if (role === 'CENTER') {
@@ -59,11 +59,16 @@ export default (feature, descriptor) => {
 
       frame = frame.copy({ vectors })
       feature.setGeometry(frame.geometry)
+
+      vectors.forEach((vector, index) => {
+        const postfix = index || ''
+        feature.set(`am${postfix}`, `${Math.floor(vector.length)}`)
+      })
     }
   }
 
   return {
-    capture: R.identity,
+    capture: (_, vertex) => vertex,
     updateCoordinates,
     suppressVertexFeature: () => true,
     roles: () => Object.keys(geometries),

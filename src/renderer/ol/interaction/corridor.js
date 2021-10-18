@@ -18,9 +18,8 @@ export default (feature, descriptor) => {
   const read = R.compose(TS.read, toUTM)
   const write = R.compose(fromUTM, TS.write)
 
-  const capture = (vertex, segments) => {
-    if (segments.length !== 1) return vertex
-    if (segments[0][0].role !== 'POINT') return vertex
+  const capture = (role, vertex) => {
+    if (role !== 'POINT') return vertex
 
     // Project point onto normal vector of first segment:
     const coordinate = TS.coordinate(read(new geom.Point(vertex)))
@@ -56,7 +55,7 @@ export default (feature, descriptor) => {
     return { copy, center, point, geometry }
   })(params())
 
-  const updateCoordinates = (role, _, coordinates) => {
+  const updateCoordinates = (role, coordinates) => {
     geometries[role].setCoordinates(coordinates)
 
     if (role === 'CENTER') {

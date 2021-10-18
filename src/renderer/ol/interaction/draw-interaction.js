@@ -6,7 +6,7 @@ import * as MILSTD from '../../symbology/2525c'
 import { writeFeatureObject } from '../../store/format'
 import * as TS from '../ts'
 import * as EPSG from '../../epsg'
-import { PI_OVER_2, PI_OVER_4 } from '../../../shared/Math'
+import { PI_OVER_2, PI_OVER_4, SQRT_2 } from '../../../shared/Math'
 
 
 /**
@@ -108,7 +108,7 @@ const geometries = [
 
   /* Polygon. */
   {
-    match: ({ geometry }) => geometry.type === GeometryType.POLYGON,
+    match: ({ geometry }) => geometry.type === GeometryType.POLYGON && !geometry.layout,
     options: () => ({ type: GeometryType.POLYGON }),
     complete: (_, feature) => {
       const geometry = feature.getGeometry()
@@ -160,10 +160,28 @@ const geometries = [
     }
   },
 
-  /* MultiPoint/fan (2-point) */
+  /* MultiPoint/fan (2-point), including circular */
   {
     match: ({ geometry }) => geometry.layout === 'fan' &&
       Number.parseInt(geometry.maxPoints) === 2,
+    options: () => ({ type: GeometryType.POINT }),
+    complete: (map, feature) => {
+      const resolution = map.getView().getResolution()
+      const radius = resolution * 50
+      const geometry = feature.getGeometry()
+      const { read, write } = format(feature)
+      const point = read(geometry)
+
+      const C = TS.coordinate(point)
+      const A = TS.projectCoordinate(C)([0, radius])
+      feature.setGeometry(write(TS.multiPoint([C, A].map(TS.point))))
+      feature.set('am', `${Math.floor(radius)}`)
+    }
+  },
+
+  /* MultiPoint/rectangle */
+  {
+    match: ({ geometry }) => geometry.layout === 'rectangle',
     options: () => ({ type: GeometryType.POINT }),
     complete: (map, feature) => {
       const resolution = map.getView().getResolution()
@@ -172,9 +190,11 @@ const geometries = [
       const { read, write } = format(feature)
       const point = read(geometry)
 
-      const C = TS.coordinate(point)
-      const A = TS.projectCoordinate(C)([0, distance])
-      feature.setGeometry(write(TS.multiPoint([C, A].map(TS.point))))
+      const A = TS.coordinate(point)
+      const C = TS.projectCoordinate(A)([-PI_OVER_4, distance * SQRT_2])
+      const B = TS.coordinate([C.getX(), A.getY()])
+      const D = TS.coordinate([A.getX(), C.getY()])
+      feature.setGeometry(write(TS.polygon([A, B, C, D, A])))
     }
   },
 

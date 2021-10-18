@@ -1,4 +1,7 @@
+import * as R from 'ramda'
 import { styles } from '../styles'
+import * as TS from '../../ts'
+import Props from '../style-props'
 
 /* eslint-disable no-multi-spaces */
 import './G_F_LT'    // LINEAR TARGET, FINAL PROTECTIVE FIRE (FPF) and LINEAR SMOKE TARGET
@@ -89,8 +92,74 @@ const BND_2 = { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5
 const BND_3 = { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 3 }
 const BND = [BND_1, BND_2, BND_3]
 
-styles['LineString:DEFAULT'] = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
-styles['LABELS:LINE_STRING'] = []
+styles['LABELS:GEOMETRY:LINE_STRING'] = geometry => {
+  const segments = TS.segments(geometry)
+  const line = TS.lengthIndexedLine(geometry)
+  const endIndex = line.getEndIndex()
+  const coordAt = (fraction, offset = 0) => line.extractPoint(endIndex * fraction + offset)
+  const pointAt = (fraction, offset = 0) => TS.point(coordAt(fraction, offset))
+  const numPoints = geometry.getNumPoints()
+
+  const segment = fraction => TS.segment([
+    coordAt(fraction, -0.05),
+    coordAt(fraction, +0.05)
+  ])
+
+  const angle = anchor => {
+    if (!anchor) return segment(0.5).angle()
+    if (isNaN(anchor)) {
+      if (anchor.includes('center')) return segment(0.5).angle()
+      else if (anchor.includes('left')) return R.head(segments).angle()
+      else if (anchor.includes('right')) return R.last(segments).angle()
+    } else return segment(anchor).angle()
+  }
+
+  const anchorPoint = anchor => {
+    if (isNaN(anchor)) {
+      if (anchor.includes('center')) return pointAt(0.5)
+      else if (anchor.includes('left')) return geometry.getPointN(0)
+      else if (anchor.includes('right')) return geometry.getPointN(numPoints - 1)
+      else return pointAt(0.5)
+    } else return pointAt(anchor)
+  }
+
+  const normalize = angle => TS.Angle.normalize(TS.Angle.PI_TIMES_2 - angle)
+
+  return label => {
+    // text-field or icon-image
+    const textField = Props.textField(label)
+    const anchor = Props.textAnchor(label) ||
+      Props.symbolAnchor(label) ||
+      Props.iconAnchor(label) ||
+      // anchor is optional for text labels
+      (textField ? 'center' : null)
+
+    if (anchor === null) return label
+
+    const result = { ...label }
+    const geometry = anchorPoint(anchor)
+    if (geometry) result.geometry = geometry
+
+    const rotate = angle(anchor)
+    if (rotate !== null) {
+      const property = Props.textAnchor(label)
+        ? 'text-rotate'
+        : 'icon-rotate'
+      result[property] = normalize(rotate)
+    }
+
+    return result
+  }
+}
+
+styles['LineString:DEFAULT'] = ({ geometry, sidc }) => {
+  const labels = (styles[`LABELS:${sidc}`] || []).flat()
+  return [
+    { id: 'style:2525c/default-stroke', geometry },
+    ...labels.map(styles['LABELS:GEOMETRY:LINE_STRING'](geometry))
+  ]
+}
+
 styles['LABELS:G*T*A-----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND ASSUME
 styles['LABELS:G*T*AS----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND SUPPORT
 styles['LABELS:G*G*GLB---'] = BND // BOUNDARIES

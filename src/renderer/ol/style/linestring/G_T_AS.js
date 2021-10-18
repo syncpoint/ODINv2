@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 // FOLLOW AND SUPPORT
-styles['LineString:G*T*AS----'] = ({ styles, geometry }) => {
+styles['LineString:G*T*AS----'] = ({ geometry }) => {
   const coords = TS.coordinates(geometry)
   const segment = TS.segment(coords)
 
@@ -22,6 +22,7 @@ styles['LineString:G*T*AS----'] = ({ styles, geometry }) => {
 
   return [
     { id: 'style:2525c/default-stroke', geometry: path },
-    { id: 'style:2525c/solid-fill', geometry: arrow }
+    { id: 'style:2525c/solid-fill', geometry: arrow },
+    ...styles['LABELS:G*T*AS----']
   ]
 }

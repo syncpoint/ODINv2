@@ -32,11 +32,6 @@ const collectStyles = styles => context => {
   return context
 }
 
-const collectLabels = styles => context => {
-  context.styles.push(...(styles[`LABELS:${context.sidc}`] || []).flat())
-  return context
-}
-
 const mapStyles = ({ styles, makeStyles }) => {
   return styles.map(makeStyles)
 }
@@ -53,10 +48,8 @@ const pipeline = R.compose(
   makeGuideLines,
   makeHandles,
   labels.clip,
-  labels.texts,
-  labels.anchors,
-  makeEchelonLabels,
-  collectLabels(styles),
+  labels.texts, // resolve label/text expressions
+  makeEchelonLabels, // determine echelon, url and extent
   collectStyles(styles),
   geoms.readGeometry,
   createStyleFactory
@@ -71,7 +64,6 @@ const collectErrorStyles = styles => context => {
 }
 
 const errorPipeline = R.compose(
-  R.tap(console.log),
   mapStyles,
   writeGeometries,
   collectErrorStyles(styles),

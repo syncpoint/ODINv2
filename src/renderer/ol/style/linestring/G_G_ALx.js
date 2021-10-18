@@ -3,7 +3,7 @@ import { styles } from '../styles'
 import * as TS from '../../ts'
 
 const corridor = title => ({ geometry, resolution }) => {
-  const width = resolution * 10
+  const width = resolution * 15
   const coords = TS.coordinates(geometry)
   const options = {
     joinStyle: TS.BufferParameters.JOIN_ROUND,

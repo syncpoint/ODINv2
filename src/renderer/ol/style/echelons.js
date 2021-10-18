@@ -41,13 +41,14 @@ export const makeEchelonLabels = context => {
   icons.forEach(icon => {
     const code = echelonCode(properties.sidc)
     const echelon = echelons[code]
+
     if (!echelon) return // filter echelon style
 
     icon['icon-height'] = echelon.height
     icon['icon-width'] = echelon.width
     icon['icon-url'] = echelon.url
     icon['icon-scale'] = 0.4
-    styles.push(icon)
+    context.styles.push(icon)
   })
 
   return context

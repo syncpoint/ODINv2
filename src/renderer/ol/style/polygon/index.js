@@ -1,4 +1,7 @@
 import { styles } from '../styles'
+import * as TS from '../../ts'
+import Props from '../style-props'
+import { lazy } from '../lazy'
 import './G_G_GAF' // FORTIFIED AREA
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
@@ -7,6 +10,7 @@ import './G_M_OGR' // OBSTACLE RESTRICTED AREA
 import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
 
+const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
 const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 5, 'text-clipping': 'line' }]
 const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
@@ -19,7 +23,63 @@ const ALL_LINES = title => title
   ? [`"${title}"`, 't', 'h', ALT_LINE, DTG_LINE]
   : ['t', 'h', ALT_LINE, DTG_LINE]
 
-styles['Polygon:DEFAULT'] = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
+
+styles['LABELS:GEOMETRY:POLYGON'] = geometry => {
+  const ring = geometry.getExteriorRing()
+  const envelope = ring.getEnvelopeInternal()
+  const centroid = TS.centroid(ring)
+  const [minX, maxX] = [envelope.getMinX(), envelope.getMaxX()]
+  const [minY, maxY] = [envelope.getMinY(), envelope.getMaxY()]
+
+  const xIntersection = lazy(() => {
+    const coord = x => TS.coordinate(x, centroid.y)
+    const axis = TS.lineString([minX, maxX].map(coord))
+    return geometry.intersection(axis).getCoordinates()
+  })
+
+  const yIntersection = lazy(() => {
+    const coord = y => TS.coordinate(centroid.x, y)
+    const axis = TS.lineString([minY, maxY].map(coord))
+    return geometry.intersection(axis).getCoordinates()
+  })
+
+  const fraction = anchor => {
+    const lengthIndexedLine = TS.lengthIndexedLine(ring)
+    const length = lengthIndexedLine.getEndIndex()
+    const coord = lengthIndexedLine.extractPoint(anchor * length)
+    return TS.point(coord)
+  }
+
+  const positions = {
+    center: lazy(() => TS.point(centroid)),
+    bottom: lazy(() => TS.point(yIntersection()[0])),
+    top: lazy(() => TS.point(yIntersection()[1])),
+    left: lazy(() => TS.point(xIntersection()[0])),
+    right: lazy(() => TS.point(xIntersection()[1]))
+  }
+
+  return label => {
+    const anchor = Props.textAnchor(label)
+    const geometry = Number.isFinite(anchor)
+      ? fraction(anchor)
+      : positions[anchor || 'center']()
+
+    return { geometry, ...label }
+  }
+}
+
+const polygon = id => ({ geometry, sidc }) => {
+  const labels = (styles[`LABELS:${sidc}`] || [])
+
+  return [
+    { id, geometry },
+    ...labels.map(styles['LABELS:GEOMETRY:POLYGON'](geometry))
+  ]
+}
+
+styles['Polygon:DEFAULT'] = polygon('style:2525c/default-stroke')
+styles['Polygon:FILL-HATCH'] = polygon('style:2525c/hatch-fill')
+
 styles['LABELS:POLYGON'] = C(ALL_LINES())
 styles['LABELS:G*G*GAG---'] = styles['LABELS:POLYGON'] // GENERAL AREA
 styles['LABELS:G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
@@ -62,9 +122,20 @@ styles['LABELS:G*M*OFA---'] = TLBR('"M"') // MINED AREA
 styles['LABELS:G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
 styles['LABELS:G*M*SP----'] = C('t') // STRONG POINT
 styles['LABELS:G*M*NL----'] = T('t') // DOSE RATE CONTOUR LINES
+styles['LABELS:G*F*ACSR--'] = C(ALL_LINES('FSA')) // FIRE SUPPORT AREA (FSA)
+styles['LABELS:G*F*ACAR--'] = C(ALL_LINES('ACA')) // AIRSPACE COORDINATION AREA (ACA)
+styles['LABELS:G*F*ACFR--'] = C(ALL_LINES('FFA')) // FREE FIRE AREA (FFA)
+styles['LABELS:G*F*ACNR--'] = C(ALL_LINES('NFA'), HALO) // NO-FIRE AREA (NFA)
+styles['LABELS:G*F*ACRR--'] = C(ALL_LINES('RFA')) // RESTRICTIVE FIRE AREA (RFA)
+styles['LABELS:G*F*ACPR--'] = B('"PAA"') // POSITION AREA FOR ARTILLERY (PAA)
+styles['LABELS:G*F*ACER--'] = C(ALL_LINES('SENSOR ZONE')) // SENSOR ZONE
+styles['LABELS:G*F*ACDR--'] = C(ALL_LINES('DA')) // DEAD SPACE AREA (DA)
+styles['LABELS:G*F*ACZR--'] = C(ALL_LINES('ZOR')) // ZONE OF RESPONSIBILITY (ZOR)
+styles['LABELS:G*F*ACBR--'] = C(ALL_LINES('TBA')) // TARGET BUILD-UP AREA (TBA)
+styles['LABELS:G*F*ACVR--'] = C(ALL_LINES('TVAR')) // TARGET VALUE AREA (TVAR)
 styles['LABELS:G*F*AT----'] = styles['LABELS:POLYGON'] // AREA TARGET
-// TODO: G*F*ATR--- : RECTANGULAR TARGET
 styles['LABELS:G*F*ATG---'] = T('t') // SERIES OR GROUP OF TARGETS
+styles['LABELS:G*F*ATR---'] = C(ALL_LINES()) // RECTANGULAR TARGET
 styles['LABELS:G*F*ATS---'] = C(ALL_LINES('SMOKE')) // AREA TARGET / SMOKE
 styles['LABELS:G*F*ATB---'] = C(ALL_LINES('BOMB')) // BOMB AREA
 styles['LABELS:G*F*ACSI--'] = C(ALL_LINES('FSA')) // FIRE SUPPORT AREA (FSA)
@@ -72,17 +143,22 @@ styles['LABELS:G*F*ACAI--'] = C(ALL_LINES('ACA')) // AIRSPACE COORDINATION AREA 
 styles['LABELS:G*F*ACFI--'] = C(ALL_LINES('FFA')) // FREE FIRE AREA (FFA)
 styles['LABELS:G*F*ACNI--'] = C(ALL_LINES('NFA')) // NO-FIRE AREA (NFA)
 styles['LABELS:G*F*ACRI--'] = C(ALL_LINES('RFA')) // RESTRICTIVE FIRE AREA (RFA)
-styles['LABELS:G*F*ACPR--'] = B('"PAA"') // POSITION AREA FOR ARTILLERY (PAA)
 styles['LABELS:G*F*ACEI--'] = C(ALL_LINES('SENSOR ZONE')) // SENSOR ZONE
 styles['LABELS:G*F*ACDI--'] = C(ALL_LINES('DA')) // DEAD SPACE AREA (DA)
 styles['LABELS:G*F*ACZI--'] = C(ALL_LINES('ZOR')) // ZONE OF RESPONSIBILITY (ZOR)
 styles['LABELS:G*F*ACBI--'] = C(ALL_LINES('TBA')) // TARGET BUILD-UP AREA (TBA)
 styles['LABELS:G*F*ACVI--'] = C(ALL_LINES('TVAR')) // TARGET VALUE AREA (TVAR)
 styles['LABELS:G*F*ACT---'] = C(ALL_LINES('TGMF')) // TERMINALLY GUIDED MUNITION FOOTPRINT (TGMF)
+styles['LABELS:G*F*AKBR--'] = C(ALL_LINES('BKB'), HALO) // KILL BOX/BLUE
+styles['LABELS:G*F*AKPR--'] = C(ALL_LINES('PKB'), HALO) // KILL BOX/PURPLE
 styles['LABELS:G*F*AZII--'] = C(ALL_LINES('ATI ZONE')) // ARTILLERY TARGET INTELLIGENCE (ATI) ZONE
+styles['LABELS:G*F*AZIR--'] = C(ALL_LINES('ATI ZONE')) // ARTILLERY TARGET INTELLIGENCE (ATI) ZONE
 styles['LABELS:G*F*AZXI--'] = C(ALL_LINES('CFF ZONE')) // CALL FOR FIRE ZONE (CFFZ)
+styles['LABELS:G*F*AZXR--'] = C(ALL_LINES('CFF ZONE')) // CALL FOR FIRE ZONE (CFFZ)
 styles['LABELS:G*F*AZCI--'] = C(ALL_LINES('CENSOR ZONE')) // CENSOR ZONE
-styles['LABELS:G*F*AZFI--'] = C(ALL_LINES('CF ZONE')) // CRITICAL FRI'end'LY ZONE (CFZ)
+styles['LABELS:G*F*AZCR--'] = C(ALL_LINES('CENSOR ZONE')) // CENSOR ZONE
+styles['LABELS:G*F*AZFI--'] = C(ALL_LINES('CF ZONE')) // CRITICAL FRIENDLY ZONE (CFZ)
+styles['LABELS:G*F*AZFR--'] = C(ALL_LINES('CF ZONE')) // CRITICAL FRIENDLY ZONE (CFZ)
 styles['LABELS:G*F*AKBI--'] = C(ALL_LINES('BKB'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // KILL BOX / BLUE
 styles['LABELS:G*F*AKPI--'] = C(ALL_LINES('PKB'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // KILL BOX / PURPLE
 styles['LABELS:G*S*AD----'] = C(ALL_LINES('DETAINEE\nHOLDING\nAREA')) // DETAINEE HOLDING AREA
@@ -96,11 +172,13 @@ styles['LABELS:G*M*NR----'] = [{ 'symbol-code': 'GFMPNZ----', 'symbol-anchor': '
 styles['LABELS:G*M*NB----'] = [{ 'symbol-code': 'GFMPNEB---', 'symbol-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
 styles['LABELS:G*M*NC----'] = [{ 'symbol-code': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
 
-styles['FILL:HATCH'] = ({ geometry }) => [{ id: 'style:2525c/hatch-fill', geometry }]
-styles['Polygon:G*F*AKBI--'] = styles['FILL:HATCH'] // KILL BOX / BLUE
-styles['Polygon:G*F*AKPI--'] = styles['FILL:HATCH'] // KILL BOX / PURPLE
-styles['Polygon:G*G*AAW---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
-styles['Polygon:G*G*GAY---'] = styles['FILL:HATCH'] // LIMITED ACCESS AREA
-styles['Polygon:G*M*NB----'] = styles['FILL:HATCH'] // BIOLOGICALLY CONTAMINATED AREA
-styles['Polygon:G*M*NC----'] = styles['FILL:HATCH'] // CHEMICALLY CONTAMINATED AREA
-styles['Polygon:G*M*NR----'] = styles['FILL:HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
+styles['Polygon:G*F*ACNR--'] = styles['Polygon:FILL-HATCH'] // NO-FIRE AREA (NFA)
+styles['Polygon:G*F*AKBI--'] = styles['Polygon:FILL-HATCH'] // KILL BOX / BLUE
+styles['Polygon:G*F*AKPI--'] = styles['Polygon:FILL-HATCH'] // KILL BOX / PURPLE
+styles['Polygon:G*G*AAW---'] = styles['Polygon:FILL-HATCH'] // LIMITED ACCESS AREA
+styles['Polygon:G*G*GAY---'] = styles['Polygon:FILL-HATCH'] // LIMITED ACCESS AREA
+styles['Polygon:G*M*NB----'] = styles['Polygon:FILL-HATCH'] // BIOLOGICALLY CONTAMINATED AREA
+styles['Polygon:G*M*NC----'] = styles['Polygon:FILL-HATCH'] // CHEMICALLY CONTAMINATED AREA
+styles['Polygon:G*M*NR----'] = styles['Polygon:FILL-HATCH'] // RADIOLOGICAL, AND NUCLEAR RADIOACTIVE AREA
+styles['Polygon:G*F*AKBR--'] = styles['Polygon:FILL-HATCH'] // KILL BOX/BLUE
+styles['Polygon:G*F*AKPR--'] = styles['Polygon:FILL-HATCH'] // KILL BOX/PURPLE

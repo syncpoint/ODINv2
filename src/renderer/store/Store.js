@@ -2,7 +2,7 @@ import util from 'util'
 import * as R from 'ramda'
 import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
-import { writeGeometryObject, readGeometry } from './format'
+import { readGeometry } from './format'
 import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID, scope } from '../ids'
 import { importSymbols } from './symbols'
 import { HighLevel } from '../../shared/level/HighLevel'
@@ -55,6 +55,10 @@ export function Store (propertiesLevel, geometryLevel, undo, selection) {
   const down = new PartitionDOWN(propertiesLevel, geometryLevel)
   const up = leveldb({ down })
   this.db_ = new HighLevel(up)
+
+  // ;(async () => {
+  //   await up.del('feature:940f0f28-5a36-4f97-aa02-3e2b88cd3507/effbc273-1eb6-45b8-a473-70ba9c87c924')
+  // })()
 
   this.undo_ = undo
   this.selection_ = selection
@@ -443,7 +447,7 @@ const updateGeometriesCommand = function (geometries) {
   return {
     apply: async () => {
       const operations = Object.entries(geometries)
-        .map(([key, xs]) => [key, writeGeometryObject(xs[0])])
+        .map(([key, xs]) => [key, xs[0]])
         .map(([key, value]) => ({ type: 'put', key, value }))
 
       return await this.db_.batch(operations)
