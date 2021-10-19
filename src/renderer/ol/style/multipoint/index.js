@@ -1,6 +1,7 @@
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import './G_F_AXC' // SENSOR RANGE FAN
+import './G_G_DLP' // PRINCIPLE DIRECTION OF FIRE
 import './G_G_OAS' // SUPPORT BY FIRE POSITION
 import './G_M_NM' // MINIMUM SAFE DISTANCE ZONES
 import './G_T_E' // TASKS / ISOLATE

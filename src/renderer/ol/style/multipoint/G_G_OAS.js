@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import { openArrow } from './commons'

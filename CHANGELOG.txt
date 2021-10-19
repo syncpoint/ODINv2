@@ -9,7 +9,8 @@
 * New: Support Rectangular Areas (#26)
 * Fix: Improved highlighting (#19, #23)
 * New: Ambush (#17)
-* New: Support By Fire Position (#28)
+* New: Support by Fire Position (#28)
+* New: Principal Direction of Fire (#27)
 
 0.0.2
 * Added some command to edit text modifiers to command palette.
