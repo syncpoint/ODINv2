@@ -8,6 +8,7 @@
 * New: Support Circular Areas (#25)
 * New: Support Rectangular Areas (#26)
 * Fix: Improved highlighting (#19, #23)
+* New: Ambush (#17)
 
 0.0.2
 * Added some command to edit text modifiers to command palette.

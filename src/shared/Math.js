@@ -6,3 +6,6 @@ export const PI_TIMES_2 = 2 * PI
 export const DEG2RAD = PI / 180
 export const RAD2DEG = 180 / PI
 export const SQRT_2 = Math.sqrt(2)
+
+// Golden ratio (sectio divina)
+export const SD = 1.618033988749

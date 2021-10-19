@@ -6,7 +6,6 @@
 * modify interaction: clear vertex properly (pointer distance)
 * SUPPORT BY FIRE POSITION
 * DISRUPT (OBSTACLES)
-* AMBUSH
 * legacy import: echelon offset
 * legacy import: offset location
 * interaction: move(position) label (echelon, area center)
