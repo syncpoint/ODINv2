@@ -5407,9 +5407,9 @@
       "Support by Fire Position"
     ],
     "parameters": {
-      "layout": "fan",
-      "maxPoints": 3,
-      "minPoints": 3
+      "layout": "beam-2",
+      "maxPoints": 4,
+      "minPoints": 2
     }
   },
   {

@@ -215,5 +215,29 @@ const geometries = [
       const point = TS.point(TS.projectCoordinate(A)([angle, width / 2]))
       feature.setGeometry(write(TS.geometryCollection([line, point])))
     }
+  },
+
+  /* SUPPORT BY FIRE POSITION */
+  {
+    match: ({ geometry }) => geometry.layout === 'beam-2' &&
+      Number.parseInt(geometry.minPoints) === 2 &&
+      Number.parseInt(geometry.maxPoints) === 4,
+    options: descriptor => ({ type: GeometryType.LINE_STRING, maxPoints: descriptor.geometry.minPoints }),
+    complete: (map, feature) => {
+      console.log('[Draw] SUPPORT BY FIRE POSITION')
+      const geometry = feature.getGeometry()
+      const { read, write } = format(feature)
+      const line = read(geometry)
+      const segments = TS.segments(line)
+      const angle = segments[0].angle()
+      const length = segments[0].getLength()
+
+      const [A, B] = TS.coordinates(line)
+      const PI_OVER_8 = PI_OVER_4 / 2
+      const C = TS.projectCoordinate(A)([angle + PI_OVER_2 + (PI_OVER_8), length / 2])
+      const D = TS.projectCoordinate(B)([angle + PI_OVER_2 - (PI_OVER_8), length / 2])
+      console.log('[Draw] SUPPORT BY FIRE POSITION', angle)
+      feature.setGeometry(write(TS.multiPoint([A, B, C, D].map(TS.point))))
+    }
   }
 ]

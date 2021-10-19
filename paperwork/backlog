@@ -4,7 +4,6 @@
 * drop feature (relative size)
 * drop labels (relative size)
 * modify interaction: clear vertex properly (pointer distance)
-* SUPPORT BY FIRE POSITION
 * DISRUPT (OBSTACLES)
 * legacy import: echelon offset
 * legacy import: offset location
