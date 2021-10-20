@@ -62,7 +62,6 @@ export default (feature, descriptor) => {
       const center = read(geometries[role])
       frame = frame.copy({ center })
       feature.setGeometry(frame.geometry)
-      return ['POINT'] // reindex POINT geometry
     } else if (role === 'POINT') {
       const point = read(geometries[role])
       const segment = TS.segment(R.take(2, TS.coordinates([frame.center])))

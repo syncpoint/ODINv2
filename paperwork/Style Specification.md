@@ -41,7 +41,7 @@ icon-height :: number
 icon-padding :: number
 icon-rotate :: number
 icon-scale :: number
-icon-url :: stirng
+icon-url :: string
 icon-width :: number
 
 line-cap :: butt | round | square

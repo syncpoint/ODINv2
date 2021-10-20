@@ -3,12 +3,14 @@ import * as TS from '../../ts'
 import Props from '../style-props'
 import { lazy } from '../lazy'
 import './G_G_GAF' // FORTIFIED AREA
+import './G_G_PY' // // DECOY MINED AREA, FENCED
 import './G_G_SAE' // ENCIRCLEMENT
 import './G_M_OGB' // OBSTACLES / GENERAL / BELT
 import './G_M_OGF' // OBSTACLE FREE AREA
 import './G_M_OGR' // OBSTACLE RESTRICTED AREA
 import './G_M_OGZ' // OBSTACLES / GENERAL / ZONE
 import './G_M_SP' // STRONG POINT
+import G_G_GAZ from '../resources/G_G_GAZ.png'
 
 const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
@@ -22,6 +24,11 @@ const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
   ? [`"${title}"`, 't', 'h', ALT_LINE, DTG_LINE]
   : ['t', 'h', ALT_LINE, DTG_LINE]
+
+const G_G_PM = [
+  ...TLBR('"M"'),
+  { 'symbol-code': 'GFGPPD----', 'symbol-anchor': 'center', 'symbol-size': 100 }
+]
 
 
 styles['LABELS:GEOMETRY:POLYGON'] = geometry => {
@@ -68,20 +75,18 @@ styles['LABELS:GEOMETRY:POLYGON'] = geometry => {
   }
 }
 
-const polygon = id => ({ geometry, sidc }) => {
+styles['Polygon'] = id => ({ geometry, sidc }) => {
   const labels = (styles[`LABELS:${sidc}`] || [])
-
   return [
     { id, geometry },
     ...labels.map(styles['LABELS:GEOMETRY:POLYGON'](geometry))
   ]
 }
 
-styles['Polygon:DEFAULT'] = polygon('style:2525c/default-stroke')
-styles['Polygon:FILL-HATCH'] = polygon('style:2525c/hatch-fill')
+styles['Polygon:DEFAULT'] = styles['Polygon']('style:2525c/default-stroke')
+styles['Polygon:FILL-HATCH'] = styles['Polygon']('style:2525c/hatch-fill')
 
-styles['LABELS:POLYGON'] = C(ALL_LINES())
-styles['LABELS:G*G*GAG---'] = styles['LABELS:POLYGON'] // GENERAL AREA
+styles['LABELS:G*G*GAG---'] = C(ALL_LINES()) // GENERAL AREA
 styles['LABELS:G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
 styles['LABELS:G*G*GAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA
 styles['LABELS:G*G*GAF---'] = C(ALL_LINES('')) // FORTIFIED AREA
@@ -90,7 +95,7 @@ styles['LABELS:G*G*GAX---'] = C(ALL_LINES('EZ')) // EXTRACTION ZONE (EZ)
 styles['LABELS:G*G*GAL---'] = C(ALL_LINES('LZ')) // LANDING ZONE (LZ)
 styles['LABELS:G*G*GAP---'] = C(ALL_LINES('PZ')) // PICKUP ZONE (PZ)
 styles['LABELS:G*G*GAY---'] = C('h', { 'text-halo-color': 'white', 'text-halo-width': 5 }) // LIMITED ACCESS AREA
-// TODO: G*G*GAZ--- : AIRFIELD ZONE
+styles['LABELS:G*G*GAZ---'] = [{ 'icon-url': G_G_GAZ, 'icon-anchor': 'center', 'icon-scale': 0.8 }] // AIRFIELD ZONE
 styles['LABELS:G*G*AAR---'] = C(ALL_LINES('ROZ')) // RESTRICTED OPERATIONS ZONE (ROZ)
 styles['LABELS:G*G*AAF---'] = C(ALL_LINES('SHORADEZ')) // SHORT-RANGE AIR DEFENSE ENGAGEMENT ZONE (SHORADEZ)
 styles['LABELS:G*G*AAH---'] = C(ALL_LINES('HIDACZ')) // HIGH DENSITY AIRSPACE CONTROL ZONE (HIDACZ)
@@ -98,10 +103,10 @@ styles['LABELS:G*G*AAM---'] = C(ALL_LINES('MEZ')) // MISSILE ENGAGEMENT ZONE (ME
 styles['LABELS:G*G*AAML--'] = C(ALL_LINES('LOMEZ')) // LOW ALTITUDE MEZ
 styles['LABELS:G*G*AAMH--'] = C(ALL_LINES('HIMEZ')) // HIGH ALTITUDE MEZ
 styles['LABELS:G*G*AAW---'] = C(ALL_LINES('WFZ'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // WEAPONS FREE ZONE
-styles['LABELS:G*G*PM----'] = TLBR('"M"') // DECOY MINED AREA
-// TODO: G*G*PY---- : DECOY MINED AREA, FENCED
+styles['LABELS:G*G*PM----'] = G_G_PM // DECOY MINED AREA
+styles['LABELS:G*G*PY----'] = G_G_PM // DECOY MINED AREA, FENCED
 // TODO: G*G*PC---- : DUMMY MINEFIELD (DYNAMIC)
-styles['LABELS:G*G*DAB---'] = styles['LABELS:POLYGON'] // BATTLE POSITION
+styles['LABELS:G*G*DAB---'] = C(ALL_LINES()) // BATTLE POSITION
 styles['LABELS:G*G*DABP--'] = C('t ? "(P) " + t : (P)') // BATTLE POSITION / PREPARED BUT NOT OCCUPIED
 styles['LABELS:G*G*DAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA (DEFENSE)
 styles['LABELS:G*G*OAA---'] = C(ALL_LINES('ASLT\nPSN')) // ASSAULT POSITION
@@ -114,7 +119,7 @@ styles['LABELS:G*G*SAE---'] = C(ALL_LINES()) // ENCIRCLEMENT
 styles['LABELS:G*G*SAN---'] = C(ALL_LINES('NAI')) // NAMED AREA OF INTEREST (NAI)
 styles['LABELS:G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (TAI)
 styles['LABELS:G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
-styles['LABELS:G*M*OGZ---'] = styles['LABELS:POLYGON'] // GENERAL ZONE (OBSTACLES)
+styles['LABELS:G*M*OGZ---'] = C(ALL_LINES()) // GENERAL ZONE (OBSTACLES)
 styles['LABELS:G*M*OGF---'] = C(ALL_LINES('FREE')) // OBSTACLE FREE AREA
 styles['LABELS:G*M*OGR---'] = C(ALL_LINES(), { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }) // OBSTACLE RESTRICTED AREA
 // TODO: G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
@@ -133,7 +138,7 @@ styles['LABELS:G*F*ACDR--'] = C(ALL_LINES('DA')) // DEAD SPACE AREA (DA)
 styles['LABELS:G*F*ACZR--'] = C(ALL_LINES('ZOR')) // ZONE OF RESPONSIBILITY (ZOR)
 styles['LABELS:G*F*ACBR--'] = C(ALL_LINES('TBA')) // TARGET BUILD-UP AREA (TBA)
 styles['LABELS:G*F*ACVR--'] = C(ALL_LINES('TVAR')) // TARGET VALUE AREA (TVAR)
-styles['LABELS:G*F*AT----'] = styles['LABELS:POLYGON'] // AREA TARGET
+styles['LABELS:G*F*AT----'] = C(ALL_LINES()) // AREA TARGET
 styles['LABELS:G*F*ATG---'] = T('t') // SERIES OR GROUP OF TARGETS
 styles['LABELS:G*F*ATR---'] = C(ALL_LINES()) // RECTANGULAR TARGET
 styles['LABELS:G*F*ATS---'] = C(ALL_LINES('SMOKE')) // AREA TARGET / SMOKE

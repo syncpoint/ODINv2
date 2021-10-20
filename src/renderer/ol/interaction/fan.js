@@ -50,7 +50,6 @@ export default (feature, descriptor) => {
       const center = read(geometries[role])
       frame = frame.copy({ center })
       feature.setGeometry(frame.geometry)
-      return ['POINTS'] // reindex POINTS geometry
     } else if (role === 'POINTS') {
       const points = TS.geometries(read(geometries[role]))
       const vectors = points
