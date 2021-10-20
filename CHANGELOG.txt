@@ -11,6 +11,9 @@
 * New: Ambush (#17)
 * New: Support by Fire Position (#28)
 * New: Principal Direction of Fire (#27)
+* Fix: Decoy Mined Area (#12)
+* Fix: Decoy Mined Area (, Fenced) (#12)
+* Fix: Airfield Zone (#14)
 
 0.0.2
 * Added some command to edit text modifiers to command palette.
