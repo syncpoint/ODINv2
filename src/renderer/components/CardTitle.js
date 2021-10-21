@@ -11,7 +11,11 @@ import { matcher, stopPropagation } from './events'
 const CardTitle = props => {
   const { store } = useServices()
   const [value, setValue] = React.useState(props.value)
-  const placeholder = value ? null : 'N/A (click to edit)'
+  const placeholder = value
+    ? null
+    : props.editing
+      ? null
+      : 'N/A (click to edit)'
 
   const rename = value => {
     if (props.value === value) return
@@ -56,7 +60,7 @@ const CardTitle = props => {
     : value || placeholder
 
   const spanStyle = placeholder
-    ? { color: 'grey' }
+    ? { color: '#c0c0c0'  }
     : {}
 
   const span = () =>

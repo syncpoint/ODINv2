@@ -137,10 +137,6 @@ div {
   padding: 7px;
 }
 
-.card:hover {
-  border-color: #40a9ff;
-}
-
 .card-content {
   overflow: hidden;
   display: flex;
@@ -184,7 +180,7 @@ div {
 
 .placeholder {
   font-size: 100%;
-  color: grey;
+  color: lightgrey;
   display: flex;
   justify-content: center;
   align-content: center;
