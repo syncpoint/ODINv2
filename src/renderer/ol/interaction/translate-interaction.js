@@ -39,12 +39,17 @@ const cmdOrCtrlTracker = new CmdOrCtrlTracker()
  */
 export default (options, select) => {
   const { store, featureSource, hitTolerance, selection } = options
-  let clones = []
 
   const interaction = new Translate({
     hitTolerance,
     features: select.getFeatures()
   })
+
+  const CLONES = 'clones'
+  const CLONING = 'cloning'
+  const CANCELLED = 'cancelled'
+  const UPDATE_CURSOR = 'updateCursor'
+  const FEATURES = 'features'
 
   const silent = true
   const set = (key, value) => {
@@ -59,22 +64,29 @@ export default (options, select) => {
   }
 
   interaction.on('translatestart', event => {
-    const updateCursor = set('updateCursor', cursor => {
+    set(CANCELLED, false)
+
+    const updateCursor = set(UPDATE_CURSOR, cursor => {
       const map = interaction.getMap()
       const target = map.getViewport()
       target.style.cursor = cursor
     })
 
-    // Clone features with new identities:
-    clones = event.features.getArray().map(feature => {
+    // Clone features with new identities.
+    // New identities are only necessary for clone interaction.
+    // Simple translate ignores feature identities and
+    // only takes geometries by position in array.
+
+    const features = set(FEATURES, [...event.features.getArray()])
+    const clones = set(CLONES, features.map(feature => {
       const layerUUID = ids.layerUUID(feature.getId())
       const clone = feature.clone()
       const id = `feature:${layerUUID}/${uuid()}`
       clone.setId(id)
       return clone
-    })
+    }))
 
-    const cloning = set('cloning', cmdOrCtrlTracker.cmdOrCtrl)
+    const cloning = set(CLONING, cmdOrCtrlTracker.cmdOrCtrl)
     if (cloning) {
       updateCursor('copy')
 
@@ -87,11 +99,17 @@ export default (options, select) => {
   })
 
   interaction.on('translateend', async event => {
+    const cloning = unset(CLONING)
+    const clones = unset(CLONES)
+    const cancelled = unset(CANCELLED)
+    const updateCursor = unset(UPDATE_CURSOR)
+    unset(FEATURES)
+
+    if (cancelled) return
+
+    updateCursor(null)
     const features = event.features.getArray()
 
-    const cloning = unset('cloning')
-    const updateCursor = unset('updateCursor')
-    updateCursor(null)
 
     if (cloning) {
 
@@ -129,6 +147,21 @@ export default (options, select) => {
 
       store.updateGeometries(geometries)
     }
+  })
+
+  // Cancel on deselect:
+  selection.on('selection', () => {
+    if (!interaction.get(CLONING)) return
+
+    set(CANCELLED, true)
+    interaction.get(UPDATE_CURSOR)(null)
+    const clones = interaction.get(CLONES)
+    const features = interaction.get(FEATURES)
+
+    clones.forEach((clone, index) => {
+      features[index].setGeometry(clone.getGeometry().clone())
+      featureSource.removeFeature(clone)
+    })
   })
 
   return interaction

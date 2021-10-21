@@ -1,6 +1,6 @@
 import { defaults as defaultInteractions } from 'ol/interaction'
 import selectInteraction from './select-interaction'
-import translateInteraction from './translate-transaction'
+import translateInteraction from './translate-interaction'
 import modifyInteraction from './modify-interaction'
 import snapInteraction from './snap-interaction'
 import boxselectInteraction from './boxselect-interaction'

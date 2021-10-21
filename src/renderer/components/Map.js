@@ -12,13 +12,6 @@ import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
 
-const DEFAULT_VIEWPORT = {
-  center: [1823376.75753279, 6143598.472197734], // Vienna
-  resolution: 612,
-  rotation: 0
-}
-
-
 /**
  *
  */
@@ -42,7 +35,7 @@ export const Map = () => {
       new ScaleLine({ bar: true, text: true, minWidth: 128 })
     ]
 
-    const viewport = await sessionStore.getViewport(DEFAULT_VIEWPORT)
+    const viewport = await sessionStore.getViewport()
     const view = new ol.View({ ...viewport })
     const featureSource = await sources.getFeatureSource()
     const partition = new Partition(featureSource, selection)
