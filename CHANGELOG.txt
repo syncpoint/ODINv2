@@ -7,6 +7,7 @@
 * New: Aligned labeling for Holding/Release Line with 2525D  (#24)
 * New: Support Circular Areas (#25)
 * New: Support Rectangular Areas (#26)
+* Fix: Phase Line labels (#22)
 * Fix: Improved highlighting (#19, #23)
 * New: Ambush (#17)
 * New: Support by Fire Position (#28)

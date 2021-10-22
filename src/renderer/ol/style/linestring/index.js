@@ -61,35 +61,30 @@ const BELOW = 20
  * EWSEW := ESE + WSW
  */
 
-const W = { id: 'style:default-text', 'text-anchor': 'left', 'text-justify': 'end', 'text-offset': [-15, 0], 'text-padding': 5 }
-const E = { id: 'style:default-text', 'text-anchor': 'right', 'text-justify': 'start', 'text-offset': [15, 0], 'text-padding': 5 }
-const NNW = { id: 'style:default-text', 'text-anchor': 'left', 'text-justify': 'start', 'text-padding': 5, 'text-offset': [0, ABOVE] }
-const NNE = { id: 'style:default-text', 'text-anchor': 'right', 'text-justify': 'end', 'text-padding': 5, 'text-offset': [0, ABOVE] }
-const SSW = { id: 'style:default-text', 'text-anchor': 'left', 'text-justify': 'start', 'text-padding': 5, 'text-offset': [0, BELOW] }
-const SSE = { id: 'style:default-text', 'text-anchor': 'right', 'text-justify': 'end', 'text-padding': 5, 'text-offset': [0, BELOW] }
+const W = { id: 'style:default-text', 'text-anchor': 'left', 'text-justify': 'end', 'text-offset': [-10, 0], 'text-padding': 5 }
+const E = { id: 'style:default-text', 'text-anchor': 'right', 'text-justify': 'start', 'text-offset': [10, 0], 'text-padding': 5 }
+const NNW = { id: 'style:default-text', 'text-anchor': 'left', 'text-justify': 'start', 'text-padding': 5, 'text-offset': [10, -15] }
+const NNE = { id: 'style:default-text', 'text-anchor': 'right', 'text-justify': 'end', 'text-padding': 5, 'text-offset': [-10, -15] }
+const SSW = { id: 'style:default-text', 'text-anchor': 'left', 'text-justify': 'start', 'text-padding': 5, 'text-offset': [10, BELOW] }
+const SSE = { id: 'style:default-text', 'text-anchor': 'right', 'text-justify': 'end', 'text-padding': 5, 'text-offset': [-10, BELOW] }
 const NNEW = (text, options) => [NNE, NNW].map(props => ({ 'text-field': text, ...props, ...options }))
 
 const MT = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, ABOVE], 'text-clipping': 'none' }]
 const MB = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, BELOW], 'text-clipping': 'none' }]
 const MM = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-padding': 5 }]
 const SE = text => [W, E].map(props => ({ 'text-field': text, ...props }))
-const PL = title => [W, E].map(props => ({ 'text-field': [`"${title}"`, 't ? "(PL " + t + ")" : null'], ...props }))
-
-const FSCL_1 = [W, E].map(props => ({ 'text-field': '"PL" + (t1 ? " " + t1 : "")', ...props }))
-const FSCL_2 = [NNW, NNE].map(props => ({ 'text-field': '(t ? t + " " : "") + "FSCL"', ...props }))
-const FSCL_3 = [SSW, SSE].map(props => ({ 'text-field': ['w', 'w1'], ...props }))
-const FSCL = [FSCL_1, FSCL_2, FSCL_3]
-const CFL_1 = [W, E].map(props => ({ 'text-field': '"PL" + (t1 ? " " + t1 : "")', 'text-padding': 5, ...props }))
-const CFL_2 = { id: 'style:default-text', 'text-field': '"CFL" + (t ? " " + t : "")', 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, ABOVE] }
-const CFL_3 = { id: 'style:default-text', 'text-field': ['w', 'w1'], 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, BELOW] }
-const CFL = [CFL_1, CFL_2, CFL_3]
-const RFL_2 = [NNW, NNE].map(props => ({ 'text-field': '"RFL" + (t ? " " + t  : "")', ...props }))
-const RFL = [FSCL_1, RFL_2, FSCL_3]
+const CFL_1 = { id: 'style:default-text', 'text-field': '"CFL" + (t ? " " + t : "")', 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, ABOVE] }
+const CFL_2 = { id: 'style:default-text', 'text-field': ['w', 'w1'], 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, BELOW] }
+const CFL = [CFL_1, CFL_2]
+const PL_1 = T => [W, E].map(props => ({ 'text-field': `${T} ? "PL " + ${T} : null`, ...props }))
+const PL_2 = (T1, T2) => [NNW, NNE].map(props => ({ 'text-field': `(${T1} ? ${T1} : "") + ((${T1} || ${T2}) ? " " : "") +  (${T2} ? ${T2} : "")`, ...props }))
+const PL_3 = [SSW, SSE].map(props => ({ 'text-field': ['w', 'w1'], ...props }))
+const PL = (T1, T2) => T1 ? [PL_1('t1'), PL_2(T1, T2), PL_3] : [PL_1('t'), PL_3]
 const MFP_1 = { id: 'style:default-text', 'text-field': '"MFP"', 'text-anchor': 'center', 'text-padding': 5 }
-const MFP = [MFP_1, FSCL_3]
+const MFP = [MFP_1]
 const BND_1 = { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] }
 const BND_2 = { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW] }
-const BND_3 = { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 3 }
+const BND_3 = { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 10 }
 const BND = [BND_1, BND_2, BND_3]
 
 styles['LABELS:GEOMETRY:LINE_STRING'] = geometry => {
@@ -152,36 +147,39 @@ styles['LABELS:GEOMETRY:LINE_STRING'] = geometry => {
   }
 }
 
-styles['LineString:DEFAULT'] = ({ geometry, sidc }) => {
+const lineString = id => ({ geometry, sidc }) => {
   const labels = (styles[`LABELS:${sidc}`] || []).flat()
   return [
-    { id: 'style:2525c/default-stroke', geometry },
+    { id, geometry },
     ...labels.map(styles['LABELS:GEOMETRY:LINE_STRING'](geometry))
   ]
 }
 
+styles['LineString:DEFAULT'] = lineString('style:2525c/default-stroke')
+styles['LineString:DASHED'] = lineString('style:2525c/dashed-stroke')
+
 styles['LABELS:G*T*A-----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND ASSUME
 styles['LABELS:G*T*AS----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND SUPPORT
 styles['LABELS:G*G*GLB---'] = BND // BOUNDARIES
-styles['LABELS:G*G*GLP---'] = SE('t ? "PL " + t : "PL"') // PHASE LINE
-styles['LABELS:G*G*GLL---'] = PL('LL') // LIGHT LINE
+styles['LABELS:G*G*GLP---'] = PL() // PHASE LINE
+styles['LABELS:G*G*GLL---'] = PL('"LL"', 't') // LIGHT LINE
 styles['LABELS:G*G*PF----'] = MT('t') // DIRECTION OF ATTACK FOR FEINT
 styles['LABELS:G*G*DLF---'] = SE('"FEBA"') // FORWARD EDGE OF BATTLE AREA (FEBA)
-styles['LABELS:G*G*OLF---'] = PL('FINAL CL') // FINAL COORDINATION LINE
-styles['LABELS:G*G*OLL---'] = PL('LOA') // LIMIT OF ADVANCE
-styles['LABELS:G*G*OLT---'] = PL('LD') // LINE OF DEPARTURE
-styles['LABELS:G*G*OLC---'] = PL('LD/LC') // LINE OF DEPARTURE/LINE OF CONTACT (LD/LC)
-styles['LABELS:G*G*OLP---'] = PL('PLD') // PROBABLE LINE OF DEPLOYMENT (PLD)
+styles['LABELS:G*G*OLF---'] = PL('"FCL"', 't') // FINAL COORDINATION LINE
+styles['LABELS:G*G*OLL---'] = PL('"LOA"', 't') // LIMIT OF ADVANCE
+styles['LABELS:G*G*OLT---'] = PL('"LD"', 't') // LINE OF DEPARTURE
+styles['LABELS:G*G*OLC---'] = PL('"LD/LC"', 't') // LINE OF DEPARTURE/LINE OF CONTACT (LD/LC)
+styles['LABELS:G*G*OLP---'] = PL('"PLD"', 't') // PROBABLE LINE OF DEPLOYMENT (PLD)
 styles['LABELS:G*G*SLH---'] = NNEW('"HL"', { 'text-offset': [0, -10] }) // HOLDING LINE
-styles['LABELS:G*G*SLR---'] = NNEW('"RL"', { 'text-offset': [0, -10] }) // RELEASE LINE
+styles['LABELS:G*G*SLR---'] = PL('"RL"', 't') // RELEASE LINE
 styles['LABELS:G*G*SLB---'] = NNEW('"BL"', { 'text-offset': [0, -10] }) // BRIDGEHEAD
 styles['LABELS:G*F*LT----'] = MT('t') // LINEAR TARGET
 styles['LABELS:G*F*LTS---'] = [MT('t'), MB('"SMOKE"')] // LINEAR SMOKE TARGET
 styles['LABELS:G*F*LTF---'] = [MT('t'), MB('"FPF" + (t1 ? "\n" + t1 : "")')] // FINAL PROTECTIVE FIRE (FPF)
-styles['LABELS:G*F*LCF---'] = FSCL // FIRE SUPPORT COORDINATION LINE (FSCL)
+styles['LABELS:G*F*LCF---'] = PL('t', '"FSCL"') // FIRE SUPPORT COORDINATION LINE (FSCL)
 styles['LABELS:G*F*LCC---'] = CFL // COORDINATED FIRE LINE (CFL)
-styles['LABELS:G*F*LCN---'] = PL('NFL') // NO-FIRE LINE (NFL)
-styles['LABELS:G*F*LCR---'] = RFL // RESTRICTIVE FIRE LINE (RFL)
+styles['LABELS:G*F*LCN---'] = PL("'NFL'", 't') // NO-FIRE LINE (NFL)
+styles['LABELS:G*F*LCR---'] = PL('"RFL"', 't') // RESTRICTIVE FIRE LINE (RFL)
 styles['LABELS:G*F*LCM---'] = MFP // MUNITION FLIGHT PATH (MFP)
 styles['LABELS:G*S*LRM---'] = MT('"MSR" + (t ? " " + t : "")') // MAIN SUPPLY ROUTE
 styles['LABELS:G*S*LRA---'] = MT('"ASR" + (t ? " " + t : "")') // ALTERNATE SUPPLY ROUTE
