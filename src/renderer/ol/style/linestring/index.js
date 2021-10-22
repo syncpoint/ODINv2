@@ -76,14 +76,10 @@ const SE = text => [W, E].map(props => ({ 'text-field': text, ...props }))
 const CFL_1 = { id: 'style:default-text', 'text-field': '"CFL" + (t ? " " + t : "")', 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, ABOVE] }
 const CFL_2 = { id: 'style:default-text', 'text-field': ['w', 'w1'], 'text-anchor': 'center', 'text-padding': 5, 'text-offset': [0, BELOW] }
 const CFL = [CFL_1, CFL_2]
-const PL_1 = [W, E].map(props => ({ 'text-field': 't ? "PL " + t : null', ...props }))
-const PL_2 = purpose => [NNW, NNE].map(props => ({ 'text-field': `"${purpose}" + (t1 ? " " + t1 : "")`, ...props }))
+const PL_1 = T => [W, E].map(props => ({ 'text-field': `${T} ? "PL " + ${T} : null`, ...props }))
+const PL_2 = (T1, T2) => [NNW, NNE].map(props => ({ 'text-field': `(${T1} ? ${T1} : "") + ((${T1} || ${T2}) ? " " : "") +  (${T2} ? ${T2} : "")`, ...props }))
 const PL_3 = [SSW, SSE].map(props => ({ 'text-field': ['w', 'w1'], ...props }))
-const PL = purpose => purpose ? [PL_1, PL_2(purpose), PL_3] : [PL_1, PL_3]
-const FSCL_1 = [W, E].map(props => ({ 'text-field': 't ? "PL " + t : null', ...props }))
-const FSCL_2 = [NNW, NNE].map(props => ({ 'text-field': `(t1 ? t1 + " " : "") + "FSCL"`, ...props }))
-const FSCL_3 = [SSW, SSE].map(props => ({ 'text-field': ['w', 'w1'], ...props }))
-const FSCL = [FSCL_1, FSCL_2, FSCL_3]
+const PL = (T1, T2) => T1 ? [PL_1('t1'), PL_2(T1, T2), PL_3] : [PL_1('t'), PL_3]
 const MFP_1 = { id: 'style:default-text', 'text-field': '"MFP"', 'text-anchor': 'center', 'text-padding': 5 }
 const MFP = [MFP_1]
 const BND_1 = { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] }
@@ -166,24 +162,24 @@ styles['LABELS:G*T*A-----'] = [{ id: 'style:default-text', 'text-field': 't', 't
 styles['LABELS:G*T*AS----'] = [{ id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND SUPPORT
 styles['LABELS:G*G*GLB---'] = BND // BOUNDARIES
 styles['LABELS:G*G*GLP---'] = PL() // PHASE LINE
-styles['LABELS:G*G*GLL---'] = PL('LL') // LIGHT LINE
+styles['LABELS:G*G*GLL---'] = PL('"LL"', 't') // LIGHT LINE
 styles['LABELS:G*G*PF----'] = MT('t') // DIRECTION OF ATTACK FOR FEINT
 styles['LABELS:G*G*DLF---'] = SE('"FEBA"') // FORWARD EDGE OF BATTLE AREA (FEBA)
-styles['LABELS:G*G*OLF---'] = PL('FCL') // FINAL COORDINATION LINE
-styles['LABELS:G*G*OLL---'] = PL('LOA') // LIMIT OF ADVANCE
-styles['LABELS:G*G*OLT---'] = PL('LD') // LINE OF DEPARTURE
-styles['LABELS:G*G*OLC---'] = PL('LD/LC') // LINE OF DEPARTURE/LINE OF CONTACT (LD/LC)
-styles['LABELS:G*G*OLP---'] = PL('PLD') // PROBABLE LINE OF DEPLOYMENT (PLD)
+styles['LABELS:G*G*OLF---'] = PL('"FCL"', 't') // FINAL COORDINATION LINE
+styles['LABELS:G*G*OLL---'] = PL('"LOA"', 't') // LIMIT OF ADVANCE
+styles['LABELS:G*G*OLT---'] = PL('"LD"', 't') // LINE OF DEPARTURE
+styles['LABELS:G*G*OLC---'] = PL('"LD/LC"', 't') // LINE OF DEPARTURE/LINE OF CONTACT (LD/LC)
+styles['LABELS:G*G*OLP---'] = PL('"PLD"', 't') // PROBABLE LINE OF DEPLOYMENT (PLD)
 styles['LABELS:G*G*SLH---'] = NNEW('"HL"', { 'text-offset': [0, -10] }) // HOLDING LINE
-styles['LABELS:G*G*SLR---'] = PL('RL') // RELEASE LINE
+styles['LABELS:G*G*SLR---'] = PL('"RL"', 't') // RELEASE LINE
 styles['LABELS:G*G*SLB---'] = NNEW('"BL"', { 'text-offset': [0, -10] }) // BRIDGEHEAD
 styles['LABELS:G*F*LT----'] = MT('t') // LINEAR TARGET
 styles['LABELS:G*F*LTS---'] = [MT('t'), MB('"SMOKE"')] // LINEAR SMOKE TARGET
 styles['LABELS:G*F*LTF---'] = [MT('t'), MB('"FPF" + (t1 ? "\n" + t1 : "")')] // FINAL PROTECTIVE FIRE (FPF)
-styles['LABELS:G*F*LCF---'] = FSCL // FIRE SUPPORT COORDINATION LINE (FSCL)
+styles['LABELS:G*F*LCF---'] = PL('t', '"FSCL"') // FIRE SUPPORT COORDINATION LINE (FSCL)
 styles['LABELS:G*F*LCC---'] = CFL // COORDINATED FIRE LINE (CFL)
-styles['LABELS:G*F*LCN---'] = PL('NFL') // NO-FIRE LINE (NFL)
-styles['LABELS:G*F*LCR---'] = PL('RFL') // RESTRICTIVE FIRE LINE (RFL)
+styles['LABELS:G*F*LCN---'] = PL("'NFL'", 't') // NO-FIRE LINE (NFL)
+styles['LABELS:G*F*LCR---'] = PL('"RFL"', 't') // RESTRICTIVE FIRE LINE (RFL)
 styles['LABELS:G*F*LCM---'] = MFP // MUNITION FLIGHT PATH (MFP)
 styles['LABELS:G*S*LRM---'] = MT('"MSR" + (t ? " " + t : "")') // MAIN SUPPLY ROUTE
 styles['LABELS:G*S*LRA---'] = MT('"ASR" + (t ? " " + t : "")') // ALTERNATE SUPPLY ROUTE
