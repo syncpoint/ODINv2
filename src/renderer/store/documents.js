@@ -16,14 +16,18 @@ const identity = R.cond([
  *
  */
 documents.feature = (feature, cache) => {
-  const descriptor = MILSTD.descriptor(feature.properties.sidc)
+  const properties = feature.properties || {}
+
+  const descriptor = MILSTD.descriptor(properties.sidc)
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : []
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
+
+
   const layer = cache(layerId(feature.id))
   const layerName = (layer && layer.name) || ''
-  const { t } = feature.properties
+  const { t } = properties
   const name = feature.name || t || ''
   const links = feature.links || []
 
@@ -33,7 +37,7 @@ documents.feature = (feature, cache) => {
     ...(tags || []),
     ...dimensions,
     ...scope,
-    ...identity(MILSTD.identityCode(feature.properties.sidc))
+    ...identity(MILSTD.identityCode(properties.sidc))
   ]
 
   return {

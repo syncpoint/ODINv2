@@ -43,15 +43,17 @@ DragAndDrop.prototype.drop = async function (event) {
       geoJSON.id = `layer:${layerUUID}`
       geoJSON.name = path.basename(file.name, '.json')
       geoJSON.features = geoJSON.features.map(feature => {
-        if (feature.properties.locked) { feature.locked = true; delete feature.properties.locked }
-        if (feature.properties.hidden) { feature.hidden = true; delete feature.properties.hidden }
+        const locked = feature.properties && feature.properties.locked
+        const hidden = feature.properties && feature.properties.hidden
+        if (locked) { feature.locked = true; delete feature.properties.locked }
+        if (hidden) { feature.hidden = true; delete feature.properties.hidden }
 
         delete feature.title // legacy
         feature.id = `feature:${layerUUID}/${uuid()}`
         feature.geometry = reproject(feature.geometry, 'EPSG:4326', 'EPSG:3857')
 
         // Pull up 'name':
-        if (feature.properties.name) {
+        if (feature.properties && feature.properties.name) {
           feature.name = feature.properties.name
           delete feature.properties.name
         }
@@ -64,5 +66,3 @@ DragAndDrop.prototype.drop = async function (event) {
 
   if (layers.length) this.emit('layers', { layers })
 }
-
-

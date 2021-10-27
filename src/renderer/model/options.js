@@ -18,7 +18,8 @@ const identityTag = R.cond([
  * feature:
  */
 options.feature = (feature, cache) => {
-  const sidc = feature.properties.sidc
+  const properties = feature.properties || {}
+  const sidc = properties.sidc
   const descriptor = MILSTD.descriptor(sidc)
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
@@ -26,16 +27,20 @@ options.feature = (feature, cache) => {
 
   const identity = identityTag(MILSTD.identityCode(sidc))
   const layer = cache(layerId(feature.id))
-  const { properties, name } = feature
   const description = layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
 
   // FIXME: somehow null tags can/could be introduced. check!
   const userTags = (feature.tags || []).filter(R.identity)
 
   // Echelon's only permitted for units and stability operations.
-  const standardSIDC = sidc.startsWith('S*G*U') || sidc.startsWith('O*')
-    ? sidc
-    : MILSTD.format(sidc, { echelon: '-' })
+  const preview = () => {
+    const standardSIDC = sidc
+      ? sidc.startsWith('S*G*U') || sidc.startsWith('O*')
+        ? sidc
+        : MILSTD.format(sidc, { echelon: '-' })
+      : null
+    return standardSIDC ? url(standardSIDC) : null
+  }
 
   const tags = [
     'SCOPE:FEATURE:identify',
@@ -49,9 +54,9 @@ options.feature = (feature, cache) => {
 
   return {
     id: feature.id,
-    title: name || properties.t || null, // might be undefined
+    title: feature.name || properties.t || null, // might be undefined
     description,
-    url: url(standardSIDC),
+    url: preview(),
     tags,
     capabilities: 'RENAME|DROP|FOLLOW',
     actions: 'PRIMARY:panto'

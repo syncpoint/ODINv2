@@ -13,6 +13,11 @@ import './polygon'
 import './corridor'
 import './multipoint'
 
+styles['MultiLineString:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
+styles['MultiPolygon:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
+styles['GeometryCollection:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
+
+
 const createStyleFactory = context => {
   const { feature } = context
   context.makeStyles = makeStyles(feature)
@@ -20,11 +25,12 @@ const createStyleFactory = context => {
 }
 
 const collectStyles = styles => context => {
-  const { geometryType, feature } = context
+  const { geometryType, feature, geometry } = context
   const sidc = parameterized(feature.get('sidc'))
+
   const key = styles[`${geometryType}:${sidc}`]
     ? `${geometryType}:${sidc}`
-    : `${geometryType}:DEFAULT`
+    : `${geometry.getGeometryType()}:DEFAULT`
 
   context.sidc = sidc
   context.styles = styles[`${key}`](context)

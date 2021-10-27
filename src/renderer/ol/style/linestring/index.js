@@ -148,6 +148,7 @@ styles['LABELS:GEOMETRY:LINE_STRING'] = geometry => {
 }
 
 const lineString = id => ({ geometry, sidc }) => {
+  if (!sidc) return [{ id: 'style:default', geometry }]
   const labels = (styles[`LABELS:${sidc}`] || []).flat()
   return [
     { id, geometry },

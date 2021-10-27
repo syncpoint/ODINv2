@@ -62,7 +62,7 @@ export default projectUUID => {
       acc.push(layer)
 
       return features.reduce((acc, feature) => {
-        delete feature.properties.layerId
+        if (feature.properties) delete feature.properties.layerId
         acc.push(feature)
         return acc
       }, acc)

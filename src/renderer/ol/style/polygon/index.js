@@ -76,6 +76,7 @@ styles['LABELS:GEOMETRY:POLYGON'] = geometry => {
 }
 
 styles['Polygon'] = id => ({ geometry, sidc }) => {
+  if (!sidc) return [{ id: 'style:default', geometry }]
   const labels = (styles[`LABELS:${sidc}`] || [])
   return [
     { id, geometry },
