@@ -2,7 +2,7 @@ import assert from 'assert'
 import { resolve } from 'path'
 import { readJSON } from '../legacy/io'
 import { LegacyStore } from './LegacyStore'
-import { values } from '../../shared/level/HighLevel'
+import { valuesByPrefix } from '../../shared/level/HighLevel'
 import { leveldb } from '../../shared/level'
 
 const pathname = dir => resolve(__dirname, dir)
@@ -24,7 +24,7 @@ describe('LegacyStore', async function () {
     const db = createdb()
     const store = new LegacyStore(db)
     await store.transferMetadata(projects)
-    const actual = await values(db, 'project:')
+    const actual = await valuesByPrefix(db, 'project:')
     const expected = await readJSON(pathname('./data/metadata.json'))
     assert.deepStrictEqual(actual, expected)
   })

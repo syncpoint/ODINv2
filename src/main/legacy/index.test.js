@@ -2,7 +2,7 @@ import assert from 'assert'
 import { resolve } from 'path'
 import { readJSON } from './io'
 import { transferProject } from '.'
-import { values } from '../../shared/level/HighLevel'
+import { valuesByPrefix } from '../../shared/level/HighLevel'
 import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
 
 const pathname = dir => resolve(__dirname, dir)
@@ -26,10 +26,10 @@ describe('legacy', async function () {
       const geometries = geometriesPartition(db)
       const entries = await acc
 
-      entries.layers.push(...await values(properties, 'layer:'))
-      entries.features.push(...await values(properties, 'feature:'))
-      entries.links.push(...await values(properties, 'link+'))
-      entries.geometries.push(...await values(geometries, 'feature:'))
+      entries.layers.push(...await valuesByPrefix(properties, 'layer:'))
+      entries.features.push(...await valuesByPrefix(properties, 'feature:'))
+      entries.links.push(...await valuesByPrefix(properties, 'link+'))
+      entries.geometries.push(...await valuesByPrefix(geometries, 'feature:'))
 
       return entries
     }, acc)
