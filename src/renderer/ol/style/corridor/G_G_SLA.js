@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import { styles } from '../styles'
 import * as TS from '../../ts'
 import { openArrow } from './commons'
-import { PI_OVER_2, SD } from '../../../../shared/Math'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // AMBUSH
 styles['LineString:Point:G*G*SLA---'] = ({ geometry, resolution }) => {
@@ -39,12 +39,12 @@ styles['LineString:Point:G*G*SLA---'] = ({ geometry, resolution }) => {
     TS.intersection([
       TS.difference([
         TS.boundary(circleDifference),
-        circleB,
+        circleB
       ]),
       rectangle
     ]),
     TS.intersection([TS.union(lines), stencil]),
-    openArrow(resolution, angle, coords[1]),
+    openArrow(resolution, angle, coords[1])
   ])
 
   return [{ id: 'style:2525c/default-stroke', geometry: path }]

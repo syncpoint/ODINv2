@@ -1,5 +1,4 @@
 import { primaryAction } from 'ol/events/condition'
-import isEqual from 'react-fast-compare'
 import Modify from './Modify'
 import { writeFeatureCollection } from '../../store/format'
 

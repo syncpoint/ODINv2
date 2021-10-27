@@ -30,8 +30,6 @@ styles['MultiPoint:FILLED-CIRCLE'] = circle('style:2525c/hatch-fill')
 const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-clipping': 'none', ...options }]
 const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
-const LF = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 0, 'text-padding': 5, 'text-clipping': 'line'
-}]
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title

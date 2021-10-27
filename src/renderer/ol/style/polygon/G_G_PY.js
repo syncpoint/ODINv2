@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as TS from '../../ts'
 import { styles } from '../styles'
-import { PI_OVER_2, PI_OVER_4 } from '../../../../shared/Math'
+import { PI_OVER_2 } from '../../../../shared/Math'
 
 // DECOY MINED AREA, FENCED
 styles['Polygon:G*G*PY----'] = ({ geometry, sidc }) => {

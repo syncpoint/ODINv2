@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { Jexl } from 'jexl'
 import { PI_OVER_2 } from '../../../shared/Math'
 import Props from './style-props'

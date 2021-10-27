@@ -12,7 +12,7 @@
     "test": "mocha 'src/**/*.test.js' --bail --recursive",
     "test:watch": "mocha --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --recursive",
-    "lint": "eslint",
+    "lint": "eslint src/",
     "jsdoc:main": "jsdoc src/main -r -d jsdoc/main"
   },
   "author": {

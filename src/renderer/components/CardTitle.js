@@ -60,7 +60,7 @@ const CardTitle = props => {
     : value || placeholder
 
   const spanStyle = placeholder
-    ? { color: '#c0c0c0'  }
+    ? { color: '#c0c0c0' }
     : {}
 
   const span = () =>

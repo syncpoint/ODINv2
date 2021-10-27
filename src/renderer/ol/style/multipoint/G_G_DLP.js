@@ -25,7 +25,7 @@ styles['MultiPoint:G*G*DLP---'] = ({ resolution, geometry }) => {
     lineCA,
     lineCB,
     openArrow(resolution, angleA, A),
-    openArrow(resolution, angleB, B),
+    openArrow(resolution, angleB, B)
   ])
 
   return [

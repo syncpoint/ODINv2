@@ -69,13 +69,13 @@ styles['LABELS:GEOMETRY:POLYGON'] = geometry => {
     const anchor = Props.textAnchor(label)
     const geometry = Number.isFinite(anchor)
       ? fraction(anchor)
-      : positions[anchor || 'center']()
+      : positions[anchor || 'center']()
 
     return { geometry, ...label }
   }
 }
 
-styles['Polygon'] = id => ({ geometry, sidc }) => {
+styles.Polygon = id => ({ geometry, sidc }) => {
   if (!sidc) return [{ id: 'style:default', geometry }]
   const labels = (styles[`LABELS:${sidc}`] || [])
   return [
@@ -84,8 +84,8 @@ styles['Polygon'] = id => ({ geometry, sidc }) => {
   ]
 }
 
-styles['Polygon:DEFAULT'] = styles['Polygon']('style:2525c/default-stroke')
-styles['Polygon:FILL-HATCH'] = styles['Polygon']('style:2525c/hatch-fill')
+styles['Polygon:DEFAULT'] = styles.Polygon('style:2525c/default-stroke')
+styles['Polygon:FILL-HATCH'] = styles.Polygon('style:2525c/hatch-fill')
 
 styles['LABELS:G*G*GAG---'] = C(ALL_LINES()) // GENERAL AREA
 styles['LABELS:G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA

@@ -26,7 +26,7 @@ documents.feature = (feature, cache) => {
 
 
   const layer = cache(layerId(feature.id))
-  const layerName = (layer && layer.name) || ''
+  const layerName = (layer && layer.name) || ''
   const { t } = properties
   const name = feature.name || t || ''
   const links = feature.links || []

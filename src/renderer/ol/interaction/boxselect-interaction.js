@@ -32,5 +32,4 @@ export default options => {
   })
 
   return interaction
-
 }

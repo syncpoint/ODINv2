@@ -22,7 +22,7 @@ styles['MultiPoint:G*G*OAS---'] = ({ geometry, resolution }) => {
     TS.lineString([A, E]),
     TS.lineString([B, F]),
     openArrow(resolution, segmentAC.angle(), C),
-    openArrow(resolution, segmentBD.angle(), D),
+    openArrow(resolution, segmentBD.angle(), D)
   ])
   return [
     { id: 'style:2525c/default-stroke', geometry: path }

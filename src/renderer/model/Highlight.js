@@ -98,7 +98,7 @@ Highlight.prototype.featureBounds_ = async function (acc, ids) {
       const bounds = featureBounds[type] || (geometry => TS.minimumRectangle(geometry))
       acc.push(write(bounds(read(geometry))))
       return acc
-  }, acc)
+    }, acc)
 }
 
 
