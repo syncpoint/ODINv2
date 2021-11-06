@@ -3399,7 +3399,7 @@
   {
     "sidc": "G*G*ALC---*****",
     "scope": "CONTROL",
-    "geometry": "LineString",
+    "geometry": "GeometryCollection",
     "dimensions": "C2",
     "hierarchy": [
       "Tactical Graphics",
@@ -3407,12 +3407,15 @@
       "Aviation",
       "Lines",
       "Air Corridor (AC)"
-    ]
+    ],
+    "parameters": {
+      "layout": "corridor"
+    }
   },
   {
     "sidc": "G*G*ALL---*****",
     "scope": "CONTROL",
-    "geometry": "LineString",
+    "geometry": "GeometryCollection",
     "dimensions": "C2",
     "hierarchy": [
       "Tactical Graphics",
@@ -3420,12 +3423,15 @@
       "Aviation",
       "Lines",
       "Low Level Transit Route (LLTR)"
-    ]
+    ],
+    "parameters": {
+      "layout": "corridor"
+    }
   },
   {
     "sidc": "G*G*ALM---*****",
     "scope": "CONTROL",
-    "geometry": "LineString",
+    "geometry": "GeometryCollection",
     "dimensions": "C2",
     "hierarchy": [
       "Tactical Graphics",
@@ -3433,12 +3439,15 @@
       "Aviation",
       "Lines",
       "Minimum Risk Route (MRR)"
-    ]
+    ],
+    "parameters": {
+      "layout": "corridor"
+    }
   },
   {
     "sidc": "G*G*ALS---*****",
     "scope": "CONTROL",
-    "geometry": "LineString",
+    "geometry": "GeometryCollection",
     "dimensions": "C2",
     "hierarchy": [
       "Tactical Graphics",
@@ -3446,12 +3455,15 @@
       "Aviation",
       "Lines",
       "Standard-use Army Aircraft Flight Route (SAAFR)"
-    ]
+    ],
+    "parameters": {
+      "layout": "corridor"
+    }
   },
   {
     "sidc": "G*G*ALU---*****",
     "scope": "CONTROL",
-    "geometry": "LineString",
+    "geometry": "GeometryCollection",
     "dimensions": "C2",
     "hierarchy": [
       "Tactical Graphics",
@@ -3459,7 +3471,10 @@
       "Aviation",
       "Lines",
       "Unmanned Aircraft (UA) Route"
-    ]
+    ],
+    "parameters": {
+      "layout": "corridor"
+    }
   },
   {
     "sidc": "G*G*APC---*****",

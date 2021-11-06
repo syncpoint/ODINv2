@@ -1,5 +1,6 @@
 import { styles } from '../styles'
 import * as TS from '../..//ts'
+import './G_G_ALx' // AVIATION / LINES
 import './G_G_OAF' // ATTACK BY FIRE POSITION
 import './G_G_OLAA' // AXIS OF ADVANCE / AIRBORNE
 import './G_G_OLAGM' // AXIS OF ADVANCE / MAIN ATTACK
