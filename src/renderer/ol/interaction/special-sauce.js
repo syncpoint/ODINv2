@@ -5,10 +5,10 @@ import rectangle from './rectangle'
 import { geometryType } from '../geometry'
 
 const layouts = {
-  corridor: corridor,
-  fan: fan,
-  orbit: corridor,
-  rectangle: rectangle
+  'LineString:Point-corridor': corridor,
+  'MultiPoint-fan': fan,
+  'LineString:Point-orbit': corridor,
+  'Polygon-rectangle': rectangle
 }
 
 const defaultBehavior = (feature, descriptor) => ({
@@ -25,9 +25,10 @@ const defaultBehavior = (feature, descriptor) => ({
 
 export const special = (feature, overlay) => {
   const geometry = MILSTD.geometry(feature.get('sidc'))
+
   const key = geometry && geometry.layout
-    ? geometry.layout
-    : geometryType(feature)
+    ? `${geometryType(feature)}-${geometry.layout}`
+    : `${geometryType(feature)}`
 
   return layouts[key]
     ? layouts[key](feature, geometry, overlay)

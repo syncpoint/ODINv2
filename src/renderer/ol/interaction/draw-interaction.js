@@ -179,7 +179,7 @@ const geometries = [
     }
   },
 
-  /* MultiPoint/rectangle */
+  /* Polygon/rectangle */
   {
     match: ({ geometry }) => geometry.layout === 'rectangle',
     options: () => ({ type: GeometryType.POINT }),

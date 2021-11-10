@@ -35,7 +35,7 @@ const closeRing = coords => K(coords)(coords => coords.push(coords[0]))
 const smoothRing = n => ring => closeRing(chaikinRing(R.dropLast(1, ring), n))
 const smoothPolygon = n => polygon => polygon.map(smoothRing(n))
 const smoothLine = n => line => chaikinLine(line, n)
-const smoothCollection = n => geometry => geometry.getGeometries().map(geometry => smooth(n)(geometry))
+const smoothCollection = n => geometry => geometry.getGeometries().map(geometry => smooth(geometry, n))
 
 const mappers = n => ({
   Polygon: geometry => new Polygon(geometry.getCoordinates().map(smoothRing(n))),

@@ -5,7 +5,7 @@ import { PI_OVER_2 } from '../../../shared/Math'
 import { transform } from '../geometry'
 import { cmdOrCtrl } from '../../platform'
 
-export default (feature, geometry, overlay) => {
+export default (feature) => {
 
   const geometries = {
     RECTANGLE: feature.getGeometry()
