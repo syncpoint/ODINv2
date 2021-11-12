@@ -137,7 +137,7 @@ const geometries = [
       const distance = segment.getLength() / goldenRatio
 
       const C = TS.projectCoordinate(coordinates[0])([angle, distance])
-      feature.setGeometry(write(TS.geometryCollection([line, TS.point(C)])))
+      feature.setGeometry(write(TS.collect([line, TS.point(C)])))
     }
   },
 
@@ -213,7 +213,7 @@ const geometries = [
       const A = TS.coordinate(TS.startPoint(line))
       const angle = segments[0].angle() - PI_OVER_2
       const point = TS.point(TS.projectCoordinate(A)([angle, width / 2]))
-      feature.setGeometry(write(TS.geometryCollection([line, point])))
+      feature.setGeometry(write(TS.collect([line, point])))
     }
   },
 

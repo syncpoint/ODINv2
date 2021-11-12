@@ -58,7 +58,7 @@ styles['LineString:Point:G*G*OLAA--'] = ({ geometry }) => {
       arrow,
       TS.pointBuffer(TS.startPoint(lineString))(width / 2),
       TS
-        .geometryCollection([bisection, TS.point(aps[1]), TS.point(aps[5])])
+        .collect([bisection, TS.point(aps[1]), TS.point(aps[5])])
         .convexHull()
     ])
   ])

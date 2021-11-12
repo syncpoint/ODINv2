@@ -98,7 +98,7 @@ styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
       TS.polygon(R.props([0, 1, 5, 0], aps)),
       TS.pointBuffer(TS.startPoint(lineString))(width / 2),
       TS
-        .geometryCollection([bisection, TS.point(aps[1]), TS.point(aps[5])])
+        .collect([bisection, TS.point(aps[1]), TS.point(aps[5])])
         .convexHull()
     ])
   ])
