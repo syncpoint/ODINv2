@@ -20,7 +20,7 @@ styles['LineString:Point:G*T*KF----'] = ({ geometry, resolution }) => {
 
   const arrow = TS.polygon(R.props([0, 2, 1, 0], aps))
   const centerline = TS.lineString([...R.init(lineString.getCoordinates()), aps[3]])
-  const buffer = TS.lineBuffer(centerline)(width / 2).buffer(1)
+  const buffer = TS.simpleBuffer(TS.lineBuffer(centerline)(width / 2))(1)
   const linePoints = TS.coordinates([lineString])
   const lastSegment = R.last(R.aperture(2, linePoints).map(TS.segment))
   const font = `${width / resolution / 2}px sans-serif`

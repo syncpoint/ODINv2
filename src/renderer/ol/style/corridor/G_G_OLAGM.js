@@ -23,7 +23,7 @@ styles['LineString:Point:G*G*OLAGM-'] = ({ geometry }) => {
   // NOTE: Buffer is slightly increased by 1 meter, so union with
   // arrow does not produce gaps.
   const centerline = TS.lineString([...R.init(lineString.getCoordinates()), aps[6]])
-  const buffer = TS.lineBuffer(centerline)(width / 2).buffer(1)
+  const buffer = TS.simpleBuffer(TS.lineBuffer(centerline)(width / 2))(1)
   const corridor = TS.difference([
     TS.union([buffer, arrowBoundary]).getBoundary(),
     TS.pointBuffer(TS.startPoint(lineString))(width / 2)

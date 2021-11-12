@@ -18,7 +18,7 @@ styles['LineString:Point:G*G*OLAGS-'] = ({ geometry }) => {
 
   const arrow = TS.polygon(R.props([0, 2, 1, 0], aps))
   const centerline = TS.lineString([...R.init(lineString.getCoordinates()), aps[3]])
-  const buffer = TS.lineBuffer(centerline)(width / 2).buffer(1)
+  const buffer = TS.simpleBuffer(TS.lineBuffer(centerline)(width / 2))(1)
   const path = TS.difference([
     TS.union([buffer, arrow]).getBoundary(),
     TS.pointBuffer(TS.startPoint(lineString))(width / 2)

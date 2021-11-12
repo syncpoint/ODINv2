@@ -29,9 +29,10 @@ styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
     ]))
   })()
 
-  const buffer = TS.lineBuffer(TS.lineString([...R.init(lineString.getCoordinates()), aps[3]]))(width / 2).buffer(1)
+  const line = TS.lineString([...R.init(lineString.getCoordinates()), aps[3]])
+  const buffer = TS.simpleBuffer(TS.lineBuffer(line)(width / 2))(1)
+  const intersection = TS.intersection([TS.boundary(buffer), bisection])
 
-  const intersection = TS.boundary(buffer).intersection(bisection)
   if (
     intersection.getGeometryType() !== 'MultiPoint' ||
     intersection.getNumGeometries() !== 2
@@ -41,7 +42,7 @@ styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
     const [p1, p2] = TS.coordinates(intersection)
     let a = TS.lineString([p1, aps[2]])
     let b = TS.lineString([p2, aps[4]])
-    if (!a.intersects(b)) {
+    if (!TS.intersects(a, b)) {
       a = TS.lineString([p1, aps[4]])
       b = TS.lineString([p2, aps[2]])
     }
@@ -53,7 +54,7 @@ styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
 
   const rotarySymbol = (() => {
     // Move arrow base to crossing intersection point:
-    const intersection = crossing[0].intersection(crossing[1])
+    const intersection = TS.intersection(crossing)
     const segment = TS.segment([aps[2], aps[4]])
     const mp = segment.midPoint()
     const [tx, ty] = [
@@ -74,7 +75,7 @@ styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
       const offset = TS.segment([mp, TS.coordinate(intersection)]).getLength() * 0.5
       return [+PI, -PI]
         .map(angle => TS.translate(segment.angle() + angle / 2, TS.lineString(segment))(offset))
-        .map(line => line.intersection(cross))
+        .map(line => TS.intersection([line, cross]))
         .map(TS.coordinates)
         .map(coords => TS.lineString(coords))
     }
@@ -97,9 +98,7 @@ styles['LineString:Point:G*G*OLAR--'] = ({ geometry }) => {
       TS.boundary(buffer),
       TS.polygon(R.props([0, 1, 5, 0], aps)),
       TS.pointBuffer(TS.startPoint(lineString))(width / 2),
-      TS
-        .collect([bisection, TS.point(aps[1]), TS.point(aps[5])])
-        .convexHull()
+      TS.convexHull(TS.collect([bisection, TS.point(aps[1]), TS.point(aps[5])]))
     ])
   ])
 

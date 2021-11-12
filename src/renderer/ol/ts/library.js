@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import Angle from 'jsts/org/locationtech/jts/algorithm/Angle.js'
 import Centroid from 'jsts/org/locationtech/jts/algorithm/Centroid.js'
+import ConvexHull from 'jsts/org/locationtech/jts/algorithm/ConvexHull.js'
 import MinimumDiameter from 'jsts/org/locationtech/jts/algorithm/MinimumDiameter.js'
 import Coordinate from 'jsts/org/locationtech/jts/geom/Coordinate.js'
 import Envelope from 'jsts/org/locationtech/jts/geom/Envelope.js'
@@ -83,6 +84,13 @@ export const singleSidedLineBuffer = buffer({
   joinStyle: BufferParameters.JOIN_ROUND,
   endCapStyle: BufferParameters.CAP_FLAT,
   singleSided: true
+})
+
+/**
+ * simpleBuffer :: geometry -> distance -> geometry
+ */
+export const simpleBuffer = buffer({
+  endCapStyle: BufferParameters.CAP_ROUND
 })
 
 /**
@@ -332,3 +340,15 @@ export const points = geometry => {
  * Reference: https://github.com/bjornharrtell/jsts/blob/master/src/org/locationtech/jts/monkey.js
  */
 export const equals = (g1, g2) => RelateOp.equalsTopo(g1, g2)
+
+/**
+ * intersects :: jts.geom.Geometry -> jts.geom.Geometry -> Boolean
+ * Reference: https://github.com/bjornharrtell/jsts/blob/master/src/org/locationtech/jts/monkey.js
+ */
+export const intersects = (g1, g2) => RelateOp.intersects(g1, g2)
+
+/**
+ * convexHull :: jts.geom.Geometry -> jts.geom.Geometry
+ * Reference: https://github.com/bjornharrtell/jsts/blob/master/src/org/locationtech/jts/monkey.js
+ */
+export const convexHull = geometry => new ConvexHull(geometry).getConvexHull()

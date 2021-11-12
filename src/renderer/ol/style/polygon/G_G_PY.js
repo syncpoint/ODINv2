@@ -22,7 +22,7 @@ styles['Polygon:G*G*PY----'] = ({ geometry, sidc }) => {
     .map(i => {
       const A = TS.projectCoordinate(centroid)([i * PI_OVER_6, length])
       const lineString = TS.lineString([centroid, A])
-      const intersection = geometry.intersection(lineString)
+      const intersection = TS.intersection([geometry, lineString])
       const point = intersection.getPointN(1)
       const coord = TS.coordinate(point)
       const index = line.indexOf(coord)

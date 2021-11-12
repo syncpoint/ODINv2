@@ -41,13 +41,13 @@ styles['LABELS:GEOMETRY:POLYGON'] = geometry => {
   const xIntersection = lazy(() => {
     const coord = x => TS.coordinate(x, centroid.y)
     const axis = TS.lineString([minX, maxX].map(coord))
-    return geometry.intersection(axis).getCoordinates()
+    return TS.intersection([geometry, axis]).getCoordinates()
   })
 
   const yIntersection = lazy(() => {
     const coord = y => TS.coordinate(centroid.x, y)
     const axis = TS.lineString([minY, maxY].map(coord))
-    return geometry.intersection(axis).getCoordinates()
+    return TS.intersection([geometry, axis]).getCoordinates()
   })
 
   const fraction = anchor => {

@@ -1,5 +1,4 @@
 * leveldb: migrate towards db.getMany()
-* JSTS: migrate entry points (2.7.3)
 * echelon (polygons)
 * drop feature (relative size)
 * drop labels (relative size)
