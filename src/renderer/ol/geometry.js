@@ -42,3 +42,13 @@ export const transform = (olGeometry, target) => {
     }
   }
 }
+
+export const getCoordinates = geometry =>
+  geometry instanceof geom.GeometryCollection
+    ? geometry.getGeometries().map(getCoordinates)
+    : geometry.getCoordinates()
+
+export const setCoordinates = (geometry, coordinates) =>
+  geometry instanceof geom.GeometryCollection
+    ? geometry.getGeometriesArray().forEach((geometry, index) => setCoordinates(geometry, coordinates[index]))
+    : geometry.setCoordinates(coordinates)
