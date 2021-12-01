@@ -1,0 +1,410 @@
+
+Scope: Editing objects on map
+
+
+"Initial situation":
+Objects are already displayed on map (selection from map palette and drawing on map is not described here in the test cases).
+
+
+
+1-point object: Check Point (SIDC: G*GPGPPK--****X)
+
+63900858-4394-4ac7-b576-0fce49028d8c - 1-point object
+1. Object is displayed on map.
+2. When selecting object, a red dot appear.
+3. Click on object and move it.
+4.1 Expected: Object has been moved to new position on map.
+4.2 Expected: No further actions possible (exception delete of whole object).
+
+
+
+2-point line: Linear Target (SIDC: G*FPLT----****X)
+
+8705e901-4f65-4181-a2dd-d889e9e593fc - 2-point line (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, two red dots and a red dot-dashed line appear.
+3. Click on one red dot and move it.
+4.1 Expected: Object will be displayed larger or smaller on map.
+4.2 Expected: Object can be rotated on map.
+4.3 Expected: Other red dot does not change its position.
+
+3e687e03-8e2a-4283-a498-5fb3e1ca55db - 2-point line (add a point)
+1. Object is displayed on map.
+2. When selecting object, two red dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dashed line between the 2 points and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Other red dots do not change their positions.
+
+f9cec3e9-6c2f-467c-9fb5-b6e07d1c3cb0 - 2-point line (delete a point)
+1. Object is displayed on map.
+2. When selecting object, two red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot at dot-dashed line.
+4.1 Expected: Selected red dot must not deleted.
+4.2 Expected: Other red dot does not change its position.
+
+52b71b6d-95ae-4d40-9424-571b47fc6978 - 2-point line (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, two red dots and a red dot-dashed line appear.
+3. Click with mouse on object and then move it.
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+n-point line: Line of Departure (SIDC: G*GPOLT---****X)
+
+b79f54a8-e82d-48be-831a-7b27e18f7593 - n-point line (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, two or more red dots and a red dot-dashed line appear.
+3. Click on one red dot and move it.
+4.1 Expected: Subsequent line(s) change in direction in which red dot is moved with.
+4.2 Expected: Other red dots do not change their positions.
+
+81cb044f-c0a6-442e-ad02-f7fd929c2fff - n-point line (add a point)
+1. Object is displayed on map.
+2. When selecting object, two or more red dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dashed line between 2 points and click on it.
+4. Click with mouse on red circle and move it.
+5.1 Expected: Subsequent line(s) change in direction in which red circle is moved with.
+5.2 Expected: A new red dot is set after end of move.
+5.3 Expected: Other red dots do not change their positions.
+
+8fee340d-2dca-464c-875d-f4a7310273fe - n-point line (delete a point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected red dot is deleted.
+4.2 Expected: Line is now drawn in a straight line between the next two points.
+4.3 Expected: Other red dots do not change their positions.
+
+e441cfd4-1e8d-4601-a83a-3c2e40ef8386 - n-point line (delete more points)
+1. Object is displayed on map.
+2. When selecting object, five or more red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4. Repeat action until only a straight line with two red dots is displayed.
+5.1 Expected: Selected red dots are deleted.
+5.2 Expected: Line is now drawn in a straight line between the last two points.
+5.3 Expected: Last two red dots do not change their positions.
+5.4 Expected: Last two red dots cannot be deleted (without deleting the whole object).
+
+0faa0397-ad43-4efa-8ca2-c402aa8f1cf9 - n-point line (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, two or more red dots and a red dot-dashed line appear.
+3. Hold down SHIFT-key and click on object with mouse and move it.
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+Polygon area: ACA (SIDC: G*FPACAI--****X)
+
+c09cdb1f-664d-4263-b0e0-dd173768c268 - polygon area (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Click on one red dot and move it.
+4.1 Expected: Subsequent line(s) change in direction in which red dot is moved with.
+4.2 Expected: Other red dots do not change their positions.
+
+85b2e4a1-e4eb-44e2-88da-a3fc056f2b53 - polygon area (add a point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dashed line between 2 points and click on it.
+4. Click with mouse on red circle and move it.
+5.1 Expected: Subsequent line(s) change in direction in which red circle is moved with.
+5.2 Expected: A new red dot is set after end of move.
+5.3 Expected: Other red dots do not change their positions.
+
+01703bd6-010a-42ca-ab14-1d009e688691 - polygon area (delete a point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected red dot is deleted.
+4.2 Expected: Line is now drawn in a straight line between the next two points.
+4.3 Expected: Other red dots do not change their positions.
+
+3ea53364-e66c-4b24-8097-6188f65b6a4e - polygon area (delete more points)
+1. Object is displayed on map.
+2. When selecting object, five or more red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4. Repeat action until area is displayed as a triangle with three red dots.
+5.1 Expected: Selected red dots are deleted.
+5.2 Expected: Area is now displayed as a triangle with last three points.
+5.3 Expected: Last three red dots do not change their positions.
+5.4 Expected: Last three red dots cannot be deleted (without deleting the whole object).
+
+fbdc4456-d64b-4cfd-a6b1-a6c63bf4bf38 - polygon area (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Hold down SHIFT-key and click on object with mouse and move it.
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+Polygon area, rectangular: ACA (SIDC: G*FPACAR--****X)
+
+b0cd7e53-4be8-47f8-9e97-ec8bccbef14e - polygon area, rectangular (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, four dots and a red dot-dashed line appear.
+3. Click on one red dot and move it.
+4.1 Expected: When moving red dot, the rectangle can be moved in length, width or diagonal.
+4.2 Expected: Other three red dots change automatically according to geometric shape of rectangle.
+
+03f820c1-c7ae-4600-afcf-62b6609f10d4 - polygon area, rectangular (add a point)
+1. Object is displayed on map.
+2. When selecting object, four dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dashed line between 2 points and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Other red dots do not change their positions.
+
+f56c0c18-6217-41bc-bf7b-95e23ad39145 - polygon area, rectangular (delete a point)
+1. Object is displayed on map.
+2. When selecting object, four dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected  red dot must not be deleted.
+4.2 Expected: Other red dots do not change their positions.
+
+54d307b6-2d7a-4845-be34-9af6648d885a - polygon area, rectangular (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, four dots and a red dot-dashed line appear.
+3. Click with mouse on object and then move it.
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+Polygon area, circular: ACA (SIDC: G*FPACAC--****X)
+
+bc37a99b-0088-4f9c-97ca-6f6e5ad2f020 - polygon area, circular (change width of circle)
+1. Object is displayed on map.
+2. When selecting object, two dots appear.
+3. Click on red dot on the line and move it.
+4.1 Expected: Circle can be enlarged or reduced.
+4.2 Expected: Red dot in center of circle does not change its position.
+
+2e6c1572-89c1-42f6-92af-c2cfd761a200 - polygon area, circular (add a point)
+1. Object is displayed on map.
+2. When selecting object, two red dots appear.
+3. Move mouse to line of circle and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Red dot in center of circle does not change its position.
+
+3a88013d-4cd3-4124-92a1-681a4ce34ab1 - polygon area, circular (delete a point)
+1. Object is displayed on map.
+2. When selecting object, two red dots appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected  red dot must not be deleted.
+4.2 Expected: Other red dot does not change its position.
+
+a5171fa1-a9b0-4e73-97b6-299a728de534 - polygon area, circular (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, two red dots appear.
+3. Click with mouse on red dot in center of circle and then move it.
+4. Click with mouse at line of circle and then move it.
+5.1 Expected: Object is moved on map without changing size of object.
+
+
+
+2-point corridor: Canalize (SIDC: G*TPC-----****X)
+
+bcd2cc16-5a73-4651-8cab-c5dfc6a87c11 - 2-point corridor (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Click on one red dot at dot-dashed line and move it.
+4.1 Expected: Object will be displayed larger or smaller on map.
+4.2 Expected: Object can be rotated on map.
+4.3 Expected: Other red dot at red dot-dashed line does not change its position.
+4.4 Expected: Red dot that is not on red dot-dashed line changes its position accordingly when object is rotated.
+
+17fa11fa-03cc-4293-ae3e-08bd915cf67d - 2-point corridor (add a point)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dashed line and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Other red dots do not change their positions.
+
+7a3af527-672b-4d98-8062-02a06af98ab6 - 2-point corridor (delete a point)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected red dot must not deleted.
+4.2 Expected: Other red dots do not change their positions.
+
+9c10f666-dd52-4997-8987-b201ed9fc102 - 2-point corridor (change width of object)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Click with mouse on red dot that is not on red dot-dashed line and move it.
+4.1 Expected: Width of object will be displayed larger or smaller on map.
+4.2 Expected: Other red dots do not change their positions.
+
+a88b8db7-6cd7-4fc6-8be0-cb0087090b31- 2-point corridor (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Click with mouse on object and then move it.
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+n-point corridor: Main Attack (SIDC: G*GPOLAGM-****X)
+
+681d1099-ebc8-4832-81dc-b9bab6a398fb - n-point corridor (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Click on one red dot at dot-dashed line and move it.
+4.1 Expected: Subsequent lines and red dot-dashed line change in direction in which red dot is moved with.
+4.2 Expected: Other red dots do not change their positions.
+
+d5be2d28-0c16-4280-b5ee-afd897b4423b - n-point corridor (add a point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dashed line between 2 points until a red circle appear.
+4. Click with mouse on red circle and move it with mouse.
+5.1 Expected: Subsequent lines and red dot-dashed line change in direction in which red circle is moved with.
+5.2 Expected: A new red dot is set after end of move.
+5.3 Expected: Other red dots do not change their positions.
+
+bb83622d-f8c5-48c4-86b1-7a3b31b962a4 - n-point corridor (delete a point)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot at dot-dashed line.
+4.1 Expected: Selected red dot is deleted.
+4.2 Expected: Lines and red dot-dashed line are now drawn in straight lines between the next two points.
+4.3 Expected: Other red dots do not change their positions.
+
+72bc7671-6aa3-40b9-b7de-385c977c0e79 - n-point corridor (delete more points)
+1. Object is displayed on map.
+2. When selecting object, five or more red dots and a red dot-dashed line appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4. Repeat action until only a straight line with two red dots at dot-dashed line is displayed.
+5.1 Expected: Selected red dots are deleted.
+5.2 Expected: Lines and red dot-dashed line is now drawn in a straight line between the last two points.
+5.3 Expected: Last two red dots at dot-dosed line do not change their positions.
+5.4 Expected: Last two red dots at dot-dosed line cannot be deleted (without deleting the whole object).
+5.5 Expected: Red dot that is not on red dot-dashed line cannot be deleted (without deleting the whole object).
+
+fea3b492-8081-4612-94a6-cb3fb2e4307a - n-point corridor (change width of object)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Click with mouse on red dot that is not on red dot-dashed line and move it.
+4.1 Expected: Width of object will be displayed larger or smaller on map.
+4.2 Expected: Other red dots do not change their positions.
+
+d73163c5-fbbc-4214-9161-990491c04eb8 - n-point line (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots and a red dot-dashed line appear.
+3. Click with mouse on object and then move it (exception red dot-dashed line).
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+2-point fan: Isolate (SIDC: G*TPE-----****X)
+
+252785c6-5f12-4167-a249-c3437c0ae106 - 2-point fan (change width of circle)
+1. Object is displayed on map.
+2. When selecting object, two dots appear.
+3. Click on red dot on the line and move it.
+4.1 Expected: Circle can be enlarged or reduced.
+4.2 Expected: Red dot in center of circle does not change its position.
+
+35ffbe74-861e-43a2-899a-966ad8ac2271 - 2-point fan (add a point)
+1. Object is displayed on map.
+2. When selecting object, two red dots appear.
+3. Move mouse to line of circle and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Other red dots do not change their positions.
+
+1cb7184a-bfb1-4343-9442-914d35e45c2f - 2-point fan (delete a point)
+1. Object is displayed on map.
+2. When selecting object, two red dots appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected red dot must not be deleted.
+4.2 Expected: Other red dot does not change its position.
+
+2b64ec78-5fc0-4704-8e8e-b9c26aac543a - 2-point fan (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, two red dots appear.
+3. Click with mouse on red dot in center of circle and then move it.
+4. Click with mouse on line of circle and then move it.
+5.1 Expected: Object is moved on map without changing size of object.
+
+
+
+3-point fan: Cover (SIDC: G*TPUC----****X)
+
+f46bc109-a402-44d9-92ae-9942f1b1494d - 3-point fan (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, three dots appear.
+3. Click on one red dot at arrowheads and move it.
+4.1 Expected: Arrow can be enlarged or reduced.
+4.2 Expected: Arrow can be rotated on map.
+4.3 Expected: Second arrow does not change its size or position.
+4.4 Expected: Red dot at end of arrows does not change its position.
+
+ffcc4a31-e3d0-4708-b953-8fd595e1b199 - 3-point fan (add a point)
+1. Object is displayed on map.
+2. When selecting object, three red dots appear.
+3. Move mouse to line of one arrow and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Other red dots do not change their positions.
+
+e57d8a08-c67b-4e74-b92a-916181af995e - 3-point fan (delete a point)
+1. Object is displayed on map.
+2. When selecting object, three red dots appear.
+3. Hold down ALT-key and click with mouse on a red dot.
+4.1 Expected: Selected red dot must not be deleted.
+4.2 Expected: Other red dots do not change their positions.
+
+bea89f13-2681-4f41-bbbc-b891c48d0d71 - 3-point fan (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, three or more red dots appear.
+3. Click with mouse on red dot at end of the arrows and then move it.
+4. Click with mouse on object and then move it.
+5.1 Expected: Object is moved on map without changing size of object.
+
+
+
+Orbit: Delay (SIDC: G*TPL-----****X)
+
+dab09e01-12ff-4f1d-a9b7-e6cfe422fda0 - Orbit (change location of one point)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Click on one red dot at dot-dashed line and move it.
+4.1 Expected: Object will be displayed larger or smaller on map.
+4.2 Expected: Object can be rotated on map.
+4.3 Expected: Other red dot at red dot-dashed line does not change its position.
+4.4 Expected: Red dot that is not on red dot-dashed line changes its position accordingly when object is rotated.
+
+f8e0ab22-8752-4d0d-ae2f-c84b8b695aea - Orbit  (add a point)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Move mouse to red dot-dosed line or to semicircle and click on it.
+4.1 Expected: No new red dot must be created.
+4.2 Expected: Other red dots do not change their positions.
+
+97883e95-ac8b-4847-80a7-6a9aa9e460fa - Orbit  (change width of object)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Click with mouse on red dot that is not on red dot-dashed line and move it.
+4.1 Expected: Semicircle will be displayed larger or smaller on map.
+4.2 Expected: Other red dots do not change their positions.
+
+fe5d6f2a-df1c-48e0-a8fd-6a90382c9a8b - Orbit  (change loactions for complete object)
+1. Object is displayed on map.
+2. When selecting object, three red dots and a red dot-dashed line appear.
+3. Click with mouse on object and then move it.
+4.1 Expected: Object is moved on map without changing size of object.
+
+
+
+Special: Seize (SIDC: G*TPZ-----****X)
+
+The test case description will be done after the implementation (object is still missing)!
+
+
+
+Special: Turn (SIDC: G*MPOET---****X)
+
+The test case description will be done after the implementation (object is still missing)!
+
+
+
+Special: Bridgehead (SIDC: G*GPSLB---****X)
+
+The test case description will be done after the implementation (object is still missing)!
+
