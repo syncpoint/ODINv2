@@ -286,18 +286,22 @@ const removeVertex = (node, index) => {
 
   switch (geometry.getType()) {
     case 'LineString':
-      coordinates.splice(offset, 1)
+      if (coordinates.length > 2) coordinates.splice(offset, 1)
       break
     case 'MultiLineString':
-      coordinates[depth[0]].splice(offset, 1)
+      if (coordinates[depth[0]].length > 2) coordinates[depth[0]].splice(offset, 1)
       break
     case 'Polygon':
-      coordinates[depth[0]].splice(offset, 1)
-      close(coordinates[depth[0]], offset)
+      if (coordinates[depth[0]].length > 4) {
+        coordinates[depth[0]].splice(offset, 1)
+        close(coordinates[depth[0]], offset)
+      }
       break
     case 'MultiPolygon':
-      coordinates[depth[0]][depth[1]].splice(offset, 1)
-      close(coordinates[depth[0]][depth[1]], offset)
+      if (coordinates[depth[0]][depth[1]].length > 4) {
+        coordinates[depth[0]][depth[1]].splice(offset, 1)
+        close(coordinates[depth[0]][depth[1]], offset)
+      }
       break
   }
 
