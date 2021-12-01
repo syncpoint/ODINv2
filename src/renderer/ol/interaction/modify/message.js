@@ -67,10 +67,22 @@ export const message = (options, event) => {
   const closestSegment = rbush => {
     const nodes = rbush.getInExtent(extent)
     const segment = R.prop('segment')
+    const uid = R.prop('ol_uid')
+    const negate = n => n * -1
     const measure = squaredDistanceToSegment
     const compare = fn => (a, b) => fn(a) - fn(b)
-    const compareFn = compare(R.compose(measure, segment))
-    return (nodes || []).sort(compareFn)[0] // might be undefined
+    const compareDistance = compare(R.compose(measure, segment))
+    const compareUID = compare(R.compose(negate, parseInt, uid))
+    const compareChained = fns => (a, b) =>
+      fns.reduce((acc, fn) => acc === 0 ? fn(a, b) : acc, 0)
+
+    // First compare squared distances. If distance is same,
+    // compare node's negated ol_uid. This assures that nodes added
+    // later to index have precedence over those added before.
+    return (nodes || []).sort(compareChained([
+      compareDistance,
+      compareUID
+    ]))[0] // might be undefined
   }
 
   const closestPoint = (node, point) => {
