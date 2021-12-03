@@ -9,6 +9,11 @@ Terms/operations:
   1. hover with mouse anywhere over feature
   2. press and hold SHIFT-key and primary mouse button
   3. move feature to a different location
+  
+* CTRL-rotate feature
+  1. hover with mouse pointer over geometry point until point is visually focused
+  2. press and hold CTRL-key and primary mouse button
+  3. rotate feature in a direction
 
 * drag (geometry) point:
   1. hover with mouse pointer over geometry point until point is visually focused
@@ -17,7 +22,7 @@ Terms/operations:
 
 * delete (geometry) point (if applicable):
   1. hover with mouse pointer over geometry point until point is visually focused
-  2. alt/option click with primary mouse button
+  2. ALT/option click with primary mouse button
 
 * insert (geometry) point (if applicable):
   1. hover with mouse pointer over geometry line segment until position is visually focused
@@ -31,6 +36,10 @@ Scope: 1-point symbol: Check Point (SIDC: G*GPGPPK--****X)
 1. Focus symbol anchor and drag point to new location
 2. Expected: Symbol has new position
 
+54b79312-a327-4a39-be07-b1ade74fc7c2 - minimal point count (1)
+1. Focus point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
+
 
 Scope: 2-point line: Linear Target (SIDC: G*FPLT----****X)
 
@@ -43,7 +52,7 @@ Scope: 2-point line: Linear Target (SIDC: G*FPLT----****X)
 2. Expected: No visual indication is shown that point can be inserted
 
 f9cec3e9-6c2f-467c-9fb5-b6e07d1c3cb0 - minimal point count (2)
-1. Focus either point and try to delete it (alt/option click)
+1. Focus either point and try to delete it (ALT/option click)
 2. Expected: Feature geometry remains unchanged
 
 52b71b6d-95ae-4d40-9424-571b47fc6978 - move feature
@@ -54,7 +63,7 @@ f9cec3e9-6c2f-467c-9fb5-b6e07d1c3cb0 - minimal point count (2)
 Scope: n-point line: Line of Departure (SIDC: G*GPOLT---****X)
 
 b79f54a8-e82d-48be-831a-7b27e18f7593 - move geometry point
-1. Drag either point to new location
+1. Drag a point to new location
 2. Expected: Feature geometry is updated
 
 81cb044f-c0a6-442e-ad02-f7fd929c2fff - insert point
@@ -64,12 +73,12 @@ b79f54a8-e82d-48be-831a-7b27e18f7593 - move geometry point
 
 8fee340d-2dca-464c-875d-f4a7310273fe - delete a point
 1. Geometry has at least three points
-2. Delete any point
+2. Delete any point (ALT/option click)
 3. Expected: Feature geometry is updated
 
 e441cfd4-1e8d-4601-a83a-3c2e40ef8386 - delete point, minimal point count (2)
-1. Delete all but two points
-2. Focus either of the remaining points and try to delete it (alt/option click)
+1. Delete all but two points (ALT/option click)
+2. Focus either of the remaining points and try to delete it (ALT/option click)
 2. Expected: Feature geometry remains unchanged (with two remaining points)
 
 0faa0397-ad43-4efa-8ca2-c402aa8f1cf9 - move feature
@@ -80,7 +89,7 @@ e441cfd4-1e8d-4601-a83a-3c2e40ef8386 - delete point, minimal point count (2)
 Scope: Polygon area: ACA (SIDC: G*FPACAI--****X)
 
 c09cdb1f-664d-4263-b0e0-dd173768c268 - move geometry point
-1. Drag either point to new location
+1. Drag a point to new location
 2. Expected: Feature geometry is updated
 
 85b2e4a1-e4eb-44e2-88da-a3fc056f2b53 - insert point
@@ -90,12 +99,12 @@ c09cdb1f-664d-4263-b0e0-dd173768c268 - move geometry point
 
 01703bd6-010a-42ca-ab14-1d009e688691 - delete a point
 1. Geometry has at least four points
-2. Delete any point
+2. Delete any point (ALT/option click)
 3. Expected: Feature geometry is updated
 
 3ea53364-e66c-4b24-8097-6188f65b6a4e - delete point, minimal point count (3)
-1. Delete all but three points
-2. Focus either of the remaining points and try to delete it (alt/option click)
+1. Delete all but three points (ALT/option click)
+2. Focus one of the remaining points and try to delete it (ALT/option click)
 2. Expected: Feature geometry remains unchanged (with two remaining points)
 
 fbdc4456-d64b-4cfd-a6b1-a6c63bf4bf38 - move feature
@@ -103,257 +112,172 @@ fbdc4456-d64b-4cfd-a6b1-a6c63bf4bf38 - move feature
 2. Expected: Feature location is updated
 
 
-Polygon area, rectangular: ACA (SIDC: G*FPACAR--****X)
+Scope:  Polygon area, rectangular: ACA (SIDC: G*FPACAR--****X)
 
-b0cd7e53-4be8-47f8-9e97-ec8bccbef14e - polygon area, rectangular (change location of one point)
-1. Object is displayed on map.
-2. When selecting object, four dots and a red dot-dashed line appear.
-3. Click on one red dot and move it.
-4.1 Expected: When moving red dot, the rectangle can be moved in length, width or diagonal.
-4.2 Expected: Other three red dots change automatically according to geometric shape of rectangle.
+b0cd7e53-4be8-47f8-9e97-ec8bccbef14e - move geometry point
+1. Drag a point to new location
+2. Expected: Feature geometry is updated
 
-03f820c1-c7ae-4600-afcf-62b6609f10d4 - polygon area, rectangular (add a point)
-1. Object is displayed on map.
-2. When selecting object, four dots and a red dot-dashed line appear.
-3. Move mouse to red dot-dashed line between 2 points and click on it.
-4.1 Expected: No new red dot must be created.
-4.2 Expected: Other red dots do not change their positions.
+cec5a317-98a4-4f03-be93-180571067344 - rotate geometry
+1. Focus a point and rotate geometry (CTRL/rotate)
+2. Expected: Feature location is updated
 
-f56c0c18-6217-41bc-bf7b-95e23ad39145 - polygon area, rectangular (delete a point)
-1. Object is displayed on map.
-2. When selecting object, four dots and a red dot-dashed line appear.
-3. Hold down ALT-key and click with mouse on a red dot.
-4.1 Expected: Selected  red dot must not be deleted.
-4.2 Expected: Other red dots do not change their positions.
+03f820c1-c7ae-4600-afcf-62b6609f10d4 -  insert point is disallowed
+1. Try to focus a position between both points
+2. Expected: No visual indication is shown that point can be inserted
 
-54d307b6-2d7a-4845-be34-9af6648d885a - polygon area, rectangular (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, four dots and a red dot-dashed line appear.
-3. Click with mouse on object and then move it.
-4.1 Expected: Object is moved on map without changing size of object.
+f56c0c18-6217-41bc-bf7b-95e23ad39145 - minimal point count (4)
+1. Focus one point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
 
+54d307b6-2d7a-4845-be34-9af6648d885a - move feature
+1. Move feature
+2. Expected: Feature location is updated
 
 
 Polygon area, circular: ACA (SIDC: G*FPACAC--****X)
 
-bc37a99b-0088-4f9c-97ca-6f6e5ad2f020 - polygon area, circular (change width of circle)
-1. Object is displayed on map.
-2. When selecting object, two dots appear.
-3. Click on red dot on the line and move it.
-4.1 Expected: Circle can be enlarged or reduced.
-4.2 Expected: Red dot in center of circle does not change its position.
+bc37a99b-0088-4f9c-97ca-6f6e5ad2f020 - move geometry point
+1. Drag center point to new location
+2. Expected: Feature geometry is updated
 
-2e6c1572-89c1-42f6-92af-c2cfd761a200 - polygon area, circular (add a point)
-1. Object is displayed on map.
-2. When selecting object, two red dots appear.
-3. Move mouse to line of circle and click on it.
-4.1 Expected: No new red dot must be created.
-4.2 Expected: Red dot in center of circle does not change its position.
+5727804c-cf54-49c1-b7fa-557541d64979 - change size
+1. Drag line point to new location
+2. Expected: Feature geometry is updated
 
-3a88013d-4cd3-4124-92a1-681a4ce34ab1 - polygon area, circular (delete a point)
-1. Object is displayed on map.
-2. When selecting object, two red dots appear.
-3. Hold down ALT-key and click with mouse on a red dot.
-4.1 Expected: Selected  red dot must not be deleted.
-4.2 Expected: Other red dot does not change its position.
+2e6c1572-89c1-42f6-92af-c2cfd761a200 - insert point is disallowed
+1. Try to focus a position on circle line
+2. Expected: No visual indication is shown that point can be inserted
 
-a5171fa1-a9b0-4e73-97b6-299a728de534 - polygon area, circular (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, two red dots appear.
-3. Click with mouse on red dot in center of circle and then move it.
-4. Click with mouse at line of circle and then move it.
-5.1 Expected: Object is moved on map without changing size of object.
+3a88013d-4cd3-4124-92a1-681a4ce34ab1 - minimal point count (2)
+1. Focus one point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
 
+a5171fa1-a9b0-4e73-97b6-299a728de534 - move feature
+1. Move feature
+2. Expected: Feature location is updated
 
 
 2-point corridor: Canalize (SIDC: G*TPC-----****X)
 
-bcd2cc16-5a73-4651-8cab-c5dfc6a87c11 - 2-point corridor (change location of one point)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Click on one red dot at dot-dashed line and move it.
-4.1 Expected: Object will be displayed larger or smaller on map.
-4.2 Expected: Object can be rotated on map.
-4.3 Expected: Other red dot at red dot-dashed line does not change its position.
-4.4 Expected: Red dot that is not on red dot-dashed line changes its position accordingly when object is rotated.
+bcd2cc16-5a73-4651-8cab-c5dfc6a87c11 - move geometry point
+1. Drag a line point to new location
+2. Expected: Feature geometry is updated
 
-17fa11fa-03cc-4293-ae3e-08bd915cf67d - 2-point corridor (add a point)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Move mouse to red dot-dashed line and click on it.
-4.1 Expected: No new red dot must be created.
-4.2 Expected: Other red dots do not change their positions.
+9c10f666-dd52-4997-8987-b201ed9fc102 - change width
+1. Drag width point to new location
+2. Expected: Feature geometry is updated
 
-7a3af527-672b-4d98-8062-02a06af98ab6 - 2-point corridor (delete a point)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Hold down ALT-key and click with mouse on a red dot.
-4.1 Expected: Selected red dot must not deleted.
-4.2 Expected: Other red dots do not change their positions.
+17fa11fa-03cc-4293-ae3e-08bd915cf67d - insert point is disallowed
+1. Try to focus a position between both line points
+2. Expected: No visual indication is shown that point can be inserted
 
-9c10f666-dd52-4997-8987-b201ed9fc102 - 2-point corridor (change width of object)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Click with mouse on red dot that is not on red dot-dashed line and move it.
-4.1 Expected: Width of object will be displayed larger or smaller on map.
-4.2 Expected: Other red dots do not change their positions.
+7a3af527-672b-4d98-8062-02a06af98ab6 - minimal point count (3)
+1. Focus one point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
 
-a88b8db7-6cd7-4fc6-8be0-cb0087090b31- 2-point corridor (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Click with mouse on object and then move it.
-4.1 Expected: Object is moved on map without changing size of object.
-
+a88b8db7-6cd7-4fc6-8be0-cb0087090b31- move feature
+1. Move feature
+2. Expected: Feature location is updated
 
 
 n-point corridor: Main Attack (SIDC: G*GPOLAGM-****X)
 
-681d1099-ebc8-4832-81dc-b9bab6a398fb - n-point corridor (change location of one point)
-1. Object is displayed on map.
-2. When selecting object, three or more red dots and a red dot-dashed line appear.
-3. Click on one red dot at dot-dashed line and move it.
-4.1 Expected: Subsequent lines and red dot-dashed line change in direction in which red dot is moved with.
-4.2 Expected: Other red dots do not change their positions.
+681d1099-ebc8-4832-81dc-b9bab6a398fb - move geometry point
+1. Drag a line point to new location
+2. Expected: Feature geometry is updated
 
-d5be2d28-0c16-4280-b5ee-afd897b4423b - n-point corridor (add a point)
-1. Object is displayed on map.
-2. When selecting object, three or more red dots and a red dot-dashed line appear.
-3. Move mouse to red dot-dashed line between 2 points until a red circle appear.
-4. Click with mouse on red circle and move it with mouse.
-5.1 Expected: Subsequent lines and red dot-dashed line change in direction in which red circle is moved with.
-5.2 Expected: A new red dot is set after end of move.
-5.3 Expected: Other red dots do not change their positions.
+d5be2d28-0c16-4280-b5ee-afd897b4423b - insert point
+1. Focus a position between two consecutive line points
+2. Insert new line point
+3. Expected: Feature geometry is updated
 
-bb83622d-f8c5-48c4-86b1-7a3b31b962a4 - n-point corridor (delete a point)
-1. Object is displayed on map.
-2. When selecting object, three or more red dots and a red dot-dashed line appear.
-3. Hold down ALT-key and click with mouse on a red dot at dot-dashed line.
-4.1 Expected: Selected red dot is deleted.
-4.2 Expected: Lines and red dot-dashed line are now drawn in straight lines between the next two points.
-4.3 Expected: Other red dots do not change their positions.
+fea3b492-8081-4612-94a6-cb3fb2e4307a - change width
+1. Drag width point to new location
+2. Expected: Feature geometry is updated
 
-72bc7671-6aa3-40b9-b7de-385c977c0e79 - n-point corridor (delete more points)
-1. Object is displayed on map.
-2. When selecting object, five or more red dots and a red dot-dashed line appear.
-3. Hold down ALT-key and click with mouse on a red dot.
-4. Repeat action until only a straight line with two red dots at dot-dashed line is displayed.
-5.1 Expected: Selected red dots are deleted.
-5.2 Expected: Lines and red dot-dashed line is now drawn in a straight line between the last two points.
-5.3 Expected: Last two red dots at dot-dosed line do not change their positions.
-5.4 Expected: Last two red dots at dot-dosed line cannot be deleted (without deleting the whole object).
-5.5 Expected: Red dot that is not on red dot-dashed line cannot be deleted (without deleting the whole object).
+bb83622d-f8c5-48c4-86b1-7a3b31b962a4 - delete a point
+1. Geometry has at least three points
+2. Delete any point (ALT/option click)
+3. Expected: Feature geometry is updated
 
-fea3b492-8081-4612-94a6-cb3fb2e4307a - n-point corridor (change width of object)
-1. Object is displayed on map.
-2. When selecting object, three or more red dots and a red dot-dashed line appear.
-3. Click with mouse on red dot that is not on red dot-dashed line and move it.
-4.1 Expected: Width of object will be displayed larger or smaller on map.
-4.2 Expected: Other red dots do not change their positions.
+72bc7671-6aa3-40b9-b7de-385c977c0e79 - delete point, minimal line point count (2)
+1. Delete all but two line points (ALT/option click)
+2. Focus either of the remaining line points and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged (with two remaining line points)
 
-d73163c5-fbbc-4214-9161-990491c04eb8 - n-point line (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, three or more red dots and a red dot-dashed line appear.
-3. Click with mouse on object and then move it (exception red dot-dashed line).
-4.1 Expected: Object is moved on map without changing size of object.
-
+d73163c5-fbbc-4214-9161-990491c04eb8 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
 
 
 2-point fan: Isolate (SIDC: G*TPE-----****X)
 
-252785c6-5f12-4167-a249-c3437c0ae106 - 2-point fan (change width of circle)
-1. Object is displayed on map.
-2. When selecting object, two dots appear.
-3. Click on red dot on the line and move it.
-4.1 Expected: Circle can be enlarged or reduced.
-4.2 Expected: Red dot in center of circle does not change its position.
+252785c6-5f12-4167-a249-c3437c0ae106 - move geometry point
+1. Drag center point to new location
+2. Expected: Feature geometry is updated
 
-35ffbe74-861e-43a2-899a-966ad8ac2271 - 2-point fan (add a point)
-1. Object is displayed on map.
-2. When selecting object, two red dots appear.
-3. Move mouse to line of circle and click on it.
-4.1 Expected: No new red dot must be created.
-4.2 Expected: Other red dots do not change their positions.
+ca89269e-5b5e-428b-bf16-9318433ce710 - change size
+1. Drag line point to new location
+2. Expected: Feature geometry is updated
 
-1cb7184a-bfb1-4343-9442-914d35e45c2f - 2-point fan (delete a point)
-1. Object is displayed on map.
-2. When selecting object, two red dots appear.
-3. Hold down ALT-key and click with mouse on a red dot.
-4.1 Expected: Selected red dot must not be deleted.
-4.2 Expected: Other red dot does not change its position.
+35ffbe74-861e-43a2-899a-966ad8ac2271 - insert point is disallowed
+1. Try to focus a position on circle line
+2. Expected: No visual indication is shown that point can be inserted
 
-2b64ec78-5fc0-4704-8e8e-b9c26aac543a - 2-point fan (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, two red dots appear.
-3. Click with mouse on red dot in center of circle and then move it.
-4. Click with mouse on line of circle and then move it.
-5.1 Expected: Object is moved on map without changing size of object.
+1cb7184a-bfb1-4343-9442-914d35e45c2f - minimal point count (2)
+1. Focus one point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
 
+2b64ec78-5fc0-4704-8e8e-b9c26aac543a - move feature
+1. Move feature
+2. Expected: Feature location is updated
 
 
 3-point fan: Cover (SIDC: G*TPUC----****X)
 
-f46bc109-a402-44d9-92ae-9942f1b1494d - 3-point fan (change location of one point)
-1. Object is displayed on map.
-2. When selecting object, three dots appear.
-3. Click on one red dot at arrowheads and move it.
-4.1 Expected: Arrow can be enlarged or reduced.
-4.2 Expected: Arrow can be rotated on map.
-4.3 Expected: Second arrow does not change its size or position.
-4.4 Expected: Red dot at end of arrows does not change its position.
+f46bc109-a402-44d9-92ae-9942f1b1494d - move geometry point
+1. Drag center point to new location
+2. Expected: Feature geometry is updated
 
-ffcc4a31-e3d0-4708-b953-8fd595e1b199 - 3-point fan (add a point)
-1. Object is displayed on map.
-2. When selecting object, three red dots appear.
-3. Move mouse to line of one arrow and click on it.
-4.1 Expected: No new red dot must be created.
-4.2 Expected: Other red dots do not change their positions.
+7055ab74-6a22-4b2b-a4da-c45700e4771f - change range
+1. Drag one of range point to new location
+2. Expected: Feature geometry is updated
 
-e57d8a08-c67b-4e74-b92a-916181af995e - 3-point fan (delete a point)
-1. Object is displayed on map.
-2. When selecting object, three red dots appear.
-3. Hold down ALT-key and click with mouse on a red dot.
-4.1 Expected: Selected red dot must not be deleted.
-4.2 Expected: Other red dots do not change their positions.
+ffcc4a31-e3d0-4708-b953-8fd595e1b199 - insert point is disallowed
+1. Try to focus a position on arrow line
+2. Expected: No visual indication is shown that point can be inserted
 
-bea89f13-2681-4f41-bbbc-b891c48d0d71 - 3-point fan (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, three or more red dots appear.
-3. Click with mouse on red dot at end of the arrows and then move it.
-4. Click with mouse on object and then move it.
-5.1 Expected: Object is moved on map without changing size of object.
+e57d8a08-c67b-4e74-b92a-916181af995e - minimal point count (3)
+1. Focus one point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
 
+bea89f13-2681-4f41-bbbc-b891c48d0d71 - move feature
+1. Move feature
+2. Expected: Feature location is updated
 
 
 Orbit: Delay (SIDC: G*TPL-----****X)
 
-dab09e01-12ff-4f1d-a9b7-e6cfe422fda0 - Orbit (change location of one point)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Click on one red dot at dot-dashed line and move it.
-4.1 Expected: Object will be displayed larger or smaller on map.
-4.2 Expected: Object can be rotated on map.
-4.3 Expected: Other red dot at red dot-dashed line does not change its position.
-4.4 Expected: Red dot that is not on red dot-dashed line changes its position accordingly when object is rotated.
+dab09e01-12ff-4f1d-a9b7-e6cfe422fda0 - move geometry point
+1. Drag a line point to new location
+2. Expected: Feature geometry is updated
 
-f8e0ab22-8752-4d0d-ae2f-c84b8b695aea - Orbit  (add a point)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Move mouse to red dot-dosed line or to semicircle and click on it.
-4.1 Expected: No new red dot must be created.
-4.2 Expected: Other red dots do not change their positions.
+97883e95-ac8b-4847-80a7-6a9aa9e460fa - change width
+1. Drag width point to new location
+2. Expected: Feature geometry is updated
 
-97883e95-ac8b-4847-80a7-6a9aa9e460fa - Orbit  (change width of object)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Click with mouse on red dot that is not on red dot-dashed line and move it.
-4.1 Expected: Semicircle will be displayed larger or smaller on map.
-4.2 Expected: Other red dots do not change their positions.
+f8e0ab22-8752-4d0d-ae2f-c84b8b695aea - insert point is disallowed
+1. Try to focus a position between both line points
+2. Expected: No visual indication is shown that point can be inserted
 
-fe5d6f2a-df1c-48e0-a8fd-6a90382c9a8b - Orbit  (change loactions for complete object)
-1. Object is displayed on map.
-2. When selecting object, three red dots and a red dot-dashed line appear.
-3. Click with mouse on object and then move it.
-4.1 Expected: Object is moved on map without changing size of object.
+55e846ec-dd96-4a36-9826-8d319a94dbf3 - minimal point count (3)
+1. Focus one point and try to delete it (ALT/option click)
+2. Expected: Feature geometry remains unchanged
+
+fe5d6f2a-df1c-48e0-a8fd-6a90382c9a8b - move feature
+1. Move feature
+2. Expected: Feature location is updated
 
 
 
@@ -362,11 +286,9 @@ Special: Seize (SIDC: G*TPZ-----****X)
 The test case description will be done after the implementation (object is still missing)!
 
 
-
 Special: Turn (SIDC: G*MPOET---****X)
 
 The test case description will be done after the implementation (object is still missing)!
-
 
 
 Special: Bridgehead (SIDC: G*GPSLB---****X)
