@@ -1,4 +1,5 @@
 import { Modify } from './modify'
+// import { Modify } from './modify/index.original'
 import { writeFeatureCollection } from '../../store/format'
 
 /**

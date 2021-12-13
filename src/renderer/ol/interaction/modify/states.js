@@ -1,5 +1,5 @@
 import { Hooks } from './hooks'
-import { spatialIndex } from './writers'
+import { rbush } from './writers'
 
 /**
  * IDLE: No or multiple features selected.
@@ -142,7 +142,7 @@ const removeState = (node, index) => ({
     const feature = node.feature
     const coordinates = removeVertex(node, index)
     feature.coordinates = coordinates
-    const state = loadedState(spatialIndex(feature))
+    const state = loadedState(rbush(feature))
     return { state, feature, type: 'modifyend', coordinate: null, propagate: false }
   }
 })
@@ -204,7 +204,7 @@ const lockedState = (feature, update) => {
     },
 
     pointerup: () => {
-      const state = loadedState(spatialIndex(feature), true)
+      const state = loadedState(rbush(feature), true)
       return { state, feature, type: 'modifyend', propagate: false }
     }
   }
@@ -215,7 +215,7 @@ const close = (ring, index) => {
   else if (index >= ring.length - 1) ring[0] = ring[ring.length - 1]
 }
 
-const updateVertex = (node, index) => {
+export const updateVertex = (node, index) => {
   const { geometry, depth } = node
   const offset = node.index + index
   const hooks = Hooks.get(node, offset)
@@ -252,7 +252,7 @@ const updateVertex = (node, index) => {
   }
 }
 
-const insertVertex = (node, coordinate) => {
+export const insertVertex = (node, coordinate) => {
   const { geometry, depth } = node
   const offset = node.index + 1
   const hooks = Hooks.get(node, offset)
@@ -278,7 +278,7 @@ const insertVertex = (node, coordinate) => {
   return [hooks.coordinates(coordinates), updateVertex(node, 1)]
 }
 
-const removeVertex = (node, index) => {
+export const removeVertex = (node, index) => {
   const { geometry, depth } = node
   const offset = node.index + index
   const hooks = Hooks.get(node, offset)

@@ -30,76 +30,48 @@ const Coordinate = {
       closestOnSegment(coordinate, segment)
 }
 
-
-
 /**
  *
  */
 export const message = (options, event) => {
-  const map = event.map
-  const view = map.getView()
-  const resolution = view.getResolution()
   const pixelTolerance = options.pixelTolerance || 10
-  const pointerCoordinate = event.coordinate
-  const pixelCoordinates = R.map(map.getPixelFromCoordinate.bind(map))
-  const squaredDistanceToSegment = Coordinate.squaredDistanceToSegment(pointerCoordinate)
-  const pointOnSegment = Coordinate.closestOnSegment(pointerCoordinate)
+
+  const map = event.map // !
+  const view = map.getView() // !
+  const resolution = view.getResolution() // !
+  const pointerCoordinate = event.coordinate // !
+  const pixelCoordinate = R.map(map.getPixelFromCoordinate.bind(map)) // !
+  const squaredDistanceToSegment = Coordinate.squaredDistanceToSegment(pointerCoordinate) // !
+  const pointOnSegment = Coordinate.closestOnSegment(pointerCoordinate) // !
+  const pixelDistance = point => R.compose(Coordinate.distance, pixelCoordinate)([pointerCoordinate, point]) // !
+  const extent = (() => {
+    const d = resolution * pixelTolerance
+    const [x, y] = pointerCoordinate
+    return [x - d, y - d, x + d, y + d]
+  })() // !
+
+
   const withinTolerance = distance => distance <= pixelTolerance
   const originalEvent = event.originalEvent
   const removeCondition = () => altKeyOnly(event)
 
-  const pixelDistance = point =>
-    R.compose(Coordinate.distance, pixelCoordinates)([pointerCoordinate, point])
-
-  const extent = (() => {
-    const distance = resolution * pixelTolerance
-    const x = pointerCoordinate[0]
-    const y = pointerCoordinate[1]
-    const extent = [x, y, x, y]
-    return [
-      extent[0] - distance,
-      extent[1] - distance,
-      extent[2] + distance,
-      extent[3] + distance
-    ]
-  })()
-
   const closestSegment = rbush => {
-
-    const nodes = rbush.getInExtent(extent)
+    const nodes = rbush.getInExtent(extent).reverse()
     const segment = R.prop('segment')
-    const uid = R.prop('ol_uid')
-
-    const negate = n => n * -1
     const measure = squaredDistanceToSegment
     const compare = fn => (a, b) => fn(a) - fn(b)
     const compareDistance = compare(R.compose(measure, segment))
-    const compareUID = compare(R.compose(negate, parseInt, uid))
+
 
     const sortedNodes = (nodes || []).sort(compareDistance)
-    if (sortedNodes.length < 2) return sortedNodes[0] // might be undefined
-
-    // If two best matches share the same
-    // point, choose the node with higher ol_uid.
-    // This is necessary to disambiguate overlapping points,
-    // especially when width point of corrdidor is snapped
-    // to first point of corridor line.
-
-    const shareSamePoint = ([a, b]) =>
-      a.segment.reduce((acc, x) => {
-        return acc || b.segment.some(y => R.equals(x, y))
-      }, false)
-
-    return shareSamePoint(sortedNodes)
-      ? sortedNodes.slice(0, 2).sort(compareUID)[0]
-      : sortedNodes[0]
+    return sortedNodes[0]
   }
 
 
   const closestPoint = (node, point) => {
     const squaredDistances = node.segment
       .map(coordinate => [coordinate, point])
-      .map(pixelCoordinates)
+      .map(pixelCoordinate)
       .map(Coordinate.squaredDistance)
 
     const minDistance = Math.sqrt(Math.min(...squaredDistances))
@@ -107,7 +79,7 @@ export const message = (options, event) => {
     // Either 0 for start vertex, 1 for end vertex or null
     // for point between start and end vertex:
     const index = withinTolerance(minDistance)
-      ? squaredDistances[0] < squaredDistances[1]
+      ? squaredDistances[0] <= squaredDistances[1]
         ? 0
         : 1
       : null

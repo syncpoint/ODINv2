@@ -18,10 +18,10 @@ const signature = feature => {
 }
 
 /**
- * spatialIndex :: ol.Feature => ol.structs.RBush
+ * rbush :: ol.Feature => ol.structs.RBush
  * Create new spatial index (R-Bush) from feature.
  */
-export const spatialIndex = feature => {
+export const rbush = feature => {
   const rbush = new RBush()
   const geometry = feature.getGeometry()
   if (!geometry) return rbush
