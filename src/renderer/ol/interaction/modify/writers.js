@@ -28,17 +28,17 @@ export const rbush = feature => {
   if (!geometry) return rbush
 
   const type = geometry.getType()
-  const nodes = Writers[type]({
+  const segments = Writers[type]({
     feature,
     geometry,
     signature: signature(feature),
     descriptor: MILSTD.geometry(feature.get('sidc'))
   })
 
-  const [extents, values] = nodes.reduce((acc, node) => {
+  const [extents, values] = segments.reduce((acc, segment) => {
     const [extents, values] = acc
-    extents.push(node.extent)
-    values.push(node)
+    extents.push(segment.extent)
+    values.push(segment)
     return acc
   }, [[], []])
 
@@ -59,7 +59,7 @@ Writers.Point = options => {
   const coordinate = geometry.getCoordinates()
   return [{
     ...options,
-    segment: [coordinate, coordinate],
+    vertices: [coordinate, coordinate],
     extent: geometry.getExtent()
   }]
 }
@@ -69,7 +69,7 @@ Writers.MultiPoint = options => {
   return geometry.getCoordinates().map((coordinate, index) => ({
     ...options,
     index,
-    segment: [coordinate, coordinate],
+    vertices: [coordinate, coordinate],
     extent: geometry.getExtent()
   }))
 }
@@ -77,23 +77,23 @@ Writers.MultiPoint = options => {
 Writers.LineString = options => {
   const { geometry } = options
   const segments = R.aperture(2, geometry.getCoordinates())
-  return segments.map((segment, index) => ({
+  return segments.map((vertices, index) => ({
     ...options,
     index,
-    segment,
-    extent: Extent.boundingExtent(segment)
+    vertices,
+    extent: Extent.boundingExtent(vertices)
   }))
 }
 
 Writers.MultiLineString = options => {
   const { geometry } = options
   return geometry.getCoordinates().reduce((acc, line, q) => {
-    return acc.concat(R.aperture(2, line).map((segment, index) => ({
+    return acc.concat(R.aperture(2, line).map((vertices, index) => ({
       ...options,
       depth: [q],
       index,
-      segment,
-      extent: Extent.boundingExtent(segment)
+      vertices,
+      extent: Extent.boundingExtent(vertices)
     })))
   }, [])
 }
@@ -101,12 +101,12 @@ Writers.MultiLineString = options => {
 Writers.Polygon = options => {
   const { geometry } = options
   return geometry.getCoordinates().reduce((acc, ring, q) => {
-    return acc.concat(R.aperture(2, ring).map((segment, index) => ({
+    return acc.concat(R.aperture(2, ring).map((vertices, index) => ({
       ...options,
       index,
-      segment,
+      vertices,
       depth: [q],
-      extent: Extent.boundingExtent(segment)
+      extent: Extent.boundingExtent(vertices)
     })))
   }, [])
 }
@@ -115,12 +115,12 @@ Writers.MultiPolygon = options => {
   const { geometry } = options
   return geometry.getCoordinates().reduce((acc, polygon, q) => {
     return polygon.reduce((acc, ring, r) => {
-      return acc.concat(R.aperture(2, ring).map((segment, index) => ({
+      return acc.concat(R.aperture(2, ring).map((vertices, index) => ({
         ...options,
         index,
-        segment,
+        vertices,
         depth: [q, r],
-        extent: Extent.boundingExtent(segment)
+        extent: Extent.boundingExtent(vertices)
       })))
     }, acc)
   }, [])

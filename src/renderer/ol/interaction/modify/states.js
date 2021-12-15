@@ -3,8 +3,8 @@ import { updateVertex, removeVertex, insertVertex } from './writers'
 
 export const loaded = (handleClick = false) => ({
   pointermove: pointer => {
-    const [node, coordinate] = pointer.pick()
-    return [loaded(), node ? Events.coordinate(coordinate) : null]
+    const [segment, coordinate] = pointer.pick()
+    return [loaded(), segment ? Events.coordinate(coordinate) : null]
   },
 
   // Hide vertex feature on SHIFT key down.
@@ -15,8 +15,8 @@ export const loaded = (handleClick = false) => ({
   // Optionally handle click (after selecting feature).
   click: pointer => {
     if (handleClick) {
-      const [node, coordinate] = pointer.pick()
-      return [loaded(), node ? Events.coordinate(coordinate) : null]
+      const [segment, coordinate] = pointer.pick()
+      return [loaded(), segment ? Events.coordinate(coordinate) : null]
     } else return null
   },
 
@@ -26,20 +26,20 @@ export const loaded = (handleClick = false) => ({
    * Point on segment (no vertex index): insert state.
    */
   pointerdown: pointer => {
-    const [node, coordinate, index] = pointer.pick()
+    const [segment, coordinate, index] = pointer.pick()
 
     // Mark event as handled if we have a coordinate:
     if (coordinate) pointer.stopPropagation()
     else return [loaded(), null]
 
-    const feature = node.feature
+    const feature = segment.feature
     const clone = feature.clone()
 
     const state = index !== null
       ? pointer.altKey
-        ? remove(node, index)
-        : drag(feature, clone, updateVertex(node, index))
-      : insert(node)
+        ? remove(segment, index)
+        : drag(feature, clone, updateVertex(segment, index))
+      : insert(segment)
 
     return [state, Events.coordinate(coordinate)]
   }
@@ -61,35 +61,35 @@ const drag = (feature, clone, update) => ({
   }
 })
 
-const insert = node => ({
+const insert = segment => ({
   pointerdrag: pointer => {
-    const coordinate = pointer.closestOnSegment(node.segment)
+    const coordinate = pointer.closestOnSegment(segment.vertices)
     const distance = pointer.pixelDistance(coordinate)
 
     if (pointer.withinTolerance(distance)) {
-      return [insert(node), Events.coordinate(pointer.coordinate)]
+      return [insert(segment), Events.coordinate(pointer.coordinate)]
     } else {
       const coordinate = pointer.coordinate
-      const feature = node.feature
+      const feature = segment.feature
       const clone = feature.clone()
-      const [coordinates, update] = insertVertex(node, coordinate)
+      const [coordinates, update] = insertVertex(segment, coordinate)
       feature.coordinates = coordinates
       return [drag(feature, clone, update), Events.coordinate(coordinate)]
     }
   }
 })
 
-const remove = (node, index) => ({
+const remove = (segment, index) => ({
   pointerup: () => {
-    const feature = node.feature
+    const feature = segment.feature
     const clone = feature.clone()
-    const coordinates = removeVertex(node, index)
+    const coordinates = removeVertex(segment, index)
     feature.coordinates = coordinates
     feature.commit()
     // TODO: emit update event
 
     // Remain in REMOVE state and wait for next click event:
-    return [remove(node, index), Events.update(clone, feature)]
+    return [remove(segment, index), Events.update(clone, feature)]
   },
 
   // Click event is handled again in LOADED state

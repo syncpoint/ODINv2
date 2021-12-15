@@ -7,7 +7,6 @@ export const update = (clone, feature) => ({ type: 'update', clone, feature })
 export const pointer = (options, rbush, event) => {
   const pixelTolerance = options.pixelTolerance || 10
   const withinTolerance = distance => distance <= pixelTolerance
-
   const map = event.map
 
   const pointer = {}
@@ -20,47 +19,52 @@ export const pointer = (options, rbush, event) => {
     return [x - d, y - d, x + d, y + d]
   }
 
-  const nodes = extent => extent
+  // Note: We reverse result from RBush in the hopes
+  // that last added entries come first.
+  // This is essential to disambiguate vertices sharing
+  // the same coordinate. This is especially important
+  // for corridors.
+  // TODO: reference to test procedure
+  //
+  const segments = extent => extent
     ? rbush.getInExtent(extent).reverse()
     : []
 
-  const sortBySquaredDistance = nodes => {
-    const segment = R.prop('segment')
+  const sortBySquaredDistance = segments => {
+    const segment = R.prop('vertices')
     const measure = Coordinate.squaredDistanceToSegment(event.coordinate)
     const compare = fn => (a, b) => fn(a) - fn(b)
     const compareDistance = compare(R.compose(measure, segment))
-    return (nodes || []).sort(compareDistance)
+    return (segments || []).sort(compareDistance)
   }
 
-  const closestNode = R.compose(
+  const sortedSegments = R.compose(
     sortBySquaredDistance,
-    nodes, // all nodes in extent | []
+    segments, // all segments in extent | []
     extent // bounding square around pointer | null
   )
 
   const closestOnSegment = Coordinate.closestOnSegment(event.coordinate)
 
-  const pixelCoordinate =
-    coordinate =>
-      coordinate
-        ? map.getPixelFromCoordinate(coordinate)
-        : null
+  const pixelCoordinate = coordinate => coordinate
+    ? map.getPixelFromCoordinate(coordinate)
+    : null
 
   const pixelCoordinates = R.map(pixelCoordinate)
-  const pixelDistance =
-    coordinate =>
-      R.compose(Coordinate.distance, pixelCoordinates)([event.coordinate, coordinate])
+  const pixelDistance = coordinate =>
+    R.compose(Coordinate.distance, pixelCoordinates)([event.coordinate, coordinate])
 
   /**
-   * vertex :: Coordinate c => (options, event) -> node -> [c, index]
+   * vertex :: Coordinate c => segment -> [c, index]
    */
-  const vertex = node => {
-    if (!node) return []
+  const vertex = segment => {
+    if (!segment) return []
 
-    const segment = node.segment
-    const projectedCoordinate = closestOnSegment(segment)
+    const vertices = segment.vertices
+    const projectedCoordinate = closestOnSegment(vertices)
     const distance = pixelDistance(projectedCoordinate) // might be Infinity
 
+    // Pointer is too far from segment:
     if (!withinTolerance(distance)) return []
 
     const squaredPixelDistances = (xs, y) => xs
@@ -68,7 +72,7 @@ export const pointer = (options, rbush, event) => {
       .map(pixelCoordinates)
       .map(Coordinate.squaredDistance)
 
-    const distances = squaredPixelDistances(segment, projectedCoordinate)
+    const distances = squaredPixelDistances(vertices, projectedCoordinate)
     const minDistance = Math.sqrt(Math.min(...distances))
 
     // (vertex) index :: null | 0 | 1
@@ -80,7 +84,7 @@ export const pointer = (options, rbush, event) => {
         : 1
       : null
 
-    const coordinate = index !== null ? segment[index] : projectedCoordinate
+    const coordinate = index !== null ? vertices[index] : projectedCoordinate
     // TODO: also return pixel distance (insert state)
     return [coordinate, index]
   }
@@ -96,9 +100,9 @@ export const pointer = (options, rbush, event) => {
 
   pointer.pick = () => {
     if (pointer.shiftKey) return null
-    const [node] = closestNode()
-    const [coordinate, index] = vertex(node)
-    return [node, coordinate, index]
+    const [segment] = sortedSegments()
+    const [coordinate, index] = vertex(segment)
+    return [segment, coordinate, index]
   }
 
   return pointer
