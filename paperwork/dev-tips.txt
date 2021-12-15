@@ -1,1 +1,15 @@
 export ELECTRON_ENABLE_LOGGING=true
+
+Use local OpenLayers fork/branch:
+  1. fork/clone OpenLayers to $OL
+  2. $OL: git checkout branch/tag
+  3. $OL: npm install
+  4. $OL: npm run build-package (creates $OL/build/ol)
+  5. $OL: npm pack
+  6. $OL: npm install --global ol-$VERSION.tgz
+configure OL - done
+
+configure NIDO
+  1. $NIDO: npm install ol-mapbox-style
+  2. $NIDO: npm rm ol
+configure NIDO - done

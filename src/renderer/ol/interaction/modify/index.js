@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import Pointer from 'ol/interaction/Pointer'
+import Interaction from 'ol/interaction/Interaction'
 import Feature from 'ol/Feature'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
@@ -9,11 +9,11 @@ import * as Subject from 'most-subject'
 import * as M from '@most/core'
 import { runEffects } from '@most/core'
 import { newDefaultScheduler, currentTime } from '@most/scheduler'
-import { Coordinate } from './coordinate'
+import * as Events from './events'
 import { rbush } from './writers'
 import { setCoordinates } from '../../geometry'
 import { pipe, fromListeners, replace, orElse, op } from './frp'
-import { updateVertex, removeVertex, insertVertex } from './states'
+import { loaded } from './states'
 
 export class OverlaySink {
   constructor (style, options) {
@@ -55,7 +55,7 @@ export class OverlaySink {
 /**
  *
  */
-export class Modify extends Pointer {
+export class Modify extends Interaction {
 
   constructor (options) {
     super(options)
@@ -66,90 +66,25 @@ export class Modify extends Pointer {
     const [sink, event$] = Subject.create()
     this.next = event => Subject.event(currentTime(scheduler), event, sink)
 
-    const coordinateEvent = hit => hit
-      ? { type: 'coordinate', coordinate: hit[1] }
-      : null
-
-    const updateEvent = (clone, feature) => ({
-      type: 'update',
-      clone,
-      feature
-    })
-
-    const loaded = (handleClick = false) => {
-      const pick = (rbush, event) => {
-        if (event.originalEvent.shiftKey) return null
-        const [node] = Modify.closestNode(options)(rbush, event)
-        const [coordinate, index] = Modify.vertex(options, event)(node)
-        return [node, coordinate, index]
-      }
-
-      return {
-        id: 'LOADED',
-        keydown: (_, event) => event.originalEvent.shiftKey ? [loaded(), []] : null,
-        singleclick: (rbush, event) => [loaded(), handleClick ? coordinateEvent(pick(rbush, event)) : null],
-        pointermove: (rbush, event) => [loaded(), coordinateEvent(pick(rbush, event))],
-        pointerdown: (rbush, event) => {
-          const hit = pick(rbush, event)
-          if (!hit) return [loaded(), null]
-          const [node, coordinate, index] = hit
-          if (!node) return [loaded(), []]
-
-          const feature = node.feature
-
-          const state = node
-            ? index !== null
-              ? drag(feature, feature.clone(), updateVertex(node, index))
-              : insert()
-            : loaded()
-
-          return [state, coordinateEvent(hit)]
-        }
-      }
-    }
-
-    const drag = (feature, clone, update) => {
-      return {
-        id: 'DRAG',
-        pointermove: (_, event) => {
-          const [coordinates, coordinate] = update(event.coordinate, event.originalEvent)
-          feature.coordinates = coordinates
-          return [drag(feature, clone, update), coordinateEvent([null, coordinate, null])]
-        },
-        pointerup: (_, event) => {
-          feature.commit()
-          return [loaded(), updateEvent(clone, feature)]
-        }
-      }
-    }
-
-    const insert = () => {
-      console.log('[INSERT]')
-      return {
-        id: 'INSERT'
-      }
-    }
-
     const rbush$ = pipe([
       M.tap(event => console.log('RBUSH', event))
     ])(Modify.rbush(options.source))
 
+    const eventLoop = (state, [rbush, event]) => {
+
+      // For empty index, reset to loaded state:
+      if (rbush.isEmpty()) return { seed: loaded(true), value: Events.coordinate(null) }
+
+      const pointer = Events.pointer(options, rbush, event)
+      const handler = state[event.type]
+      const [seed, value] = (handler && handler(pointer)) || [state, null]
+      return { seed, value }
+    }
+
     const pipeline$ = pipe([
       // combine :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
       M.combine((rbush, event) => [rbush, event], rbush$),
-      M.loop((state, [rbush, event]) => {
-        console.log('[LOOP]', state.id, event.type, event.coordinate)
-        // Reset loaded state to handle initial click event:
-        if (rbush.isEmpty()) return { seed: loaded(true), value: null }
-
-        const handler = state[event.type]
-        const [seed, value] = (handler && handler(rbush, event)) || [state, null]
-
-        // Consider event as handled when value is truthy:
-        if (value) event.stopPropagation()
-
-        return { seed, value }
-      }, loaded(true)),
+      M.loop(eventLoop, loaded(true)),
       M.filter(R.identity),
       M.multicast
     ])(event$)
@@ -170,12 +105,7 @@ export class Modify extends Pointer {
     runEffects(update$, scheduler)
   }
 
-  /**
-   * keydown, keypress, click, singleclick,
-   * pointerdown, pointerup, pointermove, pointerdrag
-   */
   handleEvent (event) {
-    console.log('[handleEvent]', event.type, event.coordinate)
     this.next(event)
 
     // Returning true will propagate event to next interaction,
@@ -239,90 +169,6 @@ export class Modify extends Pointer {
     ])
 
     return pipeline(fromListeners(['change'], feature))
-  }
-
-  /**
-   * node :: Options o, Rbush r, Event a => o -> (r, e) -> [node]
-   */
-  static closestNode (options) {
-    return (rbush, event) => R.compose(
-      Modify.sortBySquaredDistance(event),
-      Modify.nodes(rbush), // all nodes in extent | []
-      Modify.extent(options) // bounding square around pointer | null
-    )(event)
-  }
-
-  /**
-   * extent :: Options o, Event a => o -> a -> [n, n, n, n]
-   */
-  static extent (options) {
-    const pixelTolerance = options.pixelTolerance || 10
-
-    return event => {
-      const map = event.map
-      const view = map.getView()
-      const resolution = view.getResolution()
-      const d = resolution * pixelTolerance
-      const [x, y] = event.coordinate
-      return [x - d, y - d, x + d, y + d]
-    }
-  }
-
-  /**
-   * nodes :: RBush r, Extent a => r -> a -> [node]
-   * nodes :: RBush r => r -> null -> []
-   */
-  static nodes (rbush) {
-    return extent => extent
-      ? rbush.getInExtent(extent).reverse()
-      : []
-  }
-
-  static sortBySquaredDistance (event) {
-    const segment = R.prop('segment')
-    const measure = Coordinate.squaredDistanceToSegment(event.coordinate)
-    const compare = fn => (a, b) => fn(a) - fn(b)
-    const compareDistance = compare(R.compose(measure, segment))
-    return nodes => (nodes || []).sort(compareDistance)
-  }
-
-  /**
-   * vertex :: Coordinate c => (options, event) -> node -> [c, index]
-   */
-  static vertex (options, event) {
-    const pixelTolerance = options.pixelTolerance || 10
-    const withinTolerance = distance => distance <= pixelTolerance
-
-    return node => {
-      if (!node) return []
-
-      const segment = node.segment
-
-      // closestOnSegment :: Coordinate c => [c, c] => c
-      const closestOnSegment = Coordinate.closestOnSegment(event.coordinate)
-      const pixelCoordinate = coordinate => coordinate ? event.map.getPixelFromCoordinate(coordinate) : null
-      const pixelCoordinates = R.map(pixelCoordinate)
-      const pixelDistance = R.compose(Coordinate.distance, pixelCoordinates)
-
-      const projectedCoordinate = closestOnSegment(segment)
-      const distance = pixelDistance([event.coordinate, projectedCoordinate]) // might be Infinity
-      if (!withinTolerance(distance)) return []
-
-      const squaredPixelDistances = (xs, y) => xs
-        .map(x => [x, y])
-        .map(pixelCoordinates)
-        .map(Coordinate.squaredDistance)
-
-      const distances = squaredPixelDistances(segment, projectedCoordinate)
-      const minDistance = Math.sqrt(Math.min(...distances))
-
-      // (vertex) index :: null | 0 | 1
-      // Either 0 for start vertex, 1 for end vertex or
-      // null for point between start and end vertex:
-      const index = withinTolerance(minDistance) ? distances[0] <= distances[1] ? 0 : 1 : null
-      const coordinate = index !== null ? segment[index] : projectedCoordinate
-      return [coordinate, index]
-    }
   }
 
   setMap (map) {

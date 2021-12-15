@@ -3,7 +3,6 @@ import * as Extent from 'ol/extent'
 import RBush from 'ol/structs/RBush'
 import * as MILSTD from '../../../symbology/2525c'
 import { geometryType } from '../../geometry'
-import { Hooks } from './hooks'
 
 /**
  * signature :: ol.Feature -> String
@@ -134,102 +133,4 @@ Writers.GeometryCollection = options => {
     const write = Writers[geometryType]
     return acc.concat(write({ ...options, geometry }))
   }, [])
-}
-
-const close = (ring, index) => {
-  if (index === 0) ring[ring.length - 1] = ring[0]
-  else if (index >= ring.length - 1) ring[0] = ring[ring.length - 1]
-}
-
-export const updateVertex = (node, index) => {
-  const { geometry, depth } = node
-  const offset = node.index + index
-  const hooks = Hooks.get(node, offset)
-
-  return (coordinate, event) => {
-    let coordinates = geometry.getCoordinates()
-    const projected = hooks.project(coordinate, event)
-
-    switch (geometry.getType()) {
-      case 'Point':
-        coordinates = projected
-        break
-      case 'MultiPoint':
-        coordinates[node.index] = projected
-        break
-      case 'LineString':
-        coordinates[offset] = projected
-        break
-      case 'MultiLineString':
-        coordinates[depth[0]][offset] = projected
-        break
-      case 'Polygon':
-        coordinates[depth[0]][offset] = projected
-        close(coordinates[depth[0]], offset)
-        break
-      case 'MultiPolygon':
-        coordinates[depth[0]][depth[1]][offset] = projected
-        close(coordinates[depth[0]][depth[1]], offset)
-        break
-    }
-
-    coordinates = hooks.coordinates(coordinates, event)
-    return [coordinates, projected]
-  }
-}
-
-export const insertVertex = (node, coordinate) => {
-  const { geometry, depth } = node
-  const offset = node.index + 1
-  const hooks = Hooks.get(node, offset)
-  const coordinates = geometry.getCoordinates()
-
-  switch (geometry.getType()) {
-    case 'LineString':
-      coordinates.splice(offset, 0, coordinate)
-      break
-    case 'MultiLineString':
-      coordinates[depth[0]].splice(offset, 0, coordinate)
-      break
-    case 'Polygon':
-      coordinates[depth[0]].splice(offset, 0, coordinate)
-      close(coordinates[depth[0]], offset)
-      break
-    case 'MultiPolygon':
-      coordinates[depth[0]][depth[1]].splice(offset, 0, coordinate)
-      close(coordinates[depth[0]][depth[1]], offset)
-      break
-  }
-
-  return [hooks.coordinates(coordinates), updateVertex(node, 1)]
-}
-
-export const removeVertex = (node, index) => {
-  const { geometry, depth } = node
-  const offset = node.index + index
-  const hooks = Hooks.get(node, offset)
-  const coordinates = geometry.getCoordinates()
-
-  switch (geometry.getType()) {
-    case 'LineString':
-      if (coordinates.length > 2) coordinates.splice(offset, 1)
-      break
-    case 'MultiLineString':
-      if (coordinates[depth[0]].length > 2) coordinates[depth[0]].splice(offset, 1)
-      break
-    case 'Polygon':
-      if (coordinates[depth[0]].length > 4) {
-        coordinates[depth[0]].splice(offset, 1)
-        close(coordinates[depth[0]], offset)
-      }
-      break
-    case 'MultiPolygon':
-      if (coordinates[depth[0]][depth[1]].length > 4) {
-        coordinates[depth[0]][depth[1]].splice(offset, 1)
-        close(coordinates[depth[0]][depth[1]], offset)
-      }
-      break
-  }
-
-  return hooks.coordinates(coordinates)
 }

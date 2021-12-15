@@ -1,309 +1,98 @@
-import { Hooks } from './hooks'
-import { rbush } from './writers'
+import * as Events from './events'
+import { updateVertex, removeVertex, insertVertex } from './writers'
 
-/**
- * IDLE: No or multiple features selected.
- */
-export const idleState = () => ({
+export const loaded = (handleClick = false) => ({
+  pointermove: pointer => {
+    const [node, coordinate] = pointer.pick()
+    return [loaded(), node ? Events.coordinate(coordinate) : null]
+  },
 
-  keydown: () => {
-    // Hide pointer when feature was deleted:
-    return { state: idleState(), coordinate: null }
+  // Hide vertex feature on SHIFT key down.
+  keydown: pointer => pointer.shiftKey
+    ? [loaded(), Events.coordinate(null)]
+    : null,
+
+  // Optionally handle click (after selecting feature).
+  click: pointer => {
+    if (handleClick) {
+      const [node, coordinate] = pointer.pick()
+      return [loaded(), node ? Events.coordinate(coordinate) : null]
+    } else return null
+  },
+
+  /**
+   * No coordinate: remain in loaded state.
+   * Segment vertex at index 0 or 1: dragging state.
+   * Point on segment (no vertex index): insert state.
+   */
+  pointerdown: pointer => {
+    const [node, coordinate, index] = pointer.pick()
+
+    // Mark event as handled if we have a coordinate:
+    if (coordinate) pointer.stopPropagation()
+    else return [loaded(), null]
+
+    const feature = node.feature
+    const clone = feature.clone()
+
+    const state = index !== null
+      ? pointer.altKey
+        ? remove(node, index)
+        : drag(feature, clone, updateVertex(node, index))
+      : insert(node)
+
+    return [state, Events.coordinate(coordinate)]
   }
 })
 
-/**
- * LOADED: Single feature is selected for editing.
- * Geometry is index in R-bush.
- */
-export const loadedState = (rbush, handleClick = false) => {
-  const conditions = (message, node, index) => {
-    const layout = node && node.descriptor && node.descriptor.layout
-    const maxPoints = node && node.descriptor && node.descriptor.maxPoints
-    const canRemove = () => index !== null && message.removeCondition() && layout !== 'rectangle'
+const drag = (feature, clone, update) => ({
+  pointerdrag: pointer => {
 
-    const mustIgnore = () => message.originalEvent.shiftKey
-    const canDrag = () => index !== null
-    const canInsert = () => index === null &&
-      layout !== 'rectangle' &&
-      layout !== 'orbit' &&
-      maxPoints !== 2
+    // TODO: get rid of originalEvent (metaKey, ctrlKey)
+    const [coordinates, coordinate] = update(pointer.coordinate, pointer.originalEvent)
 
-    const filter = coordinate => !mustIgnore() && (canDrag() || canInsert())
-      ? coordinate
-      : null
+    // Side-effect: Update feature coordinates and thus geometry.
+    feature.coordinates = coordinates
+    return [drag(feature, clone, update), Events.coordinate(coordinate)]
+  },
+  pointerup: (_, event) => {
+    feature.commit()
+    return [loaded(), Events.update(clone, feature)]
+  }
+})
 
-    return {
-      mustIgnore,
-      canRemove,
-      canDrag,
-      canInsert,
-      filter
+const insert = node => ({
+  pointerdrag: pointer => {
+    const coordinate = pointer.closestOnSegment(node.segment)
+    const distance = pointer.pixelDistance(coordinate)
+
+    if (pointer.withinTolerance(distance)) {
+      return [insert(node), Events.coordinate(pointer.coordinate)]
+    } else {
+      const coordinate = pointer.coordinate
+      const feature = node.feature
+      const clone = feature.clone()
+      const [coordinates, update] = insertVertex(node, coordinate)
+      feature.coordinates = coordinates
+      return [drag(feature, clone, update), Events.coordinate(coordinate)]
     }
   }
+})
 
-  const handlers = {
-    keydown: message => {
-      // Hide pointer if SHIFT is pressed.
-      // NOTE: Map does not emit keyup event to show pointer again.
-      const state = loadedState(rbush)
-      return message.originalEvent.shiftKey
-        ? { state, coordinate: null }
-        : { state }
-    },
-
-    pointermove: message => {
-      const node = message.closestSegment(rbush)
-      const { coordinate, index } = message.coordinateWithinTolerance(node)
-      const cond = conditions(message, node, index)
-      const state = loadedState(rbush)
-      return { state, coordinate: cond.filter(coordinate) }
-    },
-
-    pointerdown: message => {
-      const node = message.closestSegment(rbush)
-      const { coordinate, index } = message.coordinateWithinTolerance(node)
-      const cond = conditions(message, node, index)
-
-      const ignore = () => {
-        return {
-          state: loadedState(rbush),
-          coordinate: null,
-          propagate: true
-        }
-      }
-
-      const loaded = () => {
-        return {
-          state: loadedState(rbush),
-          coordinate: cond.filter(coordinate),
-          propagate: true
-        }
-      }
-
-      const remove = () => {
-        return {
-          state: removeState(node, index),
-          coordinate: cond.filter(coordinate),
-          propagate: false,
-          feature: node.feature,
-          type: 'modifystart'
-        }
-      }
-
-      const drag = () => {
-        return {
-          state: lockedState(node.feature, updateVertex(node, index)),
-          coordinate: cond.filter(coordinate),
-          propagate: false,
-          feature: node.feature,
-          type: 'modifystart'
-        }
-      }
-
-      const engage = () => {
-        return {
-          state: engagedState(rbush, node),
-          coordinate,
-          propagate: false,
-          feature: node.feature,
-          type: 'modifystart'
-        }
-      }
-
-      if (cond.mustIgnore()) return ignore()
-      else if (!coordinate) return loaded()
-      else if (cond.canRemove()) return remove()
-      else if (cond.canDrag()) return drag()
-      else if (cond.canInsert()) return engage()
-      else return loaded()
-    }
-  }
-
-  // Optionally handle (last) `click` event after feature was selected.
-  if (handleClick) {
-    handlers.click = message => {
-      const node = message.closestSegment(rbush)
-      const { coordinate, index } = message.coordinateWithinTolerance(node)
-      const cond = conditions(message, node, index)
-      const state = loadedState(rbush)
-      return { state, coordinate: cond.filter(coordinate), propagate: false }
-    }
-  }
-
-  return handlers
-}
-
-/**
- *
- */
-const removeState = (node, index) => ({
+const remove = (node, index) => ({
   pointerup: () => {
     const feature = node.feature
+    const clone = feature.clone()
     const coordinates = removeVertex(node, index)
     feature.coordinates = coordinates
-    const state = loadedState(rbush(feature))
-    return { state, feature, type: 'modifyend', coordinate: null, propagate: false }
-  }
+    feature.commit()
+    // TODO: emit update event
+
+    // Remain in REMOVE state and wait for next click event:
+    return [remove(node, index), Events.update(clone, feature)]
+  },
+
+  // Click event is handled again in LOADED state
+  // with upcoming RBush event.
+  click: () => [loaded(true), null]
 })
-
-/**
- *
- */
-const engagedState = (rbush, node) => {
-
-  return {
-    pointerdrag: message => {
-      const coordinate = message.pointOnSegment(node.segment)
-      const distance = message.pixelDistance(coordinate)
-
-      if (message.withinTolerance(distance)) {
-        const state = engagedState(rbush, node)
-        return { state, coordinate, propagate: false }
-      } else {
-        const coordinate = message.pointerCoordinate
-        const feature = node.feature
-        const [coordinates, update] = insertVertex(node, coordinate)
-        feature.coordinates = coordinates
-
-        const state = lockedState(feature, update)
-        return { state, coordinate, propagate: false }
-      }
-    },
-
-    pointerup: () => {
-      const state = loadedState(rbush, true)
-      return { state, propagate: false }
-    }
-  }
-}
-
-/**
- * LOCKED: Locked to an existing segment vertex.
- */
-const lockedState = (feature, update) => {
-  return {
-    pointerdrag: message => {
-      const { pointerCoordinate, originalEvent } = message
-
-      const [coordinates, coordinate] = update(pointerCoordinate, originalEvent)
-      feature.coordinates = coordinates
-      const state = lockedState(feature, update)
-      return { state, coordinate, propagate: false }
-    },
-
-    pointermove: () => {
-      // Prevent pointermove from being delegated to translate interaction.
-      const state = lockedState(feature, update)
-      return { state, propagate: false }
-    },
-
-    pointerdown: () => {
-      const state = lockedState(feature, update)
-      return { state, feature, type: 'modifystart', propagate: false }
-    },
-
-    pointerup: () => {
-      const state = loadedState(rbush(feature), true)
-      return { state, feature, type: 'modifyend', propagate: false }
-    }
-  }
-}
-
-const close = (ring, index) => {
-  if (index === 0) ring[ring.length - 1] = ring[0]
-  else if (index >= ring.length - 1) ring[0] = ring[ring.length - 1]
-}
-
-export const updateVertex = (node, index) => {
-  const { geometry, depth } = node
-  const offset = node.index + index
-  const hooks = Hooks.get(node, offset)
-
-  return (coordinate, event) => {
-    let coordinates = geometry.getCoordinates()
-    const projected = hooks.project(coordinate, event)
-
-    switch (geometry.getType()) {
-      case 'Point':
-        coordinates = projected
-        break
-      case 'MultiPoint':
-        coordinates[node.index] = projected
-        break
-      case 'LineString':
-        coordinates[offset] = projected
-        break
-      case 'MultiLineString':
-        coordinates[depth[0]][offset] = projected
-        break
-      case 'Polygon':
-        coordinates[depth[0]][offset] = projected
-        close(coordinates[depth[0]], offset)
-        break
-      case 'MultiPolygon':
-        coordinates[depth[0]][depth[1]][offset] = projected
-        close(coordinates[depth[0]][depth[1]], offset)
-        break
-    }
-
-    coordinates = hooks.coordinates(coordinates, event)
-    return [coordinates, projected]
-  }
-}
-
-export const insertVertex = (node, coordinate) => {
-  const { geometry, depth } = node
-  const offset = node.index + 1
-  const hooks = Hooks.get(node, offset)
-  const coordinates = geometry.getCoordinates()
-
-  switch (geometry.getType()) {
-    case 'LineString':
-      coordinates.splice(offset, 0, coordinate)
-      break
-    case 'MultiLineString':
-      coordinates[depth[0]].splice(offset, 0, coordinate)
-      break
-    case 'Polygon':
-      coordinates[depth[0]].splice(offset, 0, coordinate)
-      close(coordinates[depth[0]], offset)
-      break
-    case 'MultiPolygon':
-      coordinates[depth[0]][depth[1]].splice(offset, 0, coordinate)
-      close(coordinates[depth[0]][depth[1]], offset)
-      break
-  }
-
-  return [hooks.coordinates(coordinates), updateVertex(node, 1)]
-}
-
-export const removeVertex = (node, index) => {
-  const { geometry, depth } = node
-  const offset = node.index + index
-  const hooks = Hooks.get(node, offset)
-  const coordinates = geometry.getCoordinates()
-
-  switch (geometry.getType()) {
-    case 'LineString':
-      if (coordinates.length > 2) coordinates.splice(offset, 1)
-      break
-    case 'MultiLineString':
-      if (coordinates[depth[0]].length > 2) coordinates[depth[0]].splice(offset, 1)
-      break
-    case 'Polygon':
-      if (coordinates[depth[0]].length > 4) {
-        coordinates[depth[0]].splice(offset, 1)
-        close(coordinates[depth[0]], offset)
-      }
-      break
-    case 'MultiPolygon':
-      if (coordinates[depth[0]][depth[1]].length > 4) {
-        coordinates[depth[0]][depth[1]].splice(offset, 1)
-        close(coordinates[depth[0]][depth[1]], offset)
-      }
-      break
-  }
-
-  return hooks.coordinates(coordinates)
-}

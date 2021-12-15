@@ -1,5 +1,5 @@
 import { Modify } from './modify'
-// import { Modify } from './modify/index.original'
+// import { Modify } from './modify-dfa'
 import { writeFeatureCollection } from '../../store/format'
 
 /**
