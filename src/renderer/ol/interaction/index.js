@@ -32,7 +32,6 @@ export default options => {
     // For example: CMD/pointerdown would not be delegates to modify
     // interaction if boxelect is placed before (right of) modify.
     // boxelect consumes CMD/pointerdown.
-    // [select, translate, boxselect, modify, snap]
-    [select, modify]
+    [select, translate, boxselect, modify, snap]
   )
 }

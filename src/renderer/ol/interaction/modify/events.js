@@ -103,7 +103,6 @@ export const pointer = (options, rbush, event) => {
   pointer.pixelDistance = R.compose(pixelDistance, closestOnSegment)
 
   pointer.pick = () => {
-    if (pointer.condition(shiftKeyOnly)) return null
     const [segment] = sortedSegments()
     const [coordinate, index] = vertex(segment)
     return { segment, coordinate, index }

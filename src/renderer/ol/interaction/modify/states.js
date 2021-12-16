@@ -30,6 +30,8 @@ export const selected = (handleClick = false) => ({
    * Point on segment (no vertex index): insert state.
    */
   pointerdown: pointer => {
+    if (pointer.condition(shiftKeyOnly)) return null
+
     const { segment, coordinate, index } = pointer.pick()
 
     // Mark event as handled if we have a coordinate:
