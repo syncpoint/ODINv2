@@ -12,7 +12,7 @@ import { newDefaultScheduler, currentTime } from '@most/scheduler'
 import * as Events from './events'
 import { writeIndex } from './writers'
 import { setCoordinates } from '../../geometry'
-import { pipe, fromListeners, replace, orElse, op } from './frp'
+import { pipe, fromListeners, replace, orElse, op, flat } from './frp'
 import { selected } from './states'
 
 /**
@@ -94,6 +94,7 @@ export class Modify extends Interaction {
       M.combine((rbush, event) => [rbush, event], rbush$),
       M.loop(eventLoop, selected(true)),
       M.filter(R.identity),
+      flat,
       M.multicast
     ])(event$)
 

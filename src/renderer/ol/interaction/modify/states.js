@@ -57,7 +57,12 @@ export const selected = (handleClick = false) => ({
     feature.coordinates = coordinates
     feature.commit()
 
-    return [selected(), Events.update(clone, feature)]
+    const events = [
+      Events.update(clone, feature),
+      Events.coordinate(null)
+    ]
+
+    return [selected(), events]
   }
 })
 
