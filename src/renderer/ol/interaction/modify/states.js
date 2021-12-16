@@ -1,22 +1,25 @@
 import * as Events from './events'
 import { updateVertex, removeVertex, insertVertex } from './writers'
 
-export const loaded = (handleClick = false) => ({
+/**
+ * Feature is selected for modification.
+ */
+export const selected = (handleClick = false) => ({
   pointermove: pointer => {
     const [segment, coordinate] = pointer.pick()
-    return [loaded(), segment ? Events.coordinate(coordinate) : null]
+    return [selected(), segment ? Events.coordinate(coordinate) : null]
   },
 
   // Hide vertex feature on SHIFT key down.
   keydown: pointer => pointer.shiftKey
-    ? [loaded(), Events.coordinate(null)]
+    ? [selected(), Events.coordinate(null)]
     : null,
 
   // Optionally handle click (after selecting feature).
   click: pointer => {
     if (handleClick) {
       const [segment, coordinate] = pointer.pick()
-      return [loaded(), segment ? Events.coordinate(coordinate) : null]
+      return [selected(), segment ? Events.coordinate(coordinate) : null]
     } else return null
   },
 
@@ -30,7 +33,7 @@ export const loaded = (handleClick = false) => ({
 
     // Mark event as handled if we have a coordinate:
     if (coordinate) pointer.stopPropagation()
-    else return [loaded(), null]
+    else return [selected(), null]
 
     const feature = segment.feature
     const clone = feature.clone()
@@ -45,6 +48,9 @@ export const loaded = (handleClick = false) => ({
   }
 })
 
+/**
+ * Drag vertex state.
+ */
 const drag = (feature, clone, update) => ({
   pointerdrag: pointer => {
 
@@ -57,10 +63,14 @@ const drag = (feature, clone, update) => ({
   },
   pointerup: (_, event) => {
     feature.commit()
-    return [loaded(), Events.update(clone, feature)]
+    return [selected(), Events.update(clone, feature)]
   }
 })
 
+
+/**
+ * Insert vertex state.
+ */
 const insert = segment => ({
   pointerdrag: pointer => {
     const coordinate = pointer.closestOnSegment(segment.vertices)
@@ -79,6 +89,9 @@ const insert = segment => ({
   }
 })
 
+/**
+ * Remove vertex state.
+ */
 const remove = (segment, index) => ({
   pointerup: () => {
     const feature = segment.feature
@@ -86,7 +99,6 @@ const remove = (segment, index) => ({
     const coordinates = removeVertex(segment, index)
     feature.coordinates = coordinates
     feature.commit()
-    // TODO: emit update event
 
     // Remain in REMOVE state and wait for next click event:
     return [remove(segment, index), Events.update(clone, feature)]
@@ -94,5 +106,5 @@ const remove = (segment, index) => ({
 
   // Click event is handled again in LOADED state
   // with upcoming RBush event.
-  click: () => [loaded(true), null]
+  click: () => [selected(true), Events.coordinate(null)]
 })
