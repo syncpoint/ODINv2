@@ -42,6 +42,19 @@ export const loaded = (handleClick = false) => ({
       : insert(segment)
 
     return [state, Events.coordinate(coordinate)]
+  },
+
+  dblclick: pointer => {
+    const [segment, coordinate, index] = pointer.pick()
+    if (index === null) return null
+
+    const feature = segment.feature
+    const clone = feature.clone()
+    const coordinates = removeVertex(segment, index)
+    feature.coordinates = coordinates
+    feature.commit()
+
+    return [loaded(), Events.update(clone, feature)]
   }
 })
 
