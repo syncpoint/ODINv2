@@ -10,6 +10,7 @@ import * as M from '@most/core'
 import { runEffects } from '@most/core'
 import { newDefaultScheduler, currentTime } from '@most/scheduler'
 import * as Events from './events'
+import { ModifyEvent } from './events'
 import { writeIndex } from './writers'
 import { setCoordinates } from '../../geometry'
 import { pipe, fromListeners, replace, orElse, op, flat } from './frp'
@@ -107,8 +108,8 @@ export class Modify extends Interaction {
 
     // Update path. Pipe update events to store (indirectly).
     const update$ = pipe([
-      M.filter(event => event.type === 'update'),
-      M.tap(console.log)
+      M.filter(event => event instanceof ModifyEvent),
+      M.tap(event => this.dispatchEvent(event))
     ])(pipeline$)
 
     const scheduler = newDefaultScheduler()

@@ -38,16 +38,15 @@ export const selected = (handleClick = false) => ({
     if (coordinate) pointer.stopPropagation()
     else return [selected(), null]
 
-    const feature = segment.feature
-    const clone = feature.clone()
-
-    const state = Number.isInteger(index)
-      ? pointer.condition(altKeyOnly)
-        ? remove(segment, index)
-        : drag(feature, clone, updateVertex(segment, index))
-      : insert(segment)
-
-    return [state, Events.coordinate(coordinate)]
+    if (Number.isInteger(index)) {
+      if (pointer.condition(altKeyOnly)) {
+        return [remove(segment, index), Events.coordinate(coordinate)]
+      } else {
+        const feature = segment.feature
+        const events = [Events.coordinate(coordinate), Events.modifystart(feature)]
+        return [drag(feature, updateVertex(segment, index)), events]
+      }
+    } else return [insert(segment), Events.coordinate(coordinate)]
   },
 
   dblclick: pointer => {
@@ -55,13 +54,17 @@ export const selected = (handleClick = false) => ({
     if (!Number.isInteger(index)) return null
 
     const feature = segment.feature
-    const clone = feature.clone()
+    const modifystart = Events.modifystart(feature)
+
     const coordinates = removeVertex(segment, index)
     feature.coordinates = coordinates
     feature.commit()
 
+    const modifyend = Events.modifyend(feature)
+
     const events = [
-      Events.update(clone, feature),
+      modifystart,
+      modifyend,
       Events.coordinate(null)
     ]
 
@@ -72,18 +75,19 @@ export const selected = (handleClick = false) => ({
 /**
  * Drag vertex state.
  */
-const drag = (feature, clone, update) => ({
+const drag = (feature, update) => ({
 
   pointerdrag: pointer => {
     const [coordinates, coordinate] = update(pointer.coordinate, pointer.condition)
 
     // Side-effect: Update feature coordinates and thus geometry.
     feature.coordinates = coordinates
-    return [drag(feature, clone, update), Events.coordinate(coordinate)]
+    return [drag(feature, update), Events.coordinate(coordinate)]
   },
-  pointerup: (_, event) => {
+
+  pointerup: () => {
     feature.commit()
-    return [selected(), Events.update(clone, feature)]
+    return [selected(), Events.modifyend(feature, feature)]
   }
 })
 
@@ -100,10 +104,9 @@ const insert = segment => ({
     } else {
       const coordinate = pointer.coordinate
       const feature = segment.feature
-      const clone = feature.clone()
       const [coordinates, update] = insertVertex(segment, coordinate)
       feature.coordinates = coordinates
-      return [drag(feature, clone, update), Events.coordinate(coordinate)]
+      return [drag(feature, update), Events.coordinate(coordinate)]
     }
   },
 

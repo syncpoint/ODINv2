@@ -17,12 +17,12 @@ export default options => {
   })
 
   interaction.on('modifystart', event => {
-    const geoJSON = writeFeatureCollection(event.features)
+    const geoJSON = writeFeatureCollection([event.feature])
     clones = geoJSON.features
   })
 
   interaction.on('modifyend', event => {
-    const { features } = writeFeatureCollection(event.features)
+    const { features } = writeFeatureCollection([event.feature])
     const [newValues, oldValues] = features.reduce((acc, feature, index) => {
       acc[0].push(feature)
       acc[1].push(clones[index])

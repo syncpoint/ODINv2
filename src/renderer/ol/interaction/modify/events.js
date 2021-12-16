@@ -1,10 +1,26 @@
 import * as R from 'ramda'
-import { shiftKeyOnly } from 'ol/events/condition'
+import Event from 'ol/events/Event'
 import { Coordinate } from './coordinate'
+
+/**
+ *
+ */
+export class ModifyEvent extends Event {
+  constructor (type, feature) {
+    super(type)
+    this.feature = feature
+  }
+}
 
 
 export const coordinate = coordinate => ({ type: 'coordinate', coordinate })
 export const update = (clone, feature) => ({ type: 'update', clone, feature })
+export const modifyend = feature => new ModifyEvent('modifyend', feature)
+export const modifystart = feature => {
+  const clone = feature.clone()
+  clone.setId(feature.getId())
+  return new ModifyEvent('modifystart', clone)
+}
 
 export const pointer = (options, rbush, event) => {
   const pixelTolerance = options.pixelTolerance || 10
