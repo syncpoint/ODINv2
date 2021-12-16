@@ -10,11 +10,15 @@ import * as M from '@most/core'
 import { runEffects } from '@most/core'
 import { newDefaultScheduler, currentTime } from '@most/scheduler'
 import * as Events from './events'
-import { rbush } from './writers'
+import { writeIndex } from './writers'
 import { setCoordinates } from '../../geometry'
 import { pipe, fromListeners, replace, orElse, op } from './frp'
-import { loaded } from './states'
+import { selected } from './states'
 
+/**
+ * Sink for vertex feature overlay.
+ * Accept coordinate events and update feature accordingly.
+ */
 export class OverlaySink {
   constructor (style, options) {
     const source = new VectorSource({
@@ -66,14 +70,11 @@ export class Modify extends Interaction {
     const [sink, event$] = Subject.create()
     this.next = event => Subject.event(currentTime(scheduler), event, sink)
 
-    const rbush$ = pipe([
-      M.tap(event => console.log('RBUSH', event))
-    ])(Modify.rbush(options.source))
-
+    // Apply (rbush, event) to current state and update state accordingly.
     const eventLoop = (state, [rbush, event]) => {
 
       // For empty index, reset to loaded state:
-      if (rbush.isEmpty()) return { seed: loaded(true), value: Events.coordinate(null) }
+      if (rbush.isEmpty()) return { seed: selected(true), value: Events.coordinate(null) }
 
       const pointer = Events.pointer(options, rbush, event)
       const handler = state[event.type]
@@ -81,20 +82,29 @@ export class Modify extends Interaction {
       return { seed, value }
     }
 
+    // Setup RBush stream from vector source add/remove
+    // feature and feature change events:
+    const rbush$ = Modify.rbush(options.source)
+
     const pipeline$ = pipe([
+
       // combine :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
+      // Apply a function to the most recent event from each Stream
+      // when a new event arrives on any Stream.
       M.combine((rbush, event) => [rbush, event], rbush$),
-      M.loop(eventLoop, loaded(true)),
+      M.loop(eventLoop, selected(true)),
       M.filter(R.identity),
       M.multicast
     ])(event$)
 
+    // Coordinate path. Pipe coordinate events to overlay.
     const coordinate$ = pipe([
       M.filter(event => event.type === 'coordinate'),
       M.map(({ coordinate }) => coordinate),
       op(() => this.overlay)
     ])(pipeline$)
 
+    // Update path. Pipe update events to store (indirectly).
     const update$ = pipe([
       M.filter(event => event.type === 'update'),
       M.tap(console.log)
@@ -117,25 +127,38 @@ export class Modify extends Interaction {
    * rbush :: RBush a => ol/VectorSource -> Stream a
    */
   static rbush (source) {
+
     const pipeline = pipe([
       M.map(({ target }) => target.getFeatures()),
+
+      // Only one selected feature allowed:
       M.map(features => features.length === 1 ? features[0] : null),
-      orElse(new Feature()), // feature without geometry
+
+      // Replace null with dummy feature without geometry:
+      orElse(new Feature()),
       M.skipRepeats,
 
-      // map :: ol.Feature => Stream RBush
+      // map :: RBush a => ol.Feature -> Stream a
       // Higher-order stream of RBush events.
-      M.map(Modify.createProxy),
+      M.map(Modify.featureProxy),
 
-      // Switch to new Stream RBush as it arrives,
-      // ending the previous stream.
+      // Switch to new RBush stream as it arrives,
+      // ending the previous stream. RBush events
+      // are piped/flattened to output stream.
       replace
     ])
 
-    return pipeline(fromListeners(['addfeature', 'removefeature'], source))
+    const source$ = fromListeners(['addfeature', 'removefeature'], source)
+    return pipeline(source$)
   }
 
-  static createProxy (feature) {
+  /**
+   * createProxy :: RBush a => ol/Feature -> Stream a
+   * Feature proxy with
+   * @property coordinates - writable, geometry coordinates
+   * @property commit - emit change event for feature
+   */
+  static featureProxy (feature) {
     // feature change event: false -> external, true -> internal
     let internalChange = false
 
@@ -154,6 +177,8 @@ export class Modify extends Interaction {
     }
 
     const proxy = new Proxy(feature, handlers)
+
+    // Simulate external change by emitting change event explicitly.
     proxy.commit = () => {
       // Must not happen inside this stack frame:
       const event = { type: 'change', target: feature }
@@ -161,14 +186,17 @@ export class Modify extends Interaction {
       setTimeout(dispatch, 0)
     }
 
-    // Create new spatial index for each 'external' change event:
+    // Create new spatial index for each external change event:
     const pipeline = pipe([
       M.filter(() => !internalChange),
-      M.map(() => rbush(proxy)),
-      M.startWith(rbush(proxy)) // initial spatial index
+      M.map(() => writeIndex(proxy)),
+
+      // Initial spatial index:
+      M.startWith(writeIndex(proxy))
     ])
 
-    return pipeline(fromListeners(['change'], feature))
+    const change$ = fromListeners(['change'], feature)
+    return pipeline(change$)
   }
 
   setMap (map) {
@@ -180,14 +208,7 @@ export class Modify extends Interaction {
 const pointerStyles = {}
 
 pointerStyles.DEFAULT = [
-  new style.Style({
-    image: new style.Circle({
-      radius: 7, stroke: new style.Stroke({ color: 'black', width: 3, lineDash: [3, 3] })
-    })
-  }),
-  new style.Style({
-    image: new style.Circle({
-      radius: 7, stroke: new style.Stroke({ color: 'red', width: 3, lineDash: [3, 3], lineDashOffset: 3 })
-    })
-  })
-]
+  { radius: 7, stroke: new style.Stroke({ color: 'black', width: 3 }) },
+  { radius: 7, stroke: new style.Stroke({ color: 'red', width: 2, lineDash: [3, 3] }) },
+  { radius: 7, stroke: new style.Stroke({ color: 'white', width: 2, lineDash: [3, 3], lineDashOffset: 3 }) }
+].map(options => new style.Style({ image: new style.Circle(options) }))
