@@ -1,3 +1,4 @@
+import { altKeyOnly, shiftKeyOnly } from 'ol/events/condition'
 import * as Events from './events'
 import { updateVertex, removeVertex, insertVertex } from './writers'
 
@@ -6,19 +7,19 @@ import { updateVertex, removeVertex, insertVertex } from './writers'
  */
 export const selected = (handleClick = false) => ({
   pointermove: pointer => {
-    const [segment, coordinate] = pointer.pick()
+    const { segment, coordinate } = pointer.pick()
     return [selected(), segment ? Events.coordinate(coordinate) : null]
   },
 
   // Hide vertex feature on SHIFT key down.
-  keydown: pointer => pointer.shiftKey
+  keydown: pointer => pointer.condition(shiftKeyOnly)
     ? [selected(), Events.coordinate(null)]
     : null,
 
   // Optionally handle click (after selecting feature).
   click: pointer => {
     if (handleClick) {
-      const [segment, coordinate] = pointer.pick()
+      const { segment, coordinate } = pointer.pick()
       return [selected(), segment ? Events.coordinate(coordinate) : null]
     } else return null
   },
@@ -29,7 +30,7 @@ export const selected = (handleClick = false) => ({
    * Point on segment (no vertex index): insert state.
    */
   pointerdown: pointer => {
-    const [segment, coordinate, index] = pointer.pick()
+    const { segment, coordinate, index } = pointer.pick()
 
     // Mark event as handled if we have a coordinate:
     if (coordinate) pointer.stopPropagation()
@@ -38,8 +39,8 @@ export const selected = (handleClick = false) => ({
     const feature = segment.feature
     const clone = feature.clone()
 
-    const state = index !== null
-      ? pointer.altKey
+    const state = Number.isInteger(index)
+      ? pointer.condition(altKeyOnly)
         ? remove(segment, index)
         : drag(feature, clone, updateVertex(segment, index))
       : insert(segment)
@@ -48,8 +49,8 @@ export const selected = (handleClick = false) => ({
   },
 
   dblclick: pointer => {
-    const [segment, coordinate, index] = pointer.pick()
-    if (index === null) return null
+    const { segment, index } = pointer.pick()
+    if (!Number.isInteger(index)) return null
 
     const feature = segment.feature
     const clone = feature.clone()
@@ -70,10 +71,9 @@ export const selected = (handleClick = false) => ({
  * Drag vertex state.
  */
 const drag = (feature, clone, update) => ({
-  pointerdrag: pointer => {
 
-    // TODO: get rid of originalEvent (metaKey, ctrlKey)
-    const [coordinates, coordinate] = update(pointer.coordinate, pointer.originalEvent)
+  pointerdrag: pointer => {
+    const [coordinates, coordinate] = update(pointer.coordinate, pointer.condition)
 
     // Side-effect: Update feature coordinates and thus geometry.
     feature.coordinates = coordinates
@@ -91,8 +91,7 @@ const drag = (feature, clone, update) => ({
  */
 const insert = segment => ({
   pointerdrag: pointer => {
-    const coordinate = pointer.closestOnSegment(segment.vertices)
-    const distance = pointer.pixelDistance(coordinate)
+    const distance = pointer.pixelDistance(segment.vertices)
 
     if (pointer.withinTolerance(distance)) {
       return [insert(segment), Events.coordinate(pointer.coordinate)]
@@ -104,7 +103,9 @@ const insert = segment => ({
       feature.coordinates = coordinates
       return [drag(feature, clone, update), Events.coordinate(coordinate)]
     }
-  }
+  },
+
+  pointerup: () => [selected()]
 })
 
 /**

@@ -1,5 +1,7 @@
 import * as R from 'ramda'
+import { shiftKeyOnly } from 'ol/events/condition'
 import { Coordinate } from './coordinate'
+
 
 export const coordinate = coordinate => ({ type: 'coordinate', coordinate })
 export const update = (clone, feature) => ({ type: 'update', clone, feature })
@@ -25,7 +27,7 @@ export const pointer = (options, rbush, event) => {
   // the same coordinate. This is especially important
   // for corridors.
   // TODO: reference to test procedure
-  //
+
   const segments = extent => extent
     ? rbush.getInExtent(extent).reverse()
     : []
@@ -78,31 +80,33 @@ export const pointer = (options, rbush, event) => {
     // (vertex) index :: null | 0 | 1
     // Either 0 for start vertex, 1 for end vertex or
     // null for point between start and end vertex:
+
     const index = withinTolerance(minDistance)
       ? distances[0] <= distances[1]
         ? 0
         : 1
-      : null
+      : undefined
 
-    const coordinate = index !== null ? vertices[index] : projectedCoordinate
-    // TODO: also return pixel distance (insert state)
+    const coordinate = Number.isInteger(index)
+      ? vertices[index]
+      : projectedCoordinate
+
     return [coordinate, index]
   }
 
   pointer.withinTolerance = withinTolerance
   pointer.coordinate = event.coordinate
-  pointer.originalEvent = event.originalEvent
-  pointer.shiftKey = event.originalEvent.shiftKey
-  pointer.altKey = event.originalEvent.altKey
   pointer.stopPropagation = event.stopPropagation.bind(event)
-  pointer.closestOnSegment = closestOnSegment // TODO: replace with additional pixel distance in pick/vertex
-  pointer.pixelDistance = pixelDistance // TODO: replace with additional pixel distance in pick/vertex
+  pointer.condition = predicate => predicate(event)
+
+  // Pixel distance of pointer coordinate to closest point on segment.
+  pointer.pixelDistance = R.compose(pixelDistance, closestOnSegment)
 
   pointer.pick = () => {
-    if (pointer.shiftKey) return null
+    if (pointer.condition(shiftKeyOnly)) return null
     const [segment] = sortedSegments()
     const [coordinate, index] = vertex(segment)
-    return [segment, coordinate, index]
+    return { segment, coordinate, index }
   }
 
   return pointer

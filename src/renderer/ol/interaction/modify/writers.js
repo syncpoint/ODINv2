@@ -146,9 +146,9 @@ export const updateVertex = (node, index) => {
   const offset = node.index + index
   const hooks = Hooks.get(node, offset)
 
-  return (coordinate, event) => {
+  return (coordinate, condition) => {
     let coordinates = geometry.getCoordinates()
-    const projected = hooks.project(coordinate, event)
+    const projected = hooks.project(coordinate, condition)
 
     switch (geometry.getType()) {
       case 'Point':
@@ -173,7 +173,7 @@ export const updateVertex = (node, index) => {
         break
     }
 
-    coordinates = hooks.coordinates(coordinates, event)
+    coordinates = hooks.coordinates(coordinates, condition)
     return [coordinates, projected]
   }
 }

@@ -1,8 +1,8 @@
 import * as R from 'ramda'
 import * as geom from 'ol/geom'
+import { platformModifierKeyOnly } from 'ol/events/condition'
 import { transform, getCoordinates } from '../../geometry'
 import * as TS from '../../ts'
-import { cmdOrCtrl } from '../../../platform'
 
 export default (node, offset) => {
   const geometry = node.feature.getGeometry()
@@ -76,9 +76,9 @@ export default (node, offset) => {
     return { copy, coordinates, angle, extent, project }
   }
 
-  const project = (coordinate, event) => {
-    if (!event) return coordinate
-    if (!cmdOrCtrl(event)) return coordinate
+  const project = (coordinate, condition) => {
+    if (!condition) return coordinate
+    if (!condition(platformModifierKeyOnly)) return coordinate
 
     const current = frame(params(geometry))
     const point = read(new geom.Point(coordinate))
@@ -102,8 +102,8 @@ export default (node, offset) => {
     return next.coordinates
   }
 
-  const coordinates = (xs, event) =>
-    (event && cmdOrCtrl(event) ? rotate : resize)(xs)
+  const coordinates = (xs, condition) =>
+    (condition && condition(platformModifierKeyOnly) ? rotate : resize)(xs)
 
   return {
     project,
