@@ -2,17 +2,17 @@ import { altKeyOnly, shiftKeyOnly } from 'ol/events/condition'
 import * as Events from './events'
 import { updateVertex, removeVertex, insertVertex } from './writers'
 
+const ignoreEvent = event => event.condition(shiftKeyOnly)
+const coordinateEvent = ({ coordinate }) => Events.coordinate(coordinate)
+
 /**
  * Feature is selected for modification.
  */
 export const selected = (handleClick = false) => ({
-  pointermove: pointer => {
-    const { segment, coordinate } = pointer.pick()
-    return [selected(), segment ? Events.coordinate(coordinate) : null]
-  },
+  pointermove: pointer => [selected(), coordinateEvent(pointer.pick())],
 
   // Hide vertex feature on SHIFT key down.
-  keydown: pointer => pointer.condition(shiftKeyOnly)
+  keydown: pointer => ignoreEvent(pointer)
     ? [selected(), Events.coordinate(null)]
     : null,
 
@@ -32,7 +32,8 @@ export const selected = (handleClick = false) => ({
   pointerdown: pointer => {
     if (pointer.condition(shiftKeyOnly)) return null
 
-    const { segment, coordinate, index } = pointer.pick()
+    const pick = pointer.pick()
+    const { segment, coordinate, index } = pick
 
     // Mark event as handled if we have a coordinate:
     if (coordinate) pointer.stopPropagation()
@@ -46,7 +47,7 @@ export const selected = (handleClick = false) => ({
         const events = [Events.coordinate(coordinate), Events.modifystart(feature)]
         return [drag(feature, updateVertex(segment, index)), events]
       }
-    } else return [insert(segment), Events.coordinate(coordinate)]
+    } else return [insert(pick), Events.coordinate(coordinate)]
   },
 
   dblclick: pointer => {
@@ -95,23 +96,28 @@ const drag = (feature, update) => ({
 /**
  * Insert vertex state.
  */
-const insert = segment => ({
-  pointerdrag: pointer => {
-    const distance = pointer.pixelDistance(segment.vertices)
+const insert = pick => {
+  const { segment } = pick
 
-    if (pointer.withinTolerance(distance)) {
-      return [insert(segment), Events.coordinate(pointer.coordinate)]
-    } else {
-      const coordinate = pointer.coordinate
-      const feature = segment.feature
-      const [coordinates, update] = insertVertex(segment, coordinate)
-      feature.coordinates = coordinates
-      return [drag(feature, update), Events.coordinate(coordinate)]
-    }
-  },
+  return {
+    pointerdrag: pointer => {
+      const distance = pointer.pixelDistance(segment.vertices)
 
-  pointerup: () => [selected()]
-})
+      if (pointer.withinTolerance(distance)) {
+        return [insert(pick), Events.coordinate(pointer.coordinate)]
+      } else {
+        const coordinate = pointer.coordinate
+        const feature = segment.feature
+        const [coordinates, update] = insertVertex(segment, coordinate)
+        const modifystart = Events.modifystart(feature)
+        feature.coordinates = coordinates
+        return [drag(feature, update), [modifystart, Events.coordinate(coordinate)]]
+      }
+    },
+
+    pointerup: () => [selected()]
+  }
+}
 
 /**
  * Remove vertex state.
