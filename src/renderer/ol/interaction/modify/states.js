@@ -1,9 +1,17 @@
+import * as R from 'ramda'
 import { altKeyOnly, shiftKeyOnly } from 'ol/events/condition'
 import * as Events from './events'
 import { updateVertex, removeVertex, insertVertex } from './writers'
 
 const ignoreEvent = event => event.condition(shiftKeyOnly)
+const removeEvent = event => event.condition(altKeyOnly)
+const offTarget = ({ coordinate }) => R.isNil(coordinate)
+const onTarget = pick => R.not(offTarget(pick))
+const onVertex = pick => onTarget(pick) && Number.isInteger(pick.index)
+const onSegment = pick => onTarget(pick) && R.isNil(pick.index)
+
 const coordinateEvent = ({ coordinate }) => Events.coordinate(coordinate)
+
 
 /**
  * Feature is selected for modification.
@@ -25,35 +33,44 @@ export const selected = (handleClick = false) => ({
   },
 
   /**
-   * No coordinate: remain in loaded state.
+   * No coordinate: remain in SELECTED state.
    * Segment vertex at index 0 or 1: dragging state.
    * Point on segment (no vertex index): insert state.
    */
   pointerdown: pointer => {
-    if (pointer.condition(shiftKeyOnly)) return null
+    if (ignoreEvent(pointer)) return null
 
     const pick = pointer.pick()
-    const { segment, coordinate, index } = pick
 
     // Mark event as handled if we have a coordinate:
-    if (coordinate) pointer.stopPropagation()
-    else return [selected(), null]
+    if (onTarget(pick)) pointer.stopPropagation()
 
-    if (Number.isInteger(index)) {
-      if (pointer.condition(altKeyOnly)) {
-        return [remove(segment, index), Events.coordinate(coordinate)]
-      } else {
-        const feature = segment.feature
-        const events = [Events.coordinate(coordinate), Events.modifystart(feature)]
-        return [drag(feature, updateVertex(segment, index)), events]
-      }
-    } else return [insert(pick), Events.coordinate(coordinate)]
+    // drag, remove and insert are mutually exclusive:
+    const removeMode = pick => onVertex(pick) && removeEvent(pointer)
+    const dragMode = pick => onVertex(pick) && R.not(removeEvent(pointer))
+    const insertMode = pick => onSegment(pick) && R.not(removeEvent(pointer))
+
+    const removeVertex = pick => [remove(pick), coordinateEvent(pick)]
+    const insertVertex = pick => [insert(pick), coordinateEvent(pick)]
+    const dragVertex = ({ segment, coordinate, index }) => {
+      const feature = segment.feature
+      const events = [Events.coordinate(coordinate), Events.modifystart(feature)]
+      return [drag(feature, updateVertex(segment, index)), events]
+    }
+
+    return R.cond([
+      [offTarget, R.always([selected(), null])],
+      [removeMode, removeVertex],
+      [insertMode, insertVertex],
+      [dragMode, dragVertex]
+    ])(pick)
   },
 
   dblclick: pointer => {
-    const { segment, index } = pointer.pick()
-    if (!Number.isInteger(index)) return null
+    const pick = pointer.pick()
+    if (R.not(onVertex(pick))) return null
 
+    const { segment, index } = pick
     const feature = segment.feature
     const modifystart = Events.modifystart(feature)
 
@@ -72,6 +89,7 @@ export const selected = (handleClick = false) => ({
     return [selected(), events]
   }
 })
+
 
 /**
  * Drag vertex state.
@@ -119,22 +137,27 @@ const insert = pick => {
   }
 }
 
+
 /**
  * Remove vertex state.
  */
-const remove = (segment, index) => ({
-  pointerup: () => {
-    const feature = segment.feature
-    const clone = feature.clone()
-    const coordinates = removeVertex(segment, index)
-    feature.coordinates = coordinates
-    feature.commit()
+const remove = pick => {
+  const { segment, index } = pick
 
-    // Remain in REMOVE state and wait for next click event:
-    return [remove(segment, index), Events.update(clone, feature)]
-  },
+  return {
+    pointerup: () => {
+      const feature = segment.feature
+      const clone = feature.clone()
+      const coordinates = removeVertex(segment, index)
+      feature.coordinates = coordinates
+      feature.commit()
 
-  // Click event is handled again in LOADED state
-  // with upcoming RBush event.
-  click: () => [selected(true), Events.coordinate(null)]
-})
+      // Remain in REMOVE state and wait for next click event:
+      return [remove(pick), Events.update(clone, feature)]
+    },
+
+    // Click event is handled again in SELECTED state
+    // with upcoming RBush event.
+    click: () => [selected(true), Events.coordinate(null)]
+  }
+}
