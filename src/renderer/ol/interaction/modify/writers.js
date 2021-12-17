@@ -76,9 +76,12 @@ Writers.MultiPoint = options => {
 
 Writers.LineString = options => {
   const { geometry } = options
+  const splitable = options.descriptor.maxPoints !== 2
+
   const segments = R.aperture(2, geometry.getCoordinates())
   return segments.map((vertices, index) => ({
     ...options,
+    splitable,
     index,
     vertices,
     extent: Extent.boundingExtent(vertices)
@@ -100,9 +103,12 @@ Writers.MultiLineString = options => {
 
 Writers.Polygon = options => {
   const { geometry } = options
+  const splitable = options.descriptor.layout !== 'rectangle'
+
   return geometry.getCoordinates().reduce((acc, ring, q) => {
     return acc.concat(R.aperture(2, ring).map((vertices, index) => ({
       ...options,
+      splitable,
       index,
       vertices,
       depth: [q],

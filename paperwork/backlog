@@ -1,5 +1,4 @@
 * modify: hide vertex feature while translating
-* modify: disallow add vertex on 2-point lines
 * modify: handle blur event while editing
 * modify: test procedure - doubleclick to remove point
 * leveldb: migrate towards db.getMany()

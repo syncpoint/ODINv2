@@ -80,11 +80,13 @@ export const pointer = (options, rbush, event) => {
   const vertex = segment => {
     if (!segment) return []
 
+    // Whether or not a vertex can be added between both vertices:
+    const splitable = segment.splitable !== false
     const vertices = segment.vertices
     const projectedCoordinate = closestOnSegment(vertices)
     const distance = pixelDistance(projectedCoordinate) // might be Infinity
 
-    // Pointer is too far from segment:
+    // Pointer is too far from segment (off target):
     if (!withinTolerance(distance)) return []
 
     const squaredPixelDistances = (xs, y) => xs
@@ -107,7 +109,9 @@ export const pointer = (options, rbush, event) => {
 
     const coordinate = Number.isInteger(index)
       ? vertices[index]
-      : projectedCoordinate
+      : splitable
+        ? projectedCoordinate
+        : undefined
 
     return [coordinate, index]
   }
@@ -213,6 +217,5 @@ export const flatN = n => Array(n).fill(flat).reduce((f, g) => R.compose(g, f))
  */
 export const replace = stream => new Replace(stream)
 export const orElse = value => map(that => that || value)
-export const log = tap(console.log)
 export const op = sink => stream => new Op(sink, stream)
 export const pipe = ops => stream => ops.reduce((acc, op) => op(acc), stream)
