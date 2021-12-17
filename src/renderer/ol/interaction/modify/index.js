@@ -9,11 +9,10 @@ import * as Subject from 'most-subject'
 import * as M from '@most/core'
 import { runEffects } from '@most/core'
 import { newDefaultScheduler, currentTime } from '@most/scheduler'
-import * as Events from './events'
-import { ModifyEvent } from './events'
 import { writeIndex } from './writers'
 import { setCoordinates } from '../../geometry'
-import { pipe, fromListeners, replace, orElse, op, flat } from './frp'
+import * as Events from './events'
+import { ModifyEvent, pipe, fromListeners, replace, orElse, op, flat } from './events'
 import { selected } from './states'
 
 /**
