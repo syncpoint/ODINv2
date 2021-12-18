@@ -77,7 +77,8 @@ Writers.MultiPoint = options => {
 
 Writers.LineString = options => {
   const { geometry } = options
-  const splitable = options.descriptor.maxPoints !== 2
+  const splitable = options.descriptor.maxPoints !== 2 &&
+    (options.descriptor && options.descriptor.layout !== 'orbit')
 
   const segments = R.aperture(2, geometry.getCoordinates())
   return segments.map((vertices, index) => ({
@@ -132,7 +133,6 @@ Writers.MultiPolygon = options => {
     }, acc)
   }, [])
 }
-
 
 Writers.GeometryCollection = options => {
   const { geometry } = options
