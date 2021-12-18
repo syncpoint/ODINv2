@@ -54,20 +54,15 @@ export const writeIndex = feature => {
  */
 export const Writers = {}
 
-// Experimntal:
-// Don't index points, thus don't support modify interaction and
-// solely rely on translate.
-Writers.Point = () => []
-
-// Writers.Point = options => {
-//   const { geometry } = options
-//   const coordinate = geometry.getCoordinates()
-//   return [{
-//     ...options,
-//     vertices: [coordinate, coordinate],
-//     extent: geometry.getExtent()
-//   }]
-// }
+Writers.Point = options => {
+  const { geometry } = options
+  const coordinate = geometry.getCoordinates()
+  return [{
+    ...options,
+    vertices: [coordinate, coordinate],
+    extent: geometry.getExtent()
+  }]
+}
 
 
 Writers.MultiPoint = options => {

@@ -129,6 +129,10 @@ export class Modify extends Interaction {
    */
   static rbush (source) {
 
+    const isSymbol = feature =>
+      feature.getGeometry() &&
+      feature.getGeometry().getType() === 'Point'
+
     const pipeline = pipe([
       M.map(({ target }) => target.getFeatures()),
 
@@ -137,6 +141,10 @@ export class Modify extends Interaction {
 
       // Replace null with dummy feature without geometry:
       orElse(new Feature()),
+
+      // Exclude 1-point symbols from modify:
+      M.filter(feature => R.not(isSymbol(feature))),
+
       M.skipRepeats,
 
       // map :: RBush a => ol.Feature -> Stream a
