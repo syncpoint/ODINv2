@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import Event from 'ol/events/Event'
 import { currentTime } from '@most/scheduler'
-import { map, tap } from '@most/core'
+import { map } from '@most/core'
 import { Coordinate } from './coordinate'
 
 /**
@@ -136,7 +136,7 @@ export const pointer = (options, rbush, event) => {
 /**
  * fromListeners :: [string] -> EventTarget -> Stream
  */
- export const fromListeners = (types, target) => ({
+export const fromListeners = (types, target) => ({
   run: (sink, scheduler) => {
     const push = event => sink.event(currentTime(scheduler), event)
     types.forEach(type => target.addEventListener(type, push))
