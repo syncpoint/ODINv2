@@ -1,15 +1,8 @@
-* leveldb: migrate towards db.getMany()
-* echelon (polygons)
-* drop feature (relative size)
-* drop labels (relative size)
-* modify interaction: clear vertex properly (pointer distance)
+* feature properties (incl. styles and links)
 * DISRUPT (OBSTACLES)
 * legacy import: echelon offset
 * legacy import: offset location
-* interaction: move(position) label (echelon, area center)
 * symbol: offset location indicator
-* feature properties (incl. styles and links)
-* milsymbol: @syncpoint/milsymbol npm deployment
 * menu: About
 * (automatic) software update (incl. menu item)
 * project list/menu: export project
@@ -30,15 +23,12 @@
 * preferences/project: default styles (stroke width, font size/weight)
 * preferences/project: symbol size (optionally echelon dependent)
 * preferences/project: simple symbol (op) status
-* screenshot incl. save as PNG
 * link: open
 * symbol: make modifer text style configurable
 * history: store/restore focused element and query
 * project list: focus new project's name for editing
 * project list: support open project without closing list
 * Command Palette: fuzzy search, incl. highlighting (Fuse.js)
-* milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
-* feature style: cascaded (layer, feature)
 * feature style: font (size, color, etc.)
 * main: show project selection on activation (macOS)
 * menu/Window: list open projects
@@ -47,6 +37,15 @@
 * print map
 
 cut off (post ODIN 2):
+* feature style: cascaded (layer, feature)
+* screenshot incl. save as PNG
+* milsymbol: @syncpoint/milsymbol npm deployment
+* milsymbol: fix font sizes/weights (TARGET REFERENCE, FIRING POINT, etc.)
+* interaction: move(position) label (echelon, area center)
+* filter feature from display (relative size)
+* filter feature from display (relative size)
+* echelon (polygons)
+* leveldb: migrate towards db.getMany()
 * tags: focus/center map on feature/layer
 * command palette: 'move to layer'
 * UI: switch to Roboto font face
