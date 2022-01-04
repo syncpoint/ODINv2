@@ -9100,6 +9100,7 @@
   },
   {
     "sidc": "O*G*------*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -9108,6 +9109,7 @@
   },
   {
     "sidc": "O*G*A-----*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -9117,6 +9119,7 @@
   },
   {
     "sidc": "O*G*B-----*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -9126,6 +9129,7 @@
   },
   {
     "sidc": "O*G*C-----*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -9135,6 +9139,7 @@
   },
   {
     "sidc": "O*G*D-----*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -9144,6 +9149,7 @@
   },
   {
     "sidc": "O*G*E-----*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -9153,6 +9159,7 @@
   },
   {
     "sidc": "O*G*F-----*****",
+    "scope": "ACTIVITY",
     "geometry": "Point",
     "hierarchy": [
       "Stability Operations (SO)",
@@ -11327,6 +11334,7 @@
   },
   {
     "sidc": "S*G*------*****",
+    "scope": "UNIT",
     "geometry": "Point",
     "hierarchy": [
       "Warfighting Symbols",
@@ -16239,10 +16247,10 @@
     "scope": "UNIT",
     "geometry": "Point",
     "hierarchy": [
-      "Warfighting Symbols (CSS)",
+      "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Service Support",
+      "Combat Service Support (CSS)",
       "Administrative (Admin)",
       "Public Affairs Broadcast"
     ]
@@ -16706,10 +16714,10 @@
     "scope": "UNIT",
     "geometry": "Point",
     "hierarchy": [
-      "Warfighting Symbols (CSS)",
+      "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Service Support",
+      "Combat Service Support (CSS)",
       "Medical Veterinary Corps"
     ]
   },
@@ -17393,7 +17401,6 @@
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Service Support",
       "Combat Service Support (CSS)",
       "Transportation - Movement Control Center (MCC) Theater"
     ]
