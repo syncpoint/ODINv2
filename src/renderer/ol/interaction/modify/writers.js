@@ -212,31 +212,32 @@ export const insertVertex = (node, coordinate) => {
 }
 
 export const removeVertex = (node, index) => {
-  const { geometry, depth } = node
+  const { geometry, depth, descriptor } = node
   const offset = node.index + index
-  const hooks = Hooks.get(node, offset)
-  const coordinates = geometry.getCoordinates()
 
-  switch (geometry.getType()) {
-    case 'LineString':
-      if (coordinates.length > 2) coordinates.splice(offset, 1)
-      break
-    case 'MultiLineString':
-      if (coordinates[depth[0]].length > 2) coordinates[depth[0]].splice(offset, 1)
-      break
-    case 'Polygon':
-      if (coordinates[depth[0]].length > 4) {
-        coordinates[depth[0]].splice(offset, 1)
-        close(coordinates[depth[0]], offset)
-      }
-      break
-    case 'MultiPolygon':
-      if (coordinates[depth[0]][depth[1]].length > 4) {
-        coordinates[depth[0]][depth[1]].splice(offset, 1)
-        close(coordinates[depth[0]][depth[1]], offset)
-      }
-      break
+  const guards = {
+    LineString: coordinates => coordinates.length > 2,
+    MultiLineString: coordinates => coordinates[depth[0]].length > 2,
+    Polygon: coordinates => coordinates[depth[0]].length > 4 && descriptor.layout !== 'rectangle',
+    MultiPolygon: coordinates => coordinates[depth[0]][depth[1]].length > 4
   }
 
-  return hooks.coordinates(coordinates)
+  const mutators = {
+    LineString: R.tap(coordinates => coordinates.splice(offset, 1)),
+    MultiLineString: R.tap(coordinates => coordinates[depth[0]].splice(offset, 1)),
+    Polygon: R.tap(coordinates => {
+      coordinates[depth[0]].splice(offset, 1)
+      close(coordinates[depth[0]], offset)
+    }),
+    MultiPolygon: R.tap(coordinates => {
+      coordinates[depth[0]][depth[1]].splice(offset, 1)
+      close(coordinates[depth[0]][depth[1]], offset)
+    })
+  }
+
+  const type = geometry.getType()
+  const coordinates = geometry.getCoordinates()
+  const mutator = guards[type](coordinates) ? mutators[type] : R.identity
+  const hooks = Hooks.get(node, offset)
+  return hooks.coordinates(mutator(coordinates))
 }
