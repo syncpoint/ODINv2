@@ -27,6 +27,7 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
  *
  * selectFeatures :: GeoJSON/Feature a => () -> [a]
+ * selectProperties :: Key k, Value v => [k] => [v]
  * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
  * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
  * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
@@ -90,6 +91,11 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
   emitter.on(`:id(${FEATURE_ID})/show`, ({ id }) => this.show(id))
 
   window.requestIdleCallback(async () => {
+    // Delete symbols to refresh after updating 2525c.json:
+    // const keys = await this.db_.keys('symbol:')
+    // const ops = keys.map(key => ({ type: 'del', key }))
+    // await this.db_.batch(ops)
+
     const alreadyImported = await this.db_.existsKey('symbol:')
     if (!alreadyImported) await importSymbols(this.properties_)
   }, { timeout: 2000 })
@@ -107,6 +113,13 @@ Store.prototype.selectFeatures = function () {
   return this.db_.values('feature:')
 }
 
+/**
+ * @async
+ * selectProperties :: Key k, Value v => [k] => [v]
+ */
+Store.prototype.selectProperties = function (keys) {
+  return this.properties_.values(keys)
+}
 
 /**
  * @async
