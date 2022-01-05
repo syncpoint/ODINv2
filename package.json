@@ -47,7 +47,7 @@
     "webpack-dev-server": "^4.7.2"
   },
   "dependencies": {
-    "@mdi/js": "^6.4.95",
+    "@mdi/js": "^6.5.95",
     "@mdi/react": "^1.5.0",
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.2.0",
