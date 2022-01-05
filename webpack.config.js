@@ -1,7 +1,6 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack')
 
 const hash = 'hash:base64:8'
@@ -59,8 +58,7 @@ const rendererConfig = (env, argv) => ({
     // Title is managed by BrowserWindow title option.
     new HtmlWebpackPlugin(),
     new webpack.IgnorePlugin({ resourceRegExp: /^pg-native$/ }),
-    new webpack.ExternalsPlugin('commonjs', ['leveldown']),
-    // new BundleAnalyzerPlugin()
+    new webpack.ExternalsPlugin('commonjs', ['leveldown'])
   ]
 })
 
@@ -85,7 +83,7 @@ const devServer = env => {
       static: {
         directory: path.resolve(__dirname, 'dist')
       },
-      onBeforeSetupMiddleware () {
+      setupMiddlewares: (middlewares, devServer) => {
         spawn(
           'electron',
           ['.'],
@@ -93,6 +91,8 @@ const devServer = env => {
         )
           .on('close', code => process.exit(code))
           .on('error', error => console.error(error))
+
+        return middlewares
       }
     }
   })
