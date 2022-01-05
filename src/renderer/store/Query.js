@@ -3,7 +3,6 @@ import Emitter from '../../shared/emitter'
 
 /**
  * @constructor
- * @fires change { result: Promise[Option] }
  */
 export function Query (index, terms, callback) {
   Emitter.call(this)
