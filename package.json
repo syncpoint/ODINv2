@@ -60,7 +60,7 @@
     "lru-ttl-cache": "^2.4.3",
     "luxon": "^2.3.0",
     "milsymbol": "^2.0.0",
-    "minisearch": "^3.1.0",
+    "minisearch": "^3.2.0",
     "mousetrap": "^1.6.5",
     "mousetrap-global-bind": "^1.1.0",
     "ol": "^6.10.0",
