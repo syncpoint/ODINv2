@@ -58,7 +58,7 @@
     "levelup": "^5.0.1",
     "lodash.debounce": "^4.0.8",
     "lru-ttl-cache": "^2.4.3",
-    "luxon": "^2.1.1",
+    "luxon": "^2.3.0",
     "milsymbol": "^2.0.0",
     "minisearch": "^3.1.0",
     "mousetrap": "^1.6.5",
