@@ -267,7 +267,6 @@ PaletteCommands.prototype.textModifier_ = function (description, property) {
   return function (entries) {
     const extractor = R.prop(property)
     const features = entries.filter(entry => isFeatureId(entry.id))
-    console.log('features', features)
     const values = R.uniq(features.map(R.prop('properties')).map(extractor).filter(R.identity))
 
     const value = values.length === 1
