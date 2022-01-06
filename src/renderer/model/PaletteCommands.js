@@ -118,7 +118,7 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
       functionId: MILSTD.functionIdCode(type.sidc)
     }
 
-    const updatedEntries = entries
+    const updatedEntries = features
       .map(entry => ({
         ...entry,
         properties: {
@@ -130,7 +130,7 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
     return new Command({
       id: type.sidc,
       description: type.text,
-      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
+      body: (dryRun) => this.updateEntries_(dryRun, features, updatedEntries)
     })
   }
 
@@ -267,6 +267,7 @@ PaletteCommands.prototype.textModifier_ = function (description, property) {
   return function (entries) {
     const extractor = R.prop(property)
     const features = entries.filter(entry => isFeatureId(entry.id))
+    console.log('features', features)
     const values = R.uniq(features.map(R.prop('properties')).map(extractor).filter(R.identity))
 
     const value = values.length === 1
@@ -280,25 +281,25 @@ PaletteCommands.prototype.textModifier_ = function (description, property) {
       : null
 
     const callback = value => {
-      const updatedEntries = entries.map(entry => {
+      const updatedEntries = features.map(entry => {
         const properties = { ...entry.properties }
         properties[property] = value
         return { ...entry, properties }
       })
 
-      this.updateEntries_(false, entries, updatedEntries)
+      this.updateEntries_(false, features, updatedEntries)
     }
 
-    const command = new Command({
-      description,
-      id: `property:${property}`,
-      body: (dryRun) => {
-        if (dryRun) return
-        const event = { value, callback, placeholder }
-        this.emitter_.emit('command/open-command-palette', event)
-      }
-    })
-
-    return [command]
+    return features.length === 0
+      ? []
+      : [new Command({
+          description,
+          id: `property:${property}`,
+          body: (dryRun) => {
+            if (dryRun) return
+            const event = { value, callback, placeholder }
+            this.emitter_.emit('command/open-command-palette', event)
+          }
+        })]
   }
 }
