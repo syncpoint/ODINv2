@@ -18439,8 +18439,8 @@
     "sidc": "S*G*UUMSEI*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
-      "dimensions": "CS",
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
