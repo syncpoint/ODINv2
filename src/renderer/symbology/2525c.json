@@ -17863,33 +17863,38 @@
     "sidc": "S*G*UU----*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)"
+      "Combat Support"
     ]
   },
   {
     "sidc": "S*G*UUA---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN"
+      "Combat Support",
+      "CBRN"
     ]
   },
   {
     "sidc": "S*G*UUAB--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Biological"
     ]
   },
@@ -17897,11 +17902,13 @@
     "sidc": "S*G*UUABR-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Biological - Recon Equipped"
     ]
   },
@@ -17909,11 +17916,13 @@
     "sidc": "S*G*UUAC--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical"
     ]
   },
@@ -17921,11 +17930,13 @@
     "sidc": "S*G*UUACC-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical - Smoke / DECON"
     ]
   },
@@ -17933,11 +17944,13 @@
     "sidc": "S*G*UUACCK*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical - Mechanized Smoke / DECON"
     ]
   },
@@ -17945,11 +17958,13 @@
     "sidc": "S*G*UUACCM*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical - Motorized Smoke / DECON"
     ]
   },
@@ -17957,11 +17972,13 @@
     "sidc": "S*G*UUACR-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical Recon"
     ]
   },
@@ -17969,11 +17986,13 @@
     "sidc": "S*G*UUACRS*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical Recon",
       "Chemical Wheeled Armored Vehicle Reconnaissance Surveillance"
     ]
@@ -17982,11 +18001,13 @@
     "sidc": "S*G*UUACRW*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical Recon",
       "Chemical Wheeled Armored Vehicle"
     ]
@@ -17995,11 +18016,13 @@
     "sidc": "S*G*UUACS-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical - Smoke"
     ]
   },
@@ -18007,11 +18030,13 @@
     "sidc": "S*G*UUACSA*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical - Armor Smoke"
     ]
   },
@@ -18019,11 +18044,13 @@
     "sidc": "S*G*UUACSM*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Chemical - Motorized Smoke"
     ]
   },
@@ -18031,11 +18058,13 @@
     "sidc": "S*G*UUAD--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Decontamination (DECON)"
     ]
   },
@@ -18043,11 +18072,13 @@
     "sidc": "S*G*UUAN--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS) CBRN",
+      "Combat Support",
+      "CBRN",
       "Nuclear"
     ]
   },
@@ -18055,11 +18086,12 @@
     "sidc": "S*G*UUE---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Explosive Ordnance Disposal (EOD)"
     ]
   },
@@ -18067,11 +18099,12 @@
     "sidc": "S*G*UUI---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Information Warfare Unit"
     ]
   },
@@ -18079,11 +18112,12 @@
     "sidc": "S*G*UUL---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Law Enforcement Unit"
     ]
   },
@@ -18091,11 +18125,12 @@
     "sidc": "S*G*UULC--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Law Enforcement Unit",
       "Civilian Law Enforcement"
     ]
@@ -18104,11 +18139,12 @@
     "sidc": "S*G*UULD--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Law Enforcement Unit",
       "Central Intelligence Division (CID)"
     ]
@@ -18117,11 +18153,12 @@
     "sidc": "S*G*UULF--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Law Enforcement Unit",
       "Security Police (Air)"
     ]
@@ -18130,11 +18167,12 @@
     "sidc": "S*G*UULM--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Law Enforcement Unit",
       "Military Police (MP)"
     ]
@@ -18143,11 +18181,12 @@
     "sidc": "S*G*UULS--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Law Enforcement Unit",
       "Shore Patrol"
     ]
@@ -18156,11 +18195,12 @@
     "sidc": "S*G*UUM---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)"
     ]
   },
@@ -18168,11 +18208,12 @@
     "sidc": "S*G*UUMA--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Aerial Exploitation"
     ]
@@ -18181,11 +18222,12 @@
     "sidc": "S*G*UUMC--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Counterintelligence"
     ]
@@ -18194,11 +18236,12 @@
     "sidc": "S*G*UUMJ--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Joint Intelligence Center (JIC)"
     ]
@@ -18207,11 +18250,12 @@
     "sidc": "S*G*UUMMO-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Surveillance - Meteorological"
     ]
@@ -18220,11 +18264,12 @@
     "sidc": "S*G*UUMO--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Operations"
     ]
@@ -18233,11 +18278,12 @@
     "sidc": "S*G*UUMQ--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Interrogation"
     ]
@@ -18246,11 +18292,12 @@
     "sidc": "S*G*UUMR--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Surveillance"
     ]
@@ -18259,11 +18306,12 @@
     "sidc": "S*G*UUMRG-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Ground Surveillance Radar"
     ]
@@ -18272,11 +18320,12 @@
     "sidc": "S*G*UUMRS-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Surveillance",
       "Sensor"
@@ -18286,11 +18335,12 @@
     "sidc": "S*G*UUMRSS*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Surveillance",
       "Sensor SCM"
@@ -18300,11 +18350,12 @@
     "sidc": "S*G*UUMRX-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Surveillance",
       "Ground Station Module"
@@ -18314,11 +18365,12 @@
     "sidc": "S*G*UUMS--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)"
     ]
@@ -18327,11 +18379,12 @@
     "sidc": "S*G*UUMSE-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW)"
@@ -18341,11 +18394,12 @@
     "sidc": "S*G*UUMSEA*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW) - Armored Wheeled Vehicle"
@@ -18355,11 +18409,12 @@
     "sidc": "S*G*UUMSEC*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW) - Corps"
@@ -18369,11 +18424,12 @@
     "sidc": "S*G*UUMSED*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW) - Direction Finding"
@@ -18384,10 +18440,11 @@
     "scope": "UNIT",
     "geometry": "Point",
     "hierarchy": [
+      "dimensions": "CS",
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW) - Intercept"
@@ -18397,11 +18454,12 @@
     "sidc": "S*G*UUMSEJ*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW) - Jamming"
@@ -18411,11 +18469,12 @@
     "sidc": "S*G*UUMSET*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Signal Intelligence (SIGINT)",
       "Electronic Warfare (EW) - Theater"
@@ -18425,11 +18484,12 @@
     "sidc": "S*G*UUMT--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Military Intelligence (MI)",
       "Tactical Exploit"
     ]
@@ -18438,11 +18498,12 @@
     "sidc": "S*G*UUP---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Landing Support"
     ]
   },
@@ -18450,11 +18511,12 @@
     "sidc": "S*G*UUS---*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit"
     ]
   },
@@ -18462,11 +18524,12 @@
     "sidc": "S*G*UUSA--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Area"
     ]
@@ -18475,11 +18538,12 @@
     "sidc": "S*G*UUSC--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Communication Configured Package (CCP)"
     ]
@@ -18488,11 +18552,12 @@
     "sidc": "S*G*UUSCL-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Large Communication Configured Package (LCCP)"
     ]
@@ -18501,11 +18566,12 @@
     "sidc": "S*G*UUSF--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Forward Communications"
     ]
@@ -18514,11 +18580,12 @@
     "sidc": "S*G*UUSM--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Multiple Subscriber Element (MSE)"
     ]
@@ -18527,11 +18594,12 @@
     "sidc": "S*G*UUSML-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Multiple Subscriber Element (MSE)",
       "MSE - Large Extension Node (LEN)"
@@ -18541,11 +18609,12 @@
     "sidc": "S*G*UUSMN-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Multiple Subscriber Element (MSE)",
       "MSE - Node Center"
@@ -18555,11 +18624,12 @@
     "sidc": "S*G*UUSMS-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Multiple Subscriber Element (MSE)",
       "MSE - Small Extension Node (SEN)"
@@ -18569,11 +18639,12 @@
     "sidc": "S*G*UUSO--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Command Operations"
     ]
@@ -18582,11 +18653,12 @@
     "sidc": "S*G*UUSR--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Radio Unit"
     ]
@@ -18595,11 +18667,12 @@
     "sidc": "S*G*UUSRS-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Radio Unit",
       "Tactical Satellite"
@@ -18609,11 +18682,12 @@
     "sidc": "S*G*UUSRT-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Radio Unit",
       "Teletype Center"
@@ -18623,11 +18697,12 @@
     "sidc": "S*G*UUSRW-*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Radio Unit",
       "Relay"
@@ -18637,11 +18712,12 @@
     "sidc": "S*G*UUSS--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Signal Support"
     ]
@@ -18650,11 +18726,12 @@
     "sidc": "S*G*UUSW--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Telephone Switch"
     ]
@@ -18663,11 +18740,12 @@
     "sidc": "S*G*UUSX--*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "CS",
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
       "Unit",
-      "Combat Support (CS)",
+      "Combat Support",
       "Signal Unit",
       "Electronic Ranging"
     ]
