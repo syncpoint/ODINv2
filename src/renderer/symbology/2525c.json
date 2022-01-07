@@ -9102,8 +9102,9 @@
     "sidc": "O*G*------*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization"
     ]
   },
@@ -9111,8 +9112,9 @@
     "sidc": "O*G*A-----*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization",
       "Displaced Persons, Refugees, and Evacuees (DPRE)"
     ]
@@ -9121,8 +9123,9 @@
     "sidc": "O*G*B-----*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization",
       "Nongovernmental Organization (NGO)"
     ]
@@ -9131,8 +9134,9 @@
     "sidc": "O*G*C-----*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization (NGO)",
       "NGO Terrorist"
     ]
@@ -9141,8 +9145,9 @@
     "sidc": "O*G*D-----*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization (NGO)",
       "NGO Religious"
     ]
@@ -9151,8 +9156,9 @@
     "sidc": "O*G*E-----*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization (NGO)",
       "NGO Foreign Fighters"
     ]
@@ -9161,8 +9167,9 @@
     "sidc": "O*G*F-----*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Nonmilitary Group or Organization (NGO)",
       "NGO Gang"
     ]
@@ -9171,9 +9178,9 @@
     "sidc": "O*I*D-----*****",
     "scope": "EQUIPMENT",
     "geometry": "Point",
-    "dimensions": "LAND",
+    "dimensions": "LAND, SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Drug Vehicle"
     ]
@@ -9184,7 +9191,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Internal Security Force (ISF)"
     ]
@@ -9195,7 +9202,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Graffiti"
     ]
@@ -9204,9 +9211,9 @@
     "sidc": "O*I*I-----*****",
     "scope": "EQUIPMENT",
     "geometry": "Point",
-    "dimensions": "LAND",
+    "dimensions": "LAND, SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Known Insurgent Vehicle"
     ]
@@ -9217,7 +9224,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Refugees"
     ]
@@ -9226,8 +9233,9 @@
     "sidc": "O*I*S-----*****",
     "scope": "INSTALLATION",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Safe House"
     ]
@@ -9238,7 +9246,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Items",
       "Vandalism / Loot / Ransack / Plunder / Sack"
     ]
@@ -9247,8 +9255,9 @@
     "sidc": "O*L*B-----*****",
     "scope": "INSTALLATION",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Locations",
       "Black List Location"
     ]
@@ -9257,8 +9266,9 @@
     "sidc": "O*L*G-----*****",
     "scope": "INSTALLATION",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Locations",
       "Gray List Location"
     ]
@@ -9267,8 +9277,9 @@
     "sidc": "O*L*M-----*****",
     "scope": "INSTALLATION",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Locations",
       "Mass Grave Location"
     ]
@@ -9277,8 +9288,9 @@
     "sidc": "O*L*W-----*****",
     "scope": "INSTALLATION",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Locations",
       "White List Location"
     ]
@@ -9289,7 +9301,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Arrest"
     ]
@@ -9300,7 +9312,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Composite Loss"
     ]
@@ -9311,7 +9323,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Composite Loss Combat"
     ]
@@ -9322,7 +9334,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Composite Loss Accident"
     ]
@@ -9333,7 +9345,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Composite Loss Other"
     ]
@@ -9344,7 +9356,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Demonstration"
     ]
@@ -9355,7 +9367,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Extortion"
     ]
@@ -9366,7 +9378,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Foraging / Searching"
     ]
@@ -9377,7 +9389,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Hijacking (Airplane)"
     ]
@@ -9388,7 +9400,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Hijacking (Vehicle)"
     ]
@@ -9399,7 +9411,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Hijacking (Boat)"
     ]
@@ -9410,7 +9422,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Kidnapping"
     ]
@@ -9421,7 +9433,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Kidnapping Attempted"
     ]
@@ -9432,7 +9444,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Mine Laying"
     ]
@@ -9443,7 +9455,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Food Distribution"
     ]
@@ -9454,7 +9466,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Patrolling"
     ]
@@ -9465,7 +9477,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Recruitment (Coerced / Impressed)"
     ]
@@ -9476,7 +9488,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Recruitment (Willing)"
     ]
@@ -9487,7 +9499,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Spy"
     ]
@@ -9498,7 +9510,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Operations",
       "Drug Operation"
     ]
@@ -9509,7 +9521,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Psychological Operations (PSYOP)"
     ]
   },
@@ -9519,7 +9531,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Psychological Operations (PSYOP)",
       "House-to-house Propaganda"
     ]
@@ -9530,7 +9542,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Psychological Operations (PSYOP)",
       "PSYOP (TV and Radio Propaganda)"
     ]
@@ -9541,7 +9553,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Psychological Operations (PSYOP)",
       "PSYOP (Written Propaganda)"
     ]
@@ -9550,8 +9562,9 @@
     "sidc": "O*P*------*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Individual"
     ]
   },
@@ -9559,8 +9572,9 @@
     "sidc": "O*P*A-----*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Individual Leader"
     ]
   },
@@ -9568,8 +9582,9 @@
     "sidc": "O*P*B-----*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Individual Targeted"
     ]
   },
@@ -9577,8 +9592,9 @@
     "sidc": "O*P*C-----*****",
     "scope": "UNIT",
     "geometry": "Point",
+    "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Individual Terrorist"
     ]
   },
@@ -9588,7 +9604,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Rape"
     ]
   },
@@ -9598,7 +9614,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Rape Attempted"
     ]
   },
@@ -9608,7 +9624,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Arson / Fire"
     ]
@@ -9619,7 +9635,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Bomb / Bombing"
     ]
@@ -9630,7 +9646,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Drive-by Shooting"
     ]
@@ -9641,7 +9657,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Explosion"
     ]
@@ -9652,7 +9668,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "IED Explosion"
     ]
@@ -9663,7 +9679,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Killing (General)"
     ]
@@ -9674,7 +9690,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Killing (General)",
       "Murder"
@@ -9686,7 +9702,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Killing (General)",
       "Execution"
@@ -9698,7 +9714,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Killing (General)",
       "Assassination"
@@ -9710,7 +9726,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Poisoning"
     ]
@@ -9721,7 +9737,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Sniping"
     ]
@@ -9732,7 +9748,7 @@
     "geometry": "Point",
     "dimensions": "SO",
     "hierarchy": [
-      "Stability Operations (SO)",
+      "Stability Operations",
       "Violent Activities (Death Causing)",
       "Booby Trap"
     ]
