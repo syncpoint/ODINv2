@@ -1,3 +1,12 @@
+/*
+  Room for improvement
+  - PartitionDOWN must not explicitly know about features.
+  - generalize for objects having property geometry :: geoJSON/Geometry
+  - to address geometries directly, use keys like
+    geometry+feature:..., geometry+location:...
+  - how about properties+feature:... to access properties only?
+*/
+
 import util from 'util'
 import * as R from 'ramda'
 import { AbstractLevelDOWN, AbstractIterator } from 'abstract-leveldown'
@@ -70,9 +79,13 @@ util.inherits(PartitionDOWN, AbstractLevelDOWN)
  *
  */
 PartitionDOWN.prototype._put = async function (key, value, options, callback) {
+
+  // TODO: check for `geometry` property
   if (key.startsWith('feature:')) {
     const copy = { ...value }
     await this.geometries_.put(key, copy.geometry)
+
+    // FIXME: don't mess-up caller's data structure
     delete copy.geometry
     await this.properties_.put(key, copy)
     this._nextTick(callback)
@@ -85,6 +98,8 @@ PartitionDOWN.prototype._put = async function (key, value, options, callback) {
  *
  */
 PartitionDOWN.prototype._get = async function (key, options, callback) {
+
+  // TODO: assume all objects have `geometry` property
   if (key.startsWith('feature:')) {
     try {
       const properties = await this.properties_.get(key)
@@ -102,9 +117,13 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
  *
  */
 PartitionDOWN.prototype._del = async function (key, options, callback) {
+
+  // TODO: assume all objects have `geometry` property
   if (key.startsWith('feature:')) {
     try {
       await this.properties_.del(key)
+
+      // FIXME: throws if key is not known
       await this.geometries_.del(key)
       this._nextTick(callback)
     } catch (err) {
@@ -119,6 +138,8 @@ PartitionDOWN.prototype._del = async function (key, options, callback) {
  *
  */
 PartitionDOWN.prototype._batch = async function (operations, options, callback) {
+
+  // TODO: check for `geometry` property
   const { features, geometries, others } = R.groupBy(({ key }) => {
     return key.startsWith('feature:')
       ? 'features'
@@ -140,6 +161,8 @@ PartitionDOWN.prototype._batch = async function (operations, options, callback) 
         } else {
           const copy = { ...op.value }
           geometries.push({ type: op.type, key: op.key, value: copy.geometry })
+
+          // FIXME: don't mess-up caller's data structure
           delete copy.geometry
           properties.push({ type: op.type, key: op.key, value: copy })
         }
