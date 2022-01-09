@@ -106,8 +106,9 @@ PaletteCommands.prototype.updateEntries_ = function (dryRun, entries, updatedEnt
  *
  */
 PaletteCommands.prototype.typeCommands_ = function (entries) {
+  const features = entries.filter(entry => isFeatureId(entry.id))
   const geometryType = ({ properties }) => MILSTD.geometryType(properties.sidc)
-  const geometries = R.uniq(entries.map(geometryType))
+  const geometries = R.uniq(features.map(geometryType))
   if (geometries.length !== 1) return []
 
   const command = type => {
@@ -117,7 +118,7 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
       functionId: MILSTD.functionIdCode(type.sidc)
     }
 
-    const updatedEntries = entries
+    const updatedEntries = features
       .map(entry => ({
         ...entry,
         properties: {
@@ -129,7 +130,7 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
     return new Command({
       id: type.sidc,
       description: type.text,
-      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
+      body: (dryRun) => this.updateEntries_(dryRun, features, updatedEntries)
     })
   }
 
@@ -143,10 +144,11 @@ PaletteCommands.prototype.typeCommands_ = function (entries) {
  * Standard Identity.
  */
 PaletteCommands.prototype.identityCommands_ = function (entries) {
-  if (Object.keys(entries).length === 0) return []
+  const features = entries.filter(entry => isFeatureId(entry.id))
+  if (Object.keys(features).length === 0) return []
 
   const command = identity => {
-    const updatedEntries = entries
+    const updatedEntries = features
       .map(entry => {
         const sidc = MILSTD.format(entry.properties.sidc, { identity: identity.code })
         return {
@@ -161,7 +163,7 @@ PaletteCommands.prototype.identityCommands_ = function (entries) {
     return new Command({
       id: `identity:${identity.code}`,
       description: `Identity - ${identity.name}`,
-      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
+      body: (dryRun) => this.updateEntries_(dryRun, features, updatedEntries)
     })
   }
 
@@ -173,10 +175,11 @@ PaletteCommands.prototype.identityCommands_ = function (entries) {
  * Status/Operational Condition.
  */
 PaletteCommands.prototype.statusCommands_ = function (entries) {
-  if (Object.keys(entries).length === 0) return []
+  const features = entries.filter(entry => isFeatureId(entry.id))
+  if (Object.keys(features).length === 0) return []
 
   const command = status => {
-    const updatedEntries = entries
+    const updatedEntries = features
       .map(entry => ({
         ...entry,
         properties: {
@@ -188,7 +191,7 @@ PaletteCommands.prototype.statusCommands_ = function (entries) {
     return new Command({
       id: `status:${status.code}`,
       description: `Status/Condition - ${status.name}`,
-      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries)
+      body: (dryRun) => this.updateEntries_(dryRun, features, updatedEntries)
     })
   }
 
@@ -199,10 +202,11 @@ PaletteCommands.prototype.statusCommands_ = function (entries) {
  * Size/Echelon.
  */
 PaletteCommands.prototype.echelonCommands_ = function (entries) {
-  if (Object.keys(entries).length === 0) return []
+  const features = entries.filter(entry => isFeatureId(entry.id))
+  if (Object.keys(features).length === 0) return []
 
   const command = echelon => {
-    const updatedProperties = entries
+    const updatedProperties = features
       .map(entry => {
         const sidc = MILSTD.format(entry.properties.sidc, { echelon: echelon.code })
         return {
@@ -217,7 +221,7 @@ PaletteCommands.prototype.echelonCommands_ = function (entries) {
     return new Command({
       id: `size:${echelon.code}`,
       description: `Echelon/Size - ${echelon.name}`,
-      body: (dryRun) => this.updateEntries_(dryRun, entries, updatedProperties)
+      body: (dryRun) => this.updateEntries_(dryRun, features, updatedProperties)
     })
   }
 
@@ -229,10 +233,11 @@ PaletteCommands.prototype.echelonCommands_ = function (entries) {
  *
  */
 PaletteCommands.prototype.styleSmoothCommands_ = function (entries) {
-  if (Object.keys(entries).length === 0) return []
+  const features = entries.filter(entry => isFeatureId(entry.id))
+  if (Object.keys(features).length === 0) return []
   // TODO: check precondition (lineString, polygon)
 
-  const updatedEntries = enabled => entries
+  const updatedEntries = enabled => features
     .map(entry => ({
       ...entry,
       properties: {
@@ -247,7 +252,7 @@ PaletteCommands.prototype.styleSmoothCommands_ = function (entries) {
   const command = enabled => new Command({
     id: `style.smooth.${enabled}`,
     description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),
-    body: (dryRun) => this.updateEntries_(dryRun, entries, updatedEntries(enabled))
+    body: (dryRun) => this.updateEntries_(dryRun, features, updatedEntries(enabled))
   })
 
   return [command(true), command(false)]
@@ -275,25 +280,25 @@ PaletteCommands.prototype.textModifier_ = function (description, property) {
       : null
 
     const callback = value => {
-      const updatedEntries = entries.map(entry => {
+      const updatedEntries = features.map(entry => {
         const properties = { ...entry.properties }
         properties[property] = value
         return { ...entry, properties }
       })
 
-      this.updateEntries_(false, entries, updatedEntries)
+      this.updateEntries_(false, features, updatedEntries)
     }
 
-    const command = new Command({
-      description,
-      id: `property:${property}`,
-      body: (dryRun) => {
-        if (dryRun) return
-        const event = { value, callback, placeholder }
-        this.emitter_.emit('command/open-command-palette', event)
-      }
-    })
-
-    return [command]
+    return features.length === 0
+      ? []
+      : [new Command({
+          description,
+          id: `property:${property}`,
+          body: (dryRun) => {
+            if (dryRun) return
+            const event = { value, callback, placeholder }
+            this.emitter_.emit('command/open-command-palette', event)
+          }
+        })]
   }
 }
