@@ -35,6 +35,21 @@ describe('PartitionDOWN', function () {
     assert.deepStrictEqual(value, feature)
   })
 
+  // FIXME: ...
+  it.only('put/get [feature] - no geometry', async function () {
+    const feature = {
+      type: 'Feature',
+      id: 'feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb',
+      name: 'PzGrenKp Lipsch',
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    const db = createdb()
+    await db.put(feature.id, feature)
+    const value = await db.get(feature.id)
+    assert.deepStrictEqual(value, feature)
+  })
+
   it('put/del [other]', async function () {
     const db = createdb()
 
@@ -89,6 +104,29 @@ describe('PartitionDOWN', function () {
   })
 
   it('batch [feature]', async function () {
+    const db = createdb()
+
+    await db.batch([{ type: 'put', key: feature.id, value: feature }])
+    const value = await db.get(feature.id)
+    assert.deepStrictEqual(value, feature)
+    await db.batch([{ type: 'del', key: feature.id }])
+
+    try {
+      await db.get(feature.id)
+    } catch (expected) {
+      assert(expected.type === 'NotFoundError')
+    }
+  })
+
+  // FIXME: ...
+  it.skip('batch [feature] - no geometry', async function () {
+    const feature = {
+      type: 'Feature',
+      id: 'feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb',
+      name: 'PzGrenKp Lipsch',
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
     const db = createdb()
 
     await db.batch([{ type: 'put', key: feature.id, value: feature }])

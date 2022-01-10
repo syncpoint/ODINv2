@@ -70,9 +70,15 @@ util.inherits(PartitionDOWN, AbstractLevelDOWN)
  *
  */
 PartitionDOWN.prototype._put = async function (key, value, options, callback) {
+  const err = this._checkKey(key) || this._checkValue(value)
+  if (err) return this._nextTick(callback, err)
+
+
   if (key.startsWith('feature:')) {
     const copy = { ...value }
     await this.geometries_.put(key, copy.geometry)
+
+    // FIXME: don't mess with caller's data structure
     delete copy.geometry
     await this.properties_.put(key, copy)
     this._nextTick(callback)
@@ -85,6 +91,9 @@ PartitionDOWN.prototype._put = async function (key, value, options, callback) {
  *
  */
 PartitionDOWN.prototype._get = async function (key, options, callback) {
+  const err = this._checkKey(key)
+  if (err) return this._nextTick(callback, err)
+
   if (key.startsWith('feature:')) {
     try {
       const properties = await this.properties_.get(key)
@@ -102,6 +111,9 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
  *
  */
 PartitionDOWN.prototype._del = async function (key, options, callback) {
+  const err = this._checkKey(key)
+  if (err) return this._nextTick(callback, err)
+
   if (key.startsWith('feature:')) {
     try {
       await this.properties_.del(key)
@@ -118,14 +130,22 @@ PartitionDOWN.prototype._del = async function (key, options, callback) {
 /**
  *
  */
-PartitionDOWN.prototype._batch = async function (operations, options, callback) {
+PartitionDOWN.prototype._batch = async function (array, options, callback) {
+
+  if (!Array.isArray(array)) {
+    return this._nextTick(callback, new Error('batch(array) requires an array argument'))
+  }
+
+  // TODO: handle geometry property (option)
+  // TODO: handle geometry value
+
   const { features, geometries, others } = R.groupBy(({ key }) => {
     return key.startsWith('feature:')
       ? 'features'
       : key.startsWith('geometry:')
         ? 'geometries'
         : 'others'
-  }, operations)
+  }, array)
 
   try {
     if (others && others.length) await this.properties_.batch(others)
