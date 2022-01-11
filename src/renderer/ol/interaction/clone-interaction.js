@@ -40,8 +40,6 @@ export default (options, select) => {
   })
 
   interaction.on('translatestart', event => {
-    console.log('[CLONE] translatestart', event)
-
     cloning = true
     cancelled = false
     const map = interaction.getMap()
@@ -68,8 +66,6 @@ export default (options, select) => {
   })
 
   interaction.on('translateend', async event => {
-    console.log('[CLONE] translateend', event)
-
     cloning = false
     const map = interaction.getMap()
     const target = map.getViewport()
