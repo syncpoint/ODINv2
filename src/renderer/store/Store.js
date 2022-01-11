@@ -30,7 +30,6 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * selectProperties :: Key k, Value v => [k] => [v]
  * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
  * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
- * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
  * delete :: Id a => [a] -> unit
  * insert :: Value a => [a] -> unit
  * update :: Value a => [a] -> unit
@@ -46,7 +45,6 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * insertCommand :: Value a => [a] -> Command
  * deleteCommand :: Value a => [a] -> Command
  * updateCommand :: Value a => ([a], [a]) -> Command
- * updateGeometriesCommand :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> Command
  */
 export function Store (propertiesLevel, geometryLevel, undo, selection, emitter) {
   Emitter.call(this)
@@ -83,7 +81,6 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
   this.deleteCommand = deleteCommand.bind(this)
   this.insertCommand = insertCommand.bind(this)
   this.updateCommand = updateCommand.bind(this)
-  this.updateGeometriesCommand = updateGeometriesCommand.bind(this)
 
   emitter.on(`:id(${LAYER_ID})/hide`, ({ id }) => this.hide(id))
   emitter.on(`:id(${FEATURE_ID})/hide`, ({ id }) => this.hide(id))
@@ -121,6 +118,7 @@ Store.prototype.selectProperties = function (keys) {
   return this.properties_.values(keys)
 }
 
+
 /**
  * @async
  * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
@@ -130,24 +128,6 @@ Store.prototype.selectGeometries = function (arg) {
   if (Array.isArray(arg)) return this.geometries_.values(arg)
   else if (isLayerId(arg)) return this.geometries_.values(`feature:${arg.split(':')[1]}`)
   else this.geometries_.values([arg])
-}
-
-
-/**
- * @async
- * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
- */
-Store.prototype.updateGeometries = async function (geometries) {
-
-  // Rewrite keys from 'feature:' to special 'geometry:' to
-  // directly write feature geometries.
-
-  const entries = Object.entries(geometries).reduce((acc, [key, value]) => {
-    acc[`geometry:${key.split(':')[1]}`] = value
-    return acc
-  }, {})
-
-  this.undo_.apply(this.updateGeometriesCommand(entries))
 }
 
 
@@ -422,24 +402,5 @@ const updateCommand = function (newValues, oldValues) {
   return {
     apply: () => this.db_.batch(ops),
     inverse: () => this.updateCommand(oldValues, newValues)
-  }
-}
-
-
-/**
- * updateGeometriesCommand :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> Command
- */
-const updateGeometriesCommand = function (geometries) {
-  const entries = Object.entries(geometries).map(([id, xs]) => [id, [xs[1], xs[0]]])
-  const switchedGeometries = Object.fromEntries(entries)
-  return {
-    apply: async () => {
-      const operations = Object.entries(geometries)
-        .map(([key, xs]) => [key, xs[0]])
-        .map(([key, value]) => ({ type: 'put', key, value }))
-
-      return await this.db_.batch(operations)
-    },
-    inverse: () => this.updateGeometriesCommand(switchedGeometries)
   }
 }
