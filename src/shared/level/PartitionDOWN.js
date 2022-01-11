@@ -73,7 +73,7 @@ PartitionDOWN.prototype._put = async function (key, value, options, callback) {
   const err = this._checkKey(key) || this._checkValue(value)
   if (err) return this._nextTick(callback, err)
 
-
+  // TODO: check for `geometry` property
   if (key.startsWith('feature:')) {
     const copy = { ...value }
     await this.geometries_.put(key, copy.geometry)
@@ -94,6 +94,7 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
   const err = this._checkKey(key)
   if (err) return this._nextTick(callback, err)
 
+  // TODO: assume all objects have `geometry` property
   if (key.startsWith('feature:')) {
     try {
       const properties = await this.properties_.get(key)
@@ -114,9 +115,12 @@ PartitionDOWN.prototype._del = async function (key, options, callback) {
   const err = this._checkKey(key)
   if (err) return this._nextTick(callback, err)
 
+  // TODO: assume all objects have `geometry` property
   if (key.startsWith('feature:')) {
     try {
       await this.properties_.del(key)
+
+      // FIXME: throws if key is not known
       await this.geometries_.del(key)
       this._nextTick(callback)
     } catch (err) {
@@ -160,6 +164,8 @@ PartitionDOWN.prototype._batch = async function (array, options, callback) {
         } else {
           const copy = { ...op.value }
           geometries.push({ type: op.type, key: op.key, value: copy.geometry })
+
+          // FIXME: don't mess-up caller's data structure
           delete copy.geometry
           properties.push({ type: op.type, key: op.key, value: copy })
         }
