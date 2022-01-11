@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as MILSTD from '../symbology/2525c'
 import { Command } from '../commands/Command'
-import { isFeatureId } from '../ids'
+import { isFeatureId, isLayerId, layerId } from '../ids'
 
 
 const TYPES = Object.entries(MILSTD.index).map(([parameterized, descriptor]) => {
@@ -70,6 +70,7 @@ PaletteCommands.prototype.getCommands = function (entries) {
 
   if (!entries) return commands
 
+  commands.push(...this.layerCommands_(entries))
   commands.push(...this.typeCommands_(entries))
   commands.push(...this.styleSmoothCommands_(entries))
   commands.push(...this.identityCommands_(entries))
@@ -99,6 +100,38 @@ PaletteCommands.prototype.getCommands = function (entries) {
 PaletteCommands.prototype.updateEntries_ = function (dryRun, entries, updatedEntries) {
   if (dryRun) this.store_.update(updatedEntries)
   else this.store_.update(updatedEntries, entries)
+}
+
+PaletteCommands.prototype.layerCommands_ = function (entries) {
+  const createLayerName = value => {
+    if (!value) return
+    const newLayer = { id: layerId(), name: value }
+    this.store_.insert([newLayer])
+  }
+
+  const createLayerCommand = () => new Command({
+    id: 'layer:create',
+    description: 'Layer: Create new',
+    body: (dryRun) => {
+      if (dryRun) return
+      const event = { value: '', callback: createLayerName, placeholder: 'Layer Name' }
+      this.emitter_.emit('command/open-command-palette', event)
+    }
+  })
+
+  const setActiveLayerCommand = () => new Command({
+    id: 'layer:setDefault',
+    description: 'Layer: Make default',
+    body: (dryRun) => {
+      if (dryRun) return
+      this.store_.addTag(entries[0].id, 'default')
+    }
+  })
+
+  const layerCount = entries.filter(entry => isLayerId(entry.id)).length
+  if (layerCount === 0) return [createLayerCommand()]
+  else if (layerCount === 1) return [setActiveLayerCommand()]
+  else return []
 }
 
 
