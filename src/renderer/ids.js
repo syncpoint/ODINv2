@@ -39,7 +39,7 @@ export const containerId = idLike => {
 
 export const scope = id => id.split(':')[0]
 
-const isId = prefix => id => id.startsWith(prefix)
+const isId = prefix => id => id && id.startsWith(prefix)
 export const isLayerId = isId('layer:')
 export const isFeatureId = isId('feature:')
 export const isGroupId = isId('group:')

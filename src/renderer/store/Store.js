@@ -56,7 +56,13 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
   this.db_ = new HighLevel(up)
 
   // Forward high-level batch event:
-  up.on('batch', operations => this.emit('batch', { operations }))
+  up.on('batch', operations => {
+    // FIXME: probably not the right place for selection handling
+    const removals = operations.filter(({ type }) => type === 'del').map(({ key }) => key)
+    this.selection_.deselect(removals)
+
+    this.emit('batch', { operations })
+  })
 
   this.undo_ = undo
   this.selection_ = selection

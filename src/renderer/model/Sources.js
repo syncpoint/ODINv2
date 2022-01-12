@@ -4,6 +4,7 @@ import Collection from 'ol/Collection'
 import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
 import { readFeature, readFeatures } from '../store/format'
+import { isFeatureId } from '../ids'
 
 const isVisible = feature => !feature.hidden
 const isHidden = feature => feature.hidden
@@ -53,19 +54,22 @@ Sources.prototype.addFeature_ = function (feature) {
 
 Sources.prototype.update_ = function (operations) {
 
+  // We are only interested in features:
+  const featureOps = operations.filter(({ key }) => isFeatureId(key))
+
   // Removal deleted features:
-  operations
-    .filter(({ type }) => type === 'del')
+  featureOps
+    .filter(({ type, key }) => type === 'del')
     .map(op => op.key)
     .forEach(key => this.removeFeatureById_(key))
 
   // Remove hidden features:
-  operations
-    .filter(({ type, value }) => type === 'put' && isHidden(value))
+  featureOps
+    .filter(({ type, key, value }) => type === 'put' && isHidden(value))
     .forEach(({ key }) => this.removeFeatureById_(key))
 
   // Add new or replace existing features:
-  operations
+  featureOps
     .filter(({ type, value }) => type === 'put' && isVisible(value))
     .forEach(({ key, value }) => {
       if (this.source_.getFeatureById(key)) this.removeFeatureById_(key)
