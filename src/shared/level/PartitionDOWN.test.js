@@ -5,14 +5,6 @@ import { leveldb, propertiesPartition, geometriesPartition } from '.'
 
 describe('PartitionDOWN', function () {
 
-  const feature = {
-    type: 'Feature',
-    id: 'feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb',
-    name: 'PzGrenKp Lipsch',
-    geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
-    properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-  }
-
   const createdb = () => {
     const db = leveldb({})
     const propertiesLevel = propertiesPartition(db)
@@ -21,141 +13,280 @@ describe('PartitionDOWN', function () {
     return leveldb({ down })
   }
 
-  it('put/get [other]', async function () {
-    const db = createdb()
-    await db.put('hello', 'world')
-    const value = await db.get('hello')
-    assert.strictEqual(value, 'world')
-  })
-
-  it('put/get [feature]', async function () {
-    const db = createdb()
-    await db.put(feature.id, feature)
-    const value = await db.get(feature.id)
-    assert.deepStrictEqual(value, feature)
-  })
-
-  // FIXME: ...
-  it.only('put/get [feature] - no geometry', async function () {
-    const feature = {
-      type: 'Feature',
-      id: 'feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb',
-      name: 'PzGrenKp Lipsch',
-      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-    }
-
-    const db = createdb()
-    await db.put(feature.id, feature)
-    const value = await db.get(feature.id)
-    assert.deepStrictEqual(value, feature)
-  })
-
-  it('put/del [other]', async function () {
-    const db = createdb()
-
-    await db.put('hello', 'world')
-    await db.del('hello')
-
+  it('get - key cannot be `null`', async function () {
     try {
-      await db.get('hello')
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
-    }
-
-    try {
-      await db.del('hello')
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
+      await createdb().get(null)
+    } catch (err) {
+      const expected = 'key cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
     }
   })
 
-  it('put/del [feature]', async function () {
-    const db = createdb()
-
-    await db.put(feature.id, feature)
-    await db.del(feature.id)
-
+  it('get - key cannot be `undefined`', async function () {
     try {
-      await db.get(feature.id)
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
-    }
-
-    try {
-      await db.del(feature.id)
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
+      await createdb().get(undefined)
+    } catch (err) {
+      const expected = 'key cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
     }
   })
 
-  it('batch [other]', async function () {
-    const db = createdb()
-
-    await db.batch([{ type: 'put', key: 'hello', value: 'world' }])
-    const value = await db.get('hello')
-    assert.strictEqual(value, 'world')
-    await db.batch([{ type: 'del', key: 'hello' }])
-
+  it('get - key not found in database', async function () {
     try {
-      await db.get('hello')
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
+      await createdb().get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.strictEqual(expected, err.message)
     }
   })
 
-  it('batch [feature]', async function () {
-    const db = createdb()
-
-    await db.batch([{ type: 'put', key: feature.id, value: feature }])
-    const value = await db.get(feature.id)
-    assert.deepStrictEqual(value, feature)
-    await db.batch([{ type: 'del', key: feature.id }])
-
+  it('put - key cannot be `null`', async function () {
     try {
-      await db.get(feature.id)
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
+      await createdb().put(null, 'value')
+    } catch (err) {
+      const expected = 'key cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
     }
   })
 
-  // FIXME: ...
-  it.skip('batch [feature] - no geometry', async function () {
-    const feature = {
-      type: 'Feature',
-      id: 'feature:95edaaad-3ba5-4148-9e15-c658387489f7/64d8074b-f6ee-47c1-bc97-c7a9451a56fb',
-      name: 'PzGrenKp Lipsch',
-      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-    }
-
-    const db = createdb()
-
-    await db.batch([{ type: 'put', key: feature.id, value: feature }])
-    const value = await db.get(feature.id)
-    assert.deepStrictEqual(value, feature)
-    await db.batch([{ type: 'del', key: feature.id }])
-
+  it('put - key cannot be `undefined`', async function () {
     try {
-      await db.get(feature.id)
-    } catch (expected) {
-      assert(expected.type === 'NotFoundError')
+      await createdb().put(undefined, 'value')
+    } catch (err) {
+      const expected = 'key cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
     }
   })
 
-  it('batch [geometry]', async function () {
-    // Special handling for geometry: keys.
-    // Update only geometry without touching properties.
+  it('put - value cannot be `null`', async function () {
+    try {
+      await createdb().put('key', null)
+    } catch (err) {
+      const expected = 'value cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
+    }
+  })
 
+  it('put - value cannot be `undefined`', async function () {
+    try {
+      await createdb().put('key', undefined)
+    } catch (err) {
+      const expected = 'value cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
+    }
+  })
+
+  it('put/get - value :: string', async function () {
     const db = createdb()
-
-    const key = `geometry:${feature.id.split(':')[1]}`
-    const geometry = { type: 'Point', coordinates: [1700000, 5900000] }
-    const expected = { ...feature, geometry }
-
-    await db.batch([{ type: 'put', key: feature.id, value: feature }])
-    await db.batch([{ type: 'put', key, value: geometry }])
-    const actual = await db.get(feature.id)
+    const expected = 'value'
+    await db.put('key', expected)
+    const actual = await db.get('key')
     assert.deepStrictEqual(actual, expected)
   })
+
+  it('put/get - geometry', async function () {
+    const db = createdb()
+    const expected = { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
+    await db.put('key', expected)
+    const actual = await db.get('key')
+    assert.deepStrictEqual(actual, expected)
+  })
+
+  it('put/get - w/o geometry property', async function () {
+    const db = createdb()
+    const expected = {
+      type: 'Feature',
+      name: 'PzGrenKp Lipsch',
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    await db.put('key', expected)
+    const actual = await db.get('key')
+    assert.deepStrictEqual(actual, expected)
+  })
+
+  it('put/get - w/ geometry property', async function () {
+    const db = createdb()
+    const expected = {
+      type: 'Feature',
+      name: 'PzGrenKp Lipsch',
+      geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    await db.put('key', expected)
+    const actual = await db.get('key')
+    assert.deepStrictEqual(actual, expected)
+  })
+
+  it('del - key cannot be `null`', async function () {
+    try {
+      await createdb().del(null)
+    } catch (err) {
+      const expected = 'key cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
+    }
+  })
+
+  it('del - key cannot be `undefined`', async function () {
+    try {
+      await createdb().del(undefined)
+    } catch (err) {
+      const expected = 'key cannot be `null` or `undefined`'
+      assert.strictEqual(expected, err.message)
+    }
+  })
+
+  it('put/del - value :: string', async function () {
+    const db = createdb()
+    const expected = 'value'
+    await db.put('key', expected)
+    await db.del('key')
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+  it('put/del - geometry', async function () {
+    const db = createdb()
+    const expected = { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
+    await db.put('key', expected)
+    await db.del('key')
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+  it('put/del - w/o geometry property', async function () {
+    const db = createdb()
+    const expected = {
+      type: 'Feature',
+      name: 'PzGrenKp Lipsch',
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    await db.put('key', expected)
+    await db.del('key')
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+  it('put/del - w/ geometry property', async function () {
+    const db = createdb()
+    const expected = {
+      type: 'Feature',
+      name: 'PzGrenKp Lipsch',
+      geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    await db.put('key', expected)
+    await db.del('key')
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+
+  it('batch - value :: string', async function () {
+    const db = createdb()
+
+    const expected = 'value'
+    await db.batch([{ type: 'put', key: 'key', value: expected }])
+    const actual = await db.get('key')
+    assert.strictEqual(actual, expected)
+
+    await db.batch([{ type: 'del', key: 'key' }])
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+  it('batch - geometry', async function () {
+    const db = createdb()
+
+    const expected = { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
+    await db.batch([{ type: 'put', key: 'key', value: expected }])
+    const actual = await db.get('key')
+    assert.deepStrictEqual(actual, expected)
+
+    await db.batch([{ type: 'del', key: 'key' }])
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+  it('batch - w/o geometry property', async function () {
+    const db = createdb()
+    const expected = {
+      type: 'Feature',
+      name: 'PzGrenKp Lipsch',
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    await db.batch([{ type: 'put', key: 'key', value: expected }])
+    const actual = await db.get('key')
+    assert.deepStrictEqual(actual, expected)
+
+    await db.batch([{ type: 'del', key: 'key' }])
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
+
+  it('batch - w/ geometry property', async function () {
+    const db = createdb()
+    const expected = {
+      type: 'Feature',
+      name: 'PzGrenKp Lipsch',
+      geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
+      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+    }
+
+    await db.batch([{ type: 'put', key: 'key', value: expected }])
+    const actual = await db.get('key')
+    assert.deepStrictEqual(actual, expected)
+
+    await db.batch([{ type: 'del', key: 'key' }])
+
+    try {
+      await db.get('key')
+    } catch (err) {
+      const expected = 'Key not found in database [key]'
+      assert.deepEqual(err.message, expected)
+    }
+  })
+
 
   const list = (db, options) => new Promise((resolve, reject) => {
     const acc = []
@@ -165,71 +296,33 @@ describe('PartitionDOWN', function () {
       .on('close', () => resolve(acc))
   })
 
-  describe('createReadStream [other]', function () {
+  describe('createReadStream', function () {
     const expected = [
-      { key: 'a', value: 1 },
-      { key: 'b', value: 2 },
-      { key: 'c', value: 3 }
-    ]
-
-    it('{ keys: true, value: true }', async function () {
-      const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
-      const actual = await list(db, {})
-      assert.deepStrictEqual(actual, expected)
-    })
-
-    it('{ keys: false, value: true }', async function () {
-      const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
-      const actual = await list(db, { keys: false })
-      assert.deepStrictEqual(actual, expected.map(R.prop('value')))
-    })
-
-    it('{ keys: true, value: false }', async function () {
-      const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
-      const actual = await list(db, { values: false })
-      assert.deepStrictEqual(actual, expected.map(R.prop('key')))
-    })
-  })
-
-  describe('createReadStream [feature]', function () {
-    const expected = [
-      { key: feature.id, value: feature }
-    ]
-
-    it('{ keys: true, value: true }', async function () {
-      const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
-      const actual = await list(db, {})
-      assert.deepStrictEqual(actual, expected)
-    })
-
-    it('{ keys: false, value: true }', async function () {
-      const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
-      const actual = await list(db, { keys: false })
-      assert.deepStrictEqual(actual, expected.map(R.prop('value')))
-    })
-
-    it('{ keys: true, value: false }', async function () {
-      const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
-      const actual = await list(db, { values: false })
-      assert.deepStrictEqual(actual, expected.map(R.prop('key')))
-    })
-  })
-
-  describe('createReadStream [mixed]', function () {
-    const expected = [
-      { key: 'a', value: 1 },
-      { key: 'b', value: 2 },
-      { key: 'c', value: 3 },
-      { key: feature.id, value: feature },
-      { key: 'x', value: 9 },
-      { key: 'y', value: 8 },
-      { key: 'z', value: 7 }
+      {
+        key: 'a',
+        value: 'value'
+      },
+      {
+        key: 'b',
+        value: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
+      },
+      {
+        key: 'c',
+        value: {
+          type: 'Feature',
+          name: 'PzGrenKp Lipsch',
+          properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+        }
+      },
+      {
+        key: 'd',
+        value: {
+          type: 'Feature',
+          name: 'PzGrenKp Lipsch',
+          geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
+          properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+        }
+      }
     ]
 
     it('{ keys: true, value: true }', async function () {

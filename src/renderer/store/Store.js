@@ -55,27 +55,11 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
   const up = leveldb({ down })
   this.db_ = new HighLevel(up)
 
-  // ;(async () => {
-  //   await up.del('feature:940f0f28-5a36-4f97-aa02-3e2b88cd3507/effbc273-1eb6-45b8-a473-70ba9c87c924')
-  // })()
+  // Forward high-level batch event:
+  up.on('batch', operations => this.emit('batch', { operations }))
 
   this.undo_ = undo
   this.selection_ = selection
-
-  // Geometries deletes are ignored. They can be handled on 'features/batch' event.
-  geometryLevel.on('batch', event => {
-    const operations = event.filter(({ type }) => type === 'put')
-    if (operations.length) this.emit('features/geometries', { operations })
-  })
-
-  propertiesLevel.on('batch', event => {
-    const operations = event.filter(({ key }) => isFeatureId(key))
-    const removals = event.filter(({ type }) => type === 'del').map(({ key }) => key)
-
-    // FIXME: probably not the right place for selection handling
-    this.selection_.deselect(removals)
-    if (operations.length) this.emit('features/properties', { operations })
-  })
 
   this.compositeCommand = compositeCommand.bind(this)
   this.deleteCommand = deleteCommand.bind(this)
@@ -94,7 +78,7 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
     // await this.db_.batch(ops)
 
     const alreadyImported = await this.db_.existsKey('symbol:')
-    if (!alreadyImported) await importSymbols(this.properties_)
+    if (!alreadyImported) await importSymbols(this.db_)
   }, { timeout: 2000 })
 
 }
@@ -170,7 +154,7 @@ Store.prototype.collectKeys_ = async function (ids, excludes = []) {
 Store.prototype.update_ = async function (fn, keys) {
   const values = await this.db_.values(keys)
   const ops = values.map(value => ({ type: 'put', key: value.id, value: fn(value) }))
-  return this.properties_.batch(ops)
+  return this.db_.batch(ops)
 }
 
 

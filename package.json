@@ -10,7 +10,7 @@
     "webpack": "webpack",
     "webpack:production": "webpack --mode='production'",
     "test": "mocha 'src/**/*.test.js' --bail --recursive",
-    "test:watch": "mocha --recursive --watch",
+    "test:watch": "mocha 'src/**/*.test.js' --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --recursive",
     "lint": "eslint src/",
     "jsdoc:main": "jsdoc src/main -r -d jsdoc/main"
