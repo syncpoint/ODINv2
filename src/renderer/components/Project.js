@@ -1,6 +1,6 @@
 import React from 'react'
 import { Map } from './Map'
-import { CommandPalette, Sidebar } from '.'
+import { CommandPalette, Sidebar, FeatureProperties } from '.'
 import { useServices, useMemento } from './hooks'
 
 /**
@@ -112,7 +112,7 @@ export const Project = () => {
       <div className='panel-container fullscreen'>
         {/* <div className="osd panel-top"/> */}
         { sidebar }
-        {/* <div className="panel-right panel"></div> */}
+        <FeatureProperties></FeatureProperties>
       </div>
       { palette }
     </>
