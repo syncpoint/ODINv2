@@ -1,5 +1,4 @@
 import util from 'util'
-import * as R from 'ramda'
 import { AbstractLevelDOWN, AbstractIterator } from 'abstract-leveldown'
 
 /**
@@ -8,49 +7,51 @@ import { AbstractLevelDOWN, AbstractIterator } from 'abstract-leveldown'
 function Iterator (db, options) {
   AbstractIterator.call(this, db)
   this.options_ = options // remember if keys are requested
-  this.properties_ = options.properties
-  this.geometries_ = options.geometries
-
-  // true if geometries iterator is paused.
-  this.paused_ = false
-  this.buffer_ = {} // current/last geometries entry
+  this.propertiesIterator_ = options.propertiesIterator
+  this.geometriesIterator_ = options.geometriesIterator
+  this.lastCompare_ = 0
 }
 
 util.inherits(Iterator, AbstractIterator)
 
-Iterator.prototype._next = async function (callback) {
-  // Properties range always includes geometries range.
-  // properties:    -------|xxxxxxxxxxxxxxxx|--------
-  // geometries:    ----------|xxxxxxx|--------------
-
-  // On key mismatch, we pause geometries iterator.
-  const next = it => new Promise((resolve, reject) => {
-    it.next((err, key, value) => {
-      if (err) reject(err)
-      else resolve({ key, value })
-    })
+const next = it => new Promise((resolve, reject) => {
+  it.next((err, key, value) => {
+    if (err) reject(err)
+    else resolve({ key, value })
   })
+})
+
+Iterator.prototype._next = async function (callback) {
 
   try {
-    const properties = await next(this.properties_)
-    if (!this.paused_) this.buffer_ = await next(this.geometries_)
+    // Depending on last key compare, take either one (!== 0) or both (=== 0) iterators:
+    if (this.lastCompare_ <= 0) this.geometriesRecord_ = await next(this.geometriesIterator_)
+    if (this.lastCompare_ >= 0) this.propertiesRecord_ = await next(this.propertiesIterator_)
 
-    if (!properties.key && !this.buffer_.key) this._nextTick(callback) // all done.
-    else if (properties.key === this.buffer_.key) {
-      // Iterators are in sync; unpause geometries iterator (if paused).
-      delete this.paused_
-      const key = this.options_.keys ? properties.key : null
-      const value = { ...properties.value, geometry: this.buffer_.value }
-      this._nextTick(() => callback(null, key, value))
-    } else {
-      // Iterators are not in sync; pause geometries iterator.
-      this.paused_ = true
-      const key = this.options_.keys ? properties.key : null
-      const value = properties.value
-      this._nextTick(() => callback(null, key, value))
+    // Encode four cases:
+    const path =
+      (this.geometriesRecord_.key === undefined ? 0x01 : 0x02) |
+      (this.propertiesRecord_.key === undefined ? 0x04 : 0x08)
+
+    switch (path) {
+      case 0x05: return this._nextTick(callback)
+      case 0x06: this.lastCompare_ = -1; break
+      case 0x09: this.lastCompare_ = 1; break
+      case 0x0a: this.lastCompare_ = this.geometriesRecord_.key.localeCompare(this.propertiesRecord_.key); break
     }
+
+    const { key, value } = (() => {
+      if (this.lastCompare_ === 0) {
+        const key = this.geometriesRecord_.key
+        const value = { geometry: this.geometriesRecord_.value, ...this.propertiesRecord_.value }
+        return { key, value }
+      } else if (this.lastCompare_ < 0) return this.geometriesRecord_
+      else return this.propertiesRecord_
+    })()
+
+    this._nextTick(callback, null, key, value)
   } catch (err) {
-    this._nextTick(() => callback(err))
+    this._nextTick(callback, err)
   }
 }
 
@@ -66,99 +67,146 @@ export const PartitionDOWN = function (propertiesLevel, geometriesLevel) {
 
 util.inherits(PartitionDOWN, AbstractLevelDOWN)
 
+const isGeometry = value => {
+  if (!value) return false
+  else if (typeof value !== 'object') return false
+  else {
+    if (!value.type) return false
+    else if (!value.coordinates) return false
+    return true
+  }
+}
+
+const safeget = async (level, key) => {
+  try {
+    return await level.get(key)
+  } catch (err) {
+    return undefined
+  }
+}
+
+const safedel = async (level, key) => {
+  try {
+    return await level.del(key)
+  } catch (err) {
+    // Let it slide.
+  }
+}
+
 /**
- *
+ * _put :: k -> {k, v}
+ * _put :: k -> GeoJSON/Geometry
+ * _put :: k -> *
  */
 PartitionDOWN.prototype._put = async function (key, value, options, callback) {
-  if (key.startsWith('feature:')) {
-    const copy = { ...value }
-    await this.geometries_.put(key, copy.geometry)
-    delete copy.geometry
-    await this.properties_.put(key, copy)
-    this._nextTick(callback)
-  } else {
-    this.properties_.put(key, value, callback)
-  }
-}
+  const err = this._checkKey(key) || this._checkValue(value)
+  if (err) return this._nextTick(callback, err)
 
-/**
- *
- */
-PartitionDOWN.prototype._get = async function (key, options, callback) {
-  if (key.startsWith('feature:')) {
-    try {
-      const properties = await this.properties_.get(key)
-      const geometry = await this.geometries_.get(key)
-      this._nextTick(() => callback(null, { ...properties, geometry }))
-    } catch (err) {
-      this._nextTick(() => callback(err))
-    }
-  } else {
-    this.properties_.get(key, callback)
-  }
-}
-
-/**
- *
- */
-PartitionDOWN.prototype._del = async function (key, options, callback) {
-  if (key.startsWith('feature:')) {
-    try {
-      await this.properties_.del(key)
-      await this.geometries_.del(key)
-      this._nextTick(callback)
-    } catch (err) {
-      this._mextTick(() => callback(err))
-    }
-  } else {
-    this.properties_.del(key, callback)
-  }
-}
-
-/**
- *
- */
-PartitionDOWN.prototype._batch = async function (operations, options, callback) {
-  const { features, geometries, others } = R.groupBy(({ key }) => {
-    return key.startsWith('feature:')
-      ? 'features'
-      : key.startsWith('geometry:')
-        ? 'geometries'
-        : 'others'
-  }, operations)
+  // Cases
+  // 1. value is GeoJSON/Geometry
+  // 2. value is object with geometry property
+  // 3. none of the above
 
   try {
-    if (others && others.length) await this.properties_.batch(others)
-
-    if (features && features.length) {
-      const [properties, geometries] = features.reduce((acc, op) => {
-        const [properties, geometries] = acc
-
-        if (op.type === 'del') {
-          properties.push(op)
-          geometries.push(op)
-        } else {
-          const copy = { ...op.value }
-          geometries.push({ type: op.type, key: op.key, value: copy.geometry })
-          delete copy.geometry
-          properties.push({ type: op.type, key: op.key, value: copy })
-        }
-
-        return acc
-      }, [[], []])
-
-      await this.properties_.batch(properties)
-      await this.geometries_.batch(geometries)
-    }
-
-    if (geometries && geometries.length) {
-      const ops = geometries.map(op => ({ ...op, key: `feature:${op.key.split(':')[1]}` }))
-      await this.geometries_.batch(ops)
+    if (isGeometry(value)) {
+      // 1. Only write geometry:
+      await this.geometries_.put(key, value)
+    } else {
+      const { geometry, ...others } = value
+      // 2. Write geometry and other properties:
+      if (isGeometry(geometry)) {
+        await this.geometries_.put(key, geometry)
+        await this.properties_.put(key, others)
+      } else {
+        // 3. Write value as-is:
+        await this.properties_.put(key, value)
+      }
     }
 
     this._nextTick(callback)
   } catch (err) {
-    this._nextTick(() => callback(err))
+    this._nextTick(callback, err)
+  }
+}
+
+/**
+ * _get :: k
+ */
+PartitionDOWN.prototype._get = async function (key, options, callback) {
+  const err = this._checkKey(key)
+  if (err) return this._nextTick(callback, err)
+
+  try {
+    const geometry = await safeget(this.geometries_, key)
+    const others = await safeget(this.properties_, key)
+
+    if (isGeometry(geometry)) {
+      if (!others) return this._nextTick(callback, null, geometry)
+      else return this._nextTick(callback, null, { geometry, ...others })
+    } else {
+      if (!others) return this._nextTick(callback, new Error('NotFound'))
+      else return this._nextTick(callback, null, others)
+    }
+  } catch (err) {
+    this._nextTick(callback, err)
+  }
+}
+
+/**
+ * Note: We do not check if key exists at all.
+ */
+PartitionDOWN.prototype._del = async function (key, options, callback) {
+  const err = this._checkKey(key)
+  if (err) return this._nextTick(callback, err)
+
+  try {
+    await safedel(this.geometries_, key)
+    await safedel(this.properties_, key)
+    this._nextTick(callback)
+  } catch (err) {
+    this._nextTick(callback, err)
+  }
+}
+
+/**
+ *
+ */
+PartitionDOWN.prototype._batch = async function (array, options, callback) {
+
+  if (!Array.isArray(array)) {
+    return this._nextTick(callback, new Error('batch(array) requires an array argument'))
+  }
+
+  const [geometries, properties] = array.reduce((acc, op) => {
+    const [geometries, properties] = acc
+    const { type, key, value } = op
+
+    if (type === 'del') {
+      // For 'del' batch seems to ignore keys which do not exist.
+      geometries.push(op)
+      properties.push(op)
+    } else if (type === 'put') {
+      if (isGeometry(value)) geometries.push(op)
+      else {
+        const { geometry, ...others } = value
+        if (isGeometry(geometry)) {
+          geometries.push({ type: 'put', key, value: geometry })
+          properties.push({ type: 'put', key, value: others })
+        } else {
+          properties.push({ type: 'put', key, value })
+        }
+      }
+    }
+
+    return acc
+  }, [[], []])
+
+  try {
+    if (geometries.length) await this.geometries_.batch(geometries)
+    if (properties.length) await this.properties_.batch(properties)
+    this._nextTick(callback)
+  } catch (err) {
+    this._nextTick(callback, err)
   }
 }
 
@@ -167,11 +215,11 @@ PartitionDOWN.prototype._batch = async function (operations, options, callback) 
  */
 PartitionDOWN.prototype._iterator = function (options) {
   // Keys are necessary to synchronize iterators:
-  const properties = this.properties_.iterator({ ...options, keys: true })
-  const geometries = this.geometries_.iterator({ ...options, keys: true })
+  const propertiesIterator = this.properties_.iterator({ ...options, keys: true })
+  const geometriesIterator = this.geometries_.iterator({ ...options, keys: true })
   return new Iterator(this, {
     ...options,
-    properties,
-    geometries
+    propertiesIterator,
+    geometriesIterator
   })
 }

@@ -30,7 +30,6 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * selectProperties :: Key k, Value v => [k] => [v]
  * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
  * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
- * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
  * delete :: Id a => [a] -> unit
  * insert :: Value a => [a] -> unit
  * update :: Value a => [a] -> unit
@@ -46,7 +45,6 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * insertCommand :: Value a => [a] -> Command
  * deleteCommand :: Value a => [a] -> Command
  * updateCommand :: Value a => ([a], [a]) -> Command
- * updateGeometriesCommand :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> Command
  */
 export function Store (propertiesLevel, geometryLevel, undo, selection, emitter) {
   Emitter.call(this)
@@ -57,33 +55,22 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
   const up = leveldb({ down })
   this.db_ = new HighLevel(up)
 
-  // ;(async () => {
-  //   await up.del('feature:940f0f28-5a36-4f97-aa02-3e2b88cd3507/effbc273-1eb6-45b8-a473-70ba9c87c924')
-  // })()
+  // Forward high-level batch event:
+  up.on('batch', operations => {
+    // FIXME: probably not the right place for selection handling
+    const removals = operations.filter(({ type }) => type === 'del').map(({ key }) => key)
+    this.selection_.deselect(removals)
+
+    this.emit('batch', { operations })
+  })
 
   this.undo_ = undo
   this.selection_ = selection
-
-  // Geometries deletes are ignored. They can be handled on 'features/batch' event.
-  geometryLevel.on('batch', event => {
-    const operations = event.filter(({ type }) => type === 'put')
-    if (operations.length) this.emit('features/geometries', { operations })
-  })
-
-  propertiesLevel.on('batch', event => {
-    const operations = event.filter(({ key }) => isFeatureId(key))
-    const removals = event.filter(({ type }) => type === 'del').map(({ key }) => key)
-
-    // FIXME: probably not the right place for selection handling
-    this.selection_.deselect(removals)
-    if (operations.length) this.emit('features/properties', { operations })
-  })
 
   this.compositeCommand = compositeCommand.bind(this)
   this.deleteCommand = deleteCommand.bind(this)
   this.insertCommand = insertCommand.bind(this)
   this.updateCommand = updateCommand.bind(this)
-  this.updateGeometriesCommand = updateGeometriesCommand.bind(this)
 
   emitter.on(`:id(${LAYER_ID})/hide`, ({ id }) => this.hide(id))
   emitter.on(`:id(${FEATURE_ID})/hide`, ({ id }) => this.hide(id))
@@ -97,7 +84,7 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
     // await this.db_.batch(ops)
 
     const alreadyImported = await this.db_.existsKey('symbol:')
-    if (!alreadyImported) await importSymbols(this.properties_)
+    if (!alreadyImported) await importSymbols(this.db_)
   }, { timeout: 2000 })
 
 }
@@ -121,6 +108,7 @@ Store.prototype.selectProperties = function (keys) {
   return this.properties_.values(keys)
 }
 
+
 /**
  * @async
  * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
@@ -130,24 +118,6 @@ Store.prototype.selectGeometries = function (arg) {
   if (Array.isArray(arg)) return this.geometries_.values(arg)
   else if (isLayerId(arg)) return this.geometries_.values(`feature:${arg.split(':')[1]}`)
   else this.geometries_.values([arg])
-}
-
-
-/**
- * @async
- * updateGeometries :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> unit
- */
-Store.prototype.updateGeometries = async function (geometries) {
-
-  // Rewrite keys from 'feature:' to special 'geometry:' to
-  // directly write feature geometries.
-
-  const entries = Object.entries(geometries).reduce((acc, [key, value]) => {
-    acc[`geometry:${key.split(':')[1]}`] = value
-    return acc
-  }, {})
-
-  this.undo_.apply(this.updateGeometriesCommand(entries))
 }
 
 
@@ -190,7 +160,7 @@ Store.prototype.collectKeys_ = async function (ids, excludes = []) {
 Store.prototype.update_ = async function (fn, keys) {
   const values = await this.db_.values(keys)
   const ops = values.map(value => ({ type: 'put', key: value.id, value: fn(value) }))
-  return this.properties_.batch(ops)
+  return this.db_.batch(ops)
 }
 
 
@@ -422,24 +392,5 @@ const updateCommand = function (newValues, oldValues) {
   return {
     apply: () => this.db_.batch(ops),
     inverse: () => this.updateCommand(oldValues, newValues)
-  }
-}
-
-
-/**
- * updateGeometriesCommand :: (Id k, GeoJSON/Geometry a) => {k: [a, a]} -> Command
- */
-const updateGeometriesCommand = function (geometries) {
-  const entries = Object.entries(geometries).map(([id, xs]) => [id, [xs[1], xs[0]]])
-  const switchedGeometries = Object.fromEntries(entries)
-  return {
-    apply: async () => {
-      const operations = Object.entries(geometries)
-        .map(([key, xs]) => [key, xs[0]])
-        .map(([key, value]) => ({ type: 'put', key, value }))
-
-      return await this.db_.batch(operations)
-    },
-    inverse: () => this.updateGeometriesCommand(switchedGeometries)
   }
 }

@@ -3,7 +3,8 @@ import VectorSource from 'ol/source/Vector'
 import Collection from 'ol/Collection'
 import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
-import { readFeature, readFeatures, readGeometry } from '../store/format'
+import { readFeature, readFeatures } from '../store/format'
+import { isFeatureId } from '../ids'
 
 const isVisible = feature => !feature.hidden
 const isHidden = feature => feature.hidden
@@ -24,8 +25,7 @@ export function Sources (store, selection, highlight) {
   this.highlightedFeatures_ = new Collection()
   this.highlightedSource_ = new VectorSource({ features: this.highlightedFeatures_ })
 
-  store.on('features/properties', ({ operations }) => this.updateProperties_(operations))
-  store.on('features/geometries', ({ operations }) => this.updateGeometries_(operations))
+  store.on('batch', ({ operations }) => this.update_(operations))
   highlight.on('highlight/geometries', ({ geometries }) => this.highlightGeometries_(geometries))
 }
 
@@ -52,49 +52,28 @@ Sources.prototype.addFeature_ = function (feature) {
 }
 
 
-/**
- * @private
- */
-Sources.prototype.updateGeometries_ = function (operations) {
-  operations
-    .filter(({ key }) => this.source_.getFeatureById(key))
-    .map(({ key, value }) => ({ key, geometry: readGeometry(value) }))
-    .forEach(({ key, geometry }) => {
-      const feature = this.source_.getFeatureById(key)
-      feature.setGeometry(geometry)
-    })
-}
+Sources.prototype.update_ = function (operations) {
 
+  // We are only interested in features:
+  const featureOps = operations.filter(({ key }) => isFeatureId(key))
 
-/**
- * @private
- */
-Sources.prototype.updateProperties_ = function (operations) {
-
-  // Removals:
-  operations
-    .filter(({ type }) => type === 'del')
+  // Removal deleted features:
+  featureOps
+    .filter(({ type, key }) => type === 'del')
     .map(op => op.key)
-    .forEach(id => this.removeFeatureById_(id))
+    .forEach(key => this.removeFeatureById_(key))
 
-  // Remove hidden features from source:
-  operations
-    .filter(({ type, value }) => type === 'put' && isHidden(value))
+  // Remove hidden features:
+  featureOps
+    .filter(({ type, key, value }) => type === 'put' && isHidden(value))
     .forEach(({ key }) => this.removeFeatureById_(key))
 
-  // Add features or update feature properties:
-  operations
+  // Add new or replace existing features:
+  featureOps
     .filter(({ type, value }) => type === 'put' && isVisible(value))
     .forEach(({ key, value }) => {
-      const feature = this.source_.getFeatureById(key)
-      if (!feature) {
-        // Note: Does not have a geometry yet.
-        this.addFeature_(value)
-      } else {
-        // setProperties() does not increase revision counter...
-        feature.setProperties(value.properties, true)
-        feature.changed() // ... changed() does though.
-      }
+      if (this.source_.getFeatureById(key)) this.removeFeatureById_(key)
+      this.addFeature_(value)
     })
 }
 

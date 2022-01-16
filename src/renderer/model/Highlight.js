@@ -49,7 +49,7 @@ util.inherits(Highlight, Emitter)
 
 
 /**
- *
+ * layerBounds_ :: [jsts/Geometry] -> [string] -> [jsts/Geometry]
  */
 Highlight.prototype.layerBounds_ = function (acc, ids) {
 
@@ -59,6 +59,8 @@ Highlight.prototype.layerBounds_ = function (acc, ids) {
   return ids.reduce(async (acc, id) => {
     const bounds = await acc
     const geometries = await this.store_.selectGeometries(id)
+    if (!geometries.length) return bounds
+
     const collection = TS.collect(geometries.map(read))
     bounds.push(write(TS.minimumRectangle(collection)))
     return bounds
@@ -67,7 +69,7 @@ Highlight.prototype.layerBounds_ = function (acc, ids) {
 
 
 /**
- *
+ * featureBounds_ :: [jsts/Geometry] -> [string] -> [jsts/Geometry]
  */
 Highlight.prototype.featureBounds_ = async function (acc, ids) {
   const resolution = this.viewMemento_.resolution()
