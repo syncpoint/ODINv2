@@ -125,3 +125,16 @@ export const geometryType = sidc => {
   const descriptor = index[parameterized(sidc)]
   return descriptor && descriptor.geometry && descriptor.geometry.type
 }
+
+export const className = sidc => {
+  if (!sidc) return
+  const descriptor = index[parameterized(sidc)]
+  if (!descriptor) return
+
+  if (descriptor.scope === 'UNIT') return 'UNIT'
+  else if (descriptor.scope === 'INSTALLATION') return 'INSTALLATION'
+  else if (descriptor.scope === 'EQUIPMENT') return 'EQUIPMENT'
+  else if (descriptor.scope === 'ACTIVITY') return 'ACTIVITY'
+  else if (descriptor.geometry !== 'Point') return 'GRAPHICS'
+  else return 'POINT'
+}

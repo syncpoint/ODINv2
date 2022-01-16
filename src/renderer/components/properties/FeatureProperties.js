@@ -1,9 +1,13 @@
+import * as R from 'ramda'
 import React from 'react'
 import { Tabs } from 'antd'
 import { useServices, useMemento } from '../hooks'
-import TextField from './TextField'
-import Section from './Section'
-import { MarginTop3, MarginBottom3, GridCols2, ColSpan2, SelectEchelon, HostilityStatus, Status, Modifiers, Reinforcement } from './composites'
+import * as MILSTD from '../../symbology/2525c'
+import GridCols2 from './GridCols2'
+import MarginTop3 from './MarginTop3'
+import UnitProperties from './UnitProperties'
+import EquipmentProperties from './EquipmentProperties'
+import InstallationProperties from './InstallationProperties'
 
 const { TabPane } = Tabs
 
@@ -19,6 +23,14 @@ export const FeatureProperties = () => {
 
       const values = await store.selectProperties(keys)
       console.log('selected', values)
+
+      const classNames = values.reduce((acc, value) => {
+        const { sidc } = value.properties
+        acc.push(MILSTD.className(sidc))
+        return R.uniq(acc)
+      }, [])
+
+      console.log('classNames', classNames)
     })
 
     // No cleanup necessary; components listenes forever.
@@ -38,44 +50,9 @@ export const FeatureProperties = () => {
             {/* <Panel> */}
               <GridCols2>
                 <MarginTop3/>
-                <ColSpan2>
-                  <TextField label='Name'/>
-                </ColSpan2>
-                <TextField label='Unique Designation'/>
-                <TextField label='Higher Formation'/>
-                <TextField label='Special C2 HQ'/>
-                <Section id='echelon' label='Echelon'>
-                  <SelectEchelon/>
-                </Section>
-                <HostilityStatus/>
-                <ColSpan2>
-                  <TextField label='Date-Time Group'/>
-                </ColSpan2>
-                <TextField label='Speed'/>
-                <TextField label='Direction'/>
-                <ColSpan2>
-                  <TextField label='Staff Comments'/>
-                </ColSpan2>
-                <ColSpan2>
-                  <TextField label='Additional Information'/>
-                </ColSpan2>
-                <Status/>
-
-                <ColSpan2>
-                  <MarginTop3/>
-                  <Section label='Modifiers'>
-                    <GridCols2>
-                      <Modifiers/>
-                      <Reinforcement/>
-                    </GridCols2>
-                  </Section>
-                  <MarginBottom3/>
-                </ColSpan2>
-
-                {/* <TextField label='Effective (From)'/>
-                <TextField label='Effective (To)'/>
-                <TextField label='Altitude/Depth (From)'/>
-                <TextField label='Altitude/Depth (To)'/> */}
+                {/* <UnitProperties/> */}
+                {/* <EquipmentProperties/> */}
+                <InstallationProperties/>
               </GridCols2>
             {/* </Panel> */}
           </TabPane>
