@@ -1,7 +1,17 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const Speed = () =>
-  <TextField label='Speed'/>
+const TextProperty = textProperty({
+  label: 'Speed',
+  get: feature => feature.properties.z ? feature.properties.z : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      z: value
+    }
+  })
+})
 
-export default Speed
+export default props => <TextProperty {...props}/>

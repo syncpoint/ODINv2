@@ -1,7 +1,17 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const SpecialC2HQ = () =>
-  <TextField label='Special C2 HQ'/>
+const TextProperty = textProperty({
+  label: 'Special C2 HQ',
+  get: feature => feature.properties.aa ? feature.properties.aa : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      aa: value
+    }
+  })
+})
 
-export default SpecialC2HQ
+export default props => <TextProperty {...props}/>

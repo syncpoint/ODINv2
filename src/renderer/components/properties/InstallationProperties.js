@@ -8,16 +8,16 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
 
-const InstallationProperties = () =>
+const InstallationProperties = props =>
   <>
-    <Name/>
-    <UniqueDesignationHigherFormation/>
-    <SpecialC2HQ/>
-    <HostilityStatus/>
-    <DateTimeGroup/>
-    <StaffComments/>
-    <AdditionalInformation/>
-    <Status/>
+    <Name {...props}/>
+    <UniqueDesignationHigherFormation {...props}/>
+    <SpecialC2HQ {...props}/>
+    <HostilityStatus {...props}/>
+    <DateTimeGroup {...props}/>
+    <StaffComments {...props}/>
+    <AdditionalInformation {...props}/>
+    <Status {...props}/>
   </>
 
 export default InstallationProperties

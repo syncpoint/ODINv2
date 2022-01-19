@@ -2,10 +2,10 @@ import React from 'react'
 import UniqueDesignation from './UniqueDesignation'
 import HigherFormation from './HigherFormation'
 
-const UniqueDesignationHigherFormation = () =>
+const UniqueDesignationHigherFormation = props =>
   <>
-    <UniqueDesignation/>
-    <HigherFormation/>
+    <UniqueDesignation {...props}/>
+    <HigherFormation {...props}/>
   </>
 
 export default UniqueDesignationHigherFormation

@@ -1,10 +1,22 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import ColSpan2 from './ColSpan2'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const DateTimeGroup = () =>
+const TextProperty = textProperty({
+  label: 'Date-Time Group',
+  get: feature => feature.properties.w ? feature.properties.w : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      w: value
+    }
+  })
+})
+
+export default props => (
   <ColSpan2>
-    <TextField label='Date-Time Group'/>
+    <TextProperty {...props}/>
   </ColSpan2>
-
-export default DateTimeGroup
+)

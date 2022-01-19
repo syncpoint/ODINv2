@@ -96,8 +96,9 @@ util.inherits(Store, Emitter)
  * @async
  * selectFeatures :: GeoJSON/Feature a => () -> [a]
  */
-Store.prototype.selectFeatures = function () {
-  return this.db_.values('feature:')
+Store.prototype.selectFeatures = function (keys) {
+  const arg = keys || 'feature:'
+  return this.db_.values(arg)
 }
 
 /**

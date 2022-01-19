@@ -1,7 +1,17 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const Direction = () =>
-  <TextField label='Direction'/>
+const TextProperty = textProperty({
+  label: 'Direction',
+  get: feature => feature.properties.q ? feature.properties.q : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      q: value
+    }
+  })
+})
 
-export default Direction
+export default props => <TextProperty {...props}/>

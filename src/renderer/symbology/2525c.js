@@ -40,6 +40,10 @@ export const functionIdCode = sidc => sidc
   ? sidc.substring(FUNCTION_ID, FUNCTION_ID + 6)
   : null
 
+export const modifierCode = sidc => sidc
+  ? sidc[MODIFIER]
+  : '-'
+
 export const echelonCode = sidc => sidc
   ? sidc[ECHELON]
   : '-'
@@ -52,6 +56,7 @@ export const format = (sidc, options) => {
   if (options.identity) formatted = formatted.substring(0, IDENTITY) + options.identity + formatted.substring(IDENTITY + 1)
   if (options.battleDimension) formatted = formatted.substring(0, BATTLE_DIMENSION) + options.battleDimension + formatted.substring(BATTLE_DIMENSION + 1)
   if (options.status) formatted = formatted.substring(0, STATUS) + options.status + formatted.substring(STATUS + 1)
+  if (options.modifier) formatted = formatted.substring(0, MODIFIER) + options.modifier + formatted.substring(MODIFIER + 1)
   if (options.echelon) formatted = formatted.substring(0, ECHELON) + options.echelon + formatted.substring(ECHELON + 1)
   if (options.functionId) formatted = formatted.substring(0, FUNCTION_ID) + options.functionId + formatted.substring(FUNCTION_ID + 6)
   return formatted
@@ -100,6 +105,7 @@ export const index = raw
       hierarchy: descriptor.hierarchy,
       scope: descriptor.scope,
       dimensions,
+      // combine type and optional parameters under `geometry`:
       geometry: {
         type: descriptor.geometry,
         ...descriptor.parameters
@@ -135,6 +141,8 @@ export const className = sidc => {
   else if (descriptor.scope === 'INSTALLATION') return 'INSTALLATION'
   else if (descriptor.scope === 'EQUIPMENT') return 'EQUIPMENT'
   else if (descriptor.scope === 'ACTIVITY') return 'ACTIVITY'
-  else if (descriptor.geometry !== 'Point') return 'GRAPHICS'
+  // No geometry type defaults to POINT:
+  else if (!descriptor.geometry) return 'POINT'
+  else if (descriptor.geometry.type !== 'Point') return 'GRAPHICS'
   else return 'POINT'
 }

@@ -1,8 +1,17 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const HigherFormation = () =>
-  <TextField label='Higher Formation'/>
+const TextProperty = textProperty({
+  label: 'Higher Formation',
+  get: feature => feature.properties.m ? feature.properties.m : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      m: value
+    }
+  })
+})
 
-export default HigherFormation
+export default props => <TextProperty {...props}/>

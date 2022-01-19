@@ -3,9 +3,8 @@ import Name from './Name'
 import ColSpan2 from './ColSpan2'
 import UniqueDesignation from './UniqueDesignation'
 import HostilityStatus from './HostilityStatus'
-import DateTimeGroup from './DateTimeGroup'
-import Speed from './Speed'
-import Direction from './Direction'
+import EffectiveDateTime from './EffectiveDateTime'
+import Altitude from './Altitude'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
@@ -17,9 +16,8 @@ const ActivityProperties = props =>
       <UniqueDesignation {...props}/>
     </ColSpan2>
     <HostilityStatus {...props}/>
-    <DateTimeGroup {...props}/>
-    <Speed {...props}/>
-    <Direction {...props}/>
+    <EffectiveDateTime {...props}/>
+    <Altitude {...props}/>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
     <Status {...props}/>

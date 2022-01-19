@@ -10,18 +10,18 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
 
-const EquipmentProperties = () =>
+const EquipmentProperties = props =>
   <>
-    <Name/>
-    <UniqueDesignationQuantity/>
-    <TypeMobility/>
-    <HostilityStatus/>
-    <DateTimeGroup/>
-    <Speed/>
-    <Direction/>
-    <StaffComments/>
-    <AdditionalInformation/>
-    <Status/>
+    <Name {...props}/>
+    <UniqueDesignationQuantity {...props}/>
+    <TypeMobility {...props}/>
+    <HostilityStatus {...props}/>
+    <DateTimeGroup {...props}/>
+    <Speed {...props}/>
+    <Direction {...props}/>
+    <StaffComments {...props}/>
+    <AdditionalInformation {...props}/>
+    <Status {...props}/>
   </>
 
 export default EquipmentProperties

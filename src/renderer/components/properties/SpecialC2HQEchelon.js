@@ -1,11 +1,11 @@
 import React from 'react'
-import TextField from './TextField'
+import SpecialC2HQ from './SpecialC2HQ'
 import Echelon from './Echelon'
 
-const SpecialC2HQEchelon = () =>
+const SpecialC2HQEchelon = props =>
   <>
-    <TextField label='Special C2 HQ'/>
-    <Echelon/>
+    <SpecialC2HQ {...props}/>
+    <Echelon {...props}/>
   </>
 
 export default SpecialC2HQEchelon

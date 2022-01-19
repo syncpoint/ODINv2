@@ -9,21 +9,28 @@ import Direction from './Direction'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
+import Condition from './Condition'
+import Reinforcement from './Reinforcement'
 import UnitModifiers from './UnitModifiers'
 
-const UnitProperties = () =>
-  <>
-    <Name/>
-    <UniqueDesignationHigherFormation/>
-    <SpecialC2HQEchelon/>
-    <HostilityStatus/>
-    <DateTimeGroup/>
-    <Speed/>
-    <Direction/>
-    <StaffComments/>
-    <AdditionalInformation/>
-    <Status/>
-    <UnitModifiers/>
-  </>
+const UnitProperties = props => {
+  return (
+    <>
+      <Name {...props}/>
+      <UniqueDesignationHigherFormation {...props}/>
+      <SpecialC2HQEchelon {...props}/>
+      <HostilityStatus {...props}/>
+      <DateTimeGroup {...props}/>
+      <Speed {...props}/>
+      <Direction {...props}/>
+      <StaffComments {...props}/>
+      <AdditionalInformation {...props}/>
+      <Status {...props}/>
+      <Condition {...props}/>
+      <Reinforcement {...props}/>
+      <UnitModifiers {...props}/>
+    </>
+  )
+}
 
 export default UnitProperties

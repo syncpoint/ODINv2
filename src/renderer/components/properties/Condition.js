@@ -1,9 +1,8 @@
 /* eslint-disable react/prop-types */
 import * as R from 'ramda'
 import React from 'react'
-import FlexColumn from './FlexColumn'
 import Section from './Section'
-import Radio from './Radio'
+import Select from './Select'
 import { useServices } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
 
@@ -32,28 +31,25 @@ export default props => {
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => setState(initialValue()), [props])
 
-  const handleChange = value => () => {
+  const handleSelectionChanged = event => {
+    const { value } = event.target
     setState(value)
     const features = Object.values(props.state)
     store.update(features.map(set(value)), features)
   }
 
-  return (
-    <Section label='Status'>
-      <FlexColumn>
-        <Radio
-          name='status'
-          label='Present'
-          onChange={handleChange('P')}
-          checked={state !== 'A'}
-        />
-        <Radio
-          name='status'
-          label='Anticipated'
-          onChange={handleChange('A')}
-          checked={state === 'A'}
-        />
-      </FlexColumn>
-    </Section>
-  )
+  return state !== 'A'
+    ? <Section label='Operational Condition'>
+        <Select
+          value={state}
+          onChange={handleSelectionChanged}
+        >
+          <option value='P'>N/A</option>
+          <option value='C'>Fully Capable</option>
+          <option value='D'>Damaged</option>
+          <option value='X'>Destroyed</option>
+          <option value='F'>Full to Capacity</option>
+        </Select>
+      </Section>
+    : null
 }
