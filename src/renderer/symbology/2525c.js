@@ -151,7 +151,6 @@ export const specialization = sidc => {
   if (!sidc) return
   const descriptor = index[parameterized(sidc)]
   if (!descriptor) return
-  console.log(descriptor)
 
   const { geometry } = descriptor
   if (descriptor.parameterized === 'G*G*GLB---') return 'BOUNDARIES'

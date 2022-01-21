@@ -31,7 +31,6 @@ export const special = (feature, overlay) => {
     ? `${geometryType(feature)}-${geometry.layout}`
     : `${geometryType(feature)}`
 
-  console.log(key)
   return layouts[key]
     ? layouts[key](feature, geometry, overlay)
     : defaultBehavior(feature, geometry)
