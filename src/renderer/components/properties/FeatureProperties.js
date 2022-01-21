@@ -68,7 +68,6 @@ export const FeatureProperties = () => {
         return R.uniq(acc)
       }, [])
 
-      console.log('classNames', classNames)
       if (classNames.length === 1) setClassName(classNames[0])
       else setClassName(null)
     })

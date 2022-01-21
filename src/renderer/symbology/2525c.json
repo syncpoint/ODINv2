@@ -2342,7 +2342,7 @@
       "Airspace Coordination Area (ACA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2384,7 +2384,7 @@
       "Target Build-up Area (TBA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2426,7 +2426,7 @@
       "Dead Space Area (DA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2468,7 +2468,7 @@
       "Sensor Zone - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2510,7 +2510,7 @@
       "Free Fire Area (FFA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2552,7 +2552,7 @@
       "No Fire Area (NFA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2594,7 +2594,7 @@
       "Position Area For Artillery (PAA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2625,7 +2625,7 @@
       "Restrictive Fire Area (RFA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2667,7 +2667,7 @@
       "Fire Support Area (FSA) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2721,7 +2721,7 @@
       "Target Value Area (TVAR) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2763,7 +2763,7 @@
       "Zone of Responsibility (ZOR) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2805,7 +2805,7 @@
       "Blue Kill Box (BKB) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2847,7 +2847,7 @@
       "Purple Kill Box (PKB) - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2915,7 +2915,7 @@
       "Circular Target"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }
@@ -2972,7 +2972,7 @@
       "Weapons / Sensor Range Fans - Circular"
     ],
     "parameters": {
-      "layout": "fan",
+      "layout": "circle",
       "maxPoints": 2,
       "minPoints": 2
     }

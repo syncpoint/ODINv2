@@ -5,6 +5,7 @@ import ColSpan2 from './ColSpan2'
 import MarginTop3 from './MarginTop3'
 import Section from './Section'
 import Radio from './Radio'
+import GridAutoColumns from './GridAutoColumns'
 import { useServices } from '../hooks'
 
 const get = feature => feature.properties.f ? feature.properties.f : null
@@ -43,11 +44,7 @@ export default props => {
     <ColSpan2>
     <MarginTop3/>
     <Section label='Reinforced/Reduced'>
-      <div style={{
-        display: 'grid',
-        gridAutoColumns: 'minmax(0, 1fr)',
-        gridAutoFlow: 'column'
-      }}>
+      <GridAutoColumns>
         <Radio
           name='reinforcement'
           label='None'
@@ -72,7 +69,7 @@ export default props => {
           onChange={handleChange('(±)')}
           checked={value === '(±)'}
         />
-      </div>
+      </GridAutoColumns>
     </Section>
     </ColSpan2>
   )

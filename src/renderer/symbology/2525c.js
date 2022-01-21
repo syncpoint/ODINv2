@@ -146,3 +146,16 @@ export const className = sidc => {
   else if (descriptor.geometry.type !== 'Point') return 'GRAPHICS'
   else return 'POINT'
 }
+
+export const specialization = sidc => {
+  if (!sidc) return
+  const descriptor = index[parameterized(sidc)]
+  if (!descriptor) return
+  console.log(descriptor)
+
+  const { geometry } = descriptor
+  if (descriptor.parameterized === 'G*G*GLB---') return 'BOUNDARIES'
+  else if (geometry && geometry.layout === 'rectangle') return 'RECTANGLE'
+  else if (geometry && geometry.layout === 'circle') return 'CIRCLE'
+  else return null
+}

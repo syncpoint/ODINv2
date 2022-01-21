@@ -7,6 +7,7 @@ import { geometryType } from '../geometry'
 const layouts = {
   'LineString:Point-corridor': corridor,
   'MultiPoint-fan': fan,
+  'MultiPoint-circle': fan,
   'LineString:Point-orbit': corridor,
   'Polygon-rectangle': rectangle
 }
@@ -30,6 +31,7 @@ export const special = (feature, overlay) => {
     ? `${geometryType(feature)}-${geometry.layout}`
     : `${geometryType(feature)}`
 
+  console.log(key)
   return layouts[key]
     ? layouts[key](feature, geometry, overlay)
     : defaultBehavior(feature, geometry)
