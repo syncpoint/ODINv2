@@ -19,12 +19,18 @@ import * as MILSTD from '../../symbology/2525c'
 
 export default props => {
   const features = Object.values(props.state)
+
   const specializations = features.reduce((acc, value) => {
     const { sidc } = value.properties
     const specialization = MILSTD.specialization(sidc)
     acc.push(specialization)
     return R.uniq(acc)
   }, [])
+
+  const specialization = specializations.length === 1
+    ? specializations[0]
+    : null
+
 
   const optional = {
     RECTANGLE: () => (
@@ -48,11 +54,7 @@ export default props => {
       <HostilityStatus {...props}/>
       <EffectiveDateTime {...props}/>
       <Altitude {...props}/>
-      {
-        specializations.length === 1
-          ? optional[specializations[0]] && optional[specializations[0]]()
-          : null
-      }
+      { (optional[specialization] && optional[specialization]()) }
       <StaffComments {...props}/>
       <AdditionalInformation {...props}/>
       <Status {...props}/>
