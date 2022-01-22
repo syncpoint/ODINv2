@@ -1,6 +1,5 @@
 import { Modify } from './modify'
-// import { Modify } from './modify-dfa'
-import { writeFeatureCollection } from '../../store/format'
+import { writeFeatureCollection } from '../../model/geometry'
 
 /**
  * @param {*} store

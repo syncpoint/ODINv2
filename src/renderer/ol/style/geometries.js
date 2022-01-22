@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { transform, geometryType } from '../geometry'
+import { transform, geometryType } from '../../model/geometry'
 import { smooth } from './chaikin'
 
 

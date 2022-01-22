@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as geom from 'ol/geom'
-import { transform, getCoordinates } from '../../geometry'
+import { transform, getCoordinates } from '../../../model/geometry'
 import * as TS from '../../ts'
 import { PI_OVER_2 } from '../../../../shared/Math'
 

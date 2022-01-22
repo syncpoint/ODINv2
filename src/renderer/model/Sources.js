@@ -3,7 +3,7 @@ import VectorSource from 'ol/source/Vector'
 import Collection from 'ol/Collection'
 import Feature from 'ol/Feature'
 import Emitter from '../../shared/emitter'
-import { readFeature, readFeatures } from '../store/format'
+import { readFeature, readFeatures } from './geometry'
 import { isFeatureId } from '../ids'
 
 const isVisible = feature => !feature.hidden

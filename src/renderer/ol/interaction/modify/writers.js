@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import * as Extent from 'ol/extent'
 import RBush from 'ol/structs/RBush'
 import * as MILSTD from '../../../symbology/2525c'
-import { geometryType } from '../../geometry'
+import { geometryType } from '../../../model/geometry'
 import { Hooks } from './hooks'
 
 /**

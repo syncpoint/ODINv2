@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { getCoordinates } from '../../geometry'
+import { getCoordinates } from '../../../model/geometry'
 
 export default node => {
   const { feature, geometry } = node

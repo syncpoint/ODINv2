@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as geom from 'ol/geom'
 import { platformModifierKeyOnly } from 'ol/events/condition'
-import { transform, getCoordinates } from '../../geometry'
+import { transform, getCoordinates } from '../../../model/geometry'
 import * as TS from '../../ts'
 
 export default (node, offset) => {

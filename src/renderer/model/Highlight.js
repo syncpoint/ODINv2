@@ -3,8 +3,7 @@ import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
 import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
 import * as TS from '../ol/ts'
-import { readGeometry } from '../store/format'
-import { transform, geometryType } from '../ol/geometry'
+import { transform, geometryType, readGeometry } from './geometry'
 import { scope } from '../ids'
 
 export function Highlight (store, selection, emitter, viewMemento) {

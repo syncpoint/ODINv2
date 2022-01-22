@@ -1,5 +1,5 @@
 import { Translate } from 'ol/interaction'
-import { writeFeatureCollection } from '../../store/format'
+import { writeFeatureCollection } from '../../model/geometry'
 import { noModifierKeys, shiftKeyOnly } from 'ol/events/condition'
 
 /**
