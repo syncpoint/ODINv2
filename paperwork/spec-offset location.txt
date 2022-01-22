@@ -1,0 +1,21 @@
+d6708a62-085f-44a7-a724-a517e4529c56 - create symbol offset
+1. symbol without offset is selected
+2. alt-/option-click new location for symbol
+3.1 Expected: Symbol is moved to new location
+3.2 Expected: Line is drawn from old to new location
+
+e723d7b9-f5ae-4546-8d5c-d9f612e1faaa - remove symbol offset
+1. symbol with offset is selected
+2. alt-/option-click new location for symbol
+3.1 Expected: Symbol is moved to new location
+3.2 Expected: Offset line is drawn from old to new location
+
+3342a5f6-3f8a-4778-bce9-bfd560a35644 - edit symbol offset
+1. symbol with offset is selected
+2. Offset line can be edited almost like a regular line
+  See 'spec-modify':
+  b79f54a8-e82d-48be-831a-7b27e18f7593
+  81cb044f-c0a6-442e-ad02-f7fd929c2fff
+  e441cfd4-1e8d-4601-a83a-3c2e40ef8386
+  0faa0397-ad43-4efa-8ca2-c402aa8f1cf9
+  (excluding 8fee340d-2dca-464c-875d-f4a7310273fe)

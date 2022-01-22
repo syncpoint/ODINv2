@@ -10,6 +10,11 @@ export const makeHandles = context => {
   if (simplified && mode !== 'multiple') return context
   if (!handleStyles[mode]) return context
 
+  // Experimental:
+  // Don't display handle for 1-point symbols:
+  const geometryType = simplifiedGeometry.getGeometryType()
+  if (geometryType === 'Point') return context
+
   const points = () => {
     switch (mode) {
       case 'selected': return TS.multiPoint(TS.points(simplifiedGeometry))

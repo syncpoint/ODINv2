@@ -1,0 +1,236 @@
+Terms/operations:
+
+* move feature
+  1. hover with mouse anywhere over feature except a geometry point
+  2. press and hold primary mouse button
+  3. move feature to a different location
+
+* SHIFT-move feature
+  1. hover with mouse anywhere over feature
+  2. press and hold SHIFT-key and primary mouse button
+  3. move feature to a different location
+
+* drag (geometry) point:
+  1. hover with mouse pointer over geometry point until point is visually focused
+  2. press and hold primary mouse button
+  3. move (aka) drag point to a different location
+
+* delete (geometry) point (if applicable):
+  1. hover with mouse pointer over geometry point until point is visually focused
+  2. alt/option click with primary mouse button
+
+* insert (geometry) point (if applicable):
+  1. hover with mouse pointer over geometry line segment until position is visually focused
+  2. press and hold primary mouse button
+  3. move mouse pointer a certain distance until new geometry point is inserted
+
+
+Scope: 1-point symbol: Check Point (SIDC: G*GPGPPK--****X)
+
+63900858-4394-4ac7-b576-0fce49028d8c - modify geometry (aka symbol position)
+1. Focus symbol anchor and drag point to new location
+2. Expected: Symbol has new position
+
+
+Scope: 2-point line: Linear Target (SIDC: G*FPLT----****X)
+
+8705e901-4f65-4181-a2dd-d889e9e593fc - move geometry point
+1. Darg either point to new location
+2. Expected: Feature geometry is updated
+
+3e687e03-8e2a-4283-a498-5fb3e1ca55db - insert point, maximum point count (2)
+1. Try to focus a position between both points
+2. Expected: No visual indication is shown that point can be inserted
+
+f9cec3e9-6c2f-467c-9fb5-b6e07d1c3cb0 - minimal point count (2)
+1. Focus either point and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged
+
+52b71b6d-95ae-4d40-9424-571b47fc6978 - move feature
+1. Move feature
+2. Expected: Feature location is updated
+
+
+Scope: n-point line: Line of Departure (SIDC: G*GPOLT---****X)
+
+b79f54a8-e82d-48be-831a-7b27e18f7593 - move geometry point
+1. Drag either point to new location
+2. Expected: Feature geometry is updated
+
+81cb044f-c0a6-442e-ad02-f7fd929c2fff - insert point
+1. Focus a position between two consecutive points
+2. Insert new point
+3. Expected: Feature geometry is updated
+
+8fee340d-2dca-464c-875d-f4a7310273fe - remove point
+1. Geometry has at least three points
+2. Remove any point
+3. Expected: Feature geometry is updated
+
+e441cfd4-1e8d-4601-a83a-3c2e40ef8386 - remove point, minimal point count (2)
+1. Remove all but two points
+2. Focus either of the remaining points and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged (with two remaining points)
+
+0faa0397-ad43-4efa-8ca2-c402aa8f1cf9 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Scope: Polygon area: ACA (SIDC: G*FPACAI--****X)
+
+c09cdb1f-664d-4263-b0e0-dd173768c268 - move geometry point
+1. Drag either point to new location
+2. Expected: Feature geometry is updated
+
+85b2e4a1-e4eb-44e2-88da-a3fc056f2b53 - insert point
+1. Focus a position between two consecutive points
+2. Insert new point
+3. Expected: Feature geometry is updated
+
+01703bd6-010a-42ca-ab14-1d009e688691 - delete a point
+1. Geometry has at least four points
+2. Remove any point
+3. Expected: Feature geometry is updated
+
+3ea53364-e66c-4b24-8097-6188f65b6a4e - remove point, minimal point count (3)
+1. Remove all but three points
+2. Focus either of the remaining points and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged (with two remaining points)
+
+fbdc4456-d64b-4cfd-a6b1-a6c63bf4bf38 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Scope: Rectangular area: ACA (SIDC: G*FPACAR--****X)
+
+b0cd7e53-4be8-47f8-9e97-ec8bccbef14e - resize
+1. Drag either point to resize
+2. Expected: Feature geometry is updated
+
+03f820c1-c7ae-4600-afcf-62b6609f10d4 - insert point, maximun point count (4)
+1. Try to focus a position between two consecutive points
+2. Expected: No visual indication is shown that point can be inserted
+
+f56c0c18-6217-41bc-bf7b-95e23ad39145 - remove point, minimum point count (4)
+1. Focus either point and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged
+
+54d307b6-2d7a-4845-be34-9af6648d885a - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Scope: Circular area: ACA (SIDC: G*FPACAC--****X)
+
+bc37a99b-0088-4f9c-97ca-6f6e5ad2f020 - resize radius
+1. Drag outer point to resize radius
+2. Expected: Feature geometry is updated
+
+2e6c1572-89c1-42f6-92af-c2cfd761a200 - insert point, maximun point count (2)
+1. Try to focus a position between both points (or anywhere else)
+2. Expected: No visual indication is shown that point can be inserted
+
+3a88013d-4cd3-4124-92a1-681a4ce34ab1 - remove point, minimum point count (2)
+1. Focus either point and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged
+
+a5171fa1-a9b0-4e73-97b6-299a728de534 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Scope: 2-point corridor: Canalize (SIDC: G*TPC-----****X)
+
+bcd2cc16-5a73-4651-8cab-c5dfc6a87c11 - move centerline point
+1. Drag either point of centerline
+2. Expected: Feature geometry is updated
+
+17fa11fa-03cc-4293-ae3e-08bd915cf67d - insert point, maximun point count (2)
+1. Try to focus a position between both centerline points
+2. Expected: No visual indication is shown that point can be inserted
+
+7a3af527-672b-4d98-8062-02a06af98ab6 - remove point, minimum point count (2)
+1. Focus either point and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged
+
+9c10f666-dd52-4997-8987-b201ed9fc102 - resize corridor width
+1. Drag width point to a new location
+2. Expected: Feature corridor width is updated
+
+a88b8db7-6cd7-4fc6-8be0-cb0087090b31 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Scope: n-point corridor: Main Attack (SIDC: G*GPOLAGM-****X)
+
+681d1099-ebc8-4832-81dc-b9bab6a398fb - move centerline point
+1. Drag either point of centerline
+2. Expected: Feature geometry is updated
+
+d5be2d28-0c16-4280-b5ee-afd897b4423b - insert point
+1. Focus a position between two consecutive centerline points
+2. Insert new point
+3. Expected: Feature geometry is updated
+
+bb83622d-f8c5-48c4-86b1-7a3b31b962a4 - remove point
+1. Geometry has at least three centerline points
+2. Remove any point
+3. Expected: Feature geometry is updated
+
+72bc7671-6aa3-40b9-b7de-385c977c0e79 - remove point, minimum point count (2)
+1. Remove all but two centerline points
+2. Focus either of the remaining points and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged (with two remaining points)
+
+fea3b492-8081-4612-94a6-cb3fb2e4307a - resize corridor width
+1. Drag width point to a new location
+2. Expected: Feature corridor width is updated
+
+d73163c5-fbbc-4214-9161-990491c04eb8 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Scope: 2-point fan: Isolate (SIDC: G*TPE-----****X)
+Same as Circular area: ACA (SIDC: G*FPACAC--****X)
+
+
+Scope: 3-point fan: Cover (SIDC: G*TPUC----****X)
+
+f46bc109-a402-44d9-92ae-9942f1b1494d - move range point
+1. Drag either of both range points to a new location
+3. Expected: Feature geometry is updated
+
+ffcc4a31-e3d0-4708-b953-8fd595e1b199 - insert point, maximum point count (3)
+1. Try to focus a position between either range point and center point
+2. Expected: No visual indication is shown that point can be inserted
+
+e57d8a08-c67b-4e74-b92a-916181af995e - remove point, minimum point count (3)
+1. Focus either point and try to delete it (alt/option click)
+2. Expected: Feature geometry remains unchanged
+
+bea89f13-2681-4f41-bbbc-b891c48d0d71 - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
+
+
+Orbit: Delay (SIDC: G*TPL-----****X)
+
+dab09e01-12ff-4f1d-a9b7-e6cfe422fda0 - move centerline point
+1. Drag either of both centerline points to a new location
+2. Expected: Feature geometry is updated
+
+f8e0ab22-8752-4d0d-ae2f-c84b8b695aea - insert point, maxmimum point count (2)
+1. Try to focus a position between both centerline points
+2. Expected: No visual indication is shown that point can be inserted
+
+97883e95-ac8b-4847-80a7-6a9aa9e460fa - resize width
+1. Drag widrh point to a new location
+2. Expected: Feature width is updated
+
+fe5d6f2a-df1c-48e0-a8fd-6a90382c9a8b - move feature
+1. SHIFT-move feature
+2. Expected: Feature location is updated
