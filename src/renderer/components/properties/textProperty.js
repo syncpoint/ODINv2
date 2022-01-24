@@ -14,7 +14,7 @@ export default options => {
       const features = Object.values(props.state)
       const values = R.uniq(features.map(get))
       return values.length === 1
-        ? values[0] || ''
+        ? values[0] !== null ? values[0] : ''
         : 'M/V'
     }
 

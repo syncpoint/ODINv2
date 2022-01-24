@@ -296,6 +296,8 @@ export const segmentize = (segment, n) => R
  */
 export const rotation = segment => Angle.normalize(Angle.PI_TIMES_2 - segment.angle())
 
+export const normalizePositive = angle => Angle.normalizePositive(angle)
+
 /**
  * arc :: jts.geom.Coordinate m, Number n => (m, n, n, n, n) -> [m]
  */
