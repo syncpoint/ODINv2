@@ -17,16 +17,25 @@ export const rectangleProperties = geometry => {
   }
 }
 
+export const circleProperties = geometry => {
+  const coordinates = TS.coordinates(geometry)
+  const segment01 = TS.segment(coordinates[0], coordinates[1])
+
+  return {
+    an: Math.round(RAD2DEG * TS.normalizePositive(segment01.angle())),
+    am: Math.round(segment01.getLength())
+  }
+}
+
 const unitSquare = TS.polygon([
   [-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]
 ].map(TS.coordinate))
 
 /**
  * rectangle :: JTS/Geometry -> {k: v} -> JTS/Geometry
+ * FIXME: duplicate code: hooks-rectangle.js
  */
 export const rectangle = (geometry, { am, am1, an }) => {
-  // FIXME: duplicate code: hooks-rectangle.js
-
   const linearRing = geometry.getExteriorRing()
   const center = TS.centroid(linearRing)
   const scale = TS.AffineTransformation.scaleInstance(am / 2, am1 / 2)
@@ -39,4 +48,14 @@ export const rectangle = (geometry, { am, am1, an }) => {
   matrix.compose(translate)
 
   return matrix.transform(unitSquare)
+}
+
+/**
+ * circle :: JTS/Geometry -> {k: v} -> JTS/Geometry
+ */
+export const circle = (geometry, { am, an }) => {
+  const [center] = TS.coordinates(geometry)
+  const point = TS.projectCoordinate(center)([DEG2RAD * an, am])
+  const circle = TS.multiPoint([center, point].map(TS.point))
+  return circle
 }
