@@ -27,7 +27,6 @@ export default options => {
 
     const handleBlur = () => {
       if (value === initialValue()) return
-      console.log(value === initialValue(), value, initialValue())
       const features = Object.values(props.state)
       store.update(features.map(set(value)), features)
     }

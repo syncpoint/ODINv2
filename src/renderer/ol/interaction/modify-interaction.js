@@ -8,23 +8,30 @@ import { writeFeatureCollection } from '../../model/geometry'
  */
 export default options => {
   const { store, partition, hitTolerance } = options
-  let clones = [] // Cloned features BEFORE modify.
+
+  // snapshot :: [GeoJSON/Feature]
+  let snapshot = []
 
   const interaction = new Modify({
     source: partition.getSelected(),
     hitTolerance
   })
 
-  interaction.on('modifystart', event => {
-    const geoJSON = writeFeatureCollection([event.feature])
-    clones = geoJSON.features
+  interaction.on('modifystart', async ({ feature }) => {
+    // Get full set of properties for feature:
+    const ids = [feature.getId()]
+    snapshot = await store.select(ids)
   })
 
   interaction.on('modifyend', event => {
     const { features } = writeFeatureCollection([event.feature])
     const [newValues, oldValues] = features.reduce((acc, feature, index) => {
-      acc[0].push(feature)
-      acc[1].push(clones[index])
+      acc[0].push({
+        ...snapshot[index],
+        properties: feature.properties,
+        geometry: feature.geometry
+      })
+      acc[1].push(snapshot[index])
       return acc
     }, ([[], []]))
 

@@ -64,5 +64,7 @@ export const readFeatures = source => format.readFeatures(source)
 export const readGeometry = source => format.readGeometry(source)
 export const writeGeometry = geometry => format.writeGeometry(geometry)
 export const writeGeometryObject = geometry => format.writeGeometryObject(geometry)
+
+// writeFeatureCollection :: [ol/Feature] -> GeoJSON/FeatureCollection
 export const writeFeatureCollection = features => format.writeFeaturesObject(features)
 export const writeFeatureObject = feature => format.writeFeatureObject(feature)

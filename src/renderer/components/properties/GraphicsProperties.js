@@ -16,16 +16,22 @@ import Length from './Length'
 import Attitude from './Attitude'
 import Radius from './Radius'
 import * as MILSTD from '../../symbology/2525c'
+import * as GEOM from '../../model/geometry'
 
 export default props => {
-  const features = Object.values(props.state)
-
-  const specializations = features.reduce((acc, value) => {
+  const specializations = Object.values(props.state).reduce((acc, value) => {
     const { sidc } = value.properties
     const specialization = MILSTD.specialization(sidc)
     acc.push(specialization)
     return R.uniq(acc)
   }, [])
+
+  const features = Object.entries(props.state).reduce((acc, [key, value]) => {
+    const olGeometry = GEOM.readGeometry(value.geometry)
+    const transform = GEOM.transform(olGeometry)
+    acc[key] = ({ ...value, ...transform })
+    return acc
+  }, {})
 
   const specialization = specializations.length === 1
     ? specializations[0]
@@ -36,13 +42,13 @@ export default props => {
     RECTANGLE: () => (
       <ColSpan2>
         <GridAutoColumns>
-          <Width {...props}/>
-          <Length {...props}/>
-          <Attitude {...props}/>
+          <Width state={features}/>
+          <Length state={features}/>
+          <Attitude state={features}/>
         </GridAutoColumns>
       </ColSpan2>
     ),
-    CIRCLE: () => <Radius {...props}/>
+    CIRCLE: () => <Radius state={features}/>
   }
 
   return (

@@ -179,6 +179,25 @@ const geometries = [
     }
   },
 
+  /* MultiPoint/circle (2-point) */
+  {
+    match: ({ geometry }) => geometry.layout === 'circle' &&
+      Number.parseInt(geometry.maxPoints) === 2,
+    options: () => ({ type: GeometryType.POINT }),
+    complete: (map, feature) => {
+      const resolution = map.getView().getResolution()
+      const radius = resolution * 50
+      const geometry = feature.getGeometry()
+      const { read, write } = format(feature)
+      const point = read(geometry)
+
+      const C = TS.coordinate(point)
+      const A = TS.projectCoordinate(C)([0, radius])
+      feature.setGeometry(write(TS.multiPoint([C, A].map(TS.point))))
+      feature.set('am', `${Math.floor(radius)}`)
+    }
+  },
+
   /* Polygon/rectangle */
   {
     match: ({ geometry }) => geometry.layout === 'rectangle',

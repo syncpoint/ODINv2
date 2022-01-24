@@ -202,6 +202,7 @@ Store.prototype.insert = async function (values) {
  * update :: Value a => ([a], [a]) -> unit
  */
 Store.prototype.update = function (newValues, oldValues) {
+  if (!newValues.length) return
   if (oldValues) this.undo_.apply(this.updateCommand(newValues, oldValues))
   else this.db_.batch(newValues.map(value => ({ type: 'put', key: value.id, value })))
 }
