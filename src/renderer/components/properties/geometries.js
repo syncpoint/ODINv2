@@ -1,5 +1,6 @@
+import * as R from 'ramda'
 import * as TS from '../../ol/ts'
-import { DEG2RAD, RAD2DEG } from '../../../shared/Math'
+import { DEG2RAD, RAD2DEG, PI_OVER_2 } from '../../../shared/Math'
 
 
 /**
@@ -27,6 +28,18 @@ export const circleProperties = geometry => {
   }
 }
 
+export const corridorProperties = geometry => {
+  const [lineString, point] = TS.geometries(geometry)
+  const coords = [TS.startPoint(lineString), point].map(TS.coordinate)
+  const [A, B] = R.take(2, TS.coordinates([lineString]))
+  const segment = TS.segment(A, B)
+
+  return {
+    am: Math.round(2 * TS.segment(coords).getLength()),
+    am1: segment.orientationIndex(TS.coordinate(point))
+  }
+}
+
 const unitSquare = TS.polygon([
   [-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]
 ].map(TS.coordinate))
@@ -48,6 +61,14 @@ export const rectangle = (geometry, { am, am1, an }) => {
   matrix.compose(translate)
 
   return matrix.transform(unitSquare)
+}
+
+export const corridor = (geometry, { am, am1 }) => {
+  const [lineString] = TS.geometries(geometry)
+  const [A, B] = R.take(2, TS.coordinates([lineString]))
+  const bearing = TS.segment([A, B]).angle()
+  const C = TS.point(TS.projectCoordinate(A)([bearing + am1 * PI_OVER_2, am / 2]))
+  return TS.collect([lineString, C])
 }
 
 /**

@@ -11,10 +11,11 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
 import GridAutoColumns from './GridAutoColumns'
-import Width from './Width'
+import RectangleWidth from './RectangleWidth'
 import Length from './Length'
 import Attitude from './Attitude'
 import Radius from './Radius'
+import CorridorWidth from './CorridorWidth'
 import * as MILSTD from '../../symbology/2525c'
 import * as GEOM from '../../model/geometry'
 
@@ -37,18 +38,18 @@ export default props => {
     ? specializations[0]
     : null
 
-
   const optional = {
     RECTANGLE: () => (
       <ColSpan2>
         <GridAutoColumns>
-          <Width state={features}/>
+          <RectangleWidth state={features}/>
           <Length state={features}/>
           <Attitude state={features}/>
         </GridAutoColumns>
       </ColSpan2>
     ),
-    CIRCLE: () => <Radius state={features}/>
+    CIRCLE: () => <Radius state={features}/>,
+    CORRIDOR: () => <CorridorWidth state={features}/>
   }
 
   return (

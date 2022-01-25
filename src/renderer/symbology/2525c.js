@@ -156,5 +156,6 @@ export const specialization = sidc => {
   if (descriptor.parameterized === 'G*G*GLB---') return 'BOUNDARIES'
   else if (geometry && geometry.layout === 'rectangle') return 'RECTANGLE'
   else if (geometry && geometry.layout === 'circle') return 'CIRCLE'
+  else if (geometry && geometry.layout === 'corridor') return 'CORRIDOR'
   else return null
 }
