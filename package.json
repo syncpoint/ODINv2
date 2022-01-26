@@ -70,7 +70,7 @@
     "proj4": "^2.7.5",
     "ramda": "^0.28.0",
     "react": "^17.0.2",
-    "react-cool-virtual": "^0.5.5",
+    "react-cool-virtual": "^0.7.0",
     "react-dom": "^17.0.2",
     "react-fast-compare": "^3.2.0",
     "reproject": "^1.2.6",
