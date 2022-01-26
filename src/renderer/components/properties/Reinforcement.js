@@ -59,9 +59,9 @@ export default props => {
         />
         <Radio
           name='reinforcement'
-          label='(—)'
-          onChange={handleChange('(—)')}
-          checked={value === '(—)'}
+          label='(-)'
+          onChange={handleChange('(-)')}
+          checked={value === '(-)'}
         />
         <Radio
           name='reinforcement'
