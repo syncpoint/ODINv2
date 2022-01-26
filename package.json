@@ -68,7 +68,7 @@
     "ol": "^6.12.0",
     "path-to-regexp": "^6.2.0",
     "proj4": "^2.7.5",
-    "ramda": "^0.27.1",
+    "ramda": "^0.28.0",
     "react": "^17.0.2",
     "react-cool-virtual": "^0.5.5",
     "react-dom": "^17.0.2",
