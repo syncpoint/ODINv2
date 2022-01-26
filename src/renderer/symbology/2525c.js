@@ -48,6 +48,10 @@ export const echelonCode = sidc => sidc
   ? sidc[ECHELON]
   : '-'
 
+export const mobilityCode = sidc => sidc
+  ? sidc[MOBILITY] + sidc[MOBILITY + 1]
+  : '--'
+
 export const format = (sidc, options) => {
   if (!sidc) return null
 
@@ -58,6 +62,7 @@ export const format = (sidc, options) => {
   if (options.status) formatted = formatted.substring(0, STATUS) + options.status + formatted.substring(STATUS + 1)
   if (options.modifier) formatted = formatted.substring(0, MODIFIER) + options.modifier + formatted.substring(MODIFIER + 1)
   if (options.echelon) formatted = formatted.substring(0, ECHELON) + options.echelon + formatted.substring(ECHELON + 1)
+  if (options.mobility) formatted = formatted.substring(0, MOBILITY) + options.mobility + formatted.substring(MOBILITY + 2)
   if (options.functionId) formatted = formatted.substring(0, FUNCTION_ID) + options.functionId + formatted.substring(FUNCTION_ID + 6)
   return formatted
 }

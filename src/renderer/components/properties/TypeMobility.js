@@ -2,10 +2,8 @@ import React from 'react'
 import Type from './Type'
 import Mobility from './Mobility'
 
-const TypeMobility = () =>
+export default props =>
   <>
-    <Type/>
-    <Mobility/>
+    <Type {...props}/>
+    <Mobility {...props}/>
   </>
-
-export default TypeMobility
