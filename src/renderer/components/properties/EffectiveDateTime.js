@@ -1,10 +1,32 @@
 import React from 'react'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const EffectiveDateTime = () =>
+const EffectiveFrom = textProperty({
+  label: 'Effective (From)',
+  get: feature => feature.properties.w ? feature.properties.w : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      w: value
+    }
+  })
+})
+
+const EffectiveTo = textProperty({
+  label: 'Effective (From)',
+  get: feature => feature.properties.w1 ? feature.properties.w1 : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      w1: value
+    }
+  })
+})
+
+export default props =>
   <>
-    <TextField label='Effective (From)'/>
-    <TextField label='Effective (To)'/>
+    <EffectiveFrom {...props}/>
+    <EffectiveTo {...props}/>
   </>
-
-export default EffectiveDateTime

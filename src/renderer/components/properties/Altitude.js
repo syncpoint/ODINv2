@@ -1,10 +1,34 @@
 import React from 'react'
-import TextField from './TextField'
+import textProperty from './textProperty'
 
-const Altitude = () =>
+const AltitudeFrom = textProperty({
+  label: 'Altitude (From)',
+  get: feature => feature.properties.x ? feature.properties.x : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      x: value
+    }
+  })
+})
+
+const AltitudeTo = textProperty({
+  label: 'Altitude (From)',
+  get: feature => feature.properties.x1 ? feature.properties.x1 : null,
+  set: value => feature => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      x1: value
+    }
+  })
+})
+
+const Altitude = props =>
   <>
-    <TextField label='Altitude/Depth (From)'/>
-    <TextField label='Altitude/Depth (To)'/>
+    <AltitudeFrom {...props}/>
+    <AltitudeTo {...props}/>
   </>
 
 export default Altitude
