@@ -5,7 +5,7 @@ import { readGeometry, writeGeometryObject } from '../../model/geometry'
 import * as geom from './geometries'
 
 const TextProperty = textProperty({
-  label: 'Width',
+  label: 'Width [m]',
   get: feature => {
     const { read, write, ...current } = feature
     const olGeometry = readGeometry(current.geometry)
