@@ -8,6 +8,7 @@ import Speed from './Speed'
 import Direction from './Direction'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
+import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 
 const EquipmentProperties = props =>
@@ -21,6 +22,7 @@ const EquipmentProperties = props =>
     <Direction {...props}/>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
+    <EvaluationRating {...props}/>
     <Status {...props}/>
   </>
 

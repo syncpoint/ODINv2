@@ -8,6 +8,7 @@ import Speed from './Speed'
 import Direction from './Direction'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
+import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 import Condition from './Condition'
 import Reinforcement from './Reinforcement'
@@ -25,6 +26,7 @@ const UnitProperties = props => {
       <Direction {...props}/>
       <StaffComments {...props}/>
       <AdditionalInformation {...props}/>
+      <EvaluationRating {...props}/>
       <Status {...props}/>
       <Condition {...props}/>
       <Reinforcement {...props}/>
