@@ -6,6 +6,7 @@ import HostilityStatus from './HostilityStatus'
 import DateTimeGroup from './DateTimeGroup'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
+import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 
 const InstallationProperties = props =>
@@ -17,6 +18,7 @@ const InstallationProperties = props =>
     <DateTimeGroup {...props}/>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
+    <EvaluationRating {...props}/>
     <Status {...props}/>
   </>
 
