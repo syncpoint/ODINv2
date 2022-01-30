@@ -139,7 +139,6 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
   try {
     const geometry = await safeget(this.geometries_, key)
     const others = await safeget(this.properties_, key)
-    console.log('[PartitionDOWN] _get', key, geometry, others, isGeometry(geometry))
 
     if (isGeometry(geometry)) {
       if (!others) return this._nextTick(callback, null, geometry)

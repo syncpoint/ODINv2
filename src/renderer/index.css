@@ -6,8 +6,10 @@
 
 :root {
   --color-blue-600: rgb(37, 99, 235);
+  --color-gray-100: #f3f4f6;
   --color-gray-300: rgb(209, 213, 219);
   --color-gray-400: rgb(156, 163, 175);
+  --color-gray-500: #6b7280;
   --color-gray-600: rgb(75, 85, 99);
   --color-gray-900: rgb(17, 24, 39);
 }
@@ -88,16 +90,16 @@ input {
     Give WebKit a chance to calculate explicit height.
     This is necessary to stretch children to desired height.
   */
-  height: calc(100vh - 12em);
+  height: calc(100vh - 10rem);
 
-  padding-top: 6em;
-  padding-bottom: 2em;
-  padding-left: 1em;
-  padding-right: 1em;
+  padding-top: 5rem;
+  padding-bottom: 2rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 
   display: grid;
-  grid-gap: 1em;
-  grid-template-columns: 24em auto 24em;
+  grid-gap: 1rem;
+  grid-template-columns: 24rem auto 24rem;
   grid-template-rows: auto;
   grid-template-areas: "L . R";
 }
@@ -111,7 +113,7 @@ input {
 .spotlight-container {
   z-index: 30;
   pointer-events: none;
-  height: calc(100vh - 12em);
+  height: calc(100vh - 10rem);
   padding-top: 0;
 
   display: grid;
@@ -512,4 +514,32 @@ input {
   /* text-sm */
   font-size: 0.875rem;
   line-height: 1.25rem;
+}
+
+.tab-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  background-color: var(--color-gray-100);
+}
+
+.tab-container__button {
+  border: none;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.tab-container__button--active {
+  background-color: white;
+}
+
+.tab-container__button--inactive {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.tab-container__button--inactive:hover {
+  background-color: var(--color-gray-300);
+  background-color: white;
 }

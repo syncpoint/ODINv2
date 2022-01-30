@@ -1,25 +1,13 @@
+/* eslint-disable react/prop-types */
 import * as R from 'ramda'
 import React from 'react'
-import { useServices } from '../hooks'
+import { useServices, useMemento } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
-import GridCols2 from './GridCols2'
-import MarginTop3 from './MarginTop3'
-import UnitProperties from './UnitProperties'
-import EquipmentProperties from './EquipmentProperties'
-import InstallationProperties from './InstallationProperties'
-import ActivityProperties from './ActivityProperties'
-import GraphicsProperties from './GraphicsProperties'
-import PointProperties from './PointProperties'
 import { isFeatureId } from '../../ids'
+// import TabContainer from './TabContainer'
+// import TabButton from './TabButton'
+import PropertiesTab from './PropertiesTab'
 
-const classes = {
-  UNIT: props => <UnitProperties {...props}/>,
-  EQUIPMENT: props => <EquipmentProperties {...props}/>,
-  INSTALLATION: props => <InstallationProperties {...props}/>,
-  ACTIVITY: props => <ActivityProperties {...props}/>,
-  GRAPHICS: props => <GraphicsProperties {...props}/>,
-  POINT: props => <PointProperties {...props}/>
-}
 
 const reducer = (state, event) => {
   switch (event.type) {
@@ -42,10 +30,12 @@ const reducer = (state, event) => {
   }
 }
 
+
 export const FeatureProperties = () => {
   const { selection, store } = useServices()
   const [state, dispatch] = React.useReducer(reducer, {})
-  const [className, setClassName] = React.useState(null)
+  const [featureClass, setFeatureClass] = React.useState(null)
+  const memento = useMemento('ui.properties', { tab: 'properties' })
 
   React.useEffect(() => {
     selection.on('selection', async () => {
@@ -56,7 +46,7 @@ export const FeatureProperties = () => {
       const state = await store.selectFeatures(keys)
       dispatch({ type: 'reset', state })
 
-      const classNames = state.reduce((acc, value) => {
+      const featureClasses = state.reduce((acc, value) => {
         const { sidc } = value.properties
         const className = MILSTD.className(sidc)
         if (className) acc.push(className)
@@ -64,8 +54,8 @@ export const FeatureProperties = () => {
         return R.uniq(acc)
       }, [])
 
-      if (classNames.length === 1) setClassName(classNames[0])
-      else setClassName(null)
+      if (featureClasses.length === 1) setFeatureClass(featureClasses[0])
+      else setFeatureClass(null)
     })
 
     store.on('batch', ({ operations }) => dispatch({ type: 'update', operations }))
@@ -73,22 +63,48 @@ export const FeatureProperties = () => {
     // No cleanup necessary; components listenes forever.
   }, [selection, store])
 
-  const tabs = properties => (
+  // const handleTabClick = tab => () => {
+  //   const { value } = memento
+  //   memento.put({ ...value, tab })
+  // }
+
+  const activeTab = memento.value && memento.value.tab
+
+  const tab = () => {
+    switch (activeTab) {
+      case 'properties': return <PropertiesTab featureClass={featureClass} features={state}/>
+      default: return null
+    }
+  }
+
+  const panel = () =>
     <div className='panel-right panel'>
+      {/* <TabContainer>
+        <TabButton
+          active={activeTab === 'properties'}
+          onClick={handleTabClick('properties')}
+        >
+          Properties
+        </TabButton>
+        <TabButton
+          active={activeTab === 'comment'}
+          onClick={handleTabClick('comment')}
+        >
+          Comment
+        </TabButton>
+        <TabButton
+          active={activeTab === 'style'}
+          onClick={handleTabClick('style')}
+        >
+          Style
+        </TabButton>
+      </TabContainer> */}
       <div className='panel-inset'>
-        <GridCols2>
-          <MarginTop3/>
-          { properties({ state })}
-        </GridCols2>
+        { tab() }
       </div>
     </div>
-  )
 
-  const panel = className != null
-    ? classes[className]
-      ? tabs(classes[className])
-      : null // TODO: fallback
-    : null // TODO: fallback
-
-  return panel
+  return featureClass !== null
+    ? panel()
+    : null
 }

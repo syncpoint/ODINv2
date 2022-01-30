@@ -22,6 +22,8 @@ const GridCols = ({ children }) => {
   )
 }
 
+const Label = ({ children }) => <label style={{ lineHeight: '1' }}>{children}</label>
+
 const reliabilities = [
   'completely reliable',
   'usually reliable',
@@ -60,7 +62,7 @@ export default props => {
   const { store } = useServices()
 
   const initialValue = () => {
-    const features = Object.values(props.state)
+    const features = Object.values(props.features)
     const values = R.uniq(features.map(get))
     return values.length === 1
       ? values[0] !== null ? values[0] : ''
@@ -79,7 +81,7 @@ export default props => {
 
   const update = state => {
     setState(state)
-    const features = Object.values(props.state)
+    const features = Object.values(props.features)
     store.update(features.map(set(state)), features)
 
   }
@@ -115,7 +117,7 @@ export default props => {
             <option value='4'>E</option>
             <option value='5'>F</option>
           </Range>
-          <label>{reliabilities[reliabilityCode(state)]}</label>
+          <Label>{reliabilities[reliabilityCode(state)]}</Label>
         </GridCols>
         <GridCols>
           <label>Credibility</label>
@@ -133,7 +135,7 @@ export default props => {
             <option value='4'>5</option>
             <option value='5'>6</option>
           </Range>
-          <label>{credibilities[credibilityCode(state) - 1]}</label>
+          <Label>{credibilities[credibilityCode(state) - 1]}</Label>
         </GridCols>
       </>
     : null

@@ -21,7 +21,7 @@ export default props => {
   const { store } = useServices()
 
   const initialValue = () => {
-    const features = Object.values(props.state)
+    const features = Object.values(props.features)
     const values = R.uniq(features.map(get))
     return values.length === 1
       ? values[0] || ''
@@ -36,7 +36,7 @@ export default props => {
   const handleChange = value => () => {
     console.log('handleChange', value)
     setValue(value)
-    const features = Object.values(props.state)
+    const features = Object.values(props.features)
     store.update(features.map(set(value)), features)
   }
 
