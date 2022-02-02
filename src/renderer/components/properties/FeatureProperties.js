@@ -18,6 +18,8 @@ const reducer = (state, event) => {
 
     case 'update': {
       return event.operations.reduce((acc, operation) => {
+        if (!isFeatureId(operation.key)) return acc
+
         switch (operation.type) {
           case 'put': acc[operation.key] = operation.value; break
           case 'del': delete acc[operation.key]; break
