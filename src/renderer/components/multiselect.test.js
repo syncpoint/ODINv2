@@ -51,7 +51,7 @@ describe('multiselect', function () {
     it('focus option', function () {
       const state = { entries, selected: [], focusIndex: 1 }
       const actual = multiselect.click(state, { id: 'x' })
-      const expected = { entries, selected: [], focusId: 'x', focusIndex: 0 }
+      const expected = { entries, selected: ['x'], focusId: 'x', focusIndex: 0 }
       assert.deepStrictEqual(actual, expected)
     })
 
