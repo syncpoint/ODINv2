@@ -51,6 +51,7 @@ export const readProjects = async location => {
   })()
 
   const path = paths.projects(location)
+  if (!existsSync(path)) return []
   const files = await fs.readdir(path, { withFileTypes: true })
   return uuids(files)
 }
