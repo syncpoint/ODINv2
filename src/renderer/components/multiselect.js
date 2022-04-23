@@ -81,8 +81,6 @@ export const multiselect = {
   /** Focus clicked entry, optionally selecting it. */
   click: (state, { id, metaKey, ctrlKey }) => {
 
-    console.log('##multiselect::state (previous)', state)
-
     // Don't touch state when clicked on already focused entry:
     // if (!cmdOrCtrl({ metaKey, ctrlKey }) && id === state.focusId) return state
 
