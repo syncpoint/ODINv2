@@ -9,8 +9,8 @@ const NOOP = {
 
 const feature = {
   onClick (id, event, spec) {
-    if (spec.match(/SYSTEM:HIDDEN/)) this.emitter_.emit(`${id}/show`)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.emitter_.emit(`${id}/hide`)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store_.show(id)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store_.hide(id)
   },
 
   onDoubleClick (id, event) {
@@ -23,8 +23,8 @@ const feature = {
 
 const layer = {
   onClick (id, event, spec) {
-    if (spec.match(/SYSTEM:HIDDEN/)) this.emitter_.emit(`${id}/show`)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.emitter_.emit(`${id}/hide`)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store_.show(id)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store_.hide(id)
   },
 
   onDoubleClick (id, event) {
