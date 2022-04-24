@@ -43,7 +43,7 @@ options.feature = (feature, cache) => {
   }
 
   const tags = [
-    'SCOPE:FEATURE:identify',
+    'SCOPE:FEATURE',
     feature.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     ...dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...scope.map(label => `SYSTEM:${label}:NONE`),
@@ -68,7 +68,7 @@ options.feature = (feature, cache) => {
  */
 options.layer = layer => {
   const tags = [
-    'SCOPE:LAYER:identify',
+    'SCOPE:LAYER',
     layer.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     ...(layer.tags || []).map(label => `USER:${label}:NONE`),
     'PLUS'

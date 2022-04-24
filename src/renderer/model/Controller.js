@@ -17,8 +17,13 @@ const feature = {
     // TODO: primary/secondary action
   },
 
-  onMouseDown (id, event, spec) {},
-  onMouseUp (id, event, spec) {}
+  onMouseDown (id, event, spec) {
+    if (spec.match(/SCOPE:FEATURE/)) this.highlight_.down(id)
+  },
+
+  onMouseUp (id, event, spec) {
+    if (spec.match(/SCOPE:FEATURE/)) this.highlight_.up()    
+  }
 }
 
 const layer = {
@@ -32,11 +37,11 @@ const layer = {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:.*:identify/)) this.emitter_.emit(`${id}/identify/down`)
+    if (spec.match(/SCOPE:LAYER/)) this.highlight_.down(id)
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:.*:identify/)) this.emitter_.emit(`${id}/identify/up`)
+    if (spec.match(/SCOPE:LAYER/)) this.highlight_.up()    
   }
 }
 
@@ -51,8 +56,9 @@ const symbol = {
   }
 }
 
-export function Controller (store, emitter) {
+export function Controller (store, highlight, emitter) {
     this.store_ = store
+    this.highlight_ = highlight
     this.emitter_ = emitter
     this.scopes_ = {
       feature,

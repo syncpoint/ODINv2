@@ -29,10 +29,10 @@ export default projectUUID => {
   const geometryLevel = geometriesPartition(db)
   const preferencesLevel = preferencesPartition(db)
   const store = new Store(propertiesLevel, geometryLevel, undo, selection)
-  const highlight = new Highlight(store, selection, emitter, viewMemento)
+  const highlight = new Highlight(store, selection, viewMemento)
   const preferencesStore = new PreferencesStore(preferencesLevel)
   const searchIndex = new SearchIndex(propertiesLevel)
-  const controller =  new Controller(store, emitter)
+  const controller =  new Controller(store, highlight, emitter)
 
   // Key bindings.
   bindings(emitter)
