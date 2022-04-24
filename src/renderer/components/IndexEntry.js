@@ -8,20 +8,15 @@ import { useServices } from './hooks'
  * E.g. Layer, Feature etc.
  */
 const IndexEntry = React.forwardRef((props, ref) => {
-  const { emitter } = useServices()
+  const { controller } = useServices()
   const { id, entry, dispatch } = props
-  const actions = entry.actions.split('|').map(action => action.split(':'))
 
   const handleClick = ({ metaKey, ctrlKey, shiftKey }) => {
     dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey })
   }
 
-  const handleDoubleClick = () => {
-    const primaryAction = actions.find(([type]) => type === 'PRIMARY')
-
-    if (primaryAction) {
-      emitter.emit(`command/entry/${primaryAction[1]}`, { id })
-    }
+  const handleDoubleClick = event => {
+    controller.onDoubleClick(id, event)
   }
 
   const description = entry.description && (
