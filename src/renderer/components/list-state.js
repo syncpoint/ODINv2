@@ -1,5 +1,5 @@
 export { singleselect } from './singleselect'
-export { multiselect } from './multiselect'
+export { multiselect } from './multiselect-sff'
 
 /**
  *

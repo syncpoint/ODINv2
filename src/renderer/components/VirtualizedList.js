@@ -1,6 +1,8 @@
+import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import useVirtual from 'react-cool-virtual'
+import { indexOf } from './selection'
 
 
 /**
@@ -9,8 +11,6 @@ import useVirtual from 'react-cool-virtual'
 const VirtualizedList = props => {
   const {
     child,
-    focusIndex,
-    focusId,
     editId,
     selected,
     scroll,
@@ -24,9 +24,14 @@ const VirtualizedList = props => {
 
   React.useEffect(() => {
     if (scroll === 'none') return
+
+    const focusIndex = (selected && selected.length)
+      ? indexOf(entries, R.last(selected))
+      : -1
+
     if (focusIndex === -1) return
     scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
-  }, [scrollToItem, focusIndex, scroll])
+  }, [scrollToItem, selected, scroll])
 
   const card = ({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -36,7 +41,6 @@ const VirtualizedList = props => {
     return child({
       entry,
       id: entry.id,
-      focused: focusId === entry.id,
       selected: selected.includes(entry.id),
       editing: editId === entry.id,
       ref: measureRef
