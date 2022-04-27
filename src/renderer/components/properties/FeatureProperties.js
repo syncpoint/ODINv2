@@ -60,7 +60,11 @@ export const FeatureProperties = () => {
       else setFeatureClass(null)
     })
 
-    store.on('batch', ({ operations }) => dispatch({ type: 'update', operations }))
+    store.on('batch', ({ operations }) => {
+      const selectedFeatureIds = selection.selected().filter(isFeatureId)
+      const affectedOps = operations.filter(op => selectedFeatureIds.includes(op.key))
+      dispatch({ type: 'update', operations: affectedOps })
+    })
 
     // No cleanup necessary; components listenes forever.
   }, [selection, store])
