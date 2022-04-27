@@ -39,7 +39,7 @@ export const multiselect = {
   click: (state, { id, metaKey, ctrlKey }) => {
 
     const selected = cmdOrCtrl({ metaKey, ctrlKey })
-      ? [...state.selected, id]
+      ? toggleSelection(state.selected, id)
       : [id]
 
     return {
@@ -143,10 +143,10 @@ export const multiselect = {
 
     const selected = [...state.entries.map(entry => entry.id)]
 
-    return { 
-      ...state, 
-      selected, 
-      scroll: 'none' 
+    return {
+      ...state,
+      selected,
+      scroll: 'none'
     }
   },
 
@@ -180,7 +180,7 @@ export const multiselect = {
     const currentIndex = focusIndex(state)
     if (currentIndex === -1) return state
 
-    const editId = state.entries[currentIndex].id    
+    const editId = state.entries[currentIndex].id
     if (editId === state.editId) return { ...state, editId: null }
     else return { ...state, editId }
   },
