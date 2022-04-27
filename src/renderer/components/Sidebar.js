@@ -44,24 +44,30 @@ const Sidebar = props => {
     }
 
     // History: Open details.
+    /*
+      28apr22/HAL
+      Retrieving the label by making use of "find" is not very efficient. This should
+      be changed if the selection switches from being an id to an index.
+    */
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
-      if (!listState.focusId) return
-      if (isLayerId(listState.focusId)) {
+      if (listState.selected.length !== 1) return
+      const selectedItemId = listState.selected[0]
+      if (isLayerId(selectedItemId)) {
         historyDispatch({
           type: 'push',
           entry: {
-            key: listState.focusId,
-            scope: `@id:feature:${listState.focusId.split(':')[1]}|link+layer:${listState.focusId.split(':')[1]}`,
-            label: listState.entries[listState.focusIndex].title
+            key: selectedItemId,
+            scope: `@id:feature:${selectedItemId.split(':')[1]}|link+layer:${selectedItemId.split(':')[1]}`,
+            label: listState.entries.find(e => e.id === selectedItemId)?.title || 'N/A'
           }
         })
-      } else if (isFeatureId(listState.focusId)) {
+      } else if (isFeatureId(selectedItemId)) {
         historyDispatch({
           type: 'push',
           entry: {
-            key: listState.focusId,
-            scope: `@id:link+feature:${listState.focusId.split(':')[1]}`,
-            label: listState.entries[listState.focusIndex].title
+            key: selectedItemId,
+            scope: `@id:link+feature:${selectedItemId.split(':')[1]}`,
+            label: listState.entries.find(e => e.id === selectedItemId)?.title || 'N/A'
           }
         })
       }
