@@ -6,6 +6,7 @@ import { useList, useStack, useServices } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 import { matcher, preventDefault } from './events'
+import { focusIndex as getFocusIndex } from './selection'
 
 /**
  * Top-most component, combining history. filter input and
@@ -45,23 +46,27 @@ const Sidebar = props => {
 
     // History: Open details.
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
-      if (!listState.focusId) return
-      if (isLayerId(listState.focusId)) {
+      if (listState.selected.length !== 1) return
+
+      const focusId = listState.selected[0]
+      const focusIndex = getFocusIndex(listState)
+      if (isLayerId(focusId)) {
+        const layerId = focusId.split(':')[1]
         historyDispatch({
           type: 'push',
           entry: {
-            key: listState.focusId,
-            scope: `@id:feature:${listState.focusId.split(':')[1]}|link+layer:${listState.focusId.split(':')[1]}`,
-            label: listState.entries[listState.focusIndex].title
+            key: focusId,
+            scope: `@id:feature:${layerId}|link+layer:${layerId}`,
+            label: listState.entries[focusIndex].title || 'N/A'
           }
         })
-      } else if (isFeatureId(listState.focusId)) {
+      } else if (isFeatureId(focusId)) {
         historyDispatch({
           type: 'push',
           entry: {
-            key: listState.focusId,
-            scope: `@id:link+feature:${listState.focusId.split(':')[1]}`,
-            label: listState.entries[listState.focusIndex].title
+            key: focusId,
+            scope: `@id:link+feature:${focusId.split(':')[1]}`,
+            label: listState.entries[focusIndex].title || 'N/A'
           }
         })
       }
