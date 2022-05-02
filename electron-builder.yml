@@ -1,0 +1,12 @@
+directories:
+  output: binaries
+  buildResources: build
+appId: io.syncpoint.nido
+productName: NIDO
+copyright: ${author} https://syncpoint.io
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+electronVersion: 16.2.3

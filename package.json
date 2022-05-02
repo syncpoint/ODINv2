@@ -13,7 +13,8 @@
     "test:watch": "mocha 'src/**/*.test.js' --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --recursive",
     "lint": "eslint src/",
-    "jsdoc:main": "jsdoc src/main -r -d jsdoc/main"
+    "jsdoc:main": "jsdoc src/main -r -d jsdoc/main",
+    "build:win": "electron-builder --win --publish never"
   },
   "author": {
     "name": "Syncpoint GmbH",
@@ -30,7 +31,8 @@
     "babel-loader": "^8.2.3",
     "c8": "^7.11.0",
     "css-loader": "^6.5.1",
-    "electron": "^16.0.7",
+    "electron": "^16.2.3",
+    "electron-builder": "^23.0.3",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-react": "^7.28.0",
