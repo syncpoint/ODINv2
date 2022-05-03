@@ -65,6 +65,7 @@ export const readProjects = async location => {
  */
 export const readLayers = async (location, uuid) => {
   const dir = paths.layers(location, uuid)
+  if (!existsSync(dir)) return []
   const files = await fs.readdir(dir, { withFileTypes: true })
 
   const names = (() => {
