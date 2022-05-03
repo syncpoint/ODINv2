@@ -138,10 +138,8 @@ const Project = React.forwardRef((props, ref) => {
       <div className='card-content'>
         <Title value={project.name} onChange={handleRename}/>
         <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
-
         <ButtonBar>
           <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
-          <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
           <CustomButton
             danger
             onClick={handleDelete}
@@ -269,7 +267,7 @@ export const ProjectList = () => {
 
               <ButtonBar>
                 <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
-                <CustomButton onClick={send('EXPORT_PROJECT')} text='Export'/>
+                <CustomButton onClick={send('EXPORT_PROJECT')} text='Export' disabled={true}/>
                 <CustomButton
                   danger
                   onClick={handleDelete}
@@ -299,9 +297,9 @@ export const ProjectList = () => {
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >
-        <FilterInput onChange={handleFilterChange}/>
+        <FilterInput onChange={handleFilterChange} placeholder='search for projects'/>
         <Button onClick={handleCreate}>New</Button>
-        <Button>Import</Button>
+        <Button disabled={true}>Import</Button>
       </div>
       <List child={child} { ...state }/>
     </div>
