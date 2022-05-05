@@ -48,10 +48,11 @@ const Sidebar = props => {
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
       if (listState.selected.length !== 1) return
 
-      const focusId = listState.selected[0]
+      const focusId = listState.selected[listState.selected.length - 1]
       const focusIndex = getFocusIndex(listState)
       if (isLayerId(focusId)) {
         const layerId = focusId.split(':')[1]
+        
         historyDispatch({
           type: 'push',
           entry: {

@@ -28,7 +28,7 @@ export default async options => {
     label: 'File',
     submenu: [
       {
-        label: 'New Project',
+        label: 'Manage Projects',
         accelerator: 'CmdOrCtrl+Shift+N',
         click: async (/* menuItem, browserWindow, event */) => {
           emitter.emit('project/create')
