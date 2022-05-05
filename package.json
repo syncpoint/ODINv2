@@ -1,7 +1,7 @@
 {
   "name": "nido",
   "productName": "NIDO",
-  "version": "2.1.1-alpha",
+  "version": "2.1.2-alpha",
   "description": "",
   "main": "dist/main.js",
   "scripts": {
@@ -13,7 +13,8 @@
     "test:watch": "mocha 'src/**/*.test.js' --recursive --watch",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --recursive",
     "lint": "eslint src/",
-    "jsdoc:main": "jsdoc src/main -r -d jsdoc/main"
+    "jsdoc:main": "jsdoc src/main -r -d jsdoc/main",
+    "build:win": "electron-builder --win --publish never"
   },
   "author": {
     "name": "Syncpoint GmbH",
@@ -31,6 +32,7 @@
     "c8": "^7.11.2",
     "css-loader": "^6.7.1",
     "electron": "^18.1.0",
+    "electron-builder": "^23.0.3",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-react": "^7.28.0",

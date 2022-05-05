@@ -67,10 +67,14 @@ ProjectStore.prototype.getProjects = async function (filter) {
     .filter(({ token }) => token.length)
 
   const projects = await this.ipcRenderer.invoke('ipc:get:projects')
-  projects.sort((a, b) =>
-    a.name.localeCompare(b.name) ||
-    a.lastAccess.localeCompare(b.lastAccess)
-  )
+  projects.sort((a, b) => {
+    const nameA = a.name || ''
+    const nameB = b.name || ''
+    const lastAccessA = a.lastAccess || ''
+    const lastAccessB = b.lastAccess || ''
+    return nameA.localeCompare(nameB) ||
+      lastAccessA.localeCompare(lastAccessB)
+  })
 
   return filterProjects(tokens)(projects)
 }

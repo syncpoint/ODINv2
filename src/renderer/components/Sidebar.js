@@ -51,7 +51,7 @@ const Sidebar = props => {
           type: 'push',
           entry: {
             key: listState.focusId,
-            scope: `@id:feature:${listState.focusId.split(':')[1]}`,
+            scope: `@id:feature:${listState.focusId.split(':')[1]}|link+layer:${listState.focusId.split(':')[1]}`,
             label: listState.entries[listState.focusIndex].title
           }
         })
@@ -60,7 +60,7 @@ const Sidebar = props => {
           type: 'push',
           entry: {
             key: listState.focusId,
-            scope: `@id:link @ref:${listState.focusId}`,
+            scope: `@id:link+feature:${listState.focusId.split(':')[1]}`,
             label: listState.entries[listState.focusIndex].title
           }
         })
