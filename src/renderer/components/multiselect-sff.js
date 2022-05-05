@@ -19,7 +19,8 @@ Selection.toggle = (state, id) =>
     : state.selected
 
 /**
- * succ :: state -> index -> inxdex
+ * succ :: state -> index -> index
+ * Find (downwards) next element which is not selected.
  */
 Selection.succ = (state, currentIndex) => 
   currentIndex >= state.entries.length - 1
@@ -29,7 +30,8 @@ Selection.succ = (state, currentIndex) =>
       : currentIndex + 1
 
 /**
- * pred :: state -> index -> inxdex
+ * pred :: state -> index -> index
+ * Find (upwards) next element which is not selected.
  */
 Selection.pred = (state, currentIndex) => 
   currentIndex <= 0
@@ -55,8 +57,7 @@ Selection.range = state => {
 
 const Entries = {}
 
-Entries.empty = state => !state.entries || !state.entries.length
-Entries.equals = (state, entries) => isEqual(state.entries, entries)
+Entries.empty = entries => !entries || !entries.length
 Entries.length = state => state.entries.length
 Entries.id = (entries, index) => entries[index].id
 Entries.index = (entries, id) => entries.findIndex(entry => entry.id === id)
@@ -87,7 +88,7 @@ export const multiselect = {
    */
   entries: (state, { entries }) => {
     // Don't update when entries are deep equal to previous state.
-    if (Entries.equals(state, entries)) return state
+    if (isEqual(state.entries, entries)) return state
     return { ...state, entries }
   },
 
@@ -96,8 +97,9 @@ export const multiselect = {
 
     const shiftSelection = () => {
       const current = Entries.focused(state)
-      const range = Selection.range(state)
       const next = Entries.index(state.entries, id)
+      const range = Selection.range(state)
+
       const leading = range.indexOf(current) === 0
       const trailing = range.indexOf(current) === range.length - 1
       const before = next < R.head(range)
@@ -107,6 +109,7 @@ export const multiselect = {
         (trailing && after) ||
         (leading && before)
 
+      // Extent focused range downwards/upwards.
       const extentSelection = () => {
         const extension = 
           current < next
@@ -117,16 +120,28 @@ export const multiselect = {
         return [...state.selected, ...selected]
       }
 
+      // Deselect focused range and select new entries depending on
+      // various (4) conditions.
       const invertSelection = () => {
         const ids = range.map(index => state.entries[index].id)
         const remaining = state.selected.filter(id => !ids.includes(id))
-        const inversion = trailing
-          ? R.range(next, R.head(range) + 1).reverse()
-          : leading
-            ? R.range(R.last(range), next + 1)
-            : current < next
-              ? R.range(current, next + 1)
-              : R.range(next, current + 1).reverse()
+
+        // Cases explained:
+        // A: current focus is last in range
+        // B: current focus is first in range
+        // C: neither A nor B: current focus is before clicked element
+        // D: neither A nor B: current focus is after clicked element
+
+        // Note: We have to reverse order when new focused element 
+        // is before start of selection (cases A and D).
+        const inversion = 
+          trailing
+            ? R.range(next, R.head(range) + 1).reverse() // A
+            : leading
+              ? R.range(R.last(range), next + 1) // B
+              : current < next
+                ? R.range(current, next + 1) // C
+                : R.range(next, current + 1).reverse() // D
 
         const selected = inversion.map(index => state.entries[index].id)
         return [...remaining, ...selected]
@@ -168,7 +183,7 @@ export const multiselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state
 
     // Nothing to do if list is empty:
-    if (Entries.empty(state)) return state
+    if (Entries.empty(state.entries)) return state
 
     const current = Entries.focused(state)
     if (current === Entries.length(state) - 1) return state // EOL
@@ -213,7 +228,7 @@ export const multiselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state
 
     // Nothing to do if list is empty:
-    if (Entries.empty(state)) return state
+    if (Entries.empty(state.entries)) return state
 
     const current = Entries.focused(state) === -1
       ? Entries.length(state)
@@ -258,7 +273,7 @@ export const multiselect = {
 
   'keydown/Home': state => {
     // Nothing to do if list is empty:
-    if (Entries.empty(state)) return state
+    if (Entries.empty(state.entries)) return state
 
     // Return same state (reference) when we are already at beginning of list (BOL).
     if (Entries.focused(state) === 0) return state
@@ -272,7 +287,7 @@ export const multiselect = {
 
   'keydown/End': state => {
     // Nothing to do if list is empty:
-    if (Entries.empty(state)) return state
+    if (Entries.empty(state.entries)) return state
 
     // Return same state (reference) when we are already at the bottom.
     if (Entries.focused(state) === Entries.length(state) - 1) return state
