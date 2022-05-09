@@ -1,5 +1,5 @@
 export { singleselect } from './singleselect'
-export { multiselect } from './multiselect-sff'
+export { multiselect } from './multiselect'
 
 /**
  *
@@ -14,25 +14,10 @@ export const initialState = {
   entries: [],
 
   /**
-   * focusId :: id | null
-   *
-   * Used to remember focused entry between updates of entry list,
-   * where focusIndex may be invalid after update.
-   * if set, focusId has precedence over focusIndex.
-   */
-  focusId: null,
-
-  /**
-   * focusIndex :: int
-   *
-   * Index in entries or -1 for undefined.
-   */
-  focusIndex: -1,
-
-  /**
    * selected :: [id]
    *
    * Zero, one or more ids of selected entries.
+   * Last selected entry has implicit focus in multiselect lists.
    */
   selected: [],
 

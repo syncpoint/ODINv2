@@ -102,3 +102,25 @@ ee11c71a-2ac6-4d76-ba14-62012dbe29c3 - scroll to selection (upward)
 3. Scroll to top (with mouse).
 4. Focus (previous) option (arrow up key).
 5. Expected: Last option is focused, list scrolled to bottom.
+
+Scope: unsupported
+
+1. Display list with at least three options.
+2. Select options 1 thru 3 (Shift+Arrow Down).
+3. Deselect option(s) after option 2 (Shift+Click option 2).
+4. Expected: Option 3 is deselected, options 1 and 2 are selected.
+
+1. Display list with at least five options.
+2. Select option 4 (Click or Command+Click).
+3. Select options 1 and 2 (Command+Click).
+4. Select option 5 (Shift+Click).
+5. Expected: Options 2 thru 5 are selected.
+
+1. Display list with at least five options.
+2. Select option 4 (Click or Command+Click).
+3. Select option 1 (Command+Click).
+4. Select option 2 (Shift+Arrow Down).
+5. Select option 5 (Shift+Click).
+6. Expected: Options 1 thru 5 are selected.
+
+

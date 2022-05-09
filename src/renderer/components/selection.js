@@ -1,72 +1,74 @@
 import * as R from 'ramda'
+import isEqual from 'react-fast-compare'
+
+const Selection = {}
+export { Selection }
+
+Selection.empty = selected => !selected || !selected.length
+Selection.equals = (a, b) => isEqual([...a].sort(), [...b].sort())
+Selection.includes = (selected, id) => selected.includes(id)
+Selection.selected = (state, index) => Selection.includes(state.selected, state.entries[index].id)
+Selection.remove = (selected, id) => selected.filter(x => x !== id)
+Selection.append = (selected, id) => [...selected, id]
+
+Selection.toggle = (state, id) => 
+  id
+    ? Selection.includes(state.selected, id)
+      ? Selection.remove(state.selected, id)
+      : Selection.append(state.selected, id)
+    : state.selected
 
 /**
- *
+ * succ :: state -> index -> index
+ * Find (downwards) next element which is not selected.
  */
-export const toggleSelection = (selected, id) => id
-  ? selected.includes(id)
-    ? selected.filter(x => x !== id)
-    : [...selected, id]
-  : selected
-
+Selection.succ = (state, currentIndex) => 
+  currentIndex >= state.entries.length - 1
+    ? -1
+    : Selection.selected(state, currentIndex + 1)
+      ? Selection.succ(state, currentIndex + 1)
+      : currentIndex + 1
 
 /**
- *
+ * pred :: state -> index -> index
+ * Find (upwards) next element which is not selected.
  */
-export const indexOf = (entries, id) => entries.findIndex(entry => entry.id === id)
-
+Selection.pred = (state, currentIndex) => 
+  currentIndex <= 0
+    ? -1
+    : Selection.selected(state, currentIndex - 1)
+      ? Selection.pred(state, currentIndex - 1)
+      : currentIndex - 1    
 
 /**
- *
+ * Range of indexes which includes index of focused entry.
  */
-export const firstId = entries => entries.length
-  ? entries[0].id
-  : null
+Selection.focusRange = state => {
+  if (Selection.empty(state.selected)) return []
 
+  const indexes = state.selected
+    .map(id => Entries.index(state.entries, id))
+    .sort((a, b) => a - b)
 
-/**
- *
- */
-export const lastId = entries => entries.length
-  ? entries[entries.length - 1].id
-  : null
+  const ranges = R.groupWith((a, b) => a + 1 === b, indexes)
+  const focused = range => range.includes(Entries.index(state.entries, R.last(state.selected)))
+  return ranges.find(focused)
+}
 
+const Entries = {}
+export { Entries }
 
-/**
- * @deprecated
- */
-export const isFocusBOL = state =>
-  state.entries &&
-  state.entries.length &&
-  state.focusIndex === 0
-
-/**
- * @deprecated
- */
-export const isFocusEOL = state =>
-  state.entries &&
-  state.entries.length &&
-  state.focusIndex === state.entries.length - 1
+Entries.empty = entries => !entries || !entries.length
+Entries.length = state => state.entries.length
+Entries.id = (entries, index) => entries[index].id
+Entries.index = (entries, id) => entries.findIndex(entry => entry.id === id)
 
 /**
  * Index of last selected entry (if any), else -1.
  */
-export const focusIndex = state =>
-  (state.selected && state.selected.length)
-    ? indexOf(state.entries, R.last(state.selected))
-    : -1
+ Entries.focusIndex = state => 
+  Selection.empty(state.selected)
+    ? -1
+    : Entries.index(state.entries, R.last(state.selected))
 
-export const isSelected = (state, index) => 
-  state.selected.includes(state.entries[index].id)
 
-export const nextIndex = (state, currentIndex) => {
-  if (currentIndex >= state.entries.length - 1) return -1
-  else if (isSelected(state, currentIndex + 1)) return nextIndex(state, currentIndex + 1)
-  else return currentIndex + 1
-}
-
-export const previousIndex = (state, currentIndex) => {
-  if (currentIndex <= 0) return -1
-  else if (isSelected(state, currentIndex - 1)) return previousIndex(state, currentIndex - 1)
-  else return currentIndex - 1
-}

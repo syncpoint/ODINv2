@@ -1,8 +1,8 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import { toggleSelection, indexOf, firstId, lastId, isFocusBOL, isFocusEOL } from './selection'
 import { cmdOrCtrl } from '../platform'
-import { Selection } from '../Selection'
+import { Selection, Entries } from './selection'
+
 
 /**
  * WAI ARIA Reference (3.14 Listbox):
@@ -10,17 +10,9 @@ import { Selection } from '../Selection'
  */
 
 /**
- * Selection does not follow focus.
+ * Selection follows focus.
  *
- * When a multi-select listbox receives focus:
- *
- *   - If none of the options are selected before the listbox receives
- *     focus, focus is set on the first option and there is no
- *     automatic change in the selection state.
- *   - If one or more options are selected before the listbox receives
- *     focus, focus is set on the first option in the list that is selected.
- *
- * Reference: https://www.w3.org/TR/wai-aria-practices-1.1/#listbox_kbd_interaction
+ * Reference: macOS Finder
  */
 export const multiselect = {
 
@@ -28,76 +20,97 @@ export const multiselect = {
    *
    */
   entries: (state, { entries }) => {
-
     // Don't update when entries are deep equal to previous state.
-    if (isEqual(state.entries, entries)) {
-      return state
-    }
+    if (isEqual(state.entries, entries)) return state
 
-    const focusIndex = state.focusId
-      ? indexOf(entries, state.focusId)
-      : -1
+    const ids = entries.map(R.prop('id'))
+    const selected = (state.selected || []).filter(id => ids.includes(id))
 
-    const focusId = focusIndex !== -1
-      ? entries[focusIndex].id
-      : null
-
-    // Only scroll when index of focused option has changed:
-    const scroll = focusIndex === -1
-      ? 'none'
-      : focusIndex === state.focusIndex
-        ? 'none'
-        : 'auto'
-
-    return {
-      ...state,
+    return { 
+      ...state, 
       entries,
-      focusIndex,
-      focusId,
-      scroll
-    }
-  },
-
-  /**
-   * Focus entry with given id.
-   */
-  focus: (state, { focusId: id }) => {
-    if (!id) return state
-    const focusIndex = indexOf(state.entries, id)
-
-    const focusId = focusIndex !== -1
-      ? state.entries[focusIndex].id
-      : null
-
-    return {
-      ...state,
-      focusIndex,
-      focusId,
-      selected: focusId ? [focusId] : [],
-      scroll: 'smooth'
-    }
-  },
-
-  /** Focus clicked entry, optionally selecting it. */
-  click: (state, { id, metaKey, ctrlKey }) => {
-
-    // Don't touch state when clicked on already focused entry:
-    // if (!cmdOrCtrl({ metaKey, ctrlKey }) && id === state.focusId) return state
-
-    const selected = cmdOrCtrl({ metaKey, ctrlKey })
-      ? toggleSelection(state.selected, id)
-      : [id]
-
-    return {
-      ...state,
-      focusId: id,
-      focusIndex: indexOf(state.entries, id),
       selected
     }
   },
 
+  /** */
+  click: (state, { id, shiftKey, metaKey, ctrlKey }) => {
+
+    const shiftSelection = () => {
+      const current = Entries.focusIndex(state)
+      const next = Entries.index(state.entries, id)
+      const range = Selection.focusRange(state)
+
+      const leading = range.indexOf(current) === 0
+      const trailing = range.indexOf(current) === range.length - 1
+      const before = next < R.head(range)
+      const after = next > R.last(range)
+
+      const extent = 
+        (trailing && after) ||
+        (leading && before)
+
+      // Extent focused range downwards/upwards.
+      const extentSelection = () => {
+        const extension = 
+          current < next
+            ? R.range(current + 1, next + 1)
+            : R.range(next, current).reverse()
+
+        const selected = extension.map(index => state.entries[index].id)
+        return [...state.selected, ...selected]
+      }
+
+      // Deselect focused range and select new entries depending on
+      // various (4) conditions.
+      const shrinkSelection = () => {
+        const ids = range.map(index => state.entries[index].id)
+        const remaining = state.selected.filter(id => !ids.includes(id))
+
+        // Cases explained:
+        // A: current focus is last in range
+        // B: current focus is first in range
+        // C: neither A nor B: current focus is before clicked element
+        // D: neither A nor B: current focus is after clicked element
+
+        // Note: We have to reverse order when new focused element 
+        // is before start of selection (cases A and D).
+        const inversion = 
+          trailing
+            ? R.range(next, R.head(range) + 1).reverse() // A
+            : leading
+              ? R.range(R.last(range), next + 1) // B
+              : current < next
+                ? R.range(current, next + 1) // C
+                : R.range(next, current + 1).reverse() // D
+
+        const selected = inversion.map(index => state.entries[index].id)
+        return [...remaining, ...selected]
+      }
+      
+      return extent
+        ? extentSelection()
+        : shrinkSelection()
+    }
+
+    const selected = cmdOrCtrl({ metaKey, ctrlKey })
+      ? Selection.toggle(state, id)
+      : shiftKey
+        ? shiftSelection()
+        : [id]
+
+    return {
+      ...state,
+      selected,
+      scroll: 'auto'
+    }
+  },
+
+  /**
+   * Sync selection with state.
+   */
   selection: (state, { selected }) => {
-    if (Selection.isEqual(state.selected, selected)) return state
+    if (Selection.equals(state.selected, selected)) return state
 
     return {
       ...state,
@@ -108,119 +121,135 @@ export const multiselect = {
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
     // Navigation 'forward/open' not handled here:
-    if (cmdOrCtrl({ metaKey, ctrlKey })) {
-      return state
-    }
+    if (cmdOrCtrl({ metaKey, ctrlKey })) return state
 
     // Nothing to do if list is empty:
-    if (!state.entries || !state.entries.length) {
-      return state
+    if (Entries.empty(state.entries)) return state
+
+    const current = Entries.focusIndex(state)
+    if (current === Entries.length(state) - 1) return state // EOL
+
+    const id = index => Entries.id(state.entries, index)
+
+    const shrink = () => {
+      // Remove current and re-add/focus next:
+      const selected = state.selected
+        .filter(x => x !== id(current))
+        .filter(x => x !== id(current + 1))
+      return [...selected, id(current + 1)]
     }
 
-    if (isFocusEOL(state)) {
-      if (shiftKey) return state // NOOP: shift key is pressed
-      else if (!state.selected.length) return state // NOOP: selection already clear
-      else return { ...state, selected: [], scroll: 'auto' } // clear selection
+    const extent = () => {
+      const succ = Selection.succ(state, current)
+      return succ === -1
+        ? state.selected
+        : Selection.append(state.selected, id(succ))
     }
 
-    const focusIndex = state.focusId
-      ? Math.min(state.entries.length - 1, indexOf(state.entries, state.focusId) + 1)
-      : 0
-
-    const focusId = state.entries[focusIndex].id
+    const shiftSelection = () => {
+      const range = Selection.focusRange(state)
+      const leading = range.indexOf(current) === 0 && range.length > 1
+      return leading ? shrink() : extent()
+    }
 
     const selected = shiftKey
-      ? state.selected.includes(focusId)
-        ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])
-        // previous focusId might be null
-        : R.uniq([...state.selected, focusId, ...(state.focusId ? [state.focusId] : [])])
-      : []
+      ? shiftSelection()
+      : [Entries.id(state.entries, current + 1)]
 
     return {
       ...state,
-      focusId,
-      focusIndex,
       selected,
+      editId: null,
       scroll: 'auto'
     }
   },
 
   'keydown/ArrowUp': (state, { shiftKey, metaKey, ctrlKey }) => {
-
-    // Navigation 'back' not handled here:
-    if (cmdOrCtrl({ metaKey, ctrlKey })) {
-      return state
-    }
+    // Navigation 'forward/open' not handled here:
+    if (cmdOrCtrl({ metaKey, ctrlKey })) return state
 
     // Nothing to do if list is empty:
-    if (!state.entries || !state.entries.length) {
-      return state
+    if (Entries.empty(state.entries)) return state
+
+    const current = Entries.focusIndex(state) === -1
+      ? Entries.length(state)
+      : Entries.focusIndex(state)
+
+    if (current === 0) return state // BOL
+
+    const id = index => Entries.id(state.entries, index)
+
+    const shrink = () => {
+      // Remove current and re-add/focus next:
+      const selected = state.selected
+        .filter(x => x !== id(current))
+        .filter(x => x !== id(current - 1))
+      return [...selected, id(current - 1)]
     }
 
-    if (isFocusBOL(state)) {
-      if (shiftKey) return state // NOOP: shift key is pressed
-      else if (!state.selected.length) return state // NOOP: selection already clear
-      else return { ...state, selected: [], scroll: 'auto' } // clear selection
+    const extent = () => {
+      const pred = Selection.pred(state, current)
+      return pred === -1
+        ? state.selected
+        : Selection.append(state.selected, id(pred))
     }
 
-    const focusIndex = state.focusId
-      ? Math.max(0, indexOf(state.entries, state.focusId) - 1)
-      : state.entries.length - 1
-
-    const focusId = state.entries[focusIndex].id
+    const shiftSelection = () => {
+      const range = Selection.focusRange(state)
+      const trailing = range.indexOf(current) === range.length - 1 && range.length > 1
+      return trailing ? shrink() : extent()
+    }
 
     const selected = shiftKey
-      ? state.selected.includes(focusId)
-        ? R.uniq([...toggleSelection(state.selected, state.focusId), focusId])
-        // previous focusId might be null
-        : R.uniq([...state.selected, focusId, ...(state.focusId ? [state.focusId] : [])])
-      : []
+      ? shiftSelection()
+      : [id(current - 1)]
 
     return {
       ...state,
-      focusId,
-      focusIndex,
       selected,
+      editId: null,
       scroll: 'auto'
     }
   },
 
   'keydown/Home': state => {
-    if (!state.focusId) return state
+    // Nothing to do if list is empty:
+    if (Entries.empty(state.entries)) return state
 
-    // Return same state (reference) when we are already at the top.
-    if (isFocusBOL(state)) return state
+    const current = Entries.focusIndex(state)
+    if (current === -1) return state
+    else if (current === 0) return state
 
-    const focusId = firstId(state.entries)
-    const focusIndex = indexOf(state.entries, focusId)
-    return { ...state, focusId, focusIndex, scroll: 'auto' }
+    return { 
+      ...state, 
+      selected: [R.head(state.entries).id], 
+      scroll: 'auto' 
+    }
   },
 
   'keydown/End': state => {
-    if (!state.focusId) return state
+    // Nothing to do if list is empty:
+    if (Entries.empty(state.entries)) return state
 
-    // Return same state (reference) when we are already at the end.
-    if (isFocusEOL(state)) return state
+    const current = Entries.focusIndex(state)
+    if (current === -1) return state
+    else if (current === Entries.length(state) - 1) return state
 
-    const focusId = lastId(state.entries)
-    const focusIndex = indexOf(state.entries, focusId)
-    return { ...state, focusId, focusIndex, scroll: 'auto' }
+    return { 
+      ...state, 
+      selected: [R.last(state.entries).id], 
+      scroll: 'auto' 
+    }
   },
 
   'keydown/a': (state, { metaKey, ctrlKey }) => {
     if (!cmdOrCtrl({ metaKey, ctrlKey })) return state
-    const focusId = lastId(state.entries)
-    const focusIndex = indexOf(state.entries, focusId)
-    const selected = [...state.entries.map(entry => entry.id)]
 
-    // Note: Select/all should not scroll to focused entry.
-    return { ...state, selected, focusId, focusIndex, scroll: 'none' }
-  },
-
-  'keydown/ ': state => {
-    if (state.focusId === null) return state
-    const selected = toggleSelection(state.selected, state.focusId)
-    return { ...state, selected }
+    return {
+      ...state,
+      selected: [...state.entries.map(entry => entry.id)],
+      scroll: 'none'
+    }
   },
 
   /**
@@ -231,7 +260,7 @@ export const multiselect = {
     if (state.editId) return { ...state, editId: null }
 
     // Deselect all.
-    if (!state.selected || !state.selected.length) return state
+    if (Selection.empty(state.selected)) return state
     return { ...state, selected: [], scroll: 'none' }
   },
 
@@ -239,19 +268,23 @@ export const multiselect = {
    * Start editing of focused option.
    */
   'keydown/F2': state => {
-    if (!state.focusId) return state
-    return { ...state, editId: state.focusId }
+    const current = Entries.focusIndex(state)
+    if (current === -1) return state
+
+    const editId = state.entries[current].id
+    return { ...state, editId }
   },
 
   /**
    * Toggle editing.
    */
   'keydown/Enter': state => {
-    if (state.editId) {
-      if (state.focusId === state.editId) return { ...state, editId: null }
-      else return { ...state, editId: state.focusId }
-    } else if (state.focusId) return { ...state, editId: state.focusId }
-    else return state
+    const current = Entries.focusIndex(state)
+    if (current === -1) return state
+
+    const editId = state.entries[current].id
+    if (editId === state.editId) return { ...state, editId: null }
+    else return { ...state, editId }
   },
 
   /**

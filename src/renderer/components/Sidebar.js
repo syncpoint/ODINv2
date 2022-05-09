@@ -6,7 +6,7 @@ import { useList, useStack, useServices } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 import { matcher, preventDefault } from './events'
-import { focusIndex as getFocusIndex } from './selection'
+import { Entries } from './selection'
 
 /**
  * Top-most component, combining history. filter input and
@@ -49,7 +49,8 @@ const Sidebar = props => {
       if (listState.selected.length !== 1) return
 
       const focusId = listState.selected[listState.selected.length - 1]
-      const focusIndex = getFocusIndex(listState)
+      const focusIndex = Entries.focusIndex(listState)
+
       if (isLayerId(focusId)) {
         const layerId = focusId.split(':')[1]
         

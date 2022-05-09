@@ -1,5 +1,6 @@
+import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import { indexOf, firstId, lastId } from './selection'
+import { Entries } from './selection'
 import { initialState } from './list-state'
 import { cmdOrCtrl } from '../platform'
 
@@ -26,29 +27,15 @@ export const singleselect = {
    *
    */
   entries: (state, { entries }) => {
-
     // Don't update when entries are deep equal to previous state.
     if (isEqual(state.entries, entries)) return state
+    const ids = entries.map(R.prop('id'))
+    const selected = (state.selected || []).filter(id => ids.includes(id))
 
-    // Check if focused entry is still available.
-    const index = indexOf(entries, state.focusId)
-
-    const focusIndex = index === -1
-      ? Math.min(entries.length - 1, state.focusIndex)
-      : index
-
-    const focusId = focusIndex !== -1
-      ? entries[focusIndex].id
-      : null
-
-    return {
+    return { 
       ...state,
       entries,
-      focusIndex,
-      focusId,
-
-      // singleselect: selection follows focus.
-      selected: focusId ? [focusId] : [],
+      selected,
       scroll: 'auto'
     }
   },
@@ -56,29 +43,23 @@ export const singleselect = {
   /**
    * Focus entry with given id.
    */
-  focus: (state, { focusId: id }) => {
+  select: (state, { id }) => {
     if (!id) return state
 
-    const focusIndex = indexOf(state.entries, id)
-
-    const focusId = focusIndex !== -1
-      ? state.entries[focusIndex].id
-      : null
+    const selected = Entries.index(state.entries, id) !== -1
+      ? [id]
+      : []
 
     return {
       ...state,
-      focusIndex,
-      focusId,
-      selected: focusId ? [focusId] : [],
+      selected,
       scroll: 'smooth'
     }
   },
 
-  /** Focus and select clicked entry. */
+  /** Select clicked entry. */
   click: (state, { id }) => ({
     ...state,
-    focusId: id,
-    focusIndex: indexOf(state.entries, id),
     selected: [id]
   }),
 
@@ -86,18 +67,14 @@ export const singleselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries.length) return initialState
 
-    // focusId = null => -1
-    const currentIndex = indexOf(state.entries, state.focusId)
-    const focusIndex = Math.min(state.entries.length - 1, currentIndex + 1)
-    const focusId = focusIndex !== -1
-      ? state.entries[focusIndex].id
-      : null
+    const current = Entries.focusIndex(state)
+    if (current === Entries.length(state) - 1) return state
+
+    const selected = [Entries.id(state.entries, current + 1)]
 
     return {
       ...state,
-      focusId,
-      focusIndex,
-      selected: focusId ? [focusId] : [],
+      selected,
       scroll: 'auto'
     }
   },
@@ -105,34 +82,51 @@ export const singleselect = {
   'keydown/ArrowUp': (state, { metaKey, ctrlKey }) => {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries.length) return initialState
-    if (!state.focusId) return state
 
-    const currentIndex = indexOf(state.entries, state.focusId)
-    const focusIndex = Math.max(0, currentIndex - 1)
-    const focusId = focusIndex !== -1
-      ? state.entries[focusIndex].id
-      : null
+    const current = Entries.focusIndex(state) === -1
+      ? Entries.length(state)
+      : Entries.focusIndex(state)
+
+    if (current === 0) return state // BOL
+
+    const selected = [Entries.id(state.entries, current - 1)]
 
     return {
       ...state,
-      focusId,
-      focusIndex,
-      selected: focusId ? [focusId] : [],
+      selected,
       scroll: 'auto'
     }
   },
 
   'keydown/Home': state => {
-    if (!state.focusId) return state
-    const focusId = firstId(state.entries)
-    const focusIndex = indexOf(state.entries, focusId)
-    return { ...state, focusId, focusIndex, selected: [focusId], scroll: 'auto' }
+    // Nothing to do if list is empty:
+    if (Entries.empty(state.entries)) return state
+
+    const current = Entries.focusIndex(state)
+    if (current === -1) return state // no selection
+    if (current === -1 || current === 0) return state // BOL
+    
+    return { 
+      ...state, 
+      selected: [R.head(state.entries).id], 
+      scroll: 'auto' 
+    }
   },
 
   'keydown/End': state => {
-    if (!state.focusId) return state
-    const focusId = lastId(state.entries)
-    const focusIndex = indexOf(state.entries, focusId)
-    return { ...state, focusId, focusIndex, selected: [focusId], scroll: 'auto' }
+    // Nothing to do if list is empty:
+    if (Entries.empty(state.entries)) return state
+
+    const current = Entries.focusIndex(state)
+
+    // Return same state (reference) when we are already at the bottom.
+    if (current === -1) return state // no selection
+    if (current === Entries.length(state) - 1) return state // BOL
+
+    return { 
+      ...state, 
+      selected: [R.last(state.entries).id], 
+      scroll: 'auto' 
+    }
   }
 }

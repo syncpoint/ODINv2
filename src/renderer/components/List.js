@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
-
+import { Entries } from './selection'
 
 /**
  *
@@ -19,25 +19,28 @@ const scrollIntoView = (refs, index, behavior) =>
  * Abstract list. Mainly obsessed with scrolling.
  */
 const List = props => {
-  const { child, focusIndex, focusId, selected, scroll, entries } = props
+  const { child, selected, scroll, entries } = props
   const cardrefs = props.entries.map(_ => React.createRef())
 
   React.useEffect(() => {
     if (scroll === 'none') return
+    const focusIndex = Entries.focusIndex(props)
+    if (focusIndex === -1) return
     scrollIntoView(cardrefs, focusIndex, scroll)
-  }, [cardrefs, focusIndex, scroll])
+  }, [cardrefs, props])
 
   const handleKeyDown = event => {
     const { key } = event
     if (key === ' ') event.preventDefault()
   }
 
+
   const card = index => {
     const entry = entries[index]
     return child({
       entry,
       id: entry.id,
-      focused: focusId === entry.id,
+      focused: R.last(selected) === entry.id,
       selected: selected.includes(entry.id),
       ref: cardrefs[index]
     })
@@ -61,8 +64,6 @@ const List = props => {
 
 List.propTypes = {
   entries: PropTypes.array.isRequired,
-  focusId: PropTypes.string,
-  focusIndex: PropTypes.number.isRequired,
   selected: PropTypes.array.isRequired,
   scroll: PropTypes.string,
   child: PropTypes.func.isRequired

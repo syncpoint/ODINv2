@@ -105,12 +105,15 @@ Writers.MultiLineString = options => {
 
 Writers.Polygon = options => {
   const { geometry } = options
-  const splitable = options.descriptor.layout !== 'rectangle'
+  const splitable = () => {
+    if (!options.descriptor) return true
+    return options.descriptor.layout !== 'rectangle'
+  }
 
   return geometry.getCoordinates().reduce((acc, ring, q) => {
     return acc.concat(R.aperture(2, ring).map((vertices, index) => ({
       ...options,
-      splitable,
+      splitable: splitable(),
       index,
       vertices,
       depth: [q],
@@ -218,7 +221,9 @@ export const removeVertex = (node, index) => {
   const guards = {
     LineString: coordinates => coordinates.length > 2,
     MultiLineString: coordinates => coordinates[depth[0]].length > 2,
-    Polygon: coordinates => coordinates[depth[0]].length > 4 && descriptor.layout !== 'rectangle',
+    Polygon: coordinates => 
+      coordinates[depth[0]].length > 4 && 
+      (!descriptor || descriptor.layout !== 'rectangle'),
     MultiPolygon: coordinates => coordinates[depth[0]][depth[1]].length > 4
   }
 

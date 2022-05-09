@@ -182,7 +182,7 @@ export const ProjectList = () => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
       dispatch({ type: 'entries', entries: projects, candidateId: projectId })
-      if (projectId) dispatch({ type: 'focus', focusId: projectId })
+      if (projectId) dispatch({ type: 'select', selected: [projectId] })
     })()
   }, [dispatch, filter, projectStore])
 
@@ -259,6 +259,7 @@ export const ProjectList = () => {
           onClick={handleClick(props.id)}
           focused={props.focused}
           selected={props.selected}
+          id={props.id}
         >
           <div style={{ display: 'flex', flexDirection: 'row' }}>
             <div className='card-content'>

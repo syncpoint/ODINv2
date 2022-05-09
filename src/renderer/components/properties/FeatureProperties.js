@@ -48,9 +48,14 @@ export const FeatureProperties = () => {
       const state = await store.selectFeatures(keys)
       dispatch({ type: 'reset', state })
 
+      const sidc = value => {
+        if (!value) return
+        else if (!value.properies) return
+        else return value.properies.sidc
+      }
+
       const featureClasses = state.reduce((acc, value) => {
-        const { sidc } = value.properties
-        const className = MILSTD.className(sidc)
+        const className = MILSTD.className(sidc(value))
         if (className) acc.push(className)
         else console.warn('missing class name: ', value)
         return R.uniq(acc)

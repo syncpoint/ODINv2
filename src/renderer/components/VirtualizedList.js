@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import useVirtual from 'react-cool-virtual'
-import { indexOf } from './selection'
+import { Entries } from './selection'
 
 
 /**
@@ -25,9 +25,10 @@ const VirtualizedList = props => {
   React.useEffect(() => {
     if (scroll === 'none') return
 
-    const focusIndex = (selected && selected.length)
-      ? indexOf(entries, R.last(selected))
-      : -1
+    const focusIndex = Entries.focusIndex({
+      entries,
+      selected
+    })
 
     if (focusIndex === -1) return
     scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
@@ -42,6 +43,7 @@ const VirtualizedList = props => {
       entry,
       id: entry.id,
       selected: selected.includes(entry.id),
+      focused: R.last(selected) === entry.id,
       editing: editId === entry.id,
       ref: measureRef
     })
@@ -62,9 +64,7 @@ const VirtualizedList = props => {
 
 VirtualizedList.propTypes = {
   entries: PropTypes.array.isRequired,
-  focusId: PropTypes.string,
   editId: PropTypes.string,
-  focusIndex: PropTypes.number.isRequired,
   selected: PropTypes.array.isRequired,
   scroll: PropTypes.string,
   child: PropTypes.func.isRequired
