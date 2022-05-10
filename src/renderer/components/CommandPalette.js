@@ -80,7 +80,7 @@ export const CommandPalette = props => {
       dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
     }
 
-    const backgroundColor = props.focused ? 'lightgrey' : 'white'
+    const backgroundColor = props.selected ? 'lightgrey' : 'white'
     return (
       <div
         key={props.id}

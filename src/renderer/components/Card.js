@@ -97,7 +97,6 @@ export const Card = React.forwardRef((props, ref) => {
 Card.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
-  focused: PropTypes.bool,
   selected: PropTypes.bool,
   editing: PropTypes.bool,
   capabilities: PropTypes.string,

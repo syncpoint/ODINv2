@@ -9,7 +9,7 @@ import { matcher, preventDefault } from './events'
 import { Entries } from './selection'
 
 /**
- * Top-most component, combining history. filter input and
+ * Top-most component, combining history, filter input and
  * concrete filterable list, e.g. feature list.
  */
 const Sidebar = props => {

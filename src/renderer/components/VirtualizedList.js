@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import useVirtual from 'react-cool-virtual'
@@ -43,7 +42,6 @@ const VirtualizedList = props => {
       entry,
       id: entry.id,
       selected: selected.includes(entry.id),
-      focused: R.last(selected) === entry.id,
       editing: editId === entry.id,
       ref: measureRef
     })

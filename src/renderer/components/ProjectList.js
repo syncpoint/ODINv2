@@ -123,7 +123,7 @@ const Project = React.forwardRef((props, ref) => {
     ? props.project.tags.includes('OPEN')
     : false
 
-  const className = props.focused
+  const className = props.selected
     ? 'card focus'
     : 'card'
 
@@ -156,7 +156,6 @@ const Project = React.forwardRef((props, ref) => {
 
 Project.propTypes = {
   project: PropTypes.object.isRequired,
-  focused: PropTypes.bool,
   selected: PropTypes.bool,
   onClick: PropTypes.func,
   onDoubleClick: PropTypes.func
@@ -169,7 +168,7 @@ Project.propTypes = {
 export const ProjectList = () => {
   const { projectStore, ipcRenderer } = useServices()
   const [filter, setFilter] = React.useState('')
-  const [state, dispatch] = useList({ multiselect: true })
+  const [state, dispatch] = useList({ multiselect: false })
 
   /**
    * Reload projects from store and update entry list
@@ -257,7 +256,6 @@ export const ProjectList = () => {
       >
         <Card
           onClick={handleClick(props.id)}
-          focused={props.focused}
           selected={props.selected}
           id={props.id}
         >
