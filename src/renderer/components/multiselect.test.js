@@ -24,7 +24,7 @@ describe('multiselect', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries }
       const actual = multiselect.entries(state, { entries: [{ id: 'x' }] })
-      const expected = { 
+      const expected = {
         entries: [{ id: 'x' }],
         selected: []
       }
@@ -36,7 +36,7 @@ describe('multiselect', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['y'] }
       const actual = multiselect.entries(state, { entries: [{ id: 'x' }] })
-      const expected = { 
+      const expected = {
         entries: [{ id: 'x' }],
         selected: []
       }
@@ -49,10 +49,10 @@ describe('multiselect', function () {
     const entries = [{ id: 'x' }, { id: 'y' }]
 
     it('select option (no selection)', function () {
-      const state = { entries, selected: []}
+      const state = { entries, selected: [] }
       const actual = multiselect.click(state, { id: 'x' })
-      const expected = { 
-        entries, 
+      const expected = {
+        entries,
         selected: ['x'],
         scroll: 'auto'
       }
@@ -61,23 +61,23 @@ describe('multiselect', function () {
     })
 
     it('select option (replace selection)', function () {
-      const state = { entries, selected: ['y']}
+      const state = { entries, selected: ['y'] }
       const actual = multiselect.click(state, { id: 'x' })
-      const expected = { 
-        entries, 
+      const expected = {
+        entries,
         selected: ['x'],
         scroll: 'auto'
       }
-      
+
       assert.deepStrictEqual(actual, expected)
     })
 
     it('meta - toggle selection (deselected)', function () {
       const state = { entries, selected: [] }
       const actual = multiselect.click(state, { id: 'x', metaKey: true })
-      const expected = { 
-        entries, 
-        selected: ['x'], 
+      const expected = {
+        entries,
+        selected: ['x'],
         scroll: 'auto'
       }
 
@@ -87,9 +87,9 @@ describe('multiselect', function () {
     it('meta - toggle selection (selected)', function () {
       const state = { entries, selected: ['x'] }
       const actual = multiselect.click(state, { id: 'x', metaKey: true })
-      const expected = { 
-        entries, 
-        selected: [], 
+      const expected = {
+        entries,
+        selected: [],
         scroll: 'auto'
       }
 
@@ -99,9 +99,9 @@ describe('multiselect', function () {
     it('meta - toggle/add selection', function () {
       const state = { entries, selected: ['y'] }
       const actual = multiselect.click(state, { id: 'x', metaKey: true })
-      const expected = { 
-        entries, 
-        selected: ['y', 'x'], 
+      const expected = {
+        entries,
+        selected: ['y', 'x'],
         scroll: 'auto'
       }
 
@@ -181,11 +181,11 @@ describe('multiselect', function () {
     it('select first option', function () {
       const state = { entries, selected: [], scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
-      const expected = { 
+      const expected = {
         editId: null,
-        entries,         
-        selected: ['x'], 
-        scroll: 'auto' 
+        entries,
+        selected: ['x'],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -194,11 +194,11 @@ describe('multiselect', function () {
     it('select next option', function () {
       const state = { entries, selected: ['x'], scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
-      const expected = { 
+      const expected = {
         editId: null,
-        entries, 
-        selected: ['y'], 
-        scroll: 'auto' 
+        entries,
+        selected: ['y'],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -229,11 +229,11 @@ describe('multiselect', function () {
     it('select last option', function () {
       const state = { entries, selected: [], scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
-      const expected = { 
+      const expected = {
         editId: null,
-        entries, 
-        selected: ['y'], 
-        scroll: 'auto' 
+        entries,
+        selected: ['y'],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -242,11 +242,11 @@ describe('multiselect', function () {
     it('select previous option', function () {
       const state = { entries, selected: ['y'], scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
-      const expected = { 
+      const expected = {
         editId: null,
-        entries, 
-        selected: ['x'], 
-        scroll: 'auto' 
+        entries,
+        selected: ['x'],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -277,10 +277,10 @@ describe('multiselect', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['y'], scroll: 'none' }
       const actual = multiselect['keydown/Home'](state)
-      const expected = { 
-        entries, 
-        selected: ['x'], 
-        scroll: 'auto' 
+      const expected = {
+        entries,
+        selected: ['x'],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -305,10 +305,10 @@ describe('multiselect', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['x'], scroll: 'none' }
       const actual = multiselect['keydown/End'](state)
-      const expected = { 
-        entries, 
-        selected: ['y'], 
-        scroll: 'auto' 
+      const expected = {
+        entries,
+        selected: ['y'],
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -327,10 +327,10 @@ describe('multiselect', function () {
     it('select all options', function () {
       const state = { entries, selected: [], scroll: 'none' }
       const actual = multiselect['keydown/a'](state, { metaKey: true })
-      const expected = { 
-        entries, 
-        selected: ['x', 'y'], 
-        scroll: 'none' 
+      const expected = {
+        entries,
+        selected: ['x', 'y'],
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)

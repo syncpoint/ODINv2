@@ -26,8 +26,8 @@ export const multiselect = {
     const ids = entries.map(R.prop('id'))
     const selected = (state.selected || []).filter(id => ids.includes(id))
 
-    return { 
-      ...state, 
+    return {
+      ...state,
       entries,
       selected
     }
@@ -46,13 +46,13 @@ export const multiselect = {
       const before = next < R.head(range)
       const after = next > R.last(range)
 
-      const extent = 
+      const extent =
         (trailing && after) ||
         (leading && before)
 
       // Extent focused range downwards/upwards.
       const extentSelection = () => {
-        const extension = 
+        const extension =
           current < next
             ? R.range(current + 1, next + 1)
             : R.range(next, current).reverse()
@@ -73,9 +73,9 @@ export const multiselect = {
         // C: neither A nor B: current focus is before clicked element
         // D: neither A nor B: current focus is after clicked element
 
-        // Note: We have to reverse order when new focused element 
+        // Note: We have to reverse order when new focused element
         // is before start of selection (cases A and D).
-        const inversion = 
+        const inversion =
           trailing
             ? R.range(next, R.head(range) + 1).reverse() // A
             : leading
@@ -87,7 +87,7 @@ export const multiselect = {
         const selected = inversion.map(index => state.entries[index].id)
         return [...remaining, ...selected]
       }
-      
+
       return extent
         ? extentSelection()
         : shrinkSelection()
@@ -220,10 +220,10 @@ export const multiselect = {
     if (current === -1) return state
     else if (current === 0) return state
 
-    return { 
-      ...state, 
-      selected: [R.head(state.entries).id], 
-      scroll: 'auto' 
+    return {
+      ...state,
+      selected: [R.head(state.entries).id],
+      scroll: 'auto'
     }
   },
 
@@ -235,10 +235,10 @@ export const multiselect = {
     if (current === -1) return state
     else if (current === Entries.length(state) - 1) return state
 
-    return { 
-      ...state, 
-      selected: [R.last(state.entries).id], 
-      scroll: 'auto' 
+    return {
+      ...state,
+      selected: [R.last(state.entries).id],
+      scroll: 'auto'
     }
   },
 

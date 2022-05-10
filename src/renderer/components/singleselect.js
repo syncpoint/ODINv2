@@ -32,7 +32,7 @@ export const singleselect = {
     const ids = entries.map(R.prop('id'))
     const selected = (state.selected || []).filter(id => ids.includes(id))
 
-    return { 
+    return {
       ...state,
       entries,
       selected,
@@ -105,11 +105,11 @@ export const singleselect = {
     const current = Entries.focusIndex(state)
     if (current === -1) return state // no selection
     if (current === -1 || current === 0) return state // BOL
-    
-    return { 
-      ...state, 
-      selected: [R.head(state.entries).id], 
-      scroll: 'auto' 
+
+    return {
+      ...state,
+      selected: [R.head(state.entries).id],
+      scroll: 'auto'
     }
   },
 
@@ -123,10 +123,10 @@ export const singleselect = {
     if (current === -1) return state // no selection
     if (current === Entries.length(state) - 1) return state // BOL
 
-    return { 
-      ...state, 
-      selected: [R.last(state.entries).id], 
-      scroll: 'auto' 
+    return {
+      ...state,
+      selected: [R.last(state.entries).id],
+      scroll: 'auto'
     }
   }
 }

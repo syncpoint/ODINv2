@@ -11,7 +11,7 @@ Selection.selected = (state, index) => Selection.includes(state.selected, state.
 Selection.remove = (selected, id) => selected.filter(x => x !== id)
 Selection.append = (selected, id) => [...selected, id]
 
-Selection.toggle = (state, id) => 
+Selection.toggle = (state, id) =>
   id
     ? Selection.includes(state.selected, id)
       ? Selection.remove(state.selected, id)
@@ -22,7 +22,7 @@ Selection.toggle = (state, id) =>
  * succ :: state -> index -> index
  * Find (downwards) next element which is not selected.
  */
-Selection.succ = (state, currentIndex) => 
+Selection.succ = (state, currentIndex) =>
   currentIndex >= state.entries.length - 1
     ? -1
     : Selection.selected(state, currentIndex + 1)
@@ -33,12 +33,12 @@ Selection.succ = (state, currentIndex) =>
  * pred :: state -> index -> index
  * Find (upwards) next element which is not selected.
  */
-Selection.pred = (state, currentIndex) => 
+Selection.pred = (state, currentIndex) =>
   currentIndex <= 0
     ? -1
     : Selection.selected(state, currentIndex - 1)
       ? Selection.pred(state, currentIndex - 1)
-      : currentIndex - 1    
+      : currentIndex - 1
 
 /**
  * Range of indexes which includes index of focused entry.
@@ -66,7 +66,7 @@ Entries.index = (entries, id) => entries.findIndex(entry => entry.id === id)
 /**
  * Index of last selected entry (if any), else -1.
  */
- Entries.focusIndex = state => 
+Entries.focusIndex = state =>
   Selection.empty(state.selected)
     ? -1
     : Entries.index(state.entries, R.last(state.selected))
