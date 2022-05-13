@@ -76,14 +76,20 @@ Writers.MultiPoint = options => {
 }
 
 Writers.LineString = options => {
-  const { geometry } = options
-  const splitable = options.descriptor.maxPoints !== 2 &&
-    (options.descriptor && options.descriptor.layout !== 'orbit')
+  const { geometry, descriptor } = options
+
+  // Cases where a line segment may NOT be splitted (add vertex):
+  // - max points is explicitly limited to 2
+  // - geometries with orbit layout
+
+  const fix = descriptor
+    ? (descriptor.maxPoints === 2 || descriptor.layout === 'orbit')
+    : false
 
   const segments = R.aperture(2, geometry.getCoordinates())
   return segments.map((vertices, index) => ({
     ...options,
-    splitable,
+    splittable: !fix,
     index,
     vertices,
     extent: Extent.boundingExtent(vertices)
@@ -104,13 +110,19 @@ Writers.MultiLineString = options => {
 }
 
 Writers.Polygon = options => {
-  const { geometry } = options
-  const splitable = options.descriptor.layout !== 'rectangle'
+  const { geometry, descriptor } = options
+
+  // Cases where no vertex may be added:
+  // - geometries with layout rectangle
+
+  const fix = descriptor
+    ? descriptor.layout === 'rectangle'
+    : false
 
   return geometry.getCoordinates().reduce((acc, ring, q) => {
     return acc.concat(R.aperture(2, ring).map((vertices, index) => ({
       ...options,
-      splitable,
+      splittable: !fix,
       index,
       vertices,
       depth: [q],
@@ -218,7 +230,9 @@ export const removeVertex = (node, index) => {
   const guards = {
     LineString: coordinates => coordinates.length > 2,
     MultiLineString: coordinates => coordinates[depth[0]].length > 2,
-    Polygon: coordinates => coordinates[depth[0]].length > 4 && descriptor.layout !== 'rectangle',
+    Polygon: coordinates =>
+      coordinates[depth[0]].length > 4 &&
+      (!descriptor || descriptor.layout !== 'rectangle'),
     MultiPolygon: coordinates => coordinates[depth[0]][depth[1]].length > 4
   }
 
