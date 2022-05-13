@@ -8,7 +8,6 @@ import { isFeatureId } from '../../ids'
 // import TabButton from './TabButton'
 import PropertiesTab from './PropertiesTab'
 
-
 const reducer = (state, event) => {
   switch (event.type) {
     case 'reset': return event.state.reduce((acc, feature) => {
@@ -48,14 +47,13 @@ export const FeatureProperties = () => {
       const state = await store.selectFeatures(keys)
       dispatch({ type: 'reset', state })
 
-      const sidc = value => {
-        if (!value) return
-        else if (!value.properies) return
-        else return value.properies.sidc
-      }
-
       const featureClasses = state.reduce((acc, value) => {
-        const className = MILSTD.className(sidc(value))
+        const sidc =
+          value &&
+          value.properties &&
+          value.properties.sidc
+
+        const className = MILSTD.className(sidc)
         if (className) acc.push(className)
         else console.warn('missing class name: ', value)
         return R.uniq(acc)
