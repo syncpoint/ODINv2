@@ -59,16 +59,18 @@ const link = {
   onMouseDown (id, event, spec) {},
   onMouseUp (id, event, spec) {},
 
-  onDoubleClick (id) {
-    // TODO: open link
-    console.log('[Controller/link] onDoubleClick', id)
+  async onDoubleClick (id) {
+    const link = await this.store_.select(id)
+    this.ipcRenderer_.send('OPEN_LINK', link)
   }
 }
 
-export function Controller (store, highlight, emitter) {
+export function Controller (store, highlight, emitter, ipcRenderer) {
   this.store_ = store
   this.highlight_ = highlight
   this.emitter_ = emitter
+  this.ipcRenderer_ = ipcRenderer
+
   this.scopes_ = {
     feature,
     layer,

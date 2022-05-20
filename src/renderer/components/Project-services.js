@@ -32,7 +32,7 @@ export default projectUUID => {
   const highlight = new Highlight(store, selection, viewMemento)
   const preferencesStore = new PreferencesStore(preferencesLevel)
   const searchIndex = new SearchIndex(propertiesLevel)
-  const controller = new Controller(store, highlight, emitter)
+  const controller = new Controller(store, highlight, emitter, ipcRenderer)
 
   // Key bindings.
   bindings(emitter)

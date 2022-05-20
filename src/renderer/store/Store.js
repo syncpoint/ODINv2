@@ -33,6 +33,7 @@ import { leveldb } from '../../shared/level'
  * insert :: Value a => [a] -> unit
  * update :: Value a => [a] -> unit
  * update :: Value a => ([a], [a]) -> unit
+ * select :: Key k, Value v => k -> v
  * insertFeatures :: GeoJSON/Feature a => [a] -> unit
  * rename :: (Id a, Name b) => (a, b) -> unit
  * addTag :: (Id a, Name b) => (a, b) -> unit
@@ -201,6 +202,14 @@ Store.prototype.update = function (newValues, oldValues) {
   else this.db_.batch(newValues.map(value => ({ type: 'put', key: value.id, value })))
 }
 
+
+/**
+ * @asnyc
+ * select :: Key k, Value v => k => v
+ */
+Store.prototype.select = function (key) {
+  return this.properties_.get(key)
+}
 
 /**
  * @async
