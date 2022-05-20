@@ -14,7 +14,6 @@ const feature = {
   },
 
   onDoubleClick (id, event) {
-    // TODO: primary/secondary action
   },
 
   onMouseDown (id, event, spec) {
@@ -33,7 +32,6 @@ const layer = {
   },
 
   onDoubleClick (id, event) {
-    // TODO: primary/secondary action
   },
 
   onMouseDown (id, event, spec) {
@@ -56,6 +54,17 @@ const symbol = {
   }
 }
 
+const link = {
+  onClick (id, event, spec) {},
+  onMouseDown (id, event, spec) {},
+  onMouseUp (id, event, spec) {},
+
+  onDoubleClick (id) {
+    // TODO: open link
+    console.log('[Controller/link] onDoubleClick', id)
+  }
+}
+
 export function Controller (store, highlight, emitter) {
   this.store_ = store
   this.highlight_ = highlight
@@ -63,7 +72,9 @@ export function Controller (store, highlight, emitter) {
   this.scopes_ = {
     feature,
     layer,
-    symbol
+    symbol,
+    'link+layer': link,
+    'link+feature': link
   }
 }
 
