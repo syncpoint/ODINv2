@@ -22,7 +22,7 @@ const feature = {
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.highlight_.up()    
+    if (spec.match(/SCOPE:FEATURE/)) this.highlight_.up()
   }
 }
 
@@ -41,7 +41,7 @@ const layer = {
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.highlight_.up()    
+    if (spec.match(/SCOPE:LAYER/)) this.highlight_.up()
   }
 }
 
@@ -52,19 +52,19 @@ const symbol = {
 
   onDoubleClick (id) {
     // Primary action: draw/insert.
-    this.emitter_.emit(`command/entry/draw`, { id })
+    this.emitter_.emit('command/entry/draw', { id })
   }
 }
 
 export function Controller (store, highlight, emitter) {
-    this.store_ = store
-    this.highlight_ = highlight
-    this.emitter_ = emitter
-    this.scopes_ = {
-      feature,
-      layer,
-      symbol
-    }
+  this.store_ = store
+  this.highlight_ = highlight
+  this.emitter_ = emitter
+  this.scopes_ = {
+    feature,
+    layer,
+    symbol
+  }
 }
 
 Controller.prototype.onClick = function (id, event, spec) {

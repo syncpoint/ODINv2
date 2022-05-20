@@ -21,7 +21,7 @@ export const Card = React.forwardRef((props, ref) => {
   // Only used to forward click event to focus/selection strategy:
   const handleClick = event => props.onClick && props.onClick(event)
   const handleDoubleClick = event => props.onDoubleClick && props.onDoubleClick(event)
-  
+
   const dropEffect = event => {
     const types = [...event.dataTransfer.types]
     if (!capabilities || !capabilities.includes('DROP')) return 'none'
