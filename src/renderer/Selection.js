@@ -22,6 +22,9 @@ Selection.delta = (previous, current) => {
   return { additions, removals }
 }
 
+/**
+ * @deprecated move somewhere else!
+ */
 Selection.isEqual = (a, b) => {
   const as = [...a].sort()
   const bs = [...b].sort()

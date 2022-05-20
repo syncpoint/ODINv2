@@ -8,7 +8,6 @@ import { isFeatureId } from '../../ids'
 // import TabButton from './TabButton'
 import PropertiesTab from './PropertiesTab'
 
-
 const reducer = (state, event) => {
   switch (event.type) {
     case 'reset': return event.state.reduce((acc, feature) => {
@@ -49,7 +48,11 @@ export const FeatureProperties = () => {
       dispatch({ type: 'reset', state })
 
       const featureClasses = state.reduce((acc, value) => {
-        const { sidc } = value.properties
+        const sidc =
+          value &&
+          value.properties &&
+          value.properties.sidc
+
         const className = MILSTD.className(sidc)
         if (className) acc.push(className)
         else console.warn('missing class name: ', value)
@@ -60,7 +63,11 @@ export const FeatureProperties = () => {
       else setFeatureClass(null)
     })
 
-    store.on('batch', ({ operations }) => dispatch({ type: 'update', operations }))
+    store.on('batch', ({ operations }) => {
+      const selectedFeatureIds = selection.selected().filter(isFeatureId)
+      const affectedOps = operations.filter(op => selectedFeatureIds.includes(op.key))
+      dispatch({ type: 'update', operations: affectedOps })
+    })
 
     // No cleanup necessary; components listenes forever.
   }, [selection, store])
