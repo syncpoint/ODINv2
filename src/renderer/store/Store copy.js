@@ -41,8 +41,6 @@ import { leveldb } from '../../shared/level'
  * removeTag :: Key k, Name n => (k, n) -> unit
  * hide :: Key k => k -> unit
  * show :: Key k => k -> unit
- * lock :: Key k => k -> unit
- * unlock :: Key k => k -> unit
  *
  * compositeCommand :: Command a => [a] -> a
  * insertCommand :: Value v => [a] -> Command
@@ -106,11 +104,12 @@ Store.prototype.selectFeatures = function (keys) {
 
 /**
  * @async
- * selectProperties :: Key k, Value v => k => [v]
+ * selectProperties :: Key k, Value v => k => v
  * selectProperties :: Key k, Value v => [k] => [v]
  */
 Store.prototype.selectProperties = function (keys) {
-  return this.properties_.values(keys)
+  if (Array.isArray(keys)) return this.properties_.values(keys)
+  else return this.properties_.get(keys)
 }
 
 
@@ -171,7 +170,6 @@ Store.prototype.update_ = async function (fn, keys) {
 
 /**
  * @async
- * select :: Key k, Value v => k => [v]
  * select :: Key k, Value v => [k] => [v]
  */
 Store.prototype.select = function (ids) {
@@ -263,13 +261,13 @@ Store.prototype.rename = async function (id, name) {
 // taggable :: Key k => k -> boolean
 const taggable = id => !isGroupId(id)
 
-// addTag :: Name n, Value v => n -> v -> v
+// addTag :: (Name a, Value b) => a -> b -> b
 const addTag = name => value => ({
   ...value,
   tags: R.uniq([...(value.tags || []), name])
 })
 
-// removeTag :: Name a, Value b => n -> v -> v
+// removeTag :: (Name a, Value b) => a -> b -> b
 const removeTag = name => value => ({
   ...value,
   tags: (value.tags || []).filter(tag => tag !== name)

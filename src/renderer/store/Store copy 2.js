@@ -22,40 +22,32 @@ import { leveldb } from '../../shared/level'
  * @emits highlight/geometries
  *
  * MANIFEST
- * collectKeys_ :: Key k => [k] -> [k]
- * update_ :: Key k, Value v => (k -> k, [v]) -> unit
+ * collectKeys_ :: Id a => [a] -> [a]
+ * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
  *
  * selectFeatures :: GeoJSON/Feature a => () -> [a]
- * selectProperties :: Key k, Value v => k => v
  * selectProperties :: Key k, Value v => [k] => [v]
- * selectGeometries :: Key k => k -> [GeoJSON/Geometry]
- * selectGeometries :: Key k => [k] -> [GeoJSON/Geometry]
- * delete :: Key k => [k] -> unit
- * insert :: Value v => [v] -> unit
- * update :: Value v => [v] -> unit
- * update :: Value v => ([v], [v]) -> unit
- * select :: Key k, Value v => [k] => [v]
+ * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
+ * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
+ * delete :: Id a => [a] -> unit
+ * insert :: Value a => [a] -> unit
+ * update :: Value a => [a] -> unit
+ * update :: Value a => ([a], [a]) -> unit
+ * select :: Key k, Value v => k -> v
  * insertFeatures :: GeoJSON/Feature a => [a] -> unit
- * rename :: Key k, Name n => (k, n) -> unit
- * addTag :: Key k, Name n => (k, n) -> unit
- * removeTag :: Key k, Name n => (k, n) -> unit
- * hide :: Key k => k -> unit
- * show :: Key k => k -> unit
- * lock :: Key k => k -> unit
- * unlock :: Key k => k -> unit
+ * rename :: (Id a, Name b) => (a, b) -> unit
+ * addTag :: (Id a, Name b) => (a, b) -> unit
+ * removeTag :: (Id a, Name b) => (a, b) -> unit
+ * hide :: (Id a) => a -> unit
+ * show :: (Id a) => a -> unit
  *
  * compositeCommand :: Command a => [a] -> a
- * insertCommand :: Value v => [a] -> Command
- * deleteCommand :: Value v => [a] -> Command
- * updateCommand :: Value v => ([a], [a]) -> Command
+ * insertCommand :: Value a => [a] -> Command
+ * deleteCommand :: Value a => [a] -> Command
+ * updateCommand :: Value a => ([a], [a]) -> Command
  */
 export function Store (propertiesLevel, geometryLevel, undo, selection) {
   Emitter.call(this)
-
-  // Internal databases:
-  // Properties: Properties (JSON) only
-  // Geometries: Geometries (WKB) only
-  // DB: Properties and Geometries combined
 
   this.properties_ = new HighLevel(propertiesLevel)
   this.geometries_ = new HighLevel(geometryLevel)
@@ -106,7 +98,6 @@ Store.prototype.selectFeatures = function (keys) {
 
 /**
  * @async
- * selectProperties :: Key k, Value v => k => [v]
  * selectProperties :: Key k, Value v => [k] => [v]
  */
 Store.prototype.selectProperties = function (keys) {
@@ -116,8 +107,8 @@ Store.prototype.selectProperties = function (keys) {
 
 /**
  * @async
- * selectGeometries :: Key k => k -> [GeoJSON/Geometry]
- * selectGeometries :: Key k => [k] -> [GeoJSON/Geometry]
+ * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
+ * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
  */
 Store.prototype.selectGeometries = function (arg) {
   if (Array.isArray(arg)) return this.geometries_.values(arg)
@@ -128,7 +119,7 @@ Store.prototype.selectGeometries = function (arg) {
 
 /**
  * @async
- * collectKeys_ :: Key k => [k] -> [k]
+ * collectKeys_ :: Id a => [a] -> [a]
  */
 Store.prototype.collectKeys_ = async function (ids, excludes = []) {
   const featureIds = id => this.properties_.keys(`feature:${layerUUID(id)}`)
@@ -160,7 +151,7 @@ Store.prototype.collectKeys_ = async function (ids, excludes = []) {
 
 /**
  * @async
- * update_ :: Key k, Value v => (v -> v, [k]) -> unit
+ * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
  */
 Store.prototype.update_ = async function (fn, keys) {
   const values = await this.db_.values(keys)
@@ -171,8 +162,7 @@ Store.prototype.update_ = async function (fn, keys) {
 
 /**
  * @async
- * select :: Key k, Value v => k => [v]
- * select :: Key k, Value v => [k] => [v]
+ * select :: (Id a, Value b) => [a] => [b]
  */
 Store.prototype.select = function (ids) {
   return this.db_.values(ids)
@@ -183,7 +173,7 @@ const deletable = id => !isSymbolId(id)
 
 /**
  * @async
- * delete :: Key k => [k] -> unit
+ * delete :: Id a => [a] -> unit
  */
 Store.prototype.delete = async function (ids) {
   const keys = await this.collectKeys_(ids.filter(deletable))
@@ -194,7 +184,7 @@ Store.prototype.delete = async function (ids) {
 
 /**
  * @async
- * insert :: Value v => [v] -> unit
+ * insert :: Value a => [a] -> unit
  */
 Store.prototype.insert = async function (values) {
   this.undo_.apply(this.insertCommand(values))
@@ -203,8 +193,8 @@ Store.prototype.insert = async function (values) {
 
 /**
  * @async
- * update :: Value v => [v] -> unit
- * update :: Value v => ([v], [v]) -> unit
+ * update :: Value a => [a] -> unit
+ * update :: Value a => ([a], [a]) -> unit
  */
 Store.prototype.update = function (newValues, oldValues) {
   if (!newValues.length) return
@@ -212,6 +202,14 @@ Store.prototype.update = function (newValues, oldValues) {
   else this.db_.batch(newValues.map(value => ({ type: 'put', key: value.id, value })))
 }
 
+
+/**
+ * @asnyc
+ * select :: Key k, Value v => k => v
+ */
+Store.prototype.select = function (key) {
+  return this.properties_.get(key)
+}
 
 /**
  * @async
@@ -250,7 +248,7 @@ Store.prototype.insertFeatures = async function (features) {
 
 /**
  * @async
- * rename :: Key k, Name n => (k, n) -> unit
+ * rename :: (Id a, Name b) => (a, b) -> unit
  */
 Store.prototype.rename = async function (id, name) {
   const oldValue = await this.properties_.get(id)
@@ -260,16 +258,16 @@ Store.prototype.rename = async function (id, name) {
 }
 
 
-// taggable :: Key k => k -> boolean
+// taggable :: Id a => a -> boolean
 const taggable = id => !isGroupId(id)
 
-// addTag :: Name n, Value v => n -> v -> v
+// addTag :: (Name a, Value b) => a -> b -> b
 const addTag = name => value => ({
   ...value,
   tags: R.uniq([...(value.tags || []), name])
 })
 
-// removeTag :: Name a, Value b => n -> v -> v
+// removeTag :: (Name a, Value b) => a -> b -> b
 const removeTag = name => value => ({
   ...value,
   tags: (value.tags || []).filter(tag => tag !== name)
@@ -278,7 +276,7 @@ const removeTag = name => value => ({
 
 /**
  * @async
- * addTag :: (Key k, Name n) => (k, n) -> unit
+ * addTag :: (Id a, Name b) => (a, b) -> unit
  */
 Store.prototype.addTag = async function (id, name) {
   const add = addTag(name)
@@ -320,7 +318,7 @@ Store.prototype.addTag = async function (id, name) {
 
 /**
  * @async
- * removeTag :: (Key k, Name n) => (k, n) -> unit
+ * removeTag :: (Id a, Name b) => (a, b) -> unit
  */
 Store.prototype.removeTag = async function (id, name) {
   const ids = R.uniq([id, ...this.selection_.selected(taggable)])
@@ -333,7 +331,7 @@ Store.prototype.removeTag = async function (id, name) {
 
 /**
  * @async
- * hide :: Key k => k -> unit
+ * hide :: (Id a) => a -> unit
  */
 Store.prototype.hide = async function (id, active) {
   if (active !== undefined) return
@@ -343,10 +341,9 @@ Store.prototype.hide = async function (id, active) {
   return this.update_(hide, keys)
 }
 
-
 /**
  * @sync
- * show :: Key k => k -> unit
+ * show :: (Id a) => a -> unit
  */
 Store.prototype.show = async function (id, active) {
   if (active !== undefined) return
@@ -356,10 +353,9 @@ Store.prototype.show = async function (id, active) {
   return this.update_(show, keys)
 }
 
-
 /**
  * @async
- * lock :: Key k => k -> unit
+ * lock :: (Id a) => a -> unit
  */
 Store.prototype.lock = async function (id, active) {
   if (active !== undefined) return
@@ -372,7 +368,7 @@ Store.prototype.lock = async function (id, active) {
 
 /**
  * @sync
- * unlock :: Key k => k -> unit
+ * unlock :: (Id a) => a -> unit
  */
 Store.prototype.unlock = async function (id, active) {
   if (active !== undefined) return
@@ -394,9 +390,8 @@ const compositeCommand = async function (commands) {
   }
 }
 
-
 /**
- * insertCommand :: Value v => [v] -> Command
+ * insertCommand :: Value a => [a] -> Command
  */
 const insertCommand = function (values) {
   const ops = values.map(value => ({ type: 'put', key: value.id, value }))
@@ -408,7 +403,7 @@ const insertCommand = function (values) {
 
 
 /**
- * deleteCommand :: Value v => [v] -> Command
+ * deleteCommand :: Value a => [a] -> Command
  */
 const deleteCommand = function (values) {
   const ops = values.map(({ id: key }) => ({ type: 'del', key }))
@@ -420,7 +415,7 @@ const deleteCommand = function (values) {
 
 
 /**
- * updateCommand :: Value v => ([v], [v]) -> Command
+ * updateCommand :: Value a => ([a], [a]) -> Command
  */
 const updateCommand = function (newValues, oldValues) {
   const ops = newValues.map(value => ({ type: 'put', key: value.id, value }))

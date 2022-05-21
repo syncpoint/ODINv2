@@ -76,7 +76,6 @@ const CardTitle = props => {
 CardTitle.propTypes = {
   id: PropTypes.string.isRequired,
   value: PropTypes.string,
-  focused: PropTypes.bool.isRequired,
   editing: PropTypes.bool.isRequired
 }
 

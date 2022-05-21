@@ -81,7 +81,7 @@ export const pointer = (options, rbush, event) => {
     if (!segment) return []
 
     // Whether or not a vertex can be added between both vertices:
-    const splitable = segment.splitable !== false
+    const splittable = segment.splittable !== false
     const vertices = segment.vertices
     const projectedCoordinate = closestOnSegment(vertices)
     const distance = pixelDistance(projectedCoordinate) // might be Infinity
@@ -109,7 +109,7 @@ export const pointer = (options, rbush, event) => {
 
     const coordinate = Number.isInteger(index)
       ? vertices[index]
-      : splitable
+      : splittable
         ? projectedCoordinate
         : undefined
 

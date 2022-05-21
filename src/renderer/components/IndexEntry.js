@@ -31,7 +31,6 @@ const IndexEntry = React.forwardRef((props, ref) => {
     <div ref={ref} key={id} style={{ padding: '3px 6px' }}>
       <Card
         id={id}
-        focused={props.focused}
         selected={props.selected}
         capabilities={entry.capabilities}
         onClick={handleClick}
@@ -42,7 +41,6 @@ const IndexEntry = React.forwardRef((props, ref) => {
             <Card.Title
               id={props.id}
               value={entry.title}
-              focused={props.focused}
               editing={props.editing}
             />
             { description }
@@ -60,7 +58,6 @@ const IndexEntry = React.forwardRef((props, ref) => {
 
 IndexEntry.propTypes = {
   id: PropTypes.string.isRequired,
-  focused: PropTypes.bool.isRequired,
   selected: PropTypes.bool.isRequired,
   editing: PropTypes.bool.isRequired,
   entry: PropTypes.object.isRequired,

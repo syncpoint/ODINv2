@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import useVirtual from 'react-cool-virtual'
+import { Entries } from './selection'
 
 
 /**
@@ -9,8 +10,6 @@ import useVirtual from 'react-cool-virtual'
 const VirtualizedList = props => {
   const {
     child,
-    focusIndex,
-    focusId,
     editId,
     selected,
     scroll,
@@ -24,9 +23,15 @@ const VirtualizedList = props => {
 
   React.useEffect(() => {
     if (scroll === 'none') return
+
+    const focusIndex = Entries.focusIndex({
+      entries,
+      selected
+    })
+
     if (focusIndex === -1) return
     scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
-  }, [scrollToItem, focusIndex, scroll])
+  }, [scrollToItem, selected, scroll])
 
   const card = ({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -36,7 +41,6 @@ const VirtualizedList = props => {
     return child({
       entry,
       id: entry.id,
-      focused: focusId === entry.id,
       selected: selected.includes(entry.id),
       editing: editId === entry.id,
       ref: measureRef
@@ -58,9 +62,7 @@ const VirtualizedList = props => {
 
 VirtualizedList.propTypes = {
   entries: PropTypes.array.isRequired,
-  focusId: PropTypes.string,
   editId: PropTypes.string,
-  focusIndex: PropTypes.number.isRequired,
   selected: PropTypes.array.isRequired,
   scroll: PropTypes.string,
   child: PropTypes.func.isRequired

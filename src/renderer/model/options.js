@@ -45,6 +45,7 @@ options.feature = (feature, cache) => {
   const tags = [
     'SCOPE:FEATURE',
     feature.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
+    feature.locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
     ...dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...scope.map(label => `SYSTEM:${label}:NONE`),
     ...identity.map(label => `SYSTEM:${label}:NONE`),
@@ -70,6 +71,7 @@ options.layer = layer => {
   const tags = [
     'SCOPE:LAYER',
     layer.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
+    layer.locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
     ...(layer.tags || []).map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ').replace('  ', ' ').trim()

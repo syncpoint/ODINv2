@@ -9,37 +9,41 @@ const NOOP = {
 
 const feature = {
   onClick (id, event, spec) {
-    if (spec.match(/SYSTEM:HIDDEN/)) this.store_.show(id)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.store_.hide(id)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(id)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(id)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(id)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(id)
   },
 
   onDoubleClick (id, event) {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.highlight_.down(id)
+    if (spec.match(/SCOPE:FEATURE/)) this.highlight.down(id)
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.highlight_.up()
+    if (spec.match(/SCOPE:FEATURE/)) this.highlight.up()
   }
 }
 
 const layer = {
   onClick (id, event, spec) {
-    if (spec.match(/SYSTEM:HIDDEN/)) this.store_.show(id)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.store_.hide(id)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(id)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(id)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(id)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(id)
   },
 
   onDoubleClick (id, event) {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.highlight_.down(id)
+    if (spec.match(/SCOPE:LAYER/)) this.highlight.down(id)
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.highlight_.up()
+    if (spec.match(/SCOPE:LAYER/)) this.highlight.up()
   }
 }
 
@@ -50,7 +54,7 @@ const symbol = {
 
   onDoubleClick (id) {
     // Primary action: draw/insert.
-    this.emitter_.emit('command/entry/draw', { id })
+    this.emitter.emit('command/entry/draw', { id })
   }
 }
 
@@ -60,16 +64,16 @@ const link = {
   onMouseUp (id, event, spec) {},
 
   async onDoubleClick (id) {
-    const link = await this.store_.select(id)
-    this.ipcRenderer_.send('OPEN_LINK', link)
+    const links = await this.store.selectProperties(id)
+    links.forEach(link => this.ipcRenderer.send('OPEN_LINK', link))
   }
 }
 
 export function Controller (store, highlight, emitter, ipcRenderer) {
-  this.store_ = store
-  this.highlight_ = highlight
-  this.emitter_ = emitter
-  this.ipcRenderer_ = ipcRenderer
+  this.store = store
+  this.highlight = highlight
+  this.emitter = emitter
+  this.ipcRenderer = ipcRenderer
 
   this.scopes_ = {
     feature,

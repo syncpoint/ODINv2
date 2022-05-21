@@ -1,7 +1,7 @@
 import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
-import { OSM, XYZ } from 'ol/source'
+import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import ScaleLine from 'ol/control/ScaleLine'

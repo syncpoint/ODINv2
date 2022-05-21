@@ -8,6 +8,7 @@ import { isFeatureId } from '../ids'
 
 const isVisible = feature => !feature.hidden
 const isHidden = feature => feature.hidden
+const isLocked = feature => feature.locked
 
 /**
  * @constructor

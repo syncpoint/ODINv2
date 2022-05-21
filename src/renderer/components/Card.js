@@ -14,10 +14,6 @@ export const Card = React.forwardRef((props, ref) => {
     ? { borderStyle: 'dashed', borderColor: '#40a9ff' } // (antd) hover border-color
     : {}
 
-  const className = props.focused
-    ? 'card focus'
-    : 'card'
-
   // Only used to forward click event to focus/selection strategy:
   const handleClick = event => props.onClick && props.onClick(event)
   const handleDoubleClick = event => props.onDoubleClick && props.onDoubleClick(event)
@@ -78,7 +74,7 @@ export const Card = React.forwardRef((props, ref) => {
   return (
     <div
       ref={ref}
-      className={className}
+      className='card'
       style={style}
       aria-selected={selected}
       role='option'
@@ -97,7 +93,6 @@ export const Card = React.forwardRef((props, ref) => {
 Card.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
-  focused: PropTypes.bool,
   selected: PropTypes.bool,
   editing: PropTypes.bool,
   capabilities: PropTypes.string,
