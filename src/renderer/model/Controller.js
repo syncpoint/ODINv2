@@ -60,8 +60,8 @@ const link = {
   onMouseUp (id, event, spec) {},
 
   async onDoubleClick (id) {
-    const link = await this.store_.select(id)
-    this.ipcRenderer_.send('OPEN_LINK', link)
+    const links = await this.store_.select(id)
+    links.forEach(link => this.ipcRenderer_.send('OPEN_LINK', link))
   }
 }
 
