@@ -7,7 +7,6 @@ import { importSymbols } from './symbols'
 import { HighLevel } from '../../shared/level/HighLevel'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import { leveldb } from '../../shared/level'
-import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
 
 
 /**
@@ -34,6 +33,7 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * insert :: Value a => [a] -> unit
  * update :: Value a => [a] -> unit
  * update :: Value a => ([a], [a]) -> unit
+ * select :: (Id a, Value b) => [a] => [b]
  * insertFeatures :: GeoJSON/Feature a => [a] -> unit
  * rename :: (Id a, Name b) => (a, b) -> unit
  * addTag :: (Id a, Name b) => (a, b) -> unit
@@ -46,7 +46,7 @@ import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
  * deleteCommand :: Value a => [a] -> Command
  * updateCommand :: Value a => ([a], [a]) -> Command
  */
-export function Store (propertiesLevel, geometryLevel, undo, selection, emitter) {
+export function Store (propertiesLevel, geometryLevel, undo, selection) {
   Emitter.call(this)
 
   this.properties_ = new HighLevel(propertiesLevel)
@@ -71,11 +71,6 @@ export function Store (propertiesLevel, geometryLevel, undo, selection, emitter)
   this.deleteCommand = deleteCommand.bind(this)
   this.insertCommand = insertCommand.bind(this)
   this.updateCommand = updateCommand.bind(this)
-
-  emitter.on(`:id(${LAYER_ID})/hide`, ({ id }) => this.hide(id))
-  emitter.on(`:id(${FEATURE_ID})/hide`, ({ id }) => this.hide(id))
-  emitter.on(`:id(${LAYER_ID})/show`, ({ id }) => this.show(id))
-  emitter.on(`:id(${FEATURE_ID})/show`, ({ id }) => this.show(id))
 
   window.requestIdleCallback(async () => {
     // Delete symbols to refresh after updating 2525c.json:

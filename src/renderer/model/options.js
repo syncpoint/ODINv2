@@ -43,8 +43,8 @@ options.feature = (feature, cache) => {
   }
 
   const tags = [
-    'SCOPE:FEATURE:identify',
-    feature.hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
+    'SCOPE:FEATURE',
+    feature.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     ...dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...scope.map(label => `SYSTEM:${label}:NONE`),
     ...identity.map(label => `SYSTEM:${label}:NONE`),
@@ -58,8 +58,7 @@ options.feature = (feature, cache) => {
     description,
     url: preview(),
     tags,
-    capabilities: 'RENAME|DROP|FOLLOW',
-    actions: 'PRIMARY:panto'
+    capabilities: 'RENAME|DROP|FOLLOW'
   }
 }
 
@@ -69,8 +68,8 @@ options.feature = (feature, cache) => {
  */
 options.layer = layer => {
   const tags = [
-    'SCOPE:LAYER:identify',
-    layer.hidden ? 'SYSTEM:HIDDEN:show' : 'SYSTEM:VISIBLE:hide',
+    'SCOPE:LAYER',
+    layer.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     ...(layer.tags || []).map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ').replace('  ', ' ').trim()
@@ -80,8 +79,7 @@ options.layer = layer => {
     title: layer.name,
     description: layer.type === 'socket' ? layer.url : null,
     tags,
-    capabilities: 'RENAME|DROP',
-    actions: 'PRIMARY:panto'
+    capabilities: 'RENAME|DROP'
   }
 }
 
@@ -100,8 +98,7 @@ const link = (link, cache) => {
       'SCOPE:LINK:NONE',
       ...(link.tags || []).map(label => `USER:${label}:NONE`),
       'PLUS'
-    ].join(' '),
-    actions: 'PRIMARY:panto'
+    ].join(' ')
   }
 }
 
@@ -134,7 +131,6 @@ options.symbol = symbol => {
     urn: `urn:symbol:${standardSIDC}`,
     scope: 'SYMBOL',
     tags,
-    capabilities: 'TAG',
-    actions: 'PRIMARY:draw'
+    capabilities: 'TAG'
   }
 }

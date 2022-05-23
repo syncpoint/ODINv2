@@ -1,47 +1,15 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { LAYER_ID, FEATURE_ID } from '../../shared/emitter-ids'
 import * as TS from '../ol/ts'
 import { transform, geometryType, readGeometry } from './geometry'
 import { scope } from '../ids'
 
-export function Highlight (store, selection, emitter, viewMemento) {
+export function Highlight (store, selection, viewMemento) {
   Emitter.call(this)
   this.store_ = store
   this.selection_ = selection
-  this.emitter_ = emitter
   this.viewMemento_ = viewMemento
-
-  const timerFired = () => {
-    delete this.timeout_
-    this.off_()
-  }
-
-  const startTimer = () => {
-    if (this.timeout_) clearTimeout(this.timeout_)
-    this.timeout_ = setTimeout(timerFired, 5000)
-  }
-
-  const cancelTimer = () => {
-    if (this.timeout_) clearTimeout(this.timeout_)
-    delete this.timeout_
-  }
-
-  const down = event => {
-    startTimer()
-    this.on_(event)
-  }
-
-  const up = () => {
-    cancelTimer()
-    this.off_()
-  }
-
-  emitter.on(`:id(${LAYER_ID})/identify/down`, down)
-  emitter.on(`:id(${FEATURE_ID})/identify/down`, down)
-  emitter.on(`:id(${LAYER_ID})/identify/up`, up)
-  emitter.on(`:id(${FEATURE_ID})/identify/up`, up)
 }
 
 util.inherits(Highlight, Emitter)
@@ -106,7 +74,7 @@ Highlight.prototype.featureBounds_ = async function (acc, ids) {
 /**
  *
  */
-Highlight.prototype.on_ = async function ({ id }) {
+Highlight.prototype.on_ = async function (id) {
   const ids = R.uniq([id, ...this.selection_.selected()])
 
   const scopes = R.groupBy(id => scope(id), ids)
@@ -125,4 +93,29 @@ Highlight.prototype.on_ = async function ({ id }) {
  */
 Highlight.prototype.off_ = function () {
   this.emit('highlight/geometries', { geometries: [] })
+}
+
+Highlight.prototype.timerFired_ = function () {
+  delete this.timeout_
+  this.off_()
+}
+
+Highlight.prototype.startTimer_ = function () {
+  if (this.timeout_) clearTimeout(this.timeout_)
+  this.timeout_ = setTimeout(this.timerFired_.bind(this), 5000)
+}
+
+Highlight.prototype.cancelTimer_ = function () {
+  if (this.timeout_) clearTimeout(this.timeout_)
+  delete this.timeout_
+}
+
+Highlight.prototype.down = function (id) {
+  this.startTimer_()
+  this.on_(id)
+}
+
+Highlight.prototype.up = function () {
+  this.cancelTimer_()
+  this.off_()
 }
