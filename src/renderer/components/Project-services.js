@@ -10,7 +10,7 @@ import { Undo } from '../Undo'
 import { Selection } from '../Selection'
 import { bindings } from '../commands/bindings'
 
-export default projectUUID => {
+export default async projectUUID => {
   const selection = new Selection()
   const undo = new Undo()
 

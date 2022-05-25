@@ -23,16 +23,25 @@ const page = (() => {
 
 const projectUUID = page => page.split(':')[1]
 
-const services = page === 'splash'
-  ? projectListServices()
-  : projectServices(projectUUID(page))
+const App = () => {
+  const [services, setServices] = React.useState(null)
 
-const app = (
-  <ServiceProvider { ...services }>
-  { page === 'splash' ? <ProjectList/> : <Project/> }
-  </ServiceProvider>
-)
+  React.useEffect(() => {
+    const promise = page === 'splash'
+      ? Promise.resolve(projectListServices())
+      : Promise.resolve(projectServices(projectUUID(page)))
+    promise.then(services => setServices(services))
+  }, [])
+
+  const component = services
+    ? <ServiceProvider { ...services }>
+      { page === 'splash' ? <ProjectList/> : <Project/> }
+      </ServiceProvider>
+    : null
+
+  return component
+}
 
 const container = document.createElement('div')
 document.body.appendChild(container)
-ReactDOM.render(app, container)
+ReactDOM.render(<App/>, container)
