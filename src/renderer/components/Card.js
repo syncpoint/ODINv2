@@ -44,29 +44,38 @@ export const Card = React.forwardRef((props, ref) => {
     setDropAllowed(null)
   }
 
-  const handleDrop = event => {
+  const handleDrop = async event => {
     event.preventDefault()
     setDropAllowed(null)
 
     if (capabilities && capabilities.includes('DROP')) {
-      const links = []
 
-      for (const file of event.dataTransfer.files) {
+      // Process files first (if any):
+      const [...files] = event.dataTransfer.files
+      const fileLinks = files.reduce((acc, file) => {
         const url = new URL(`file:${file.path}`)
-        links.push({ id: `link+${id}/${uuid()}`, name: file.name, url: url.href })
-      }
+        const link = { id: `link+${id}/${uuid()}`, name: file.name, url: url.href }
+        return acc.concat(link)
+      }, [])
 
-      for (const item of event.dataTransfer.items) {
-        if (item.type === 'text/uri-list') {
-          item.getAsString(function (arg) {
-            const url = new URL(arg)
-            if (url.hostname && url.href) {
-              links.push({ id: `link+${id}/${uuid()}`, name: url.origin, url: url.href })
-            }
-          })
-        }
-      }
+      // Append possible items to existing file links:
+      const getAsString = item => new Promise(resolve => item.getAsString(resolve))
+      const [...items] = event.dataTransfer.items
 
+      const pendingLinks = items
+        .filter(item => item.type === 'text/uri-list')
+        .reduce(async (acc, item) => {
+          const arg = await getAsString(item)
+
+          const url = new URL(arg)
+          if (!url.hostname || !url.href) return acc
+
+          const link = { id: `link+${id}/${uuid()}`, name: url.origin, url: url.href }
+          const links = await acc
+          return links.concat(link)
+        }, fileLinks)
+
+      const links = await pendingLinks
       store.insert(links)
     }
   }
