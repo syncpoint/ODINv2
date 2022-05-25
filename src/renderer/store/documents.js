@@ -23,16 +23,18 @@ documents.feature = (feature, cache) => {
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-
-
   const layer = cache(layerId(feature.id))
   const layerName = (layer && layer.name) || ''
   const { t } = properties
   const name = feature.name || t || ''
   const links = feature.links || []
 
-  const tags = ({ hidden, tags }) => [
+  const hidden = cache(`hidden+${feature.id}`)
+  const locked = cache(`locked+${feature.id}`)
+
+  const tags = ({ tags }) => [
     hidden ? 'hidden' : 'visible',
+    locked ? 'locked' : 'unlocked',
     ...(links.length ? ['link'] : []),
     ...(tags || []),
     ...dimensions,
@@ -52,9 +54,12 @@ documents.feature = (feature, cache) => {
 /**
  *
  */
-documents.layer = layer => {
-  const { name: text, hidden, tags } = layer
+documents.layer = (layer, cache) => {
+  const { name: text, tags } = layer
   const links = layer.links || []
+
+  const hidden = cache(`hidden+${layer.id}`)
+  const locked = cache(`locked+${layer.id}`)
 
   return {
     id: layer.id,
@@ -62,6 +67,7 @@ documents.layer = layer => {
     text,
     tags: [
       hidden ? 'hidden' : 'visible',
+      locked ? 'locked' : 'unlocked',
       ...(links.length ? ['link'] : []),
       ...(tags || [])
     ]

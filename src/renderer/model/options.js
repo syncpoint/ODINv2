@@ -42,10 +42,13 @@ options.feature = (feature, cache) => {
     return standardSIDC ? url(standardSIDC) : null
   }
 
+  const hidden = cache(`hidden+${feature.id}`)
+  const locked = cache(`locked+${feature.id}`)
+
   const tags = [
     'SCOPE:FEATURE',
-    feature.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
-    feature.locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
+    hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
+    locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
     ...dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...scope.map(label => `SYSTEM:${label}:NONE`),
     ...identity.map(label => `SYSTEM:${label}:NONE`),
@@ -67,11 +70,14 @@ options.feature = (feature, cache) => {
 /**
  * layer:
  */
-options.layer = layer => {
+options.layer = (layer, cache) => {
+  const hidden = cache(`hidden+${layer.id}`)
+  const locked = cache(`locked+${layer.id}`)
+
   const tags = [
     'SCOPE:LAYER',
-    layer.hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
-    layer.locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
+    hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
+    locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
     ...(layer.tags || []).map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ').replace('  ', ' ').trim()

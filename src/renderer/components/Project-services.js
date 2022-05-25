@@ -23,11 +23,13 @@ export default async projectUUID => {
   const sessionStore = new SessionStore(master, `project:${projectUUID}`)
   const viewMemento = new ViewMemento(sessionStore)
   const emitter = new EventEmitter()
+
   const location = path.join(databases, projectUUID)
   const db = leveldb({ location })
   const propertiesLevel = propertiesPartition(db)
   const geometryLevel = geometriesPartition(db)
   const preferencesLevel = preferencesPartition(db)
+
   const store = new Store(propertiesLevel, geometryLevel, undo, selection)
   const highlight = new Highlight(store, selection, viewMemento)
   const preferencesStore = new PreferencesStore(preferencesLevel)

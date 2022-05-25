@@ -58,9 +58,12 @@ MiniSearchIndex.prototype.createIndex_ = function () {
  * Update index based on store batch operations.
  */
 MiniSearchIndex.prototype.handleBatch = function (ops) {
+  const excludes = ['locked', 'hidden']
+  const candidates = ops.filter(({ key }) => !excludes.includes(key.split('+')[0]))
+
   const cache = id => this.carrera_[id]
-  const updates = ops.filter(op => op.type === 'put')
-  const removals = ops.filter(op => op.type === 'del')
+  const updates = candidates.filter(op => op.type === 'put')
+  const removals = candidates.filter(op => op.type === 'del')
 
   for (const op of updates) {
     const cachedDocument = this.cache_[op.key]

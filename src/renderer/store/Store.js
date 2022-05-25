@@ -340,7 +340,10 @@ Store.prototype.hide = async function (id, active) {
   const hide = R.tap(value => { value.hidden = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  return this.update_(hide, keys)
+  await this.update_(hide, keys)
+
+  const ops = keys.map(key => ({ type: 'put', key: `hidden+${key}`, value: true }))
+  return this.properties_.batch(ops)
 }
 
 
@@ -353,7 +356,10 @@ Store.prototype.show = async function (id, active) {
   const show = R.tap(value => { delete value.hidden })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  return this.update_(show, keys)
+  await this.update_(show, keys)
+
+  const ops = keys.map(key => ({ type: 'del', key: `hidden+${key}` }))
+  return this.properties_.batch(ops)
 }
 
 
@@ -366,7 +372,10 @@ Store.prototype.lock = async function (id, active) {
   const lock = R.tap(value => { value.locked = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  return this.update_(lock, keys)
+  await this.update_(lock, keys)
+
+  const ops = keys.map(key => ({ type: 'put', key: `locked+${key}`, value: true }))
+  return this.properties_.batch(ops)
 }
 
 
@@ -379,7 +388,10 @@ Store.prototype.unlock = async function (id, active) {
   const unlock = R.tap(value => { delete value.locked })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  return this.update_(unlock, keys)
+  await this.update_(unlock, keys)
+
+  const ops = keys.map(key => ({ type: 'del', key: `locked+${key}` }))
+  return this.properties_.batch(ops)
 }
 
 
