@@ -8,12 +8,11 @@ import * as ids from '../../ids'
 /**
  *
  */
-export default (options, select) => {
-  const { store, featureSource, hitTolerance, selection } = options
+export default options => {
+  const { store, visibleSource, hitTolerance, selection, selectedSource } = options
 
   // Has cloning operation started?
   let cloning = false
-
   let cancelled = false
 
   // snapshot :: [ol/Feature]
@@ -25,7 +24,7 @@ export default (options, select) => {
 
   const interaction = new Translate({
     hitTolerance,
-    features: select.getFeatures(),
+    features: selectedSource.getFeaturesCollection(),
 
     // Both platform modifier key and shift key must be pressed,
     // but no other modifier key (alt).
@@ -62,7 +61,7 @@ export default (options, select) => {
     // Placeholders must be removed before adding to store,
     // because re-adding them to the source will result in a major
     // (feature) identity crisis.
-    featureSource.addFeatures(clones)
+    visibleSource.addFeatures(clones)
   })
 
   interaction.on('translateend', async event => {
@@ -93,7 +92,7 @@ export default (options, select) => {
     })
 
     // Important: Remove clones from source before adding to store.
-    clones.forEach(clone => featureSource.removeFeature(clone))
+    clones.forEach(clone => visibleSource.removeFeature(clone))
     await store.insertFeatures(json)
     selection.set(clones.map(clone => clone.getId()))
   })
@@ -106,7 +105,7 @@ export default (options, select) => {
 
     clones.forEach((clone, index) => {
       snapshot[index].setGeometry(clone.getGeometry().clone())
-      featureSource.removeFeature(clone)
+      visibleSource.removeFeature(clone)
     })
   })
 

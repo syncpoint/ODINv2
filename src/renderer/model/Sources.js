@@ -1,102 +1,121 @@
-import util from 'util'
-import VectorSource from 'ol/source/Vector'
+import * as R from 'ramda'
 import Collection from 'ol/Collection'
-import Feature from 'ol/Feature'
-import Emitter from '../../shared/emitter'
+import VectorSource from 'ol/source/Vector'
+import Event from 'ol/events/Event'
 import { readFeature, readFeatures } from './geometry'
-import { isFeatureId } from '../ids'
 
-const isVisible = feature => !feature.hidden
-const isHidden = feature => feature.hidden
-const isLocked = feature => feature.locked
+export const featureSource = store => {
+  const source = new VectorSource()
 
-/**
- * @constructor
- */
-export function Sources (store, selection, highlight) {
-  Emitter.call(this)
-  this.store_ = store
-  this.selection_ = selection
+  store.on('batch', ({ operations }) => {
+    const candidates = operations.filter(({ key }) => key.startsWith('feature:'))
+    const additions = candidates.filter(({ type }) => type === 'put')
 
-  // For now, hold all features in a single source.
-  // This might change in the future, especially for 'external' features/sources.
-  // Note: Source is mutable. Changes reflect more or less immediately in map.
-  this.source_ = null
-
-  this.highlightedFeatures_ = new Collection()
-  this.highlightedSource_ = new VectorSource({ features: this.highlightedFeatures_ })
-
-  store.on('batch', ({ operations }) => this.update_(operations))
-  highlight.on('highlight/geometries', ({ geometries }) => this.highlightGeometries_(geometries))
-}
-
-util.inherits(Sources, Emitter)
-
-
-/**
- *
- */
-Sources.prototype.removeFeatureById_ = function (id) {
-  const feature = this.source_.getFeatureById(id)
-  if (!feature) return
-  this.source_.removeFeature(feature)
-}
-
-
-/**
- *
- */
-Sources.prototype.addFeature_ = function (feature) {
-  if (!feature) return
-  if (isHidden(feature)) return
-  this.source_.addFeature(readFeature(feature))
-}
-
-
-Sources.prototype.update_ = function (operations) {
-
-  // We are only interested in features:
-  const featureOps = operations.filter(({ key }) => isFeatureId(key))
-
-  // Removal deleted features:
-  featureOps
-    .filter(({ type, key }) => type === 'del')
-    .map(op => op.key)
-    .forEach(key => this.removeFeatureById_(key))
-
-  // Remove hidden features:
-  featureOps
-    .filter(({ type, key, value }) => type === 'put' && isHidden(value))
-    .forEach(({ key }) => this.removeFeatureById_(key))
-
-  // Add new or replace existing features:
-  featureOps
-    .filter(({ type, value }) => type === 'put' && isVisible(value))
-    .forEach(({ key, value }) => {
-      if (this.source_.getFeatureById(key)) this.removeFeatureById_(key)
-      this.addFeature_(value)
+    // Source.addFeature() does not support re-adding,
+    // hence delete all candidates...
+    candidates.forEach(({ key }) => {
+      const feature = source.getFeatureById(key)
+      if (feature) source.removeFeature(feature)
     })
+
+    // ... and add additions/updates.
+    const features = additions.map(({ value }) => readFeature(value))
+    source.addFeatures(features)
+  })
+
+  // On startup: load all features:
+  window.requestIdleCallback(async () => {
+    const json = await store.selectFeatures()
+    const features = readFeatures({ type: 'FeatureCollection', features: json })
+    source.addFeatures(features)
+  }, { timeout: 2000 })
+
+  return source
 }
 
-
-/**
- * @returns ol/VectorSource
- * NOTE: Source is loaded laziliy.
- */
-Sources.prototype.getFeatureSource = async function () {
-  if (this.source_) return this.source_
-  const geoJSONFeatures = await this.store_.selectFeatures()
-  const visible = geoJSONFeatures.filter(isVisible)
-  const olFeatures = readFeatures({ type: 'FeatureCollection', features: visible })
-  this.source_ = new VectorSource({ features: olFeatures })
-  return this.source_
+export class TouchFeaturesEvent extends Event {
+  constructor (keys) {
+    super('touchfeatures')
+    this.keys = keys
+  }
 }
 
-Sources.prototype.getHighlightedSource = function () {
-  return this.highlightedSource_
+export const filtered = predicate => source => {
+
+  // Supply empty collection which will be kept in sync with source.
+  // This is neccessary for interactions which only accept feature collections
+  // instead of sources (e.g. translate, clone).
+  const destination = new VectorSource({ features: new Collection() })
+
+  source.on('addfeature', ({ feature: addition }) => {
+    if (predicate(addition.getId())) destination.addFeature(addition)
+  })
+
+  source.on('removefeature', ({ feature: removal }) => {
+    const feature = destination.getFeatureById(removal.getId())
+    if (feature) destination.removeFeature(feature)
+  })
+
+  source.on('touchfeatures', ({ keys }) => {
+    keys.forEach(key => {
+      if (predicate(key)) {
+        const feature = source.getFeatureById(key)
+        if (feature) destination.addFeature(feature)
+      } else {
+        const feature = destination.getFeatureById(key)
+        if (feature) destination.removeFeature(feature)
+      }
+    })
+  })
+
+  const additions = source.getFeatures().filter(feature => predicate(feature.getId()))
+  destination.addFeatures(additions)
+
+  return destination
 }
 
-Sources.prototype.highlightGeometries_ = function (geometries) {
-  if (!geometries.length) this.highlightedFeatures_.clear()
-  else geometries.forEach(geometry => this.highlightedFeatures_.push(new Feature(geometry)))
+export const selectionTracker = (source, selection) => {
+  const keySet = {}
+  const selected = key => keySet[key]
+  const deselected = key => !keySet[key]
+
+  selection.on('selection', ({ selected, deselected }) => {
+    selected.forEach(key => (keySet[key] = true))
+    deselected.forEach(key => delete keySet[key])
+    source.dispatchEvent(new TouchFeaturesEvent([...selected, ...deselected]))
+  })
+
+  return {
+    selectedSource: filtered(selected)(source),
+    deselectedSource: filtered(deselected)(source)
+  }
+}
+
+export const visibilityTracker = (source, store) => {
+  const keySet = {}
+  const hidden = key => keySet[key]
+  const visible = key => !keySet[key]
+
+  ;(async () => {
+    store.on('batch', ({ operations }) => {
+      const candidates = operations
+        .filter(({ key }) => key.startsWith('hidden+feature:'))
+        .map(({ type, key }) => ({ type, key: key.substring(7) }))
+
+      const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
+      additions.forEach(({ key }) => (keySet[key] = true))
+      removals.forEach(({ key }) => delete keySet[key])
+
+      const keys = candidates.map(({ key }) => key)
+      source.dispatchEvent(new TouchFeaturesEvent(keys))
+    })
+
+    const keys = await store.keys('hidden+feature:')
+    keys.forEach(key => (keySet[key.substring(7)] = true))
+  })()
+
+  return {
+    visibleSource: filtered(visible)(source),
+    hiddenSource: filtered(hidden)(source)
+  }
 }

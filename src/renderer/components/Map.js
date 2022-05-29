@@ -1,3 +1,5 @@
+/* eslint-disable */
+import * as R from 'ramda'
 import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
@@ -11,6 +13,8 @@ import { useServices } from './hooks'
 import { featureStyle } from '../ol/style'
 import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
+import { filteredSource } from '../model/Sources'
+import * as Sources from '../model/Sources'
 
 /**
  *
@@ -19,7 +23,6 @@ export const Map = () => {
   const {
     sessionStore,
     ipcRenderer,
-    sources,
     selection,
     dragAndDrop,
     store,
@@ -37,29 +40,16 @@ export const Map = () => {
 
     const viewport = await sessionStore.getViewport()
     const view = new ol.View({ ...viewport })
-    const featureSource = await sources.getFeatureSource()
-    const partition = new Partition(featureSource, selection)
+
+    const featureSource = Sources.featureSource(store)
+    const { visibleSource } = Sources.visibilityTracker(featureSource, store)
+    const { selectedSource, deselectedSource } = Sources.selectionTracker(visibleSource, selection)
+
     const style = featureStyle(selection, featureSource)
     const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
-    const featureLayer = vectorLayer(partition.getDeselected())
-    const selectedLayer = vectorLayer(partition.getSelected())
-
-    const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
-    const stroke = new Stroke({ color: 'black', width: 1, lineDash: [10, 5] })
-    const highlightStyle = [
-      new Style({
-        image: new Circle({ fill: fill, stroke: stroke, radius: 50 }),
-        fill: fill,
-        stroke: stroke
-      })
-    ]
-
-    const highlightLayer = new VectorLayer({
-      source: sources.getHighlightedSource(),
-      style: highlightStyle,
-      updateWhileAnimating: true
-    })
+    const featureLayer = vectorLayer(deselectedSource)
+    const selectedLayer = vectorLayer(selectedSource)
 
     // http://localhost:8000/services
     // http://localhost:8000/services/omk50_33
@@ -73,7 +63,7 @@ export const Map = () => {
       tileLayer,
       featureLayer,
       selectedLayer,
-      highlightLayer
+      // highlightLayer
     ]
 
     view.on('change', ({ target: view }) => viewMemento.update(view))
@@ -91,13 +81,11 @@ export const Map = () => {
       selection,
       store,
       undo,
-      partition,
-      featureLayer,
-      selectedLayer,
-      featureSource,
-      style,
       emitter,
-      map
+      map,
+      style,
+      visibleSource,
+      selectedSource
     })
 
     interactions.getArray().forEach(interaction => map.addInteraction(interaction))
@@ -157,12 +145,12 @@ export const Map = () => {
 
     // Dim feature layer when we have a selection:
     const updateOpacity = () => {
-      const count = partition.getSelected().getFeatures().length
+      const count = selectedSource.getFeatures().length
       featureLayer.setOpacity(count ? 0.35 : 1)
     }
 
-    partition.getSelected().on('addfeature', updateOpacity)
-    partition.getSelected().on('removefeature', updateOpacity)
+    selectedSource.on('addfeature', updateOpacity)
+    selectedSource.on('removefeature', updateOpacity)
 
     const selectAll = () => {
       const element = document.activeElement

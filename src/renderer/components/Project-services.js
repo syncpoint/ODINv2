@@ -4,7 +4,7 @@ import { IPCDownClient } from '../../shared/level/ipc'
 import { leveldb, propertiesPartition, geometriesPartition, preferencesPartition } from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, Store, SearchIndex, PreferencesStore } from '../store'
-import { Sources, PaletteCommands, Highlight, ViewMemento, Controller } from '../model'
+import { PaletteCommands, ViewMemento, Controller } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
@@ -31,10 +31,9 @@ export default async projectUUID => {
   const preferencesLevel = preferencesPartition(db)
 
   const store = new Store(propertiesLevel, geometryLevel, undo, selection)
-  const highlight = new Highlight(store, selection, viewMemento)
   const preferencesStore = new PreferencesStore(preferencesLevel)
   const searchIndex = new SearchIndex(propertiesLevel)
-  const controller = new Controller(store, highlight, emitter, ipcRenderer)
+  const controller = new Controller(store, emitter, ipcRenderer)
 
   // Key bindings.
   bindings(emitter)
@@ -81,14 +80,12 @@ export default async projectUUID => {
   services.sessionStore = sessionStore
   services.viewMemento = viewMemento
   services.undo = undo
-  services.sources = new Sources(store, selection, highlight)
   services.selection = selection
   services.dragAndDrop = dragAndDrop
   services.store = store
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
   services.paletteCommands = new PaletteCommands(store, emitter)
-  services.highlight = highlight
   services.controller = controller
 
   return services

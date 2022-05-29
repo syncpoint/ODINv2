@@ -26,7 +26,7 @@ import { leveldb } from '../../shared/level'
  * update_ :: Key k, Value v => (k -> k, [v]) -> unit
  *
  * selectFeatures :: GeoJSON/Feature a => () -> [a]
- * selectProperties :: Key k, Value v => k => v
+ * selectProperties :: Key k, Value v => k => [v]
  * selectProperties :: Key k, Value v => [k] => [v]
  * selectGeometries :: Key k => k -> [GeoJSON/Geometry]
  * selectGeometries :: Key k => [k] -> [GeoJSON/Geometry]
@@ -35,6 +35,8 @@ import { leveldb } from '../../shared/level'
  * update :: Value v => [v] -> unit
  * update :: Value v => ([v], [v]) -> unit
  * select :: Key k, Value v => [k] => [v]
+ * entries :: Prefix p, Key k, Value v => p -> {k: v}
+ * keys :: Prefix p, Key k => p -> [k]
  * insertFeatures :: GeoJSON/Feature a => [a] -> unit
  * rename :: Key k, Name n => (k, n) -> unit
  * addTag :: Key k, Name n => (k, n) -> unit
@@ -176,6 +178,24 @@ Store.prototype.update_ = async function (fn, keys) {
  */
 Store.prototype.select = function (ids) {
   return this.db_.values(ids)
+}
+
+
+/**
+ * @asnyc
+ * entries :: Prefix p, Key k, Value v => p -> {k: v}
+ */
+Store.prototype.entries = function (prefix) {
+  return this.properties_.entries(prefix)
+}
+
+
+/**
+ * @asnyc
+ * keys :: Prefix p, Key k => p -> [k]
+ */
+Store.prototype.keys = function (prefix) {
+  return this.properties_.keys(prefix)
 }
 
 
@@ -337,13 +357,13 @@ Store.prototype.removeTag = async function (id, name) {
  */
 Store.prototype.hide = async function (id, active) {
   if (active !== undefined) return
-  const hide = R.tap(value => { value.hidden = true })
+  // const hide = R.tap(value => { value.hidden = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  await this.update_(hide, keys)
+  // await this.update_(hide, keys)
 
   const ops = keys.map(key => ({ type: 'put', key: `hidden+${key}`, value: true }))
-  return this.properties_.batch(ops)
+  return this.db_.batch(ops)
 }
 
 
@@ -353,13 +373,13 @@ Store.prototype.hide = async function (id, active) {
  */
 Store.prototype.show = async function (id, active) {
   if (active !== undefined) return
-  const show = R.tap(value => { delete value.hidden })
+  // const show = R.tap(value => { delete value.hidden })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  await this.update_(show, keys)
+  // await this.update_(show, keys)
 
   const ops = keys.map(key => ({ type: 'del', key: `hidden+${key}` }))
-  return this.properties_.batch(ops)
+  return this.db_.batch(ops)
 }
 
 
@@ -369,13 +389,13 @@ Store.prototype.show = async function (id, active) {
  */
 Store.prototype.lock = async function (id, active) {
   if (active !== undefined) return
-  const lock = R.tap(value => { value.locked = true })
+  // const lock = R.tap(value => { value.locked = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  await this.update_(lock, keys)
+  // await this.update_(lock, keys)
 
   const ops = keys.map(key => ({ type: 'put', key: `locked+${key}`, value: true }))
-  return this.properties_.batch(ops)
+  return this.db_.batch(ops)
 }
 
 
@@ -385,13 +405,13 @@ Store.prototype.lock = async function (id, active) {
  */
 Store.prototype.unlock = async function (id, active) {
   if (active !== undefined) return
-  const unlock = R.tap(value => { delete value.locked })
+  // const unlock = R.tap(value => { delete value.locked })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  await this.update_(unlock, keys)
+  // await this.update_(unlock, keys)
 
   const ops = keys.map(key => ({ type: 'del', key: `locked+${key}` }))
-  return this.properties_.batch(ops)
+  return this.db_.batch(ops)
 }
 
 

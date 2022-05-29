@@ -19,11 +19,11 @@ const feature = {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.highlight.down(id)
+    if (spec.match(/SCOPE:FEATURE/)) this.emitter.emit('highlight/on', { id })
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.highlight.up()
+    if (spec.match(/SCOPE:FEATURE/)) this.emitter.emit('highlight/off', { id })
   }
 }
 
@@ -39,11 +39,11 @@ const layer = {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.highlight.down(id)
+    if (spec.match(/SCOPE:LAYER/)) this.emitter.emit('highlight/on', { id })
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.highlight.up()
+    if (spec.match(/SCOPE:LAYER/)) this.emitter.emit('highlight/off', { id })
   }
 }
 
@@ -69,9 +69,8 @@ const link = {
   }
 }
 
-export function Controller (store, highlight, emitter, ipcRenderer) {
+export function Controller (store, emitter, ipcRenderer) {
   this.store = store
-  this.highlight = highlight
   this.emitter = emitter
   this.ipcRenderer = ipcRenderer
 

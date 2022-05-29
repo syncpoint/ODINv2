@@ -8,11 +8,11 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
  *
  */
 export default options => {
-  const { selection, partition, featureLayer, selectedLayer, hitTolerance, style } = options
+  const { selection, hitTolerance, style, selectedSource } = options
   const interaction = new Select({
     hitTolerance,
     style,
-    layers: [featureLayer, selectedLayer],
+    // layers: [featureLayer, selectedLayer],
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
     multi: false // don't select all features under cursor at once.
@@ -25,11 +25,11 @@ export default options => {
   // NOTE: selected, deselected are deltas/changes.
   interaction.on('select', () => selection.set(selected()))
 
-  partition.getSelected().on('addfeature', ({ feature }) => {
+  selectedSource.on('addfeature', ({ feature }) => {
     if (!features().includes(feature)) interaction.getFeatures().push(feature)
   })
 
-  partition.getSelected().on('removefeature', ({ feature }) => {
+  selectedSource.on('removefeature', ({ feature }) => {
     const features = interaction.getFeatures().getArray()
     if (features.includes(feature)) interaction.getFeatures().remove(feature)
   })
