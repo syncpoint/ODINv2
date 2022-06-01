@@ -7,13 +7,13 @@ import { writeFeatureCollection } from '../../model/geometry'
  * @param {*} hitTolerance
  */
 export default options => {
-  const { store, selectedSource, hitTolerance } = options
+  const { store, modifiableSource, hitTolerance } = options
 
   // snapshot :: [GeoJSON/Feature]
   let snapshot = []
 
   const interaction = new Modify({
-    source: selectedSource,
+    source: modifiableSource,
     hitTolerance
   })
 

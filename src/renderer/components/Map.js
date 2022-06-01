@@ -1,5 +1,4 @@
 /* eslint-disable */
-import * as R from 'ramda'
 import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
@@ -11,9 +10,7 @@ import { Fill, Stroke, Circle, Style } from 'ol/style'
 import '../epsg'
 import { useServices } from './hooks'
 import { featureStyle } from '../ol/style'
-import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
-import { filteredSource } from '../model/Sources'
 import * as Sources from '../model/Sources'
 
 /**
@@ -42,8 +39,27 @@ export const Map = () => {
     const view = new ol.View({ ...viewport })
 
     const featureSource = Sources.featureSource(store)
-    const { visibleSource } = Sources.visibilityTracker(featureSource, store)
+    const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)
+    const { unlockedSource } = Sources.lockedTracker(featureSource, store)
     const { selectedSource, deselectedSource } = Sources.selectionTracker(visibleSource, selection)
+    const highlightSource = Sources.highlightTracker(emitter, selection, store, viewMemento)
+    const modifiableSource = Sources.intersect(unlockedSource, selectedSource)
+
+    const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
+    const stroke = new Stroke({ color: 'black', width: 1, lineDash: [10, 5] })
+    const highlightStyle = [
+      new Style({
+        image: new Circle({ fill: fill, stroke: stroke, radius: 50 }),
+        fill: fill,
+        stroke: stroke
+      })
+    ]
+
+    const highlightLayer = new VectorLayer({
+      source: highlightSource,
+      style: highlightStyle,
+      updateWhileAnimating: true
+    })
 
     const style = featureStyle(selection, featureSource)
     const declutter = false
@@ -63,7 +79,7 @@ export const Map = () => {
       tileLayer,
       featureLayer,
       selectedLayer,
-      // highlightLayer
+      highlightLayer
     ]
 
     view.on('change', ({ target: view }) => viewMemento.update(view))
@@ -85,7 +101,8 @@ export const Map = () => {
       map,
       style,
       visibleSource,
-      selectedSource
+      selectedSource,
+      modifiableSource
     })
 
     interactions.getArray().forEach(interaction => map.addInteraction(interaction))

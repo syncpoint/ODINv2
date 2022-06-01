@@ -7,14 +7,14 @@ const isEqual = require('react-fast-compare')
  *
  */
 export default options => {
-  const { store, hitTolerance, selectedSource } = options
+  const { store, hitTolerance, modifiableSource } = options
 
   // snapshot :: [GeoJSON/Feature]
   let snapshot = []
 
   const interaction = new Translate({
     hitTolerance,
-    features: selectedSource.getFeaturesCollection(),
+    features: modifiableSource.getFeaturesCollection(),
     condition: event => noModifierKeys(event) || shiftKeyOnly(event)
   })
 

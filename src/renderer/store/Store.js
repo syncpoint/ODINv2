@@ -36,6 +36,7 @@ import { leveldb } from '../../shared/level'
  * update :: Value v => ([v], [v]) -> unit
  * select :: Key k, Value v => [k] => [v]
  * entries :: Prefix p, Key k, Value v => p -> {k: v}
+ * entries :: Key k, Value v => [k] -> {k: v}
  * keys :: Prefix p, Key k => p -> [k]
  * insertFeatures :: GeoJSON/Feature a => [a] -> unit
  * rename :: Key k, Name n => (k, n) -> unit
@@ -184,6 +185,7 @@ Store.prototype.select = function (ids) {
 /**
  * @asnyc
  * entries :: Prefix p, Key k, Value v => p -> {k: v}
+ * entries :: Key k, Value v => [k] -> {k: v}
  */
 Store.prototype.entries = function (prefix) {
   return this.properties_.entries(prefix)

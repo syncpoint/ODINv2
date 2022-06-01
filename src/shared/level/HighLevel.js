@@ -58,11 +58,21 @@ export const get = (key, value) => async db => {
  * @async
  * entries :: (Key k, Value v) => db -> {k: v}
  * entries :: (Key k, Value v) => (db, string) -> {k: v}
+ * entries :: (Key k, Value v) => (db, [k]) -> {k: v}
  */
 export const entries = (db, prefix) => {
-  const stream = entriesStream(prefix)(db)
-  const fn = (acc, { key, value }) => (acc[key] = value)
-  return reduce(fn, {})(stream)
+  if (Array.isArray(prefix)) {
+    return prefix.reduce(async (acc, key) => {
+      const entries = await acc
+      const value = await get(key, null)(db)
+      if (value) entries[key] = value
+      return entries
+    }, {})
+  } else {
+    const stream = entriesStream(prefix)(db)
+    const fn = (acc, { key, value }) => (acc[key] = value)
+    return reduce(fn, {})(stream)
+  }
 }
 
 /**
@@ -83,7 +93,7 @@ export const valuesByPrefix = (db, prefix) => {
 export const valuesById = async (db, ids) => {
   return ids.reduce(async (acc, id) => {
     const xs = await acc
-    xs.push(await db.get(id))
+    xs.push(await get(id, false)(db))
     return xs
   }, [])
 }

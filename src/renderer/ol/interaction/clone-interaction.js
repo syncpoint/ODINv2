@@ -9,7 +9,7 @@ import * as ids from '../../ids'
  *
  */
 export default options => {
-  const { store, visibleSource, hitTolerance, selection, selectedSource } = options
+  const { store, visibleSource, hitTolerance, selection, modifiableSource } = options
 
   // Has cloning operation started?
   let cloning = false
@@ -24,7 +24,7 @@ export default options => {
 
   const interaction = new Translate({
     hitTolerance,
-    features: selectedSource.getFeaturesCollection(),
+    features: modifiableSource.getFeaturesCollection(),
 
     // Both platform modifier key and shift key must be pressed,
     // but no other modifier key (alt).
