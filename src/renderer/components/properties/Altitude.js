@@ -14,7 +14,7 @@ const AltitudeFrom = textProperty({
 })
 
 const AltitudeTo = textProperty({
-  label: 'Altitude (From)',
+  label: 'Altitude (To)',
   get: feature => feature.properties.x1 ? feature.properties.x1 : null,
   set: value => feature => ({
     ...feature,

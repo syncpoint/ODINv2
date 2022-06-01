@@ -14,7 +14,7 @@ const EffectiveFrom = textProperty({
 })
 
 const EffectiveTo = textProperty({
-  label: 'Effective (From)',
+  label: 'Effective (To)',
   get: feature => feature.properties.w1 ? feature.properties.w1 : null,
   set: value => feature => ({
     ...feature,
