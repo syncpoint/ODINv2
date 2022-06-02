@@ -1,7 +1,6 @@
 * modify: hide vertex feature while translating
 * modify: handle blur event while editing
 * modify: test procedure - doubleclick to remove point
-* leveldb: migrate towards db.getMany()
 * echelon (polygons)
 * drop feature (relative size)
 * drop labels (relative size)
