@@ -135,6 +135,7 @@ Store.prototype.selectGeometries = function (arg) {
  */
 Store.prototype.collectKeys_ = async function (ids, excludes = []) {
   const featureIds = id => this.properties_.keys(`feature:${layerUUID(id)}`)
+  const hiddenIds = id => this.properties_.keys(hiddenId(id))
 
   const linkIds = id => {
     if (!excludes.includes('link')) return this.properties_.keys(`link+${id}`)
@@ -150,6 +151,7 @@ Store.prototype.collectKeys_ = async function (ids, excludes = []) {
       const ys = []
 
       if (isLayerId(id) || isFeatureId(id)) ys.push(...await linkIds(id))
+      if (isLayerId(id) || isFeatureId(id)) ys.push(...await hiddenIds(id))
       if (isLayerId(id)) ys.push(...await featureIds(id))
 
       await collect(xs, ys)
@@ -211,7 +213,11 @@ const deletable = id => !isSymbolId(id)
  */
 Store.prototype.delete = async function (ids) {
   const keys = await this.collectKeys_(ids.filter(deletable))
-  const values = await this.db_.values(keys)
+
+  // Don't delete locked entries:
+  const locks = await this.properties_.mget(keys.map(lockedId))
+  const unlockedKeys = keys.filter(key => !locks[lockedId(key)])
+  const values = await this.db_.values(unlockedKeys)
   this.undo_.apply(this.deleteCommand(values))
 }
 
@@ -361,12 +367,12 @@ Store.prototype.removeTag = async function (id, name) {
  */
 Store.prototype.hide = async function (id, active) {
   if (active !== undefined) return
-  // const hide = R.tap(value => { value.hidden = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  // await this.update_(hide, keys)
+  const ops = keys
+    .map(hiddenId)
+    .map(key => ({ type: 'put', key, value: { id: key } }))
 
-  const ops = keys.map(key => ({ type: 'put', key: hiddenId(key), value: true }))
   return this.db_.batch(ops)
 }
 
@@ -377,12 +383,12 @@ Store.prototype.hide = async function (id, active) {
  */
 Store.prototype.show = async function (id, active) {
   if (active !== undefined) return
-  // const show = R.tap(value => { delete value.hidden })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  // await this.update_(show, keys)
+  const ops = keys
+    .map(hiddenId)
+    .map(key => ({ type: 'del', key }))
 
-  const ops = keys.map(key => ({ type: 'del', key: hiddenId(key) }))
   return this.db_.batch(ops)
 }
 
@@ -393,12 +399,12 @@ Store.prototype.show = async function (id, active) {
  */
 Store.prototype.lock = async function (id, active) {
   if (active !== undefined) return
-  // const lock = R.tap(value => { value.locked = true })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  // await this.update_(lock, keys)
+  const ops = keys
+    .map(lockedId)
+    .map(key => ({ type: 'put', key, value: { id: key } }))
 
-  const ops = keys.map(key => ({ type: 'put', key: lockedId(key), value: true }))
   return this.db_.batch(ops)
 }
 
@@ -409,12 +415,12 @@ Store.prototype.lock = async function (id, active) {
  */
 Store.prototype.unlock = async function (id, active) {
   if (active !== undefined) return
-  // const unlock = R.tap(value => { delete value.locked })
   const ids = R.uniq([id, ...this.selection_.selected()])
   const keys = await this.collectKeys_(ids, ['link'])
-  // await this.update_(unlock, keys)
+  const ops = keys
+    .map(lockedId)
+    .map(key => ({ type: 'del', key }))
 
-  const ops = keys.map(key => ({ type: 'del', key: lockedId(key) }))
   return this.db_.batch(ops)
 }
 
