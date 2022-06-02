@@ -89,6 +89,7 @@ export default props => {
         <FlexRow>
           <Select
             value={state[0]}
+            disabled={props.disabled}
             onChange={handleSelectionChanged}
           >
             <option value='P'>Pending</option>
@@ -104,7 +105,7 @@ export default props => {
           <div style={{ marginLeft: 'auto' }}>
             <Checkbox
               label='Exercise'
-              disabled={exerciseDisabled}
+              disabled={exerciseDisabled || props.disabled}
               checked={!exerciseDisabled && state[1]}
               onChange={handleExerciseChanged}
             />

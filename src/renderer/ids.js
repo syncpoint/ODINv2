@@ -17,8 +17,12 @@ export const layerUUID = R.cond([
 
 export const featureId = R.cond([
   [x => typeof x === 'object', R.prop('id')],
+  [R.includes('+feature:'), id => id.substring(1 + id.indexOf('+'))],
   [R.T, layerId => `feature:${layerId.split(':')[1]}/${uuid()}`]
 ])
+
+export const lockedId = id => `locked+${id}`
+export const hiddenId = id => `hidden+${id}`
 
 /**
  * '+'-notation container id.
@@ -47,6 +51,10 @@ export const isSymbolId = isId('symbol:')
 export const isPlaceId = isId('place:')
 export const isLinkId = isId('link:')
 export const isProjectId = isId('project:')
+export const isLockedId = isId('locked+')
+export const isLockedFeatureId = isId('locked+feature:')
+export const isHiddenFeatureId = isId('hidden+feature:')
+export const isHiddenId = isId('hidden+')
 
 export const FEATURE_ID = 'feature:[0-9a-f-]{36}/[0-9a-f-]{36}'
 export const LAYER_ID = 'layer:[0-9a-f-]{36}'

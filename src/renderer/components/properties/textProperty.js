@@ -34,6 +34,7 @@ export default options => {
     return <TextField
       label={label}
       value={value}
+      disabled={props.disabled}
       onChange={handleChange}
       onBlur={handleBlur}
     />

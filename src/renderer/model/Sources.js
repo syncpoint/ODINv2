@@ -4,7 +4,7 @@ import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
 import { readFeature, readFeatures, readGeometry, transform, geometryType } from './geometry'
-import { scope, isFeatureId } from '../ids'
+import { scope, isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, featureId } from '../ids'
 import * as TS from '../ol/ts'
 
 export const featureSource = store => {
@@ -65,7 +65,7 @@ export const filter = predicate => source => {
     if (feature) destination.removeFeature(feature)
   })
 
-  source.on('touchfeatures', ({ keys, context }) => {
+  source.on('touchfeatures', ({ keys }) => {
     keys.forEach(key => {
       if (predicate(key)) {
         // Note: Re-adding would actually remove the feature!
@@ -147,21 +147,21 @@ export const visibilityTracker = (source, store, emitter) => {
 
   ;(async () => {
     emitter.on('feature/show', ({ ids }) => {
-      const keys = ids.map(id => id.substring(7))
+      const keys = ids.map(featureId)
       keys.forEach(key => delete keySet[key])
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
     emitter.on('feature/hide', ({ ids }) => {
-      const keys = ids.map(id => id.substring(7))
+      const keys = ids.map(featureId)
       keys.forEach(key => (keySet[key] = true))
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
     store.on('batch', ({ operations }) => {
       const candidates = operations
-        .filter(({ key }) => key.startsWith('hidden+feature:'))
-        .map(({ type, key }) => ({ type, key: key.substring(7) }))
+        .filter(({ key }) => isHiddenFeatureId(key))
+        .map(({ type, key }) => ({ type, key: featureId(key) }))
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
       additions.forEach(({ key }) => (keySet[key] = true))
@@ -171,8 +171,8 @@ export const visibilityTracker = (source, store, emitter) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys('hidden+feature:')
-    keys.forEach(key => (keySet[key.substring(7)] = true))
+    const keys = await store.keys(hiddenId('feature:'))
+    keys.forEach(key => (keySet[featureId(key)] = true))
   })()
 
   return {
@@ -193,8 +193,8 @@ export const lockedTracker = (source, store) => {
   ;(async () => {
     store.on('batch', ({ operations }) => {
       const candidates = operations
-        .filter(({ key }) => key.startsWith('locked+feature:'))
-        .map(({ type, key }) => ({ type, key: key.substring(7) }))
+        .filter(({ key }) => isLockedFeatureId(key))
+        .map(({ type, key }) => ({ type, key: featureId(key) }))
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
       additions.forEach(({ key }) => (keySet[key] = true))
@@ -204,8 +204,8 @@ export const lockedTracker = (source, store) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys('locked+feature:')
-    keys.forEach(key => (keySet[key.substring(7)] = true))
+    const keys = await store.keys(lockedId('feature:'))
+    keys.forEach(key => (keySet[featureId(key)] = true))
   })()
 
   return {

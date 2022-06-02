@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { layerId, containerId } from '../ids'
+import { layerId, containerId, lockedId, hiddenId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
 
@@ -42,8 +42,8 @@ options.feature = (feature, cache) => {
     return standardSIDC ? url(standardSIDC) : null
   }
 
-  const hidden = cache(`hidden+${feature.id}`)
-  const locked = cache(`locked+${feature.id}`)
+  const hidden = cache(hiddenId(feature.id))
+  const locked = cache(lockedId(feature.id))
 
   const tags = [
     'SCOPE:FEATURE',
@@ -71,8 +71,8 @@ options.feature = (feature, cache) => {
  * layer:
  */
 options.layer = (layer, cache) => {
-  const hidden = cache(`hidden+${layer.id}`)
-  const locked = cache(`locked+${layer.id}`)
+  const hidden = cache(hiddenId(layer.id))
+  const locked = cache(lockedId(layer.id))
 
   const tags = [
     'SCOPE:LAYER',

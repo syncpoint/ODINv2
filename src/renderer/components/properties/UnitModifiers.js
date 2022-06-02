@@ -80,6 +80,7 @@ export default props => {
               label='Headquarters'
               id='hq'
               checked={state[0]}
+              disabled={props.disabled}
               onChange={handleChange(0)}
             />
             <Checkbox
@@ -87,6 +88,7 @@ export default props => {
               label='Task Force'
               id='tf'
               checked={state[1]}
+              disabled={props.disabled}
               onChange={handleChange(1)}
             />
             <Checkbox
@@ -94,6 +96,7 @@ export default props => {
               label='Feint/Dummy'
               id='fd'
               checked={state[2]}
+              disabled={props.disabled}
               onChange={handleChange(2)}
             />
           </FlexColumn>

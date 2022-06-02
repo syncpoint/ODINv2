@@ -15,6 +15,7 @@ export default props => {
         max={props.max}
         step={props.step}
         value={props.value}
+        disabled={props.disabled}
         onChange={props.onChange}
       />
       <datalist id={id} style={{

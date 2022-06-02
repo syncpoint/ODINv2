@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { layerId } from '../ids'
+import { layerId, lockedId, hiddenId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 
 export const documents = {}
@@ -29,8 +29,8 @@ documents.feature = (feature, cache) => {
   const name = feature.name || t || ''
   const links = feature.links || []
 
-  const hidden = cache(`hidden+${feature.id}`)
-  const locked = cache(`locked+${feature.id}`)
+  const hidden = cache(hiddenId(feature.id))
+  const locked = cache(lockedId(feature.id))
 
   const tags = ({ tags }) => [
     hidden ? 'hidden' : 'visible',
@@ -58,8 +58,8 @@ documents.layer = (layer, cache) => {
   const { name: text, tags } = layer
   const links = layer.links || []
 
-  const hidden = cache(`hidden+${layer.id}`)
-  const locked = cache(`locked+${layer.id}`)
+  const hidden = cache(hiddenId(layer.id))
+  const locked = cache(lockedId(layer.id))
 
   return {
     id: layer.id,

@@ -42,6 +42,7 @@ export default props => {
     <Section label='Echelon'>
       <Select
         value={state}
+        disabled={props.disabled}
         onChange={handleSelectionChanged}
       >
         <option value='-'>N/A</option>

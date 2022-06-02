@@ -42,6 +42,7 @@ export default props => {
     ? <Section label='Operational Condition'>
         <Select
           value={state}
+          disabled={props.disabled}
           onChange={handleSelectionChanged}
         >
           <option value='P'>N/A</option>

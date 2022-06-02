@@ -2,7 +2,7 @@ import util from 'util'
 import * as R from 'ramda'
 import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
-import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID } from '../ids'
+import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID, lockedId, hiddenId } from '../ids'
 import { importSymbols } from './symbols'
 import { HighLevel } from '../../shared/level/HighLevel'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
@@ -187,8 +187,10 @@ Store.prototype.select = function (ids) {
  * entries :: Prefix p, Key k, Value v => p -> {k: v}
  * entries :: Key k, Value v => [k] -> {k: v}
  */
-Store.prototype.entries = function (prefix) {
-  return this.properties_.entries(prefix)
+Store.prototype.entries = function (arg) {
+  return Array.isArray(arg)
+    ? this.properties_.mget(arg)
+    : this.properties_.entries(arg)
 }
 
 
@@ -364,7 +366,7 @@ Store.prototype.hide = async function (id, active) {
   const keys = await this.collectKeys_(ids, ['link'])
   // await this.update_(hide, keys)
 
-  const ops = keys.map(key => ({ type: 'put', key: `hidden+${key}`, value: true }))
+  const ops = keys.map(key => ({ type: 'put', key: hiddenId(key), value: true }))
   return this.db_.batch(ops)
 }
 
@@ -380,7 +382,7 @@ Store.prototype.show = async function (id, active) {
   const keys = await this.collectKeys_(ids, ['link'])
   // await this.update_(show, keys)
 
-  const ops = keys.map(key => ({ type: 'del', key: `hidden+${key}` }))
+  const ops = keys.map(key => ({ type: 'del', key: hiddenId(key) }))
   return this.db_.batch(ops)
 }
 
@@ -396,7 +398,7 @@ Store.prototype.lock = async function (id, active) {
   const keys = await this.collectKeys_(ids, ['link'])
   // await this.update_(lock, keys)
 
-  const ops = keys.map(key => ({ type: 'put', key: `locked+${key}`, value: true }))
+  const ops = keys.map(key => ({ type: 'put', key: lockedId(key), value: true }))
   return this.db_.batch(ops)
 }
 
@@ -412,7 +414,7 @@ Store.prototype.unlock = async function (id, active) {
   const keys = await this.collectKeys_(ids, ['link'])
   // await this.update_(unlock, keys)
 
-  const ops = keys.map(key => ({ type: 'del', key: `locked+${key}` }))
+  const ops = keys.map(key => ({ type: 'del', key: lockedId(key) }))
   return this.db_.batch(ops)
 }
 

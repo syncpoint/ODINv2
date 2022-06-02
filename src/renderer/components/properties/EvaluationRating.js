@@ -108,6 +108,7 @@ export default props => {
             max='5'
             step='1'
             value={reliabilityCode(state)}
+            disabled={props.disabled}
             onChange={handleReliabilityChange}
           >
             <option value='0'>A</option>
@@ -126,6 +127,7 @@ export default props => {
             max='6'
             step='1'
             value={credibilityCode(state)}
+            disabled={props.disabled}
             onChange={handleCredibilityChange}
           >
             <option value='0'>1</option>
@@ -146,6 +148,7 @@ export default props => {
         <Checkbox
           label='Available'
           checked={state !== ''}
+          disabled={props.disabled}
           onChange={handleAvailableChanged}
         />
         { sliders() }

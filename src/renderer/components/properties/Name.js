@@ -9,8 +9,7 @@ const TextProperty = textProperty({
   set: value => feature => ({ ...feature, name: value })
 })
 
-export default props => (
+export default props =>
   <ColSpan2>
     <TextProperty {...props}/>
   </ColSpan2>
-)

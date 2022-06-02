@@ -22,9 +22,9 @@ export const reduce = (fn, acc) => stream => {
 
 /**
  * @async
- * put :: (Key k, Value v) => (k, v) -> db -> unit
- * put :: (Key k, Value v) => {k: v} -> db -> unit
- * put :: (Key k, Value v) => [[k, v]] -> db -> unit
+ * put :: Key k, Value v => (k, v) -> db -> unit
+ * put :: Key k, Value v => {k: v} -> db -> unit
+ * put :: Key k, Value v => [[k, v]] -> db -> unit
  */
 export const put = (...args) => db => {
   if (args.length === 2) return db.put(args[0], args[1]) // key/value
@@ -40,8 +40,8 @@ export const put = (...args) => db => {
 
 /**
  * @async
- * get :: (Key k, Value v) => k -> db -> v
- * get :: (Key k, Value v) => (k, v) -> db -> v
+ * get :: Key k, Value v => k -> db -> v
+ * get :: Key k, Value v => (k, v) -> db -> v
  *
  * Get value for given key with optional default value if key was not found.
  */
@@ -56,23 +56,26 @@ export const get = (key, value) => async db => {
 
 /**
  * @async
- * entries :: (Key k, Value v) => db -> {k: v}
- * entries :: (Key k, Value v) => (db, string) -> {k: v}
- * entries :: (Key k, Value v) => (db, [k]) -> {k: v}
+ * mget :: Key k => [k] => {k: v}
+ */
+export const mget = keys => async db => {
+  const values = await db.getMany(keys)
+  return keys.reduce((acc, key, index) => {
+    const value = values[index]
+    if (value !== undefined) acc[key] = value
+    return acc
+  }, {})
+}
+
+/**
+ * @async
+ * entries :: Key k, Value v => db -> {k: v}
+ * entries :: Key k, Value v => (db, string) -> {k: v}
  */
 export const entries = (db, prefix) => {
-  if (Array.isArray(prefix)) {
-    return prefix.reduce(async (acc, key) => {
-      const entries = await acc
-      const value = await get(key, null)(db)
-      if (value) entries[key] = value
-      return entries
-    }, {})
-  } else {
-    const stream = entriesStream(prefix)(db)
-    const fn = (acc, { key, value }) => (acc[key] = value)
-    return reduce(fn, {})(stream)
-  }
+  const stream = entriesStream(prefix)(db)
+  const fn = (acc, { key, value }) => (acc[key] = value)
+  return reduce(fn, {})(stream)
 }
 
 /**
@@ -100,8 +103,8 @@ export const valuesById = async (db, ids) => {
 
 /**
  * @async
- * keys :: Key a => db -> [a]
- * keys :: Key a => (db, string) -> [a]
+ * keys :: Key k => db -> [k]
+ * keys :: Key k => (db, string) -> [k]
  */
 export const keys = (db, prefix) => {
   const stream = keysStream(prefix)(db)
@@ -111,8 +114,8 @@ export const keys = (db, prefix) => {
 
 /**
  * @async
- * list :: (Key k, Value v) => db -> [[k, v]]
- * list :: (Key k, Value v) => (db, string) -> [[k, v]]
+ * list :: Key k, Value v => db -> [[k, v]]
+ * list :: Key k, Value v => (db, string) -> [[k, v]]
  */
 export const list = (db, prefix) => {
   const stream = entriesStream(prefix)(db)
@@ -135,6 +138,10 @@ HighLevel.prototype.put = function (...args) {
 
 HighLevel.prototype.get = async function (key, value) {
   return get(key, value)(this.db_)
+}
+
+HighLevel.prototype.mget = async function (keys) {
+  return mget(keys)(this.db_)
 }
 
 HighLevel.prototype.del = function (key) {
@@ -174,7 +181,7 @@ HighLevel.prototype.list = function (prefix) {
 
 /**
  * @async
- * assign :: (Key k, Value v) => (k, v) -> unit
+ * assign :: Key k, Value v => (k, v) -> unit
  */
 HighLevel.prototype.assign = async function (key, value) {
   const target = Object.assign(await this.db_.get(key), value)

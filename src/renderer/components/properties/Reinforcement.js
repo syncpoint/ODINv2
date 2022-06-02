@@ -48,24 +48,28 @@ export default props => {
         <Radio
           name='reinforcement'
           label='None'
+          disabled={props.disabled}
           onChange={handleChange('')}
           checked={value === ''}
         />
         <Radio
           name='reinforcement'
           label='(+)'
+          disabled={props.disabled}
           onChange={handleChange('(+)')}
           checked={value === '(+)'}
         />
         <Radio
           name='reinforcement'
           label='(-)'
+          disabled={props.disabled}
           onChange={handleChange('(-)')}
           checked={value === '(-)'}
         />
         <Radio
           name='reinforcement'
           label='(±)'
+          disabled={props.disabled}
           onChange={handleChange('(±)')}
           checked={value === '(±)'}
         />
