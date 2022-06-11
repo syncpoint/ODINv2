@@ -23,6 +23,7 @@ export const Map = () => {
     selection,
     dragAndDrop,
     store,
+    featureStore,
     undo,
     emitter,
     viewMemento
@@ -38,11 +39,11 @@ export const Map = () => {
     const viewport = await sessionStore.getViewport()
     const view = new ol.View({ ...viewport })
 
-    const featureSource = Sources.featureSource(store)
-    const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)
-    const { unlockedSource } = Sources.lockedTracker(featureSource, store)
+    const featureSource = Sources.featureSource(featureStore)
+    const { visibleSource } = Sources.visibilityTracker(featureSource, featureStore, emitter)
+    const { unlockedSource } = Sources.lockedTracker(featureSource, featureStore)
     const { selectedSource, deselectedSource } = Sources.selectionTracker(visibleSource, selection)
-    const highlightSource = Sources.highlightTracker(emitter, selection, store, viewMemento)
+    const highlightSource = Sources.highlightTracker(emitter, featureStore, viewMemento)
     const modifiableSource = Sources.intersect(unlockedSource, selectedSource)
 
     const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
@@ -96,6 +97,7 @@ export const Map = () => {
       hitTolerance: 3,
       selection,
       store,
+      featureStore,
       undo,
       emitter,
       map,
@@ -176,14 +178,14 @@ export const Map = () => {
       if (!element) return
       if (!isBody(element) && !isMap(element)) return
 
-      const ids = featureSource.getFeatures().map(feature => feature.getId())
+      const ids = visibleSource.getFeatures().map(feature => feature.getId())
       selection.select(ids)
     }
 
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
 
     // TODO: does not really belong here -> move!
-    emitter.on('command/delete', () => store.delete(selection.selected()))
+    emitter.on('command/delete', () => featureStore.delete(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

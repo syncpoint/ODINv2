@@ -48,7 +48,7 @@ const reducer = (state, event) => {
 
 
 export const FeatureProperties = () => {
-  const { selection, store } = useServices()
+  const { selection, featureStore } = useServices()
   const initialState = {
     features: {},
     locked: {}
@@ -64,13 +64,14 @@ export const FeatureProperties = () => {
         .selected()
         .filter(isFeatureId)
 
-      const features = (await store.selectFeatures(keys))
-        .reduce((acc, feature) => {
-          acc[feature.id] = feature
-          return acc
-        }, {})
+      const featureTuples = await featureStore.select(keys)
+      const features = featureTuples.reduce((acc, [key, feature]) => {
+        acc[key] = feature
+        acc[key].id = key
+        return acc
+      }, {})
 
-      const locked = await store.entries(keys.map(lockedId))
+      const locked = await featureStore.objects(keys.map(lockedId))
       dispatch({ type: 'reset', features, locked })
 
       const featureClasses = Object.values(features).reduce((acc, value) => {
@@ -88,7 +89,7 @@ export const FeatureProperties = () => {
       else setFeatureClass(null)
     })
 
-    store.on('batch', ({ operations }) => {
+    featureStore.on('batch', ({ operations }) => {
       const selected = selection.selected().filter(isFeatureId)
       const features = operations.filter(op => selected.includes(op.key))
       const locked = operations.filter(op => selected.includes(featureId(op.key)))
@@ -96,7 +97,7 @@ export const FeatureProperties = () => {
     })
 
     // No cleanup necessary; component listenes forever.
-  }, [selection, store])
+  }, [selection, featureStore])
 
   const activeTab = memento.value && memento.value.tab
 

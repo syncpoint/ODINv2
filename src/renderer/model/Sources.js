@@ -3,14 +3,13 @@ import Collection from 'ol/Collection'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
-import { readFeature, readFeatures, readGeometry, transform, geometryType } from './geometry'
-import { scope, isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, featureId } from '../ids'
-import * as TS from '../ol/ts'
+import { readFeature, readFeatures } from './geometry'
+import { isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, featureId } from '../ids'
 
-export const featureSource = store => {
+export const featureSource = featureStore => {
   const source = new VectorSource()
 
-  store.on('batch', ({ operations }) => {
+  featureStore.on('batch', ({ operations }) => {
     const candidates = operations.filter(({ key }) => key.startsWith('feature:'))
     const additions = candidates.filter(({ type }) => type === 'put')
 
@@ -22,14 +21,15 @@ export const featureSource = store => {
     })
 
     // ... and add additions/updates.
-    const features = additions.map(({ value }) => readFeature(value))
+    const features = additions.map(({ key, value }) => readFeature({ id: key, ...value }))
     source.addFeatures(features)
   })
 
   // On startup: load all features:
   window.requestIdleCallback(async () => {
-    const json = await store.selectFeatures()
-    const features = readFeatures({ type: 'FeatureCollection', features: json })
+    const tuples = await featureStore.select('feature:')
+    const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
+    const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
     source.addFeatures(features)
   }, { timeout: 2000 })
 
@@ -118,14 +118,14 @@ export const intersect = (a, b) => {
  *
  */
 export const selectionTracker = (source, selection) => {
-  const keySet = {}
+  const keySet = new Set()
 
-  const selected = key => keySet[key]
-  const deselected = key => !keySet[key]
+  const selected = key => keySet.has(key)
+  const deselected = key => !keySet.has(key)
 
   selection.on('selection', ({ selected, deselected }) => {
-    selected.forEach(key => (keySet[key] = true))
-    deselected.forEach(key => delete keySet[key])
+    selected.forEach(key => keySet.add(key))
+    deselected.forEach(key => keySet.delete(key))
     const keys = [...selected, ...deselected]
     source.dispatchEvent(new TouchFeaturesEvent(keys))
   })
@@ -140,39 +140,39 @@ export const selectionTracker = (source, selection) => {
 /**
  *
  */
-export const visibilityTracker = (source, store, emitter) => {
-  const keySet = {}
-  const hidden = key => keySet[key]
-  const visible = key => !keySet[key]
+export const visibilityTracker = (source, featureStore, emitter) => {
+  const keySet = new Set()
+  const hidden = key => keySet.has(key)
+  const visible = key => !keySet.has(key)
 
   ;(async () => {
     emitter.on('feature/show', ({ ids }) => {
       const keys = ids.map(featureId)
-      keys.forEach(key => delete keySet[key])
+      keys.forEach(key => keySet.delete(key))
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
     emitter.on('feature/hide', ({ ids }) => {
       const keys = ids.map(featureId)
-      keys.forEach(key => (keySet[key] = true))
+      keys.forEach(key => keySet.add(key))
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    store.on('batch', ({ operations }) => {
+    featureStore.on('batch', ({ operations }) => {
       const candidates = operations
         .filter(({ key }) => isHiddenFeatureId(key))
         .map(({ type, key }) => ({ type, key: featureId(key) }))
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
-      additions.forEach(({ key }) => (keySet[key] = true))
-      removals.forEach(({ key }) => delete keySet[key])
+      additions.forEach(({ key }) => keySet.add(key))
+      removals.forEach(({ key }) => keySet.delete(key))
 
       const keys = candidates.map(({ key }) => key)
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys(hiddenId('feature:'))
-    keys.forEach(key => (keySet[featureId(key)] = true))
+    const keys = await featureStore.keys(hiddenId('feature:'))
+    keys.forEach(key => keySet.add(featureId(key)))
   })()
 
   return {
@@ -185,27 +185,27 @@ export const visibilityTracker = (source, store, emitter) => {
 /**
  *
  */
-export const lockedTracker = (source, store) => {
-  const keySet = {}
-  const locked = key => keySet[key]
-  const unlocked = key => !keySet[key]
+export const lockedTracker = (source, featureStore) => {
+  const keySet = new Set()
+  const locked = key => keySet.has(key)
+  const unlocked = key => !keySet.has(key)
 
   ;(async () => {
-    store.on('batch', ({ operations }) => {
+    featureStore.on('batch', ({ operations }) => {
       const candidates = operations
         .filter(({ key }) => isLockedFeatureId(key))
         .map(({ type, key }) => ({ type, key: featureId(key) }))
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
-      additions.forEach(({ key }) => (keySet[key] = true))
-      removals.forEach(({ key }) => delete keySet[key])
+      additions.forEach(({ key }) => keySet.add(key))
+      removals.forEach(({ key }) => keySet.delete(key))
 
       const keys = candidates.map(({ key }) => key)
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys(lockedId('feature:'))
-    keys.forEach(key => (keySet[featureId(key)] = true))
+    const keys = await featureStore.keys(lockedId('feature:'))
+    keys.forEach(key => keySet.add(featureId(key)))
   })()
 
   return {
@@ -214,59 +214,9 @@ export const lockedTracker = (source, store) => {
   }
 }
 
-const BOUNDS = {}
 
-BOUNDS.layer = store => (acc, ids) => {
-  const read = R.compose(TS.read, readGeometry)
-  const write = TS.write
-
-  return ids.reduce(async (acc, id) => {
-    const bounds = await acc
-    const geometries = await store.selectGeometries(id)
-    if (!geometries.length) return bounds
-
-    const collection = TS.collect(geometries.map(read))
-    bounds.push(write(TS.minimumRectangle(collection)))
-    return bounds
-  }, acc)
-}
-
-BOUNDS.feature = (store, viewMemento) => async (acc, ids) => {
-  const resolution = viewMemento.resolution()
-
-  const featureBounds = {
-    Polygon: R.identity,
-    LineString: geometry => TS.lineBuffer(geometry)(resolution * 10),
-    'LineString:Point': geometry => {
-      const [lineString, point] = TS.geometries(geometry)
-      const segment = TS.segment([TS.startPoint(lineString), point].map(TS.coordinate))
-      const width = segment.getLength()
-      return TS.lineBuffer(lineString)(width)
-    },
-    MultiPoint: geometry => {
-      const [center, ...coords] = TS.coordinates(geometry)
-      const ranges = coords.map(coord => TS.segment(center, coord).getLength())
-      const range = Math.max(...ranges)
-      return TS.pointBuffer(TS.point(center))(range)
-    }
-  }
-
-  const geometries = await store.selectGeometries(ids)
-  return geometries
-    .map(readGeometry)
-    .reduce((acc, geometry) => {
-      const type = geometryType(geometry)
-      const { read, write } = transform(geometry)
-      const bounds = featureBounds[type] || (geometry => TS.minimumRectangle(geometry))
-      acc.push(write(bounds(read(geometry))))
-      return acc
-    }, acc)
-}
-
-
-export const highlightTracker = (emitter, selection, store, viewMemento) => {
+export const highlightTracker = (emitter, featureStore, viewMemento) => {
   const source = new VectorSource({ features: new Collection() })
-  const ids = id => R.uniq([id, ...selection.selected()])
   let timeout
   let hiddenIds = []
 
@@ -275,25 +225,19 @@ export const highlightTracker = (emitter, selection, store, viewMemento) => {
     emitter.emit('feature/hide', { ids: hiddenIds })
   }
 
-  emitter.on('highlight/on', async ({ id }) => {
-    const scopes = R.groupBy(id => scope(id), ids(id))
-    const geometries = await Object.entries(scopes).reduce(async (acc, scope) => {
-      const bounds = await acc
-      if (!BOUNDS[scope[0]]) return bounds
-      else return BOUNDS[scope[0]](store, viewMemento)(bounds, scope[1])
-    }, [])
-
+  emitter.on('highlight/on', async ({ ids }) => {
+    const geometries = await featureStore.geometryBounds(ids, viewMemento.resolution())
     const features = geometries.map(geometry => new Feature(geometry))
     source.addFeatures(features)
 
     // Temporarily show hidden feature.
 
-    const featureIds = (await store.collectKeys_(ids(id), ['link']))
-      .filter(isFeatureId)
-      .map(id => `hidden+${id}`)
+    const keys = await featureStore.collectKeys(ids)
+    const featureIds = keys.filter(isFeatureId)
+    const tuples = await featureStore.tuples(featureIds.map(id => `hidden+${id}`))
 
-    hiddenIds = Object.entries(await store.entries(featureIds))
-      .filter(([key, value]) => value)
+    hiddenIds = tuples
+      .filter(([_, value]) => value)
       .map(([key]) => key)
 
     emitter.emit('feature/show', { ids: hiddenIds })

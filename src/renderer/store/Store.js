@@ -119,18 +119,6 @@ Store.prototype.selectProperties = function (keys) {
 
 /**
  * @async
- * selectGeometries :: Key k => k -> [GeoJSON/Geometry]
- * selectGeometries :: Key k => [k] -> [GeoJSON/Geometry]
- */
-Store.prototype.selectGeometries = function (arg) {
-  if (Array.isArray(arg)) return this.geometries_.values(arg)
-  else if (isLayerId(arg)) return this.geometries_.values(`feature:${arg.split(':')[1]}`)
-  else this.geometries_.values([arg])
-}
-
-
-/**
- * @async
  * collectKeys_ :: Key k => [k] -> [k]
  */
 Store.prototype.collectKeys_ = async function (ids, excludes = []) {
@@ -371,7 +359,8 @@ Store.prototype.hide = async function (id, active) {
   const keys = await this.collectKeys_(ids, ['link'])
   const ops = keys
     .map(hiddenId)
-    .map(key => ({ type: 'put', key, value: { id: key } }))
+    // .map(key => ({ type: 'put', key, value: { id: key } }))
+    .map(key => ({ type: 'put', key, value: true }))
 
   return this.db_.batch(ops)
 }
@@ -403,7 +392,8 @@ Store.prototype.lock = async function (id, active) {
   const keys = await this.collectKeys_(ids, ['link'])
   const ops = keys
     .map(lockedId)
-    .map(key => ({ type: 'put', key, value: { id: key } }))
+    // .map(key => ({ type: 'put', key, value: { id: key } }))
+    .map(key => ({ type: 'put', key, value: true }))
 
   return this.db_.batch(ops)
 }
@@ -454,6 +444,7 @@ const insertCommand = function (values) {
  */
 const deleteCommand = function (values) {
   const ops = values.map(({ id: key }) => ({ type: 'del', key }))
+  console.log('[deleteCommand]', ops)
   return {
     apply: () => this.db_.batch(ops),
     inverse: () => this.insertCommand(values)

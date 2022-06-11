@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import { readJSON } from './io'
 import { transferProject } from '.'
 import { valuesByPrefix } from '../../shared/level/HighLevel'
-import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
+import { jsonDB, wbkDB, leveldb } from '../../shared/level'
 
 const pathname = dir => resolve(__dirname, dir)
 
@@ -22,8 +22,8 @@ describe('legacy', async function () {
     // Read back data and compare.
     const acc = { layers: [], features: [], geometries: [], links: [] }
     const actual = await Object.values(databases).reduce(async (acc, db) => {
-      const properties = propertiesPartition(db)
-      const geometries = geometriesPartition(db)
+      const properties = jsonDB(db)
+      const geometries = wbkDB(db)
       const entries = await acc
 
       entries.layers.push(...await valuesByPrefix(properties, 'layer:'))

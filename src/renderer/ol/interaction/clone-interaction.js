@@ -9,7 +9,7 @@ import * as ids from '../../ids'
  *
  */
 export default options => {
-  const { store, visibleSource, hitTolerance, selection, modifiableSource } = options
+  const { featureStore, visibleSource, hitTolerance, selection, modifiableSource } = options
 
   // Has cloning operation started?
   let cloning = false
@@ -76,7 +76,6 @@ export default options => {
     // Note: ol/Feature does not carry all persisted data.
     const features = event.features.getArray()
     const ids = features.map(feature => feature.getId())
-    const properties = await store.select(ids)
 
     // Swap geometries: feature <-> clone.
     features.forEach((feature, index) => {
@@ -86,6 +85,7 @@ export default options => {
     })
 
     // Prepare new JSON features to put into store:
+    const properties = await featureStore.values(ids)
     const json = clones.map((clone, index) => {
       const geometry = writeGeometryObject(clone.getGeometry())
       return { ...properties[index], id: clone.getId(), geometry }
@@ -93,7 +93,9 @@ export default options => {
 
     // Important: Remove clones from source before adding to store.
     clones.forEach(clone => visibleSource.removeFeature(clone))
-    await store.insertFeatures(json)
+    const tuples = json.map(({ id: key, ...value }) => [key, value])
+
+    await featureStore.insert(tuples)
     selection.set(clones.map(clone => clone.getId()))
   })
 

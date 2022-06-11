@@ -59,7 +59,7 @@ const set = value => feature => {
 }
 
 export default props => {
-  const { store } = useServices()
+  const { featureStore } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -81,9 +81,7 @@ export default props => {
 
   const update = state => {
     setState(state)
-    const features = Object.values(props.features)
-    store.update(features.map(set(state)), features)
-
+    featureStore.update(props.features, set(state))
   }
 
   const handleReliabilityChange = ({ target }) => {

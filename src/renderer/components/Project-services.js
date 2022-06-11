@@ -1,9 +1,9 @@
 import path from 'path'
 import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
-import { leveldb, propertiesPartition, geometriesPartition, preferencesPartition } from '../../shared/level'
+import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore } from '../store'
+import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -19,21 +19,22 @@ export default async projectUUID => {
     if (entry) return entry.split('=')[1]
   })()
 
-  const master = leveldb({ down: new IPCDownClient(ipcRenderer) })
+  const master = L.leveldb({ down: new IPCDownClient(ipcRenderer) })
   const sessionStore = new SessionStore(master, `project:${projectUUID}`)
   const viewMemento = new ViewMemento(sessionStore)
   const emitter = new EventEmitter()
 
   const location = path.join(databases, projectUUID)
-  const db = leveldb({ location })
-  const propertiesLevel = propertiesPartition(db)
-  const geometryLevel = geometriesPartition(db)
-  const preferencesLevel = preferencesPartition(db)
+  const db = L.leveldb({ location })
+  const jsonDB = L.jsonDB(db)
+  const wbkDB = L.wbkDB(db)
+  const preferencesLevel = L.preferencesPartition(db)
 
-  const store = new Store(propertiesLevel, geometryLevel, undo, selection)
+  const store = new Store(jsonDB, wbkDB, undo, selection)
+  const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
   const preferencesStore = new PreferencesStore(preferencesLevel)
-  const searchIndex = new SearchIndex(propertiesLevel)
-  const controller = new Controller(store, emitter, ipcRenderer)
+  const searchIndex = new SearchIndex(jsonDB)
+  const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
 
   // Key bindings.
   bindings(emitter)
@@ -83,6 +84,7 @@ export default async projectUUID => {
   services.selection = selection
   services.dragAndDrop = dragAndDrop
   services.store = store
+  services.featureStore = featureStore
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
   services.paletteCommands = new PaletteCommands(store, emitter)

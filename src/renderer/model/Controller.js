@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { scope } from '../ids'
 
 const NOOP = {
@@ -9,41 +10,45 @@ const NOOP = {
 
 const feature = {
   onClick (id, event, spec) {
-    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(id)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(id)
-    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(id)
-    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(id)
+    const ids = this.selected(id)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.featureStore.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.featureStore.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.featureStore.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.featureStore.lock(ids)
   },
 
   onDoubleClick (id, event) {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.emitter.emit('highlight/on', { id })
+    const ids = this.selected(id)
+    if (spec.match(/SCOPE:FEATURE/)) this.emitter.emit('highlight/on', { ids })
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:FEATURE/)) this.emitter.emit('highlight/off', { id })
+    if (spec.match(/SCOPE:FEATURE/)) this.emitter.emit('highlight/off')
   }
 }
 
 const layer = {
   onClick (id, event, spec) {
-    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(id)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(id)
-    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(id)
-    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(id)
+    const ids = this.selected(id)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.featureStore.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.featureStore.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.featureStore.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.featureStore.lock(ids)
   },
 
   onDoubleClick (id, event) {
   },
 
   onMouseDown (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.emitter.emit('highlight/on', { id })
+    const ids = this.selected(id)
+    if (spec.match(/SCOPE:LAYER/)) this.emitter.emit('highlight/on', { ids })
   },
 
   onMouseUp (id, event, spec) {
-    if (spec.match(/SCOPE:LAYER/)) this.emitter.emit('highlight/off', { id })
+    if (spec.match(/SCOPE:LAYER/)) this.emitter.emit('highlight/off')
   }
 }
 
@@ -64,15 +69,16 @@ const link = {
   onMouseUp (id, event, spec) {},
 
   async onDoubleClick (id) {
-    const links = await this.store.selectProperties(id)
+    const links = await this.featureStore.selectProperties(id)
     links.forEach(link => this.ipcRenderer.send('OPEN_LINK', link))
   }
 }
 
-export function Controller (store, emitter, ipcRenderer) {
-  this.store = store
+export function Controller (store, emitter, ipcRenderer, selection) {
+  this.featureStore = store
   this.emitter = emitter
   this.ipcRenderer = ipcRenderer
+  this.selection = selection
 
   this.scopes_ = {
     feature,
@@ -81,6 +87,10 @@ export function Controller (store, emitter, ipcRenderer) {
     'link+layer': link,
     'link+feature': link
   }
+}
+
+Controller.prototype.selected = function (id) {
+  return R.uniq([id, ...this.selection.selected()])
 }
 
 Controller.prototype.onClick = function (id, event, spec) {

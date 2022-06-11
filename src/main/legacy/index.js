@@ -1,7 +1,7 @@
 import path from 'path'
 import { readSources } from './io'
 import { readProjects } from './projects'
-import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/level'
+import { jsonDB, wbkDB, leveldb } from '../../shared/level'
 
 
 /**
@@ -14,8 +14,8 @@ import { propertiesPartition, geometriesPartition, leveldb } from '../../shared/
  */
 export const transferProject = async (db, project) => {
   const { layers, links, preferences } = project
-  const properties = propertiesPartition(db)
-  const geometries = geometriesPartition(db)
+  const properties = jsonDB(db)
+  const geometries = wbkDB(db)
 
   // Layers.
   {
