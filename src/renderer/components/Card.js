@@ -54,15 +54,17 @@ export const Card = React.forwardRef((props, ref) => {
       const [...files] = event.dataTransfer.files
       const fileLinks = files.reduce((acc, file) => {
         const url = new URL(`file:${file.path}`)
-        const link = { id: `link+${id}/${uuid()}`, name: file.name, url: url.href }
-        return acc.concat(link)
+        const key = `link+${id}/${uuid()}`
+        const value = { name: file.name, url: url.href }
+        acc.push([key, value])
+        return acc
       }, [])
 
       // Append possible items to existing file links:
       const getAsString = item => new Promise(resolve => item.getAsString(resolve))
       const [...items] = event.dataTransfer.items
 
-      const pendingLinks = items
+      const links = items
         .filter(item => item.type === 'text/uri-list')
         .reduce(async (acc, item) => {
           const arg = await getAsString(item)
@@ -70,13 +72,14 @@ export const Card = React.forwardRef((props, ref) => {
           const url = new URL(arg)
           if (!url.hostname || !url.href) return acc
 
-          const link = { id: `link+${id}/${uuid()}`, name: url.origin, url: url.href }
+          const key = `link+${id}/${uuid()}`
+          const value = { name: url.origin, url: url.href }
           const links = await acc
-          return links.concat(link)
+          links.push([key, value])
+          return links
         }, fileLinks)
 
-      const links = await pendingLinks
-      store.insert(links)
+      store.insert(await links)
     }
   }
 

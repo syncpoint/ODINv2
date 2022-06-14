@@ -1,10 +1,12 @@
 import * as R from 'ramda'
 import util from 'util'
 import Emitter from '../../shared/emitter'
-import { MiniSearchIndex as Index } from './MiniSearch'
 import { Query } from './Query'
-import { isGroupId } from '../ids'
+import { isGroupId, isAssociatedId, associatedId } from '../ids'
 import { options } from '../model/options'
+import * as L from '../../shared/level'
+import { documents } from './documents'
+import { createIndex, parseQuery } from './MiniSearch'
 
 
 const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
@@ -30,80 +32,153 @@ export const sort = entries => entries.sort((a, b) => {
 })
 
 
+
 /**
  * @constructor
  */
-export function SearchIndex (propertiesLevel) {
+export function SearchIndex (jsonDB) {
   Emitter.call(this)
-  this.carrera_ = {}
-  this.index_ = new Index(this.carrera_)
+
+  this.ready = false
+  this.mirror = {}
+  this.cachedDocuments = {}
+
+  const cache = function (id) {
+    return this.mirror[id]
+  }
+
+  this.cache = cache.bind(this)
 
   window.requestIdleCallback(async () => {
-    await new Promise((resolve, reject) => {
-      propertiesLevel.createReadStream()
-        .on('data', ({ key, value }) => (this.carrera_[key] = value))
-        .on('error', reject)
-        .on('close', () => resolve())
-    })
+    const entries = await L.readTuples(jsonDB)
+    this.mirror = Object.fromEntries(entries)
+    this.index = createIndex()
 
-    this.index_.createIndex_()
+    const documents = entries
+      .map(([key, value]) => this.document(key, value, this.cache))
+      .filter(R.identity)
+
+    // Documents must be stored as is for later removal from index.
+    documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
+    this.index.addAll(documents)
+
+    this.ready = true
+    this.emit('ready')
   }, { timeout: 2000 })
 
-  // TODO: investigate - it seems put event does not carry properties as promised (key, value)
-  propertiesLevel.on('put', event => console.log('[DB] put', event))
-  propertiesLevel.on('del', key => this.handleBatch_([{ type: 'del', key }]))
-  propertiesLevel.on('batch', event => this.handleBatch_(event))
+  jsonDB.on('del', key => this.updateMirror([{ type: 'del', key }]))
+  jsonDB.on('batch', event => this.updateMirror(event))
 }
 
 util.inherits(SearchIndex, Emitter)
+
+SearchIndex.prototype.updateMirror = function (event) {
+  event.forEach(op => {
+    switch (op.type) {
+      case 'put': this.mirror[op.key] = op.value; break
+      case 'del': delete this.mirror[op.key]; break
+    }
+  })
+
+  if (this.busy) {
+    this.queue = this.queue || []
+    this.queue.push(event)
+    return
+  }
+
+  this.busy = true
+  this.queue = []
+  this.updateIndex(event)
+  this.busy = false
+
+  if (this.queue.length) this.handleBatch_(this.queue.flat())
+  this.emit('index/updated')
+}
+
+SearchIndex.prototype.updateIndex = function (ops) {
+  const documents = ops.map(({ type, key, value }) => {
+
+    // 'Associated information' is no document in its own right but some
+    // arbitrary 'value object' associated with a main document.
+
+    const id = isAssociatedId(key)
+      ? associatedId(key)
+      : key
+
+    return isAssociatedId(key)
+      ? [id, this.document(id, this.cache(id), this.cache)] // put/del: cached main entry
+      : type === 'put'
+        ? [id, this.document(id, value, this.cache)] // put: value from database update
+        : [id, null] // del: remove from index/cache only
+  })
+
+  documents.forEach(([key, document]) => {
+    if (this.cachedDocuments[key]) {
+      this.index.remove(this.cachedDocuments[key])
+      delete this.cachedDocuments[key]
+    }
+
+    if (document) {
+      this.cachedDocuments[key] = document
+      this.index.add(document)
+    }
+  })
+}
+
+SearchIndex.prototype.cache = function (id) {
+  return this.mirror[id]
+}
+
+SearchIndex.prototype.document = function (key, value, cache) {
+  if (!value) return null
+  const scope = key.split(':')[0]
+  const fn = documents[scope]
+  if (!fn) return null
+  return fn(key, value, cache)
+}
+
+
+/**
+ * query :: String -> Promise(Query)
+ */
+SearchIndex.prototype.query = function (terms, callback) {
+  const query = () => new Query(this, terms, callback)
+  return new Promise((resolve) => {
+    if (this.ready) resolve(query())
+    else this.once('ready', () => resolve(query()))
+  })
+}
 
 
 /**
  *
  */
-SearchIndex.prototype.handleBatch_ = function (event) {
-  event.forEach(op => {
-    switch (op.type) {
-      case 'put': this.carrera_[op.key] = op.value; break
-      case 'del': delete this.carrera_[op.key]; break
-    }
-  })
+SearchIndex.prototype.searchField = function (field, tokens) {
 
-  if (this.busy_) {
-    this.queue_ = this.queue_ || []
-    this.queue_.push(event)
-    return
-  }
+  // No search result is different from empty search result.
+  if (!tokens.length) return null
 
-  this.busy_ = true
-  this.queue_ = []
-  this.index_.handleBatch(event)
-  this.busy_ = false
-
-  if (this.queue_.length) this.handleBatch_(this.queue_.flat())
-  this.emit('index/updated')
+  const options = field => ({ fields: [field], prefix: true, combineWith: 'AND' })
+  const matches = this.index.search(tokens.join(' '), options(field))
+  return matches.map(R.prop('id'))
 }
+
 
 /**
- * query :: string -> Promise(Query)
+ * search :: String -> [Option]
  */
-SearchIndex.prototype.query = function (terms, callback) {
-  const query = () => new Query(this, terms, callback)
-  return new Promise((resolve) => {
-    const index = this.index_
-    if (index.ready()) resolve(query())
-    else index.once('ready', () => resolve(query()))
-  })
-}
+SearchIndex.prototype.search = function (terms) {
+  const [query, searchOptions] = parseQuery(terms)
+  const matches = searchOptions
+    ? this.index.search(query, searchOptions)
+    : this.index.search(query)
 
-SearchIndex.prototype.search = function (query) {
-  const items = this.index_.search(query)
-  const cache = id => this.carrera_[id]
-  const option = item => {
-    const fn = options[item.id.split(':')[0]]
+  const option = id => {
+    const fn = options[id.split(':')[0]]
     if (!fn) return null
-    return fn(item, cache)
+    return fn(id, this.cache)
   }
 
-  return sort(items.map(option).filter(R.identity))
+  const entries = matches.map(({ id }) => option(id)).filter(Boolean)
+  return sort(entries)
 }

@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { click, platformModifierKeyOnly } from 'ol/events/condition'
 import { Select } from 'ol/interaction'
 
@@ -23,7 +24,7 @@ export default options => {
 
   // Propagate to global selection.
   // NOTE: selected, deselected are deltas/changes.
-  interaction.on('select', () => selection.set(selected()))
+  interaction.on('select', () => selection.set(selected().filter(R.identity)))
 
   selectedSource.on('addfeature', ({ feature }) => {
     if (!features().includes(feature)) interaction.getFeatures().push(feature)

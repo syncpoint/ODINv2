@@ -54,8 +54,9 @@ export const CommandPalette = props => {
   React.useEffect(() => {
     (async () => {
       // Get properties snapshot of currently selection:
-      // snapshot :: [value]
-      const snapshot = await store.select(selection.selected())
+      // snapshot :: [k, v]
+      const snapshot = await store.tuples(selection.selected())
+      console.log('snapshot', snapshot)
       setSnapshot(snapshot)
     })()
   }, [store, selection])
@@ -65,11 +66,9 @@ export const CommandPalette = props => {
    * Filter command entries based on features snapshot and current filter.
    */
   React.useEffect(() => {
-    // TODO: 1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
     const isMatch = command => command.description().toLowerCase().includes(filter.toLowerCase())
-    const commands = paletteCommands.getCommands(snapshot)
-      .filter(command => !filter || isMatch(command))
-
+    const commands = paletteCommands.getCommands(snapshot).filter(command => !filter || isMatch(command))
+    console.log('commands', commands)
     dispatch({ type: 'entries', entries: commands })
   }, [dispatch, filter, snapshot, paletteCommands])
 

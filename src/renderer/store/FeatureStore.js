@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { scope, isFeatureId, isLayerId, isDeletableId, layerUUID, lockedId, hiddenId } from '../ids'
+import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId } from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
@@ -9,6 +9,22 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
 
 /**
  * Persistence for layers, features and associated information.
+ *
+ * batch :: (leveldb, operations) -> unit
+ * collectKeys :: ([k], [String]) -> [k]
+ * defaultLayerId :: () -> k
+ * insert :: [[k, v]] -> unit
+ * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
+ * insertGeoJSON :: [GeoJSON/Feature] -> unit
+ * keys :: String -> [k]
+ * setDefaultLayer :: k -> unit
+ * tuples :: String -> [[k, v]]
+ * tuples :: [k] -> [[k, v]]
+ * update :: { k: v } -> (v -> v) -> unit
+ * update :: [k] -> [v] -> [v] -> unit
+ * update :: [k] -> [v] -> unit
+ * values :: String -> [v]
+ * values :: [k] -> [v]
  */
 export function FeatureStore (jsonDB, wkbDB, undo, selection) {
   Emitter.call(this)
@@ -28,10 +44,6 @@ export function FeatureStore (jsonDB, wkbDB, undo, selection) {
   })
 
   // window.requestIdleCallback(async () => {
-  //   const junk = await L.readKeys(this.jsonDB, L.prefix('locked+hidden'))
-  //   console.log('junk', junk)
-  //   const operations = junk.map(L.deleteOp)
-  //   await jsonDB.batch(operations)
   // }, { timeout: 0 })
 }
 
@@ -42,13 +54,15 @@ util.inherits(FeatureStore, Emitter)
  * collectKeys :: ([k], [String]) -> [k]
  */
 FeatureStore.prototype.collectKeys = async function (ids, include = []) {
-  const add = x => include.includes(x)
+  const consider = x => include.includes(x)
   const featureIds = id => L.readKeys(this.jsonDB, L.prefix(`feature:${layerUUID(id)}`))
   const hiddenIds = id => L.readKeys(this.jsonDB, L.prefix(hiddenId(id)))
   const linkIds = id => L.readKeys(this.jsonDB, L.prefix(`link+${id}`))
-  const hasLinks = id => add('link') && (isLayerId(id) || isFeatureId(id))
+  const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(`tags+${id}`))
+  const hasLinks = id => consider('link') && (isLayerId(id) || isFeatureId(id))
   const hasFeatures = isLayerId
-  const maybeHidden = id => add('hidden') && (isLayerId(id) || isFeatureId(id))
+  const maybeHidden = id => consider('hidden') && (isLayerId(id) || isFeatureId(id))
+  const isTaggable = id => consider('tags') && isTaggableId(id)
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -59,6 +73,7 @@ FeatureStore.prototype.collectKeys = async function (ids, include = []) {
       if (hasFeatures(id)) ys.push(...await featureIds(id))
       if (hasLinks(id)) ys.push(...await linkIds(id))
       if (maybeHidden(id)) ys.push(...await hiddenIds(id))
+      if (isTaggable(id)) ys.push(...await tagsIds(id))
 
       await collect(xs, ys)
       return xs
@@ -68,54 +83,16 @@ FeatureStore.prototype.collectKeys = async function (ids, include = []) {
   return R.uniq(await collect([], ids))
 }
 
-/**
- * merge :: ([k, JSON], [k, WKB]) -> [k, { ...JSON, geometry: WKB}]
- */
-FeatureStore.prototype.merge = function (json, wkb) {
-  const values = json.reduce((acc, [key, value]) => {
-    acc[key] = value
-    return acc
-  }, {})
-
-  // Merge feature geometries:
-  wkb.reduce((acc, [key, value]) => {
-    acc[key].geometry = value
-    return acc
-  }, values)
-
-  return Object.entries(values)
-}
-
-/**
- * split :: [v] -> [[WKB], [JSON]]
- */
-FeatureStore.prototype.split = function (values) {
-  return values.reduce((acc, { geometry, ...json }) => {
-    acc[0].push(geometry)
-    acc[1].push(json)
-    return acc
-  }, [[], []])
-}
 
 /**
  * @async
- * @deprecated use tuples()
- * select :: String -> [[k, v]]
- * select :: [k] -> [[k, v]]
- */
-FeatureStore.prototype.select = async function (arg) {
-  return L.tuples(this.db, arg)
-}
-
-/**
- * @async
- * @deprecated use tuples()
  * tuples :: String -> [[k, v]]
  * tuples :: [k] -> [[k, v]]
  */
 FeatureStore.prototype.tuples = async function (arg) {
   return L.tuples(this.db, arg)
 }
+
 
 /**
  * @async
@@ -125,6 +102,7 @@ FeatureStore.prototype.tuples = async function (arg) {
 FeatureStore.prototype.values = async function (arg) {
   return L.values(this.db, arg)
 }
+
 
 /**
  * update :: { k: v } -> (v -> v) -> unit
@@ -151,14 +129,16 @@ FeatureStore.prototype.update = async function (...args) {
   }
 }
 
+
 /**
  * @async
- * insert :: [[k], [v]] -> unit
+ * insert :: [[k, v]] -> unit
  */
 FeatureStore.prototype.insert = function (tuples) {
   const command = this.insertCommand(this.db, tuples)
   this.undo.apply(command)
 }
+
 
 /**
  * @async
@@ -168,15 +148,12 @@ FeatureStore.prototype.keys = function (prefix) {
   return L.readKeys(this.jsonDB, L.prefix(prefix))
 }
 
-/**
- * @async
- * objects :: [k] -> {k: v}
- */
-FeatureStore.prototype.objects = async function (keys) {
-  const entries = await L.mgetTuples(this.jsonDB, keys)
-  return Object.fromEntries(entries)
-}
 
+/**
+ * batch :: (leveldb, operations) -> unit
+ * Note: Only used internally for updates on JSON or WKB database
+ * where this store is expected to emit batch event.
+ */
 FeatureStore.prototype.batch = async function (db, operations) {
   await db.batch(operations)
   this.emit('batch', { operations })
@@ -188,12 +165,15 @@ FeatureStore.prototype.batch = async function (db, operations) {
  * delete :: [k] -> unit
  */
 FeatureStore.prototype.delete = async function (ids) {
-  const keys = await this.collectKeys(ids.filter(isDeletableId), ['link', 'hidden'])
 
   // Don't delete locked entries:
-  const locks = await this.objects(keys.map(lockedId))
-  const deletableKeys = keys.filter(key => !locks[lockedId(key)])
-  const tuples = await L.tuples(this.db, deletableKeys)
+  const locks = Object.fromEntries(await this.tuples(ids.map(lockedId)))
+  const deletableIds = ids
+    .filter(isDeletableId)
+    .filter(key => !locks[lockedId(key)])
+
+  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags'])
+  const tuples = await L.tuples(this.db, keys)
   const command = this.deleteCommand(this.db, tuples)
   this.undo.apply(command)
 }
@@ -312,6 +292,66 @@ FeatureStore.prototype.geometryBounds = async function (ids, resolution) {
     if (!handler) return acc
     return handler.call(this, acc, keys, resolution)
   }, [])
+}
+
+const addTag = (name, tags) => R.uniq([...(tags || []), name])
+const removeTag = (name, tags) => (tags || []).filter(tag => tag !== name)
+
+/**
+ * setDefaultLayer :: k -> unit
+ */
+FeatureStore.prototype.setDefaultLayer = async function (id) {
+  const ids = await L.readKeys(this.jsonDB, L.prefix('layer:'))
+  const values = await this.jsonDB.getMany(ids.map(tagsId))
+  const tags = R.zip(ids, values).map(([key, value]) => [tagsId(key), value || []])
+  const layers = tags.filter(([key, value]) => value.includes('default') || key === tagsId(id))
+
+  const keys = layers.map(([key]) => key)
+  const oldValues = layers.map(([_, value]) => value || [])
+  const newValues = layers.map(([key, value]) => {
+    const fn = key === tagsId(id) ? addTag : removeTag
+    return fn('default', value)
+  })
+
+  const command = this.updateCommand(this.jsonDB, keys, newValues, oldValues)
+  this.undo.apply(command)
+}
+
+
+/**
+ * defaultLayerId :: () -> k
+ */
+FeatureStore.prototype.defaultLayerId = async function () {
+  const tuples = await L.readTuples(this.jsonDB, L.prefix('tags+layer'))
+  const match = tuples.find(([_, value]) => value.includes('default'))
+  return match && layerId(match[0])
+}
+
+
+/**
+ * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
+ * insertGeoJSON :: [GeoJSON/Feature] -> unit
+ *
+ * Features id properties if present are ignored.
+ * Default layer is created as necessary.
+ */
+FeatureStore.prototype.insertGeoJSON = async function (geoJSON) {
+  const features = Array.isArray(geoJSON)
+    ? geoJSON
+    : geoJSON.features
+
+  const tuples = []
+
+  // Get or create default layer.
+  let id = await this.defaultLayerId()
+  if (!id) {
+    id = layerId()
+    tuples.push([id, { name: 'Default Layer' }])
+    tuples.push([tagsId(id), ['default']])
+  }
+
+  features.forEach(feature => tuples.push([featureId(id), feature]))
+  this.insert(tuples)
 }
 
 

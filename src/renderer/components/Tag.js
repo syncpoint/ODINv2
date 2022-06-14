@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
@@ -10,7 +11,7 @@ import { matcher, stopPropagation } from './events'
  * A tag in different variants.
  */
 export const Tag = props => {
-  const { store, controller } = useServices()
+  const { tagStore, controller } = useServices()
   const { id, spec } = props
   const [variant, label, action, path] = spec.split(':')
   const closable = variant === 'USER'
@@ -29,7 +30,7 @@ export const Tag = props => {
 
   const handleMouseDown = event => controller.onMouseDown(id, event, spec)
   const handleMouseUp = event => controller.onMouseUp(id, event, spec)
-  const addTag = value => store.addTag(id, value.toLowerCase())
+  const addTag = value => tagStore.addTag(id, value.toLowerCase())
 
   const commitValue = () => {
     setMode('display')
@@ -60,8 +61,8 @@ export const Tag = props => {
   }
 
   const handleClose = React.useCallback(() => {
-    store.removeTag(id, label)
-  }, [id, label, store])
+    tagStore.removeTag(id, label)
+  }, [id, label, tagStore])
 
   const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
   const className = action !== 'NONE'

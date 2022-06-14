@@ -27,7 +27,7 @@ export const featureSource = featureStore => {
 
   // On startup: load all features:
   window.requestIdleCallback(async () => {
-    const tuples = await featureStore.select('feature:')
+    const tuples = await featureStore.tuples('feature:')
     const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
     const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
     source.addFeatures(features)

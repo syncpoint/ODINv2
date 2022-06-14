@@ -69,13 +69,13 @@ const link = {
   onMouseUp (id, event, spec) {},
 
   async onDoubleClick (id) {
-    const links = await this.featureStore.selectProperties(id)
+    const links = await this.featureStore.values([id])
     links.forEach(link => this.ipcRenderer.send('OPEN_LINK', link))
   }
 }
 
-export function Controller (store, emitter, ipcRenderer, selection) {
-  this.featureStore = store
+export function Controller (featureStore, emitter, ipcRenderer, selection) {
+  this.featureStore = featureStore
   this.emitter = emitter
   this.ipcRenderer = ipcRenderer
   this.selection = selection

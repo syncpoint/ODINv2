@@ -15,7 +15,7 @@ const identity = R.cond([
 /**
  *
  */
-documents.feature = (feature, cache) => {
+documents.feature = (id, feature, cache) => {
   const properties = feature.properties || {}
 
   const descriptor = MILSTD.descriptor(properties.sidc)
@@ -23,29 +23,29 @@ documents.feature = (feature, cache) => {
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-  const layer = cache(layerId(feature.id))
+  const layer = cache(layerId(id))
   const layerName = (layer && layer.name) || ''
   const { t } = properties
   const name = feature.name || t || ''
   const links = feature.links || []
 
-  const hidden = cache(hiddenId(feature.id))
-  const locked = cache(lockedId(feature.id))
+  const hidden = cache(hiddenId(id))
+  const locked = cache(lockedId(id))
 
-  const tags = ({ tags }) => [
+  const tags = [
     hidden ? 'hidden' : 'visible',
     locked ? 'locked' : 'unlocked',
     ...(links.length ? ['link'] : []),
-    ...(tags || []),
+    ...(cache(`tags+${id}`) || []),
     ...dimensions,
     ...scope,
     ...identity(MILSTD.identityCode(properties.sidc))
   ]
 
   return {
-    id: feature.id,
+    id,
     scope: 'feature',
-    tags: tags(feature),
+    tags,
     text: `${name} ${hierarchy.join(' ')} ${layerName}`.trim()
   }
 }
@@ -54,23 +54,24 @@ documents.feature = (feature, cache) => {
 /**
  *
  */
-documents.layer = (layer, cache) => {
-  const { name: text, tags } = layer
+documents.layer = (id, layer, cache) => {
+  const { name: text } = layer
   const links = layer.links || []
+  const hidden = cache(hiddenId(id))
+  const locked = cache(lockedId(id))
 
-  const hidden = cache(hiddenId(layer.id))
-  const locked = cache(lockedId(layer.id))
+  const tags = [
+    hidden ? 'hidden' : 'visible',
+    locked ? 'locked' : 'unlocked',
+    ...(links.length ? ['link'] : []),
+    ...(cache(`tags+${id}`) || [])
+  ]
 
   return {
-    id: layer.id,
+    id,
     scope: 'layer',
     text,
-    tags: [
-      hidden ? 'hidden' : 'visible',
-      locked ? 'locked' : 'unlocked',
-      ...(links.length ? ['link'] : []),
-      ...(tags || [])
-    ]
+    tags
   }
 }
 
@@ -78,11 +79,11 @@ documents.layer = (layer, cache) => {
 /**
  *
  */
-const link = link => ({
-  id: link.id,
+const link = (id, link, cache) => ({
+  id,
   scope: 'link',
   text: link.name,
-  tags: link.tags
+  tags: cache(`tags+${id}`) || []
 })
 
 documents['link+layer'] = link
@@ -92,15 +93,15 @@ documents['link+feature'] = link
 /**
  *
  */
-documents.symbol = symbol => {
+documents.symbol = (id, symbol, cache) => {
   const tags = [
     ...symbol.dimensions,
     symbol.scope,
-    ...(symbol.tags || [])
+    ...(cache(`symbol+${id}`) || [])
   ]
 
   return ({
-    id: symbol.id,
+    id,
     scope: 'symbol',
     text: symbol.hierarchy.join(' '),
     tags

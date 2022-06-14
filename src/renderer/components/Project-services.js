@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore } from '../store'
+import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -30,8 +30,9 @@ export default async projectUUID => {
   const wbkDB = L.wbkDB(db)
   const preferencesLevel = L.preferencesPartition(db)
 
-  const store = new Store(jsonDB, wbkDB, undo, selection)
+  const store = new Store(jsonDB, undo, selection)
   const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
+  const tagStore = new TagStore(store, featureStore)
   const preferencesStore = new PreferencesStore(preferencesLevel)
   const searchIndex = new SearchIndex(jsonDB)
   const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
@@ -85,10 +86,15 @@ export default async projectUUID => {
   services.dragAndDrop = dragAndDrop
   services.store = store
   services.featureStore = featureStore
+  services.tagStore = tagStore
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
-  services.paletteCommands = new PaletteCommands(store, emitter)
   services.controller = controller
+
+  services.paletteCommands = new PaletteCommands({
+    store,
+    emitter
+  })
 
   return services
 }

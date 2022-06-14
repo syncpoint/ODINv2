@@ -105,3 +105,12 @@ export const tuples = (db, arg) => Array.isArray(arg)
 export const values = (db, arg) => Array.isArray(arg)
   ? mgetValues(db, arg)
   : readValues(db, prefix(arg))
+
+export const existsKey = (db, prefix) => {
+  return new Promise((resolve, reject) => {
+    db.createReadStream({ keys: true, values: false, limit: 1, ...prefix })
+      .on('data', () => resolve(true))
+      .on('error', reject)
+      .on('close', () => resolve(false))
+  })
+}

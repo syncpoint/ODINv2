@@ -19,7 +19,7 @@ export default options => {
 
   interaction.on('modifystart', async ({ feature }) => {
     // Get full set of properties for feature:
-    snapshot = await featureStore.select([feature.getId()])
+    snapshot = await featureStore.tuples([feature.getId()])
   })
 
   interaction.on('modifyend', event => {

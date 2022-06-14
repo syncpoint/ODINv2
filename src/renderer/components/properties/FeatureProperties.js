@@ -64,15 +64,15 @@ export const FeatureProperties = () => {
         .selected()
         .filter(isFeatureId)
 
-      const featureTuples = await featureStore.select(keys)
+      const featureTuples = await featureStore.tuples(keys)
       const features = featureTuples.reduce((acc, [key, feature]) => {
         acc[key] = feature
         acc[key].id = key
         return acc
       }, {})
 
-      const locked = await featureStore.objects(keys.map(lockedId))
-      dispatch({ type: 'reset', features, locked })
+      const locked = await featureStore.tuples(keys.map(lockedId))
+      dispatch({ type: 'reset', features, locked: Object.fromEntries(locked) })
 
       const featureClasses = Object.values(features).reduce((acc, value) => {
         const sidc =
