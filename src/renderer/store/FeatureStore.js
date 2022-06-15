@@ -7,6 +7,8 @@ import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
 import { readGeometry, transform, geometryType } from '../model/geometry'
 
+import uuid from 'uuid-random'
+
 /**
  * Persistence for layers, features and associated information.
  *
@@ -117,11 +119,12 @@ FeatureStore.prototype.update = async function (...args) {
     } else {
       // No undo, direct update.
       const [keys, values] = args
-      this.db.batch(R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
+      this.batch(this.db, R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
     }
   } else if (args.length === 3) {
     const [keys, newValues, oldValues] = args
-    const command = this.updateCommand(this.db, keys, newValues, oldValues)
+    const originatorId = uuid()
+    const command = this.updateCommand(this.db, keys, newValues, oldValues, { originatorId })
     this.undo.apply(command)
   }
 }
@@ -147,13 +150,11 @@ FeatureStore.prototype.keys = function (prefix) {
 
 
 /**
- * batch :: (leveldb, operations) -> unit
- * Note: Only used internally for updates on JSON or WKB database
- * where this store is expected to emit batch event.
+ * batch :: (leveldb, operations, {k: v}) -> unit
  */
-FeatureStore.prototype.batch = async function (db, operations) {
+FeatureStore.prototype.batch = async function (db, operations, options = {}) {
   await db.batch(operations)
-  this.emit('batch', { operations })
+  this.emit('batch', { operations, ...options })
 }
 
 
@@ -352,22 +353,22 @@ FeatureStore.prototype.insertGeoJSON = async function (geoJSON) {
 }
 
 
-FeatureStore.prototype.insertCommand = function (db, tuples) {
-  const apply = () => db.batch(tuples.map(([key, value]) => L.putOp(key, value)))
+FeatureStore.prototype.insertCommand = function (db, tuples, options = {}) {
+  const apply = () => this.batch(db, tuples.map(([key, value]) => L.putOp(key, value)), options)
   const inverse = () => this.deleteCommand(db, tuples)
   return this.undo.command(apply, inverse)
 }
 
 
-FeatureStore.prototype.deleteCommand = function (db, tuples) {
-  const apply = () => db.batch(tuples.map(([key]) => L.deleteOp(key)))
+FeatureStore.prototype.deleteCommand = function (db, tuples, options = {}) {
+  const apply = () => this.batch(db, tuples.map(([key]) => L.deleteOp(key)), options)
   const inverse = () => this.insertCommand(db, tuples)
   return this.undo.command(apply, inverse)
 }
 
 
-FeatureStore.prototype.updateCommand = function (db, keys, newValues, oldValues) {
-  const apply = () => db.batch(R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value)))
+FeatureStore.prototype.updateCommand = function (db, keys, newValues, oldValues, options = {}) {
+  const apply = () => this.batch(db, R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value)), options)
   const inverse = () => this.updateCommand(db, keys, oldValues, newValues)
   return this.undo.command(apply, inverse)
 }
