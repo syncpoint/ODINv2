@@ -7,7 +7,6 @@ import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
 import { readGeometry, transform, geometryType } from '../model/geometry'
 
-import uuid from 'uuid-random'
 
 /**
  * Persistence for layers, features and associated information.
@@ -123,8 +122,7 @@ FeatureStore.prototype.update = async function (...args) {
     }
   } else if (args.length === 3) {
     const [keys, newValues, oldValues] = args
-    const originatorId = uuid()
-    const command = this.updateCommand(this.db, keys, newValues, oldValues, { originatorId })
+    const command = this.updateCommand(this.db, keys, newValues, oldValues)
     this.undo.apply(command)
   }
 }
