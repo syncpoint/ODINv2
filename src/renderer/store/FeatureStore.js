@@ -35,14 +35,6 @@ export function FeatureStore (jsonDB, wkbDB, undo, selection) {
   this.undo = undo
   this.selection = selection
   this.db = L.leveldb({ down: new PartitionDOWN(jsonDB, wkbDB) })
-
-  // Forward high-level batch event:
-  this.db.on('batch', operations => {
-    // FIXME: probably not the right place for selection handling
-    const removals = operations.filter(({ type }) => type === 'del').map(({ key }) => key)
-    this.selection.deselect(removals)
-    this.emit('batch', { operations })
-  })
 }
 
 util.inherits(FeatureStore, Emitter)
@@ -151,6 +143,10 @@ FeatureStore.prototype.keys = function (prefix) {
  * batch :: (leveldb, operations, {k: v}) -> unit
  */
 FeatureStore.prototype.batch = async function (db, operations, options = {}) {
+  // FIXME: probably not the right place for selection handling
+  const removals = operations.filter(({ type }) => type === 'del').map(({ key }) => key)
+  this.selection.deselect(removals)
+
   await db.batch(operations)
   this.emit('batch', { operations, ...options })
 }
