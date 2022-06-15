@@ -42,9 +42,6 @@ export function FeatureStore (jsonDB, wkbDB, undo, selection) {
     this.selection.deselect(removals)
     this.emit('batch', { operations })
   })
-
-  // window.requestIdleCallback(async () => {
-  // }, { timeout: 0 })
 }
 
 util.inherits(FeatureStore, Emitter)

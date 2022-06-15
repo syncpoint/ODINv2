@@ -1,18 +1,31 @@
 import { Command } from '../../commands/Command'
-import { layerId } from '../../ids'
+import { layerId, isLayerId } from '../../ids'
 
+
+/**
+ *
+ */
 export default function LayerCommands (options) {
   this.store = options.store
+  this.featureStore = options.featureStore
   this.emitter = options.emitter
 }
 
+
+/**
+ *
+ */
 LayerCommands.prototype.commands = function (tuples) {
-  console.log('[LayerCommands] commands', tuples)
   return [
-    this.createLayer()
+    this.createLayer(),
+    this.setDefaultLayer(tuples)
   ]
 }
 
+
+/**
+ *
+ */
 LayerCommands.prototype.createLayer = function () {
   const callback = value => {
     if (!value) return
@@ -30,21 +43,21 @@ LayerCommands.prototype.createLayer = function () {
   })
 }
 
-/*
-  const createLayerName =
 
+/**
+ *
+ */
+LayerCommands.prototype.setDefaultLayer = function (tuples) {
+  if (tuples.length !== 1) return []
+  const layers = tuples.filter(([key]) => isLayerId(key))
+  if (layers.length !== 1) return []
 
-  const setActiveLayerCommand = () => new Command({
+  return new Command({
     id: 'layer:setDefault',
     description: 'Layer: Make default',
     body: (dryRun) => {
       if (dryRun) return
-      this.store.addTag(entries[0].id, 'default')
+      this.featureStore.setDefaultLayer(tuples[0][0])
     }
   })
-
-  const layerCount = entries.filter(entry => isLayerId(entry.id)).length
-  if (layerCount === 0) return [createLayerCommand()]
-  else if (layerCount === 1) return [setActiveLayerCommand()]
-  else return []
-*/
+}

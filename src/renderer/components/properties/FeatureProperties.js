@@ -17,8 +17,16 @@ const reducer = (state, event) => {
       const features = event.features.reduce((acc, operation) => {
         if (!isFeatureId(operation.key)) return acc
 
+        const update = ({ key, value }) => {
+          if (!value.geometry && acc[key]) {
+            const geometry = acc[key].geometry
+            acc[key] = value
+            acc[key].geometry = geometry
+          } else acc[key] = value
+        }
+
         switch (operation.type) {
-          case 'put': acc[operation.key] = operation.value; break
+          case 'put': update(operation); break
           case 'del': delete acc[operation.key]; break
         }
 
@@ -92,6 +100,8 @@ export const FeatureProperties = () => {
     featureStore.on('batch', ({ operations }) => {
       const selected = selection.selected().filter(isFeatureId)
       const features = operations.filter(op => selected.includes(op.key))
+
+      // Note: May include 'hidden+feature' and similar.
       const locked = operations.filter(op => selected.includes(featureId(op.key)))
       dispatch({ type: 'update', features, locked })
     })

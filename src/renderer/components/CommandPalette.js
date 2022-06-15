@@ -30,7 +30,10 @@ export const CommandPalette = props => {
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset values to stored snapshot:
-    if (key === 'Escape') store.update(snapshot)
+    if (key === 'Escape') {
+      const focusIndex = Entries.focusIndex(state)
+      if (focusIndex !== -1) state.entries[focusIndex].revert()
+    }
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
@@ -56,7 +59,6 @@ export const CommandPalette = props => {
       // Get properties snapshot of currently selection:
       // snapshot :: [k, v]
       const snapshot = await store.tuples(selection.selected())
-      console.log('snapshot', snapshot)
       setSnapshot(snapshot)
     })()
   }, [store, selection])
@@ -68,7 +70,6 @@ export const CommandPalette = props => {
   React.useEffect(() => {
     const isMatch = command => command.description().toLowerCase().includes(filter.toLowerCase())
     const commands = paletteCommands.getCommands(snapshot).filter(command => !filter || isMatch(command))
-    console.log('commands', commands)
     dispatch({ type: 'entries', entries: commands })
   }, [dispatch, filter, snapshot, paletteCommands])
 

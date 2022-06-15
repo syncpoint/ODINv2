@@ -16,6 +16,7 @@ export class Command {
     this.description_ = options.description
     this.binding_ = options.binding
     this.body_ = options.body
+    this.revert_ = options.revert
   }
 
   binding () {
@@ -28,5 +29,9 @@ export class Command {
 
   invoke (dryRun) {
     this.body_ && this.body_(dryRun)
+  }
+
+  revert () {
+    this.revert_ && this.revert_()
   }
 }

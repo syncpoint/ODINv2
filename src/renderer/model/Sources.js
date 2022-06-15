@@ -6,22 +6,36 @@ import Event from 'ol/events/Event'
 import { readFeature, readFeatures } from './geometry'
 import { isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, featureId } from '../ids'
 
-export const featureSource = featureStore => {
+export const featureSource = (featureStore) => {
   const source = new VectorSource()
 
   featureStore.on('batch', ({ operations }) => {
     const candidates = operations.filter(({ key }) => key.startsWith('feature:'))
     const additions = candidates.filter(({ type }) => type === 'put')
+    const removals = candidates.filter(({ type }) => type === 'del')
 
-    // Source.addFeature() does not support re-adding,
-    // hence delete all candidates...
-    candidates.forEach(({ key }) => {
+    removals.forEach(({ key }) => {
       const feature = source.getFeatureById(key)
       if (feature) source.removeFeature(feature)
     })
 
     // ... and add additions/updates.
-    const features = additions.map(({ key, value }) => readFeature({ id: key, ...value }))
+    const features = additions.map(({ key, value }) => {
+      const feature = readFeature({ id: key, ...value })
+      const staleFeature = source.getFeatureById(key)
+
+      // When only feature properties are updated, geometry is
+      // not part of value. Transfer geometry from old to new feature
+      // before removing old feature from source.
+
+      if (staleFeature) {
+        if (!feature.getGeometry()) feature.setGeometry(staleFeature.getGeometry())
+        source.removeFeature(staleFeature)
+      }
+
+      return feature
+    })
+
     source.addFeatures(features)
   })
 
