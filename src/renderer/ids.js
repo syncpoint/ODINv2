@@ -24,7 +24,9 @@ export const featureId = R.cond([
 
 export const lockedId = id => `locked+${id}`
 export const hiddenId = id => `hidden+${id}`
+export const sharedId = id => `shared+${id}`
 export const tagsId = id => `tags+${id}`
+export const linkId = id => `link+${id}/{uuid()}`
 
 /**
  * '+'-notation container id.

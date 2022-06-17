@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { isTaggableId } from '../ids'
+import { isTaggableId, tagsId } from '../ids'
 import { importSymbols } from './symbols'
 import * as L from '../../shared/level'
 
@@ -108,7 +108,7 @@ const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
  */
 Store.prototype.addTag = async function (id, name) {
   const taggableIds = this.selection.selected(isTaggableId)
-  const ids = R.uniq([id, ...taggableIds]).map(id => `tags+${id}`)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
   const oldValues = values.map(value => value || [])
   const newValues = oldValues.map(addTag(name))
@@ -123,7 +123,7 @@ Store.prototype.addTag = async function (id, name) {
  */
 Store.prototype.removeTag = async function (id, name) {
   const taggableIds = this.selection.selected(isTaggableId)
-  const ids = R.uniq([id, ...taggableIds]).map(id => `tags+${id}`)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
   const oldValues = values.map(value => value || [])
   const newValues = oldValues.map(removeTag(name))

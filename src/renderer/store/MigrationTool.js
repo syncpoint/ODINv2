@@ -1,4 +1,5 @@
 import * as L from '../../shared/level'
+import { hiddenId, lockedId, sharedId, tagsId } from '../ids'
 
 /**
  * Upgrade/downgrade databases as necessary.
@@ -36,7 +37,6 @@ MigrationTool.prototype.redundantIdentifiers = async function () {
   const wanted = this.options[MigrationTool.REDUNDANT_IDENTIFIERS]
 
   const upgrade = async () => {
-    console.log('[REDUNDANT_IDENTIFIERS] upgrading...')
     const tuples = await L.readTuples(this.jsonDB, '')
     const ops = tuples
       .filter(([_, value]) => value.id)
@@ -59,7 +59,7 @@ MigrationTool.prototype.inlineTags = async function () {
       .filter(([_, value]) => value.tags)
       .reduce((acc, [key, { tags, ...value }]) => {
         acc.push(L.putOp(key, value))
-        acc.push(L.putOp(`tags+${key}`, tags))
+        acc.push(L.putOp(tagsId(key), tags))
         return acc
       }, [])
 
@@ -80,9 +80,9 @@ MigrationTool.prototype.inlineFlags = async function () {
       .filter(([_, value]) => value.hidden || value.locked || value.shared)
       .reduce((acc, [key, { hidden, locked, shared, ...value }]) => {
         acc.push(L.putOp(key, value))
-        if (hidden) acc.push(L.putOp(`hidden+${key}`, true))
-        if (locked) acc.push(L.putOp(`locked+${key}`, true))
-        if (shared) acc.push(L.putOp(`shared+${key}`, true))
+        if (hidden) acc.push(L.putOp(hiddenId(key), true))
+        if (locked) acc.push(L.putOp(lockedId(key), true))
+        if (shared) acc.push(L.putOp(sharedId(key), true))
         return acc
       }, [])
 

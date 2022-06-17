@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import uuid from 'uuid-random'
 import { CardTitle } from './CardTitle'
 import { useServices } from './hooks'
+import { linkId } from '../ids'
 
 export const Card = React.forwardRef((props, ref) => {
   const { store } = useServices()
@@ -54,9 +54,8 @@ export const Card = React.forwardRef((props, ref) => {
       const [...files] = event.dataTransfer.files
       const fileLinks = files.reduce((acc, file) => {
         const url = new URL(`file:${file.path}`)
-        const key = `link+${id}/${uuid()}`
         const value = { name: file.name, url: url.href }
-        acc.push([key, value])
+        acc.push([linkId(id), value])
         return acc
       }, [])
 
@@ -72,10 +71,9 @@ export const Card = React.forwardRef((props, ref) => {
           const url = new URL(arg)
           if (!url.hostname || !url.href) return acc
 
-          const key = `link+${id}/${uuid()}`
           const value = { name: url.origin, url: url.href }
           const links = await acc
-          links.push([key, value])
+          links.push([linkId(id), value])
           return links
         }, fileLinks)
 

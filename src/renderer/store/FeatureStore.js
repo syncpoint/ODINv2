@@ -48,7 +48,7 @@ FeatureStore.prototype.collectKeys = async function (ids, include = []) {
   const featureIds = id => L.readKeys(this.jsonDB, L.prefix(`feature:${layerUUID(id)}`))
   const hiddenIds = id => L.readKeys(this.jsonDB, L.prefix(hiddenId(id)))
   const linkIds = id => L.readKeys(this.jsonDB, L.prefix(`link+${id}`))
-  const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(`tags+${id}`))
+  const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(tagsId(id)))
   const hasLinks = id => consider('link') && (isLayerId(id) || isFeatureId(id))
   const hasFeatures = isLayerId
   const maybeHidden = id => consider('hidden') && (isLayerId(id) || isFeatureId(id))
@@ -314,7 +314,7 @@ FeatureStore.prototype.setDefaultLayer = async function (id) {
  * defaultLayerId :: () -> k
  */
 FeatureStore.prototype.defaultLayerId = async function () {
-  const tuples = await L.readTuples(this.jsonDB, L.prefix('tags+layer'))
+  const tuples = await L.readTuples(this.jsonDB, L.prefix(tagsId('layer')))
   const match = tuples.find(([_, value]) => value.includes('default'))
   return match && layerId(match[0])
 }

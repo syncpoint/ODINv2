@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { layerId, containerId, lockedId, hiddenId } from '../ids'
+import { layerId, containerId, lockedId, hiddenId, tagsId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
 
@@ -34,7 +34,7 @@ options.feature = (id, cache) => {
     : hierarchy.join(' • ')
 
   // FIXME: somehow null tags can/could be introduced. check!
-  const userTags = (cache(`tags+${id}`) || []).filter(R.identity)
+  const userTags = (cache(tagsId(id)) || []).filter(R.identity)
 
   // Echelon's only permitted for units and stability operations.
   const preview = () => {
@@ -83,7 +83,7 @@ options.layer = (id, cache) => {
     'SCOPE:LAYER',
     hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
-    ...((cache(`tags+${id}`) || [])).map(label => `USER:${label}:NONE`),
+    ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ').replace('  ', ' ').trim()
 
@@ -110,7 +110,7 @@ const link = (id, cache) => {
     description: container.name,
     tags: [
       'SCOPE:LINK:NONE',
-      ...((cache(`tags+${id}`) || [])).map(label => `USER:${label}:NONE`),
+      ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
       'PLUS'
     ].join(' ')
   }
@@ -130,7 +130,7 @@ options.symbol = (id, cache) => {
     'SCOPE:SYMBOL:NONE',
     ...symbol.dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...symbol.scope ? [`SYSTEM:${symbol.scope}:NONE`] : [],
-    ...((cache(`tags+${id}`) || [])).map(label => `USER:${label}:NONE`),
+    ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ')
 

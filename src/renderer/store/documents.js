@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { layerId, lockedId, hiddenId } from '../ids'
+import { layerId, lockedId, hiddenId, tagsId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 
 export const documents = {}
@@ -36,7 +36,7 @@ documents.feature = (id, feature, cache) => {
     hidden ? 'hidden' : 'visible',
     locked ? 'locked' : 'unlocked',
     ...(links.length ? ['link'] : []),
-    ...(cache(`tags+${id}`) || []),
+    ...(cache(tagsId(id)) || []),
     ...dimensions,
     ...scope,
     ...identity(MILSTD.identityCode(properties.sidc))
@@ -64,7 +64,7 @@ documents.layer = (id, layer, cache) => {
     hidden ? 'hidden' : 'visible',
     locked ? 'locked' : 'unlocked',
     ...(links.length ? ['link'] : []),
-    ...(cache(`tags+${id}`) || [])
+    ...(cache(tagsId(id)) || [])
   ]
 
   return {
@@ -83,7 +83,7 @@ const link = (id, link, cache) => ({
   id,
   scope: 'link',
   text: link.name,
-  tags: cache(`tags+${id}`) || []
+  tags: cache(tagsId(id)) || []
 })
 
 documents['link+layer'] = link
@@ -97,7 +97,7 @@ documents.symbol = (id, symbol, cache) => {
   const tags = [
     ...symbol.dimensions,
     symbol.scope,
-    ...(cache(`symbol+${id}`) || [])
+    ...(cache(tagsId(id)) || [])
   ]
 
   return ({
