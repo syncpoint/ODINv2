@@ -190,7 +190,7 @@ FeatureStore.prototype.hide = async function (ids, active) {
 FeatureStore.prototype.show = async function (ids, active) {
   if (active !== undefined) return
   const keys = await this.collectKeys(ids)
-  const operations = keys.map(key => L.deleteOp(hiddenId(key)))
+  const operations = keys.map(key => L.delOp(hiddenId(key)))
   this.batch(this.jsonDB, operations)
 }
 
@@ -214,7 +214,7 @@ FeatureStore.prototype.lock = async function (ids, active) {
 FeatureStore.prototype.unlock = async function (ids, active) {
   if (active !== undefined) return
   const keys = await this.collectKeys(ids)
-  const operations = keys.map(key => L.deleteOp(lockedId(key)))
+  const operations = keys.map(key => L.delOp(lockedId(key)))
   this.batch(this.jsonDB, operations)
 }
 
@@ -355,7 +355,7 @@ FeatureStore.prototype.insertCommand = function (db, tuples, options = {}) {
 
 
 FeatureStore.prototype.deleteCommand = function (db, tuples, options = {}) {
-  const apply = () => this.batch(db, tuples.map(([key]) => L.deleteOp(key)), options)
+  const apply = () => this.batch(db, tuples.map(([key]) => L.delOp(key)), options)
   const inverse = () => this.insertCommand(db, tuples)
   return this.undo.command(apply, inverse)
 }

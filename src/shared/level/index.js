@@ -41,12 +41,35 @@ export const wbkDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometrie
  * JSON-encoded 'preferences' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const preferencesPartition = db => sublevel(db, 'preferences', { valueEncoding: 'json' })
+export const preferencesDB = db => sublevel(db, 'preferences', { valueEncoding: 'json' })
 
+
+/**
+ * JSON-encoded 'schema' partition on top of plain store.
+ * Holds database schema options for upgrading/downgrading schema between versions.
+ * @param {*} db plain store without explicit encoding.
+ */
+export const schemaDB = db => sublevel(db, 'schema', { valueEncoding: 'json' })
+
+
+/**
+ * prefix :: String -> {gte, lte}
+ */
 export const prefix = prefix => ({ gte: `${prefix}`, lte: `${prefix}\xff` })
-export const putOp = (key, value) => ({ type: 'put', key, value })
-export const deleteOp = key => ({ type: 'del', key })
 
+/**
+ * putOp :: (k, v) -> {type: 'put', key: k, value: v}
+ */
+export const putOp = (key, value) => ({ type: 'put', key, value })
+
+/**
+ * delOp :: k -> {type: 'del', key: k}
+ */
+export const delOp = key => ({ type: 'del', key })
+
+/**
+ * read :: (stream, fn) -> [fn(k, v)]
+ */
 export const read = (stream, decode) => new Promise((resolve, reject) => {
   const acc = []
   stream

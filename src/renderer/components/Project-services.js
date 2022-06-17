@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore } from '../store'
+import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool } from '../store'
 import { PaletteCommands, ViewMemento, Controller } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -26,14 +26,23 @@ export default async projectUUID => {
 
   const location = path.join(databases, projectUUID)
   const db = L.leveldb({ location })
+
+  const migrationsOptions = {}
+  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
+  migrationsOptions[MigrationTool.INLINE_TAGS] = false
+  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
+  const migration = new MigrationTool(db, migrationsOptions)
+  await migration.upgrade()
+
+
   const jsonDB = L.jsonDB(db)
   const wbkDB = L.wbkDB(db)
-  const preferencesLevel = L.preferencesPartition(db)
+  const preferencesDB = L.preferencesDB(db)
 
   const store = new Store(jsonDB, undo, selection)
   const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
   const tagStore = new TagStore(store, featureStore)
-  const preferencesStore = new PreferencesStore(preferencesLevel)
+  const preferencesStore = new PreferencesStore(preferencesDB)
   const searchIndex = new SearchIndex(jsonDB)
   const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
 

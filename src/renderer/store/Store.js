@@ -144,7 +144,7 @@ Store.prototype.insertCommand = function (db, tuples) {
 }
 
 Store.prototype.deleteCommand = function (db, tuples) {
-  const apply = () => db.batch(tuples.map(([key]) => L.deleteOp(key)))
+  const apply = () => db.batch(tuples.map(([key]) => L.delOp(key)))
   const inverse = () => this.insertCommand(db, tuples)
   return this.undo.command(apply, inverse)
 }
