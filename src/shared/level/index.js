@@ -74,20 +74,33 @@ export const readKeys = (db, options) => read(Streams.KEY(db, options), R.identi
 export const readValues = (db, options) => read(Streams.VALUE(db, options), R.identity)
 
 /**
- * mget :: fn => (levelup, [k]) => [fn(k, v)]
+ * mget :: fn -> (levelup, [k]) -> [fn(k, v)]
  */
 export const mget = decode => async (db, keys) => {
   const values = await db.getMany(keys)
-  return keys.reduce((acc, key, index) => {
-    const value = values[index]
-    if (value !== undefined) acc.push(decode(key, value))
-    return acc
-  }, [])
+  return R.zip(keys, values)
+    .filter(([_, value]) => value !== undefined)
+    .map(([key, value]) => decode(key, value))
 }
 
+/**
+ * mgetTuples :: (levelup, [k]) -> [[k, v]]
+ */
 export const mgetTuples = mget((key, value) => [key, value])
+
+/**
+ * mgetKeys :: (levelup, [k]) -> [k]
+ */
 export const mgetKeys = mget((key, _) => key)
+
+/**
+ * mgetKeys :: (levelup, [k]) -> [v]
+ */
 export const mgetValues = mget((_, value) => value)
+
+/**
+ * mgetEntities :: (levelup, [k]) -> [{id: k, ...v}]
+ */
 export const mgetEntities = mget((key, value) => ({ id: key, ...value }))
 
 /**
@@ -99,18 +112,59 @@ export const tuples = (db, arg) => Array.isArray(arg)
   : readTuples(db, prefix(arg))
 
 /**
- * values :: [k] -> [v]
- * values :: String -> [v]
+ * values :: levelup -> [k] -> [v]
+ * values :: levelup -> String -> [v]
  */
 export const values = (db, arg) => Array.isArray(arg)
   ? mgetValues(db, arg)
   : readValues(db, prefix(arg))
 
-export const existsKey = (db, prefix) => {
-  return new Promise((resolve, reject) => {
-    db.createReadStream({ keys: true, values: false, limit: 1, ...prefix })
-      .on('data', () => resolve(true))
-      .on('error', reject)
-      .on('close', () => resolve(false))
-  })
+/**
+ * existsKey :: levelup -> String -> Boolean
+ */
+export const existsKey = (db, prefix) => new Promise((resolve, reject) => {
+  db.createReadStream({ keys: true, values: false, limit: 1, ...prefix })
+    .on('data', () => resolve(true))
+    .on('error', reject)
+    .on('close', () => resolve(false))
+})
+
+/**
+ * get :: levelup -> k -> v
+ * get :: levelup -> k -> v -> v
+ *
+ * Get value for given key with optional default value if key was not found.
+ */
+export const get = async (db, key, value) => {
+  try {
+    return await db.get(key)
+  } catch (err) {
+    if (typeof value === 'undefined') throw err
+    else return value
+  }
+}
+
+/**
+ * put :: levelup -> (k, v) -> unit
+ * put :: levelup -> {k: v} -> unit
+ * put :: levelup -> [[k, v]] -> unit
+ */
+export const mput = (db, ...args) => {
+  if (args.length === 2) return db.put(args[0], args[1]) // key/value
+  else if (args.length === 1) {
+    const ops = xs => xs.map(([key, value]) => putOp(key, value))
+    const batch = Array.isArray(args[0])
+      ? ops(args[0]) // [[k, v]]
+      : ops(Object.entries(args[0])) // {k: v}
+
+    return db.batch(batch)
+  }
+}
+
+/**
+ * tap :: levelup -> k -> (v -> v) -> unit
+ */
+export const tap = async function (db, key, fn) {
+  const value = await db.get(key)
+  return db.put(key, fn(value))
 }

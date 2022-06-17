@@ -1,4 +1,4 @@
-import { HighLevel } from '../../shared/level/HighLevel'
+import * as L from '../../shared/level'
 
 const DEFAULT_VIEWPORT = {
   center: [1823376.75753279, 6143598.472197734], // Vienna
@@ -7,8 +7,8 @@ const DEFAULT_VIEWPORT = {
 }
 
 export function SessionStore (db, key) {
-  this.db_ = new HighLevel(db)
-  this.key_ = key
+  this.db = db
+  this.key = key
 }
 
 /**
@@ -20,11 +20,10 @@ export function SessionStore (db, key) {
  * }
  */
 SessionStore.prototype.putViewport = async function (viewport) {
-  return this.db_.assign(this.key_, { viewport })
+  return L.tap(this.db, this.key, value => ({ ...value, viewport }))
 }
 
 SessionStore.prototype.getViewport = async function () {
-  const metadata = await this.db_.get(this.key_)
-  const viewport = metadata.viewport || DEFAULT_VIEWPORT
-  return viewport
+  const metadata = await this.db.get(this.key)
+  return metadata.viewport || DEFAULT_VIEWPORT
 }

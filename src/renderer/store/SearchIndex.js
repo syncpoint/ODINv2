@@ -96,6 +96,8 @@ SearchIndex.prototype.updateMirror = function (event) {
 }
 
 SearchIndex.prototype.updateIndex = function (ops) {
+  if (!this.index) return /* Not there yet! */
+
   const documents = ops.map(({ type, key, value }) => {
 
     // 'Associated information' is no document in its own right but some
