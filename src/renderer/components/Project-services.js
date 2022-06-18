@@ -1,16 +1,16 @@
 import path from 'path'
 import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
-import { leveldb, propertiesPartition, geometriesPartition, preferencesPartition } from '../../shared/level'
+import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore } from '../store'
-import { Sources, PaletteCommands, Highlight, ViewMemento, Controller } from '../model'
+import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool } from '../store'
+import { PaletteCommands, ViewMemento, Controller } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
 import { bindings } from '../commands/bindings'
 
-export default projectUUID => {
+export default async projectUUID => {
   const selection = new Selection()
   const undo = new Undo()
 
@@ -19,20 +19,32 @@ export default projectUUID => {
     if (entry) return entry.split('=')[1]
   })()
 
-  const master = leveldb({ down: new IPCDownClient(ipcRenderer) })
+  const master = L.leveldb({ down: new IPCDownClient(ipcRenderer) })
   const sessionStore = new SessionStore(master, `project:${projectUUID}`)
   const viewMemento = new ViewMemento(sessionStore)
   const emitter = new EventEmitter()
+
   const location = path.join(databases, projectUUID)
-  const db = leveldb({ location })
-  const propertiesLevel = propertiesPartition(db)
-  const geometryLevel = geometriesPartition(db)
-  const preferencesLevel = preferencesPartition(db)
-  const store = new Store(propertiesLevel, geometryLevel, undo, selection)
-  const highlight = new Highlight(store, selection, viewMemento)
-  const preferencesStore = new PreferencesStore(preferencesLevel)
-  const searchIndex = new SearchIndex(propertiesLevel)
-  const controller = new Controller(store, highlight, emitter, ipcRenderer)
+  const db = L.leveldb({ location })
+
+  const migrationsOptions = {}
+  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
+  migrationsOptions[MigrationTool.INLINE_TAGS] = false
+  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
+  const migration = new MigrationTool(db, migrationsOptions)
+  await migration.upgrade()
+
+
+  const jsonDB = L.jsonDB(db)
+  const wbkDB = L.wbkDB(db)
+  const preferencesDB = L.preferencesDB(db)
+
+  const store = new Store(jsonDB, undo, selection)
+  const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
+  const tagStore = new TagStore(store, featureStore)
+  const preferencesStore = new PreferencesStore(preferencesDB)
+  const searchIndex = new SearchIndex(jsonDB)
+  const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
 
   // Key bindings.
   bindings(emitter)
@@ -79,15 +91,20 @@ export default projectUUID => {
   services.sessionStore = sessionStore
   services.viewMemento = viewMemento
   services.undo = undo
-  services.sources = new Sources(store, selection, highlight)
   services.selection = selection
   services.dragAndDrop = dragAndDrop
   services.store = store
+  services.featureStore = featureStore
+  services.tagStore = tagStore
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
-  services.paletteCommands = new PaletteCommands(store, emitter)
-  services.highlight = highlight
   services.controller = controller
+
+  services.paletteCommands = new PaletteCommands({
+    store,
+    featureStore,
+    emitter
+  })
 
   return services
 }

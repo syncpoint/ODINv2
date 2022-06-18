@@ -17,7 +17,7 @@ const set = value => feature => ({
 })
 
 export default props => {
-  const { store } = useServices()
+  const { featureStore } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -34,8 +34,7 @@ export default props => {
 
   const handleChange = value => () => {
     setState(value)
-    const features = Object.values(props.features)
-    store.update(features.map(set(value)), features)
+    featureStore.update(props.features, set(value))
   }
 
   return (
@@ -44,12 +43,14 @@ export default props => {
         <Radio
           name='status'
           label='Present'
+          disabled={props.disabled}
           onChange={handleChange('P')}
           checked={state !== 'A'}
         />
         <Radio
           name='status'
           label='Anticipated/Planned'
+          disabled={props.disabled}
           onChange={handleChange('A')}
           checked={state === 'A'}
         />

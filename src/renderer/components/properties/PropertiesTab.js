@@ -21,12 +21,11 @@ const classes = {
 export default props => {
   const { featureClass, ...rest } = props
 
-  const tab = properties => (
+  const tab = properties =>
     <GridCols2>
       <MarginTop3/>
       { properties({ ...rest })}
     </GridCols2>
-  )
 
   return featureClass != null
     ? classes[featureClass]

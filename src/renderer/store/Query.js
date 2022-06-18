@@ -6,12 +6,12 @@ import Emitter from '../../shared/emitter'
  */
 export function Query (index, terms, callback) {
   Emitter.call(this)
-  this.index_ = index
-  this.terms_ = terms
-  this.callback_ = callback
+  this.index = index
+  this.terms = terms
+  this.callback = callback
 
   this.updatedHandler_ = () => this.refresh_()
-  this.index_.on('index/updated', this.updatedHandler_)
+  this.index.on('index/updated', this.updatedHandler_)
   this.refresh_()
 }
 
@@ -24,8 +24,8 @@ util.inherits(Query, Emitter)
 Query.prototype.refresh_ = function () {
   // TODO: d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
   try {
-    const result = this.index_.search(this.terms_)
-    this.callback_(result)
+    const result = this.index.search(this.terms)
+    this.callback(result)
   } catch (err) {
     /* don't invoke callback. */
     console.log(err)
@@ -38,5 +38,5 @@ Query.prototype.refresh_ = function () {
  * Note: Failing to dispose query will result in listener leak (index).
  */
 Query.prototype.dispose = function () {
-  this.index_.off('index/updated', this.updatedHandler_)
+  this.index.off('index/updated', this.updatedHandler_)
 }

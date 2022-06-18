@@ -384,6 +384,11 @@ input {
   border-color: var(--color-blue-600);
 }
 
+.form-textfield__input:disabled {
+  color: grey;
+  background-color: inherit;
+}
+
 .form-textfield__input::placeholder {
   color: transparent;
 }

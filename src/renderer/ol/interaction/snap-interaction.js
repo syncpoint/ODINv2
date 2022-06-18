@@ -4,9 +4,9 @@ import { Snap } from 'ol/interaction'
  *
  */
 export default options => {
-  const { featureSource } = options
+  const { visibleSource } = options
   return new Snap({
-    source: featureSource,
+    source: visibleSource,
     pixelTolerance: 5
   })
 }

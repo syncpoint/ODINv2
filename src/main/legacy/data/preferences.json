@@ -1,1 +1,126 @@
-{"activeLayer":"Feindlage","viewport":{"zoom":12.43743201077918,"center":[1748137.454923794,5900289.66132636]},"basemaps":[{"id":"f836e648-155e-48c6-b28c-b4efe9d2f7f5","name":"Offlinekarte Basemap","visible":false,"opacity":1},{"id":"69699f50-99f4-458a-921a-9b6f99c5398c","name":"Offlinekarte Basemap (Orthofoto)","visible":false,"opacity":1},{"id":"4c8911fe-a59c-4775-899d-708f6b9fdb3a","name":"Stamen - Terrain","visible":false,"opacity":1},{"id":"fbf85e9f-4c7b-462c-aa5d-f001e023042b","name":"OpenSeaMap","visible":false,"opacity":1},{"id":"b87ab3b6-2f63-4e09-8719-4d11a2f78784","name":"Stamen (Watercolour)","visible":false,"opacity":1},{"id":"7108138b-691c-4415-a5cc-f93ed89e46c6","name":"GIS-Bgld ","visible":false,"opacity":1},{"id":"a12fb725-c335-4f5c-8b76-ec4da0e83be3","name":"Basemap (HDPI)","visible":false,"opacity":1},{"id":"5e54dbe1-f383-469b-bbda-e8fba457abf7","name":"RailwayMap","visible":false,"opacity":1},{"id":"fdf31ef5-20ed-4262-90ef-b989eec2332b","name":"Basemap (Orthofoto - Online)","visible":false,"opacity":1},{"id":"daf53d34-21d9-42bc-98ac-938220ed4820","name":"Basemap (Overlay - Beschriftung)","visible":false,"opacity":1},{"id":"e88b7095-96f0-41b3-9192-522801f81f10","name":"Basemap (Online)","visible":false,"opacity":1},{"id":"493418d5-37f0-4994-ac70-5e6ad4bc9972","name":"OpenTopoMap","visible":false,"opacity":1},{"id":"15b42452-e3d2-4be0-be05-40523f50f1cf","name":"OpenFlightMap","visible":false,"opacity":1},{"id":"ee6e7f65-8718-4244-9a12-d65f8e205528","name":"OpenFireMap","visible":false,"opacity":1},{"id":"2cb9903b-cf6e-428b-8b89-d8db7e1d5ac5","name":"Basemap (Gelände - in Grau)","visible":false,"opacity":1},{"id":"041414c2-80b7-4956-8787-708153908b48","name":"Basemap (Oberfläche in Grau)","visible":false,"opacity":1},{"id":"ffbce050-c13d-46cb-85d9-05bd30dc2045","name":"test img","visible":false,"opacity":1},{"id":"1f0dff31-de23-410c-a4f9-0074db39f4da","name":"Zeichenkarte Offline","visible":true,"opacity":0.46},{"id":"708b7f83-12a2-4a8b-a49d-9f2683586bcf","name":"Open Street Map","visible":false,"opacity":1}]}
+{
+  "activeLayer": "Feindlage",
+  "viewport": {
+    "zoom": 12.43743201077918,
+    "center": [
+      1748137.454923794,
+      5900289.66132636
+    ]
+  },
+  "basemaps": [
+    {
+      "id": "f836e648-155e-48c6-b28c-b4efe9d2f7f5",
+      "name": "Offlinekarte Basemap",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "69699f50-99f4-458a-921a-9b6f99c5398c",
+      "name": "Offlinekarte Basemap (Orthofoto)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "4c8911fe-a59c-4775-899d-708f6b9fdb3a",
+      "name": "Stamen - Terrain",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "fbf85e9f-4c7b-462c-aa5d-f001e023042b",
+      "name": "OpenSeaMap",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "b87ab3b6-2f63-4e09-8719-4d11a2f78784",
+      "name": "Stamen (Watercolour)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "7108138b-691c-4415-a5cc-f93ed89e46c6",
+      "name": "GIS-Bgld ",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "a12fb725-c335-4f5c-8b76-ec4da0e83be3",
+      "name": "Basemap (HDPI)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "5e54dbe1-f383-469b-bbda-e8fba457abf7",
+      "name": "RailwayMap",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "fdf31ef5-20ed-4262-90ef-b989eec2332b",
+      "name": "Basemap (Orthofoto - Online)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "daf53d34-21d9-42bc-98ac-938220ed4820",
+      "name": "Basemap (Overlay - Beschriftung)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "e88b7095-96f0-41b3-9192-522801f81f10",
+      "name": "Basemap (Online)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "493418d5-37f0-4994-ac70-5e6ad4bc9972",
+      "name": "OpenTopoMap",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "15b42452-e3d2-4be0-be05-40523f50f1cf",
+      "name": "OpenFlightMap",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "ee6e7f65-8718-4244-9a12-d65f8e205528",
+      "name": "OpenFireMap",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "2cb9903b-cf6e-428b-8b89-d8db7e1d5ac5",
+      "name": "Basemap (Gelände - in Grau)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "041414c2-80b7-4956-8787-708153908b48",
+      "name": "Basemap (Oberfläche in Grau)",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "ffbce050-c13d-46cb-85d9-05bd30dc2045",
+      "name": "test img",
+      "visible": false,
+      "opacity": 1
+    },
+    {
+      "id": "1f0dff31-de23-410c-a4f9-0074db39f4da",
+      "name": "Zeichenkarte Offline",
+      "visible": true,
+      "opacity": 0.46
+    },
+    {
+      "id": "708b7f83-12a2-4a8b-a49d-9f2683586bcf",
+      "name": "Open Street Map",
+      "visible": false,
+      "opacity": 1
+    }
+  ]
+}

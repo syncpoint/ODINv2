@@ -1,121 +1,59 @@
-import util from 'util'
 import * as R from 'ramda'
-import { documents } from './documents'
-import Emitter from '../../shared/emitter'
-import { createIndex, parseQuery, searchIndex } from './MiniSearch-index'
+import MiniSearch from 'minisearch'
+
+export const createIndex = () => new MiniSearch({
+  fields: ['text', 'tags', 'scope'],
+  tokenize: string => {
+    const tokens = R.uniq([
+      ...string.split(/[\s-/]/), // A: el clásico
+      ...string.split(/([/]?["\w]+[.]?)|[ /]/), // B: leading '/' and trailing '.'
+      ...string.split(/([\d/]+)/), // C: trailing '/'
+      ...string.split(/([\d ]+)/) // D: separate numbers and words
+    ]
+      .map(s => s ? s.trim() : '')
+      .filter(s => !s.includes(' ')) // filter tokens with blanks introduced by C
+      .filter(Boolean)
+    )
+
+    return tokens
+  },
+
+  extractField: (document, fieldName) => {
+    const value = document[fieldName]
+    return value && fieldName === 'tags'
+      ? value.flat().filter(R.identity).join(' ')
+      : value
+  }
+})
 
 
-/**
- * @constructor
- * @fires ready
- * @fires index/updated
- */
-export function MiniSearchIndex (carrera) {
-  Emitter.call(this)
+export const parseQuery = s => {
+  const tokens = (s || '').split(' ')
+  const parts = tokens.reduce((acc, token) => {
+    if (token.startsWith('@') && token.length > 1) acc.scope.push(token.substring(1))
+    else if (token.startsWith('#') && token.length > 1) acc.tags.push(token.substring(1))
+    else if (token.startsWith('!') && token.length > 1) acc.ids.push(token.substring(1))
+    else if (token) acc.text.push(token)
+    return acc
+  }, { scope: [], text: [], tags: [], ids: [] })
 
-  // Cache indexed documents for removal.
-  this.cache_ = {}
-  this.carrera_ = carrera
+  const query = { combineWith: 'AND', queries: [] }
 
-  this.index_ = createIndex()
-  this.ready_ = false
-}
-
-util.inherits(MiniSearchIndex, Emitter)
-
-
-/**
- *
- */
-MiniSearchIndex.prototype.document_ = function (entry, cache) {
-  if (!entry.id) return null
-  const scope = entry.id.split(':')[0]
-  const fn = documents[scope]
-  if (!fn) return null
-  return fn(entry, cache)
-}
-
-
-/**
- * Create initial index (one time only).
- */
-MiniSearchIndex.prototype.createIndex_ = function () {
-  const entries = Object.values(this.carrera_)
-  const cache = id => this.carrera_[id]
-  const docs = entries
-    .map(entry => this.document_(entry, cache))
-    .filter(R.identity)
-
-  docs.forEach(doc => (this.cache_[doc.id] = doc))
-  this.index_.addAll(docs)
-
-  this.ready_ = true
-  this.emit('ready')
-}
-
-
-/**
- * Update index based on store batch operations.
- */
-MiniSearchIndex.prototype.handleBatch = function (ops) {
-  const cache = id => this.carrera_[id]
-  const updates = ops.filter(op => op.type === 'put')
-  const removals = ops.filter(op => op.type === 'del')
-
-  for (const op of updates) {
-    const cachedDocument = this.cache_[op.key]
-    if (cachedDocument) this.index_.remove(cachedDocument)
-    const document = this.document_(op.value, cache)
-    if (!document) return
-
-    this.cache_[op.key] = document
-    this.index_.add(document)
+  const add = (field, combineWith, prefix) => {
+    const queries = parts[field]
+    if (!queries || !queries.length) return
+    query.queries.push({ fields: [field], combineWith, queries, prefix })
   }
 
-  for (const op of removals) {
-    this.index_.remove(this.cache_[op.key])
-    delete this.cache_[op.key]
-  }
-}
+  add('scope', 'OR')
+  add('text', 'AND', true)
+  add('tags', 'AND', true)
 
+  const filter = parts.ids && parts.ids.length
+    ? result => parts.ids.some(id => result.id.startsWith(id))
+    : null
 
-/**
- *
- */
-MiniSearchIndex.prototype.ready = function () {
-  return this.ready_
-}
-
-
-/**
- * search :: string -> Promise([option])
- */
-MiniSearchIndex.prototype.search = function (query) {
-  const tokens = parseQuery(query)
-
-  const split = s => {
-    const index = s.indexOf(':')
-    return [s.substring(0, index), s.substring(index + 1)]
-  }
-
-  const scopeFilter = scope => {
-    const conditions = scope.map(scope => {
-      const [property, prefix] = split(scope)
-      const prefixes = prefix.split('|')
-      return item => prefixes.some(prefix => item[property] && item[property].startsWith(prefix))
-    })
-
-    // All conditions must hold.
-    return item => conditions.every(condition => condition(item))
-  }
-
-  const filter = tokens.scope.length
-    ? scopeFilter(tokens.scope)
-    : () => true
-
-  const ids = (tokens.text.length || tokens.tags.length)
-    ? searchIndex(this.index_, tokens)
-    : Object.keys(this.carrera_)
-
-  return R.uniq(ids).map(id => this.carrera_[id]).filter(filter)
+  return filter
+    ? [query, { filter }]
+    : [query]
 }

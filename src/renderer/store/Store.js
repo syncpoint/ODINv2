@@ -1,18 +1,15 @@
 import util from 'util'
 import * as R from 'ramda'
-import uuid from 'uuid-random'
 import Emitter from '../../shared/emitter'
-import { isFeatureId, isGroupId, featureId, isLayerId, isSymbolId, layerUUID } from '../ids'
+import { isTaggableId, tagsId } from '../ids'
 import { importSymbols } from './symbols'
-import { HighLevel } from '../../shared/level/HighLevel'
-import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
-import { leveldb } from '../../shared/level'
+import * as L from '../../shared/level'
 
 
 /**
  * @constructor
- * @param {LevelUp} propertiesLevel properties database.
- * @param {LevelUp} geometryLevel geometry database.
+ * @param {LevelUp} jsonDB properties database.
+ * @param {LevelUp} wkbDB geometry database.
  * @param {Undo} undo
  * @param {Selection} selection
  *
@@ -20,66 +17,22 @@ import { leveldb } from '../../shared/level'
  * @emits features/properties - feature properties only
  * @emits features/geometries - feature geometries only
  * @emits highlight/geometries
- *
- * MANIFEST
- * collectKeys_ :: Id a => [a] -> [a]
- * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
- *
- * selectFeatures :: GeoJSON/Feature a => () -> [a]
- * selectProperties :: Key k, Value v => [k] => [v]
- * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
- * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
- * delete :: Id a => [a] -> unit
- * insert :: Value a => [a] -> unit
- * update :: Value a => [a] -> unit
- * update :: Value a => ([a], [a]) -> unit
- * select :: (Id a, Value b) => [a] => [b]
- * insertFeatures :: GeoJSON/Feature a => [a] -> unit
- * rename :: (Id a, Name b) => (a, b) -> unit
- * addTag :: (Id a, Name b) => (a, b) -> unit
- * removeTag :: (Id a, Name b) => (a, b) -> unit
- * hide :: (Id a) => a -> unit
- * show :: (Id a) => a -> unit
- *
- * compositeCommand :: Command a => [a] -> a
- * insertCommand :: Value a => [a] -> Command
- * deleteCommand :: Value a => [a] -> Command
- * updateCommand :: Value a => ([a], [a]) -> Command
  */
-export function Store (propertiesLevel, geometryLevel, undo, selection) {
+export function Store (jsonDB, undo, selection) {
   Emitter.call(this)
 
-  this.properties_ = new HighLevel(propertiesLevel)
-  this.geometries_ = new HighLevel(geometryLevel)
-  const down = new PartitionDOWN(propertiesLevel, geometryLevel)
-  const up = leveldb({ down })
-  this.db_ = new HighLevel(up)
+  // Internal databases:
+  // Properties: Properties (JSON) only
+  // Geometries: Geometries (WKB) only
+  // DB: Properties and Geometries combined
 
-  // Forward high-level batch event:
-  up.on('batch', operations => {
-    // FIXME: probably not the right place for selection handling
-    const removals = operations.filter(({ type }) => type === 'del').map(({ key }) => key)
-    this.selection_.deselect(removals)
-
-    this.emit('batch', { operations })
-  })
-
-  this.undo_ = undo
-  this.selection_ = selection
-
-  this.compositeCommand = compositeCommand.bind(this)
-  this.deleteCommand = deleteCommand.bind(this)
-  this.insertCommand = insertCommand.bind(this)
-  this.updateCommand = updateCommand.bind(this)
+  this.jsonDB = jsonDB
+  this.undo = undo
+  this.selection = selection
 
   window.requestIdleCallback(async () => {
-    // Delete symbols to refresh after updating 2525c.json:
-    // const keys = await this.db_.keys('symbol:')
-    // const ops = keys.map(key => ({ type: 'del', key }))
-    // await this.db_.batch(ops)
-
-    const alreadyImported = await this.db_.existsKey('symbol:')
-    if (!alreadyImported) await importSymbols(this.db_)
+    const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
+    if (!alreadyImported) await importSymbols(this.jsonDB)
   }, { timeout: 2000 })
 
 }
@@ -89,305 +42,109 @@ util.inherits(Store, Emitter)
 
 /**
  * @async
- * selectFeatures :: GeoJSON/Feature a => () -> [a]
+ * tuples :: String -> [[k, v]]
+ * tuples :: [k] -> [[k, v]]
  */
-Store.prototype.selectFeatures = function (keys) {
-  const arg = keys || 'feature:'
-  return this.db_.values(arg)
-}
-
-/**
- * @async
- * selectProperties :: Key k, Value v => [k] => [v]
- */
-Store.prototype.selectProperties = function (keys) {
-  return this.properties_.values(keys)
+Store.prototype.tuples = async function (arg) {
+  return L.tuples(this.jsonDB, arg)
 }
 
 
 /**
  * @async
- * selectGeometries :: Id a => a -> [GeoJSON/Geometry]
- * selectGeometries :: Id a => [a] -> [GeoJSON/Geometry]
+ * insert :: [[k, v]] -> unit
  */
-Store.prototype.selectGeometries = function (arg) {
-  if (Array.isArray(arg)) return this.geometries_.values(arg)
-  else if (isLayerId(arg)) return this.geometries_.values(`feature:${arg.split(':')[1]}`)
-  else this.geometries_.values([arg])
+Store.prototype.insert = async function (tuples) {
+  const command = this.insertCommand(this.jsonDB, tuples)
+  this.undo.apply(command)
 }
 
 
 /**
- * @async
- * collectKeys_ :: Id a => [a] -> [a]
+ * update :: { k: v } -> (v -> v) -> unit
+ * update :: [k] -> [v] -> [v] -> unit
+ * update :: [k] -> [v] -> unit
  */
-Store.prototype.collectKeys_ = async function (ids, excludes = []) {
-  const featureIds = id => this.properties_.keys(`feature:${layerUUID(id)}`)
-
-  const linkIds = id => {
-    if (!excludes.includes('link')) return this.properties_.keys(`link+${id}`)
-    else return []
+Store.prototype.update = async function (...args) {
+  if (args.length === 2) {
+    if (typeof args[1] === 'function') {
+      const [values, fn] = args
+      const keys = Object.keys(values)
+      const oldValues = Object.values(values)
+      const newValues = oldValues.map(fn)
+      return this.update(keys, newValues, oldValues)
+    } else {
+      // No undo, direct update.
+      const [keys, values] = args
+      this.jsonDB.batch(R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
+    }
+  } else if (args.length === 3) {
+    const [keys, newValues, oldValues] = args
+    const command = this.updateCommand(this.jsonDB, keys, newValues, oldValues)
+    this.undo.apply(command)
   }
-
-
-  const collect = (acc, ids) => {
-    acc.push(...ids)
-
-    return ids.reduce(async (acc, id) => {
-      const xs = await acc
-      const ys = []
-
-      if (isLayerId(id) || isFeatureId(id)) ys.push(...await linkIds(id))
-      if (isLayerId(id)) ys.push(...await featureIds(id))
-
-      await collect(xs, ys)
-      return xs
-    }, acc)
-  }
-
-  return R.uniq(await collect([], ids))
 }
 
 
 /**
  * @async
- * update_ :: (Value a, Id b) => (a -> a, [b]) -> unit
- */
-Store.prototype.update_ = async function (fn, keys) {
-  const values = await this.db_.values(keys)
-  const ops = values.map(value => ({ type: 'put', key: value.id, value: fn(value) }))
-  return this.db_.batch(ops)
-}
-
-
-/**
- * @async
- * select :: (Id a, Value b) => [a] => [b]
- */
-Store.prototype.select = function (ids) {
-  return this.db_.values(ids)
-}
-
-
-const deletable = id => !isSymbolId(id)
-
-/**
- * @async
- * delete :: Id a => [a] -> unit
- */
-Store.prototype.delete = async function (ids) {
-  const keys = await this.collectKeys_(ids.filter(deletable))
-  const values = await this.db_.values(keys)
-  this.undo_.apply(this.deleteCommand(values))
-}
-
-
-/**
- * @async
- * insert :: Value a => [a] -> unit
- */
-Store.prototype.insert = async function (values) {
-  this.undo_.apply(this.insertCommand(values))
-}
-
-
-/**
- * @async
- * update :: Value a => [a] -> unit
- * update :: Value a => ([a], [a]) -> unit
- */
-Store.prototype.update = function (newValues, oldValues) {
-  if (!newValues.length) return
-  if (oldValues) this.undo_.apply(this.updateCommand(newValues, oldValues))
-  else this.db_.batch(newValues.map(value => ({ type: 'put', key: value.id, value })))
-}
-
-
-/**
- * @async
- * insertFeatures :: GeoJSON/Feature a => [a] -> unit
- *
- * Features without identifier are assigned to default layer.
- * Default layer is created as necessary.
- * Features with identity remain unchanged.
- */
-Store.prototype.insertFeatures = async function (features) {
-  const values = []
-  const [keep, assign] = R.partition(R.prop('id'), features)
-  values.push(...keep)
-
-  if (assign.length) {
-    // Get or create default layer:
-    const layer = await (async () => {
-      const layers = await this.db_.values('layer:')
-      const defaultLayer = layers.find(layer => (layer.tags || []).includes('default'))
-      if (defaultLayer) return defaultLayer
-      else {
-        const id = `layer:${uuid()}`
-        const layer = { id, name: 'Default Layer', tags: ['default'] }
-        values.push(layer)
-        return layer
-      }
-    })()
-
-    const assignId = R.tap(feature => (feature.id = featureId(layer.id)))
-    values.push(...assign.map(assignId))
-  }
-
-  this.undo_.apply(this.insertCommand(values))
-}
-
-
-/**
- * @async
- * rename :: (Id a, Name b) => (a, b) -> unit
+ * rename :: (k, String) -> unit
  */
 Store.prototype.rename = async function (id, name) {
-  const oldValue = await this.properties_.get(id)
+  const oldValue = await this.jsonDB.get(id)
   const newValue = { ...oldValue, name }
-  const command = this.updateCommand([newValue], [oldValue])
-  this.undo_.apply(command)
+  const command = this.updateCommand(this.jsonDB, [id], [newValue], [oldValue])
+  this.undo.apply(command)
 }
 
-
-// taggable :: Id a => a -> boolean
-const taggable = id => !isGroupId(id)
-
-// addTag :: (Name a, Value b) => a -> b -> b
-const addTag = name => value => ({
-  ...value,
-  tags: R.uniq([...(value.tags || []), name])
-})
-
-// removeTag :: (Name a, Value b) => a -> b -> b
-const removeTag = name => value => ({
-  ...value,
-  tags: (value.tags || []).filter(tag => tag !== name)
-})
+// taggable :: k -> boolean
+const addTag = name => tags => R.uniq([...(tags || []), name])
+const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
 
 
 /**
  * @async
- * addTag :: (Id a, Name b) => (a, b) -> unit
+ * addTag :: k -> String -> unit
  */
 Store.prototype.addTag = async function (id, name) {
-  const add = addTag(name)
-  const remove = removeTag(name)
-
-  const [newValues, oldValues] = await (async () => {
-
-    // 'default' tag can only by applied to a single layer.
-    if (name === 'default' && isLayerId(id)) {
-      const layers = await this.db_.entries('layer:')
-      const oldValues = []
-      const newValues = []
-
-      // Add tag to new default layer.
-      const layer = layers[id]
-      oldValues.push(layer)
-      newValues.push(add(layer))
-
-      // Remove tag from current default layer (if any).
-      Object.values(layers)
-        .filter(layer => (layer.tags || []).includes('default'))
-        .forEach(layer => {
-          oldValues.push(layer)
-          newValues.push(remove(layer))
-        })
-
-      return [newValues, oldValues]
-    }
-
-    const ids = R.uniq([id, ...this.selection_.selected(taggable)])
-    const oldValues = await this.db_.values(ids)
-    const newValues = oldValues.map(add)
-    return [newValues, oldValues]
-  })()
-
-  this.undo_.apply(this.updateCommand(newValues, oldValues))
+  const taggableIds = this.selection.selected(isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const values = await this.jsonDB.getMany(ids) // may include undefined entries
+  const oldValues = values.map(value => value || [])
+  const newValues = oldValues.map(addTag(name))
+  const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
+  this.undo.apply(command)
 }
 
 
 /**
  * @async
- * removeTag :: (Id a, Name b) => (a, b) -> unit
+ * removeTag :: k -> String -> unit
  */
 Store.prototype.removeTag = async function (id, name) {
-  const ids = R.uniq([id, ...this.selection_.selected(taggable)])
-  const oldValues = await this.db_.values(ids)
+  const taggableIds = this.selection.selected(isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const values = await this.jsonDB.getMany(ids) // may include undefined entries
+  const oldValues = values.map(value => value || [])
   const newValues = oldValues.map(removeTag(name))
-  this.undo_.apply(this.updateCommand(newValues, oldValues))
+  const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
+  this.undo.apply(command)
 }
 
-
-/**
- * @async
- * hide :: (Id a) => a -> unit
- */
-Store.prototype.hide = async function (id, active) {
-  if (active !== undefined) return
-  const hide = R.tap(value => { value.hidden = true })
-  const ids = R.uniq([id, ...this.selection_.selected()])
-  const keys = await this.collectKeys_(ids, ['link'])
-  return this.update_(hide, keys)
+Store.prototype.updateCommand = function (db, keys, newValues, oldValues) {
+  const apply = () => db.batch(R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value)))
+  const inverse = () => this.updateCommand(db, keys, oldValues, newValues)
+  return this.undo.command(apply, inverse)
 }
 
-
-/**
- * @sync
- * show :: (Id a) => a -> unit
- */
-Store.prototype.show = async function (id, active) {
-  if (active !== undefined) return
-  const show = R.tap(value => { delete value.hidden })
-  const ids = R.uniq([id, ...this.selection_.selected()])
-  const keys = await this.collectKeys_(ids, ['link'])
-  return this.update_(show, keys)
+Store.prototype.insertCommand = function (db, tuples) {
+  const apply = () => db.batch(tuples.map(([key, value]) => L.putOp(key, value)))
+  const inverse = () => this.deleteCommand(db, tuples)
+  return this.undo.command(apply, inverse)
 }
 
-
-/**
- * compositeCommand :: Command a => [a] -> a
- */
-const compositeCommand = async function (commands) {
-  const resolved = await Promise.all(commands)
-  return {
-    apply: () => Promise.all(resolved.map(command => command.apply())),
-    inverse: () => this.compositeCommand(resolved.reverse().map(command => command.inverse()))
-  }
-}
-
-/**
- * insertCommand :: Value a => [a] -> Command
- */
-const insertCommand = function (values) {
-  const ops = values.map(value => ({ type: 'put', key: value.id, value }))
-  return {
-    apply: () => this.db_.batch(ops),
-    inverse: () => this.deleteCommand(values)
-  }
-}
-
-
-/**
- * deleteCommand :: Value a => [a] -> Command
- */
-const deleteCommand = function (values) {
-  const ops = values.map(({ id: key }) => ({ type: 'del', key }))
-  return {
-    apply: () => this.db_.batch(ops),
-    inverse: () => this.insertCommand(values)
-  }
-}
-
-
-/**
- * updateCommand :: Value a => ([a], [a]) -> Command
- */
-const updateCommand = function (newValues, oldValues) {
-  const ops = newValues.map(value => ({ type: 'put', key: value.id, value }))
-  return {
-    apply: () => this.db_.batch(ops),
-    inverse: () => this.updateCommand(oldValues, newValues)
-  }
+Store.prototype.deleteCommand = function (db, tuples) {
+  const apply = () => db.batch(tuples.map(([key]) => L.delOp(key)))
+  const inverse = () => this.insertCommand(db, tuples)
+  return this.undo.command(apply, inverse)
 }

@@ -19,10 +19,11 @@ import drawInteraction from './draw-interaction'
  * @param {ol/Map} map
  */
 export default options => {
+
   const select = selectInteraction(options)
   const modify = modifyInteraction(options)
-  const translate = translateInteraction(options, select)
-  const clone = cloneInteraction(options, select)
+  const translate = translateInteraction(options)
+  const clone = cloneInteraction(options)
   const snap = snapInteraction(options)
   const boxselect = boxselectInteraction(options)
 

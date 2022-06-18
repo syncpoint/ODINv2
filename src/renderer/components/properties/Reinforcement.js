@@ -18,7 +18,7 @@ const set = value => feature => ({
 })
 
 export default props => {
-  const { store } = useServices()
+  const { featureStore } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -34,10 +34,8 @@ export default props => {
   React.useEffect(() => setValue(initialValue()), [props])
 
   const handleChange = value => () => {
-    console.log('handleChange', value)
     setValue(value)
-    const features = Object.values(props.features)
-    store.update(features.map(set(value)), features)
+    featureStore.update(props.features, set(value))
   }
 
   return (
@@ -48,24 +46,28 @@ export default props => {
         <Radio
           name='reinforcement'
           label='None'
+          disabled={props.disabled}
           onChange={handleChange('')}
           checked={value === ''}
         />
         <Radio
           name='reinforcement'
           label='(+)'
+          disabled={props.disabled}
           onChange={handleChange('(+)')}
           checked={value === '(+)'}
         />
         <Radio
           name='reinforcement'
           label='(-)'
+          disabled={props.disabled}
           onChange={handleChange('(-)')}
           checked={value === '(-)'}
         />
         <Radio
           name='reinforcement'
           label='(±)'
+          disabled={props.disabled}
           onChange={handleChange('(±)')}
           checked={value === '(±)'}
         />

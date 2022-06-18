@@ -52,3 +52,15 @@ Undo.prototype.canUndo = function () {
 Undo.prototype.canRedo = function () {
   return this.redoStack.length > 0
 }
+
+Undo.prototype.command = function (apply, inverse) {
+  return { apply, inverse }
+}
+
+Undo.prototype.composite = function (commands) {
+  return {
+    apply: () => Promise.all(commands.map(command => command.apply())),
+    inverse: () => this.composite(commands.reverse().map(command => command.inverse()))
+  }
+}
+

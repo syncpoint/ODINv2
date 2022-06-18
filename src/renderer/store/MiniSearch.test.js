@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { createIndex, parseQuery, searchIndex } from './minisearch-index'
+import { createIndex, parseQuery } from './MiniSearch'
 import { documents } from './documents'
 import layer from './data/layer.json'
 import fixture from './data/fixture.json'
@@ -8,32 +8,47 @@ import _3OSC from './data/3OSC.json'
 describe('MiniSearch', function () {
   describe('default', function () {
 
-    const features = layer.map(feature => ({
-      id: feature.id,
-      text: feature.name || feature.properties.t,
-      ...feature
-    }))
+    let features
+    let fixtureReverse
+    let index
 
-    const fixtureReverse = Object.keys(fixture)
-      .reduce((acc, key) => {
-        acc[fixture[key]] = key
-        return acc
-      }, {})
+    before(function () {
+      features = layer.map(feature => ({
+        id: feature.id,
+        text: feature.name || feature.properties.t,
+        ...feature
+      }))
 
-
-    const index = (() => {
-      const index = createIndex()
-      const cache = () => ({ /* layer */ })
-      const docs = features.map(entry => documents.feature(entry, cache))
-      index.addAll(docs)
-      return index
-    })()
+      fixtureReverse = Object.keys(fixture)
+        .reduce((acc, key) => {
+          acc[fixture[key]] = key
+          return acc
+        }, {})
 
 
-    const verify = (query, expected) => () => {
-      const tokens = parseQuery(query)
-      const actual = searchIndex(index, tokens)
-        .map(id => fixtureReverse[id])
+      index = (() => {
+        const index = createIndex()
+        const cache = id => {
+          const scope = id.split(':')[0]
+          switch (scope) {
+            case 'layer': return {}
+            case 'hidden+feature': return false
+            case 'locked+feature': return false
+            case 'tags+feature': return []
+          }
+        }
+
+        const entries = features.map(({ id, ...value }) => [id, value])
+        const docs = entries.map(([key, value]) => documents.feature(key, value, cache))
+        index.addAll(docs)
+        return index
+      })()
+    })
+
+    const verify = (terms, expected) => () => {
+      const [query] = parseQuery(terms)
+      const actual = index.search(query)
+        .map(({ id }) => fixtureReverse[id])
         .sort()
         .join('')
 
@@ -61,18 +76,17 @@ describe('MiniSearch', function () {
     it("19. - '#ukn'", verify('#ukn', 'L'))
   })
 
+  const prepareIndex = docs => {
+    const index = createIndex()
+    index.addAll(docs)
+    return index
+  }
+
   describe('issues', function () {
-
-    const prepareIndex = docs => {
-      const index = createIndex()
-      index.addAll(docs)
-      return index
-    }
-
     it("MIP Scenario - '@feature #unit 3osc'", function () {
       const index = prepareIndex(_3OSC)
-      const tokens = parseQuery('@feature #unit 3osc')
-      const actual = searchIndex(index, tokens)
+      const [query] = parseQuery('@feature #unit 3osc')
+      const actual = index.search(query)
       assert.strictEqual(actual.length, _3OSC.length - 1) // minus one installation
     })
   })

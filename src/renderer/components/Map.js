@@ -1,7 +1,8 @@
+/* eslint-disable */
 import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
-import { OSM, XYZ } from 'ol/source'
+import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import ScaleLine from 'ol/control/ScaleLine'
@@ -9,8 +10,8 @@ import { Fill, Stroke, Circle, Style } from 'ol/style'
 import '../epsg'
 import { useServices } from './hooks'
 import { featureStyle } from '../ol/style'
-import { Partition } from '../ol/source/Partition'
 import defaultInteractions from '../ol/interaction'
+import * as Sources from '../model/Sources'
 
 /**
  *
@@ -19,10 +20,10 @@ export const Map = () => {
   const {
     sessionStore,
     ipcRenderer,
-    sources,
     selection,
     dragAndDrop,
     store,
+    featureStore,
     undo,
     emitter,
     viewMemento
@@ -37,13 +38,13 @@ export const Map = () => {
 
     const viewport = await sessionStore.getViewport()
     const view = new ol.View({ ...viewport })
-    const featureSource = await sources.getFeatureSource()
-    const partition = new Partition(featureSource, selection)
-    const style = featureStyle(selection, featureSource)
-    const declutter = false
-    const vectorLayer = source => new VectorLayer({ style, source, declutter })
-    const featureLayer = vectorLayer(partition.getDeselected())
-    const selectedLayer = vectorLayer(partition.getSelected())
+
+    const featureSource = Sources.featureSource(featureStore)
+    const { visibleSource } = Sources.visibilityTracker(featureSource, featureStore, emitter)
+    const { unlockedSource } = Sources.lockedTracker(featureSource, featureStore)
+    const { selectedSource, deselectedSource } = Sources.selectionTracker(visibleSource, selection)
+    const highlightSource = Sources.highlightTracker(emitter, featureStore, viewMemento)
+    const modifiableSource = Sources.intersect(unlockedSource, selectedSource)
 
     const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
     const stroke = new Stroke({ color: 'black', width: 1, lineDash: [10, 5] })
@@ -56,10 +57,16 @@ export const Map = () => {
     ]
 
     const highlightLayer = new VectorLayer({
-      source: sources.getHighlightedSource(),
+      source: highlightSource,
       style: highlightStyle,
       updateWhileAnimating: true
     })
+
+    const style = featureStyle(selection, featureSource)
+    const declutter = false
+    const vectorLayer = source => new VectorLayer({ style, source, declutter })
+    const featureLayer = vectorLayer(deselectedSource)
+    const selectedLayer = vectorLayer(selectedSource)
 
     // http://localhost:8000/services
     // http://localhost:8000/services/omk50_33
@@ -90,14 +97,14 @@ export const Map = () => {
       hitTolerance: 3,
       selection,
       store,
+      featureStore,
       undo,
-      partition,
-      featureLayer,
-      selectedLayer,
-      featureSource,
-      style,
       emitter,
-      map
+      map,
+      style,
+      visibleSource,
+      selectedSource,
+      modifiableSource
     })
 
     interactions.getArray().forEach(interaction => map.addInteraction(interaction))
@@ -157,12 +164,12 @@ export const Map = () => {
 
     // Dim feature layer when we have a selection:
     const updateOpacity = () => {
-      const count = partition.getSelected().getFeatures().length
+      const count = selectedSource.getFeatures().length
       featureLayer.setOpacity(count ? 0.35 : 1)
     }
 
-    partition.getSelected().on('addfeature', updateOpacity)
-    partition.getSelected().on('removefeature', updateOpacity)
+    selectedSource.on('addfeature', updateOpacity)
+    selectedSource.on('removefeature', updateOpacity)
 
     const selectAll = () => {
       const element = document.activeElement
@@ -171,14 +178,14 @@ export const Map = () => {
       if (!element) return
       if (!isBody(element) && !isMap(element)) return
 
-      const ids = featureSource.getFeatures().map(feature => feature.getId())
+      const ids = visibleSource.getFeatures().map(feature => feature.getId())
       selection.select(ids)
     }
 
     ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
 
     // TODO: does not really belong here -> move!
-    emitter.on('command/delete', () => store.delete(selection.selected()))
+    emitter.on('command/delete', () => featureStore.delete(selection.selected()))
 
     // Setup Drag'n Drop.
     ;(() => {

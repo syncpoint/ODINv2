@@ -59,10 +59,12 @@ Iterator.prototype._next = async function (callback) {
 /**
  *
  */
-export const PartitionDOWN = function (propertiesLevel, geometriesLevel) {
-  AbstractLevelDOWN.call(this)
-  this.properties_ = propertiesLevel
-  this.geometries_ = geometriesLevel
+export const PartitionDOWN = function (jsonDB, wkbDB) {
+  const manifest = { getMany: true }
+  AbstractLevelDOWN.call(this, manifest)
+
+  this.jsonDB = jsonDB
+  this.wkbDB = wkbDB
 }
 
 util.inherits(PartitionDOWN, AbstractLevelDOWN)
@@ -110,16 +112,16 @@ PartitionDOWN.prototype._put = async function (key, value, options, callback) {
   try {
     if (isGeometry(value)) {
       // 1. Only write geometry:
-      await this.geometries_.put(key, value)
+      await this.wkbDB.put(key, value)
     } else {
       const { geometry, ...others } = value
       // 2. Write geometry and other properties:
       if (isGeometry(geometry)) {
-        await this.geometries_.put(key, geometry)
-        await this.properties_.put(key, others)
+        await this.wkbDB.put(key, geometry)
+        await this.jsonDB.put(key, others)
       } else {
         // 3. Write value as-is:
-        await this.properties_.put(key, value)
+        await this.jsonDB.put(key, value)
       }
     }
 
@@ -137,8 +139,8 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
   if (err) return this._nextTick(callback, err)
 
   try {
-    const geometry = await safeget(this.geometries_, key)
-    const others = await safeget(this.properties_, key)
+    const geometry = await safeget(this.wkbDB, key)
+    const others = await safeget(this.jsonDB, key)
 
     if (isGeometry(geometry)) {
       if (!others) return this._nextTick(callback, null, geometry)
@@ -153,6 +155,35 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
 }
 
 /**
+ * _getMany :: [k]
+ */
+PartitionDOWN.prototype._getMany = async function (keys, options, callback) {
+  const err = keys
+    .map(key => this._checkKey(key))
+    .find(err => err)
+
+  if (err) return this._nextTick(callback, err)
+
+  try {
+    const geometry = await this.wkbDB.getMany(keys)
+    const others = await this.jsonDB.getMany(keys)
+    const entries = keys.map((_, index) => {
+      if (isGeometry(geometry[index])) {
+        if (!others[index]) return geometry[index]
+        else return { geometry: geometry[index], ...others[index] }
+      } else {
+        if (!others) return undefined
+        else return others[index]
+      }
+    })
+
+    return this._nextTick(callback, null, entries)
+  } catch (err) {
+    this._nextTick(callback, err)
+  }
+}
+
+/**
  * Note: We do not check if key exists at all.
  */
 PartitionDOWN.prototype._del = async function (key, options, callback) {
@@ -160,8 +191,8 @@ PartitionDOWN.prototype._del = async function (key, options, callback) {
   if (err) return this._nextTick(callback, err)
 
   try {
-    await safedel(this.geometries_, key)
-    await safedel(this.properties_, key)
+    await safedel(this.wkbDB, key)
+    await safedel(this.jsonDB, key)
     this._nextTick(callback)
   } catch (err) {
     this._nextTick(callback, err)
@@ -202,8 +233,8 @@ PartitionDOWN.prototype._batch = async function (array, options, callback) {
   }, [[], []])
 
   try {
-    if (geometries.length) await this.geometries_.batch(geometries)
-    if (properties.length) await this.properties_.batch(properties)
+    if (geometries.length) await this.wkbDB.batch(geometries)
+    if (properties.length) await this.jsonDB.batch(properties)
     this._nextTick(callback)
   } catch (err) {
     this._nextTick(callback, err)
@@ -215,8 +246,8 @@ PartitionDOWN.prototype._batch = async function (array, options, callback) {
  */
 PartitionDOWN.prototype._iterator = function (options) {
   // Keys are necessary to synchronize iterators:
-  const propertiesIterator = this.properties_.iterator({ ...options, keys: true })
-  const geometriesIterator = this.geometries_.iterator({ ...options, keys: true })
+  const propertiesIterator = this.jsonDB.iterator({ ...options, keys: true })
+  const geometriesIterator = this.wkbDB.iterator({ ...options, keys: true })
   return new Iterator(this, {
     ...options,
     propertiesIterator,

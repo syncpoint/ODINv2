@@ -9,24 +9,24 @@ import { useServices, useMemento } from './hooks'
 const scopeGroups = {
   layer: {
     key: 'layer',
-    scope: '@id:layer',
+    scope: '@layer',
     label: 'Layers',
     items: [
-      { key: 'layer', scope: '@id:layer', label: 'Layers' },
-      { key: 'feature', scope: '@id:feature', label: 'Features' },
-      { key: 'link', scope: '@id:link', label: 'Links' },
-      { key: 'view', scope: '@id:view', label: 'Views' },
+      { key: 'layer', scope: '@layer', label: 'Layers' },
+      { key: 'feature', scope: '@feature', label: 'Features' },
+      { key: 'link', scope: '@link', label: 'Links' },
+      { key: 'view', scope: '@view', label: 'Views' },
       // Tag #pin and any of given scopes:
-      { key: 'pinned', scope: '@id:layer|feature|link|view #pin', label: 'Pinned' }
+      { key: 'pinned', scope: '@layer @feature @link #pin', label: 'Pinned' }
     ]
   },
   symbol: {
     key: 'symbol',
-    scope: '@id:symbol',
+    scope: '@symbol',
     label: 'Symbols',
     items: [
-      { key: 'symbol', scope: '@id:symbol', label: 'Symbols' },
-      { key: 'pinned', scope: '@id:symbol #pin', label: 'Pinned' }
+      { key: 'symbol', scope: '@symbol', label: 'Symbols' },
+      { key: 'pinned', scope: '@symbol #pin', label: 'Pinned' }
     ]
   }
 }

@@ -16,7 +16,7 @@ const set = value => feature => ({
 })
 
 export default props => {
-  const { store } = useServices()
+  const { featureStore } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -34,14 +34,14 @@ export default props => {
   const handleSelectionChanged = event => {
     const { value } = event.target
     setState(value)
-    const features = Object.values(props.features)
-    store.update(features.map(set(value)), features)
+    featureStore.update(props.features, set(value))
   }
 
   return state !== 'A'
     ? <Section label='Operational Condition'>
         <Select
           value={state}
+          disabled={props.disabled}
           onChange={handleSelectionChanged}
         >
           <option value='P'>N/A</option>

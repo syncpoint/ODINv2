@@ -49,7 +49,7 @@ const set = value => feature => ({
 })
 
 export default props => {
-  const { store } = useServices()
+  const { featureStore } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -67,8 +67,7 @@ export default props => {
   const update = state => {
     setState(state)
     const value = encode(state[0], state[1])
-    const features = Object.values(props.features)
-    store.update(features.map(set(value)), features)
+    featureStore.update(props.features, set(value))
   }
 
   const handleSelectionChanged = event => {
@@ -89,6 +88,7 @@ export default props => {
         <FlexRow>
           <Select
             value={state[0]}
+            disabled={props.disabled}
             onChange={handleSelectionChanged}
           >
             <option value='P'>Pending</option>
@@ -104,7 +104,7 @@ export default props => {
           <div style={{ marginLeft: 'auto' }}>
             <Checkbox
               label='Exercise'
-              disabled={exerciseDisabled}
+              disabled={exerciseDisabled || props.disabled}
               checked={!exerciseDisabled && state[1]}
               onChange={handleExerciseChanged}
             />

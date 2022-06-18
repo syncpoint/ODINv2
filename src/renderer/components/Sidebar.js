@@ -53,12 +53,13 @@ const Sidebar = props => {
 
       if (isLayerId(focusId)) {
         const layerId = focusId.split(':')[1]
-        
+
         historyDispatch({
           type: 'push',
           entry: {
             key: focusId,
-            scope: `@id:feature:${layerId}|link+layer:${layerId}`,
+            // scope: `@id:feature:${layerId}|link+layer:${layerId}`,
+            scope: `@feature @link !feature:${layerId} !link+layer:${layerId}`,
             label: listState.entries[focusIndex].title || 'N/A'
           }
         })
@@ -67,7 +68,7 @@ const Sidebar = props => {
           type: 'push',
           entry: {
             key: focusId,
-            scope: `@id:link+feature:${focusId.split(':')[1]}`,
+            scope: `@link !link+feature:${focusId.split(':')[1]}`,
             label: listState.entries[focusIndex].title || 'N/A'
           }
         })

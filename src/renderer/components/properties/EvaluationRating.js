@@ -59,7 +59,7 @@ const set = value => feature => {
 }
 
 export default props => {
-  const { store } = useServices()
+  const { featureStore } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -81,9 +81,7 @@ export default props => {
 
   const update = state => {
     setState(state)
-    const features = Object.values(props.features)
-    store.update(features.map(set(state)), features)
-
+    featureStore.update(props.features, set(state))
   }
 
   const handleReliabilityChange = ({ target }) => {
@@ -108,6 +106,7 @@ export default props => {
             max='5'
             step='1'
             value={reliabilityCode(state)}
+            disabled={props.disabled}
             onChange={handleReliabilityChange}
           >
             <option value='0'>A</option>
@@ -126,6 +125,7 @@ export default props => {
             max='6'
             step='1'
             value={credibilityCode(state)}
+            disabled={props.disabled}
             onChange={handleCredibilityChange}
           >
             <option value='0'>1</option>
@@ -146,6 +146,7 @@ export default props => {
         <Checkbox
           label='Available'
           checked={state !== ''}
+          disabled={props.disabled}
           onChange={handleAvailableChanged}
         />
         { sliders() }

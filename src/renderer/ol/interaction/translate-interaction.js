@@ -6,15 +6,15 @@ const isEqual = require('react-fast-compare')
 /**
  *
  */
-export default (options, select) => {
-  const { store, hitTolerance } = options
+export default options => {
+  const { featureStore, hitTolerance, modifiableSource } = options
 
   // snapshot :: [GeoJSON/Feature]
   let snapshot = []
 
   const interaction = new Translate({
     hitTolerance,
-    features: select.getFeatures(),
+    features: modifiableSource.getFeaturesCollection(),
     condition: event => noModifierKeys(event) || shiftKeyOnly(event)
   })
 
@@ -25,22 +25,23 @@ export default (options, select) => {
   interaction.on('translatestart', async event => {
     // Get full set of properties for each feature:
     const ids = event.features.getArray().map(feature => feature.getId())
-    snapshot = await store.select(ids)
+    snapshot = await featureStore.values(ids)
   })
 
   interaction.on('translateend', async event => {
     // Deep compare geometry and only update when changed:
     const { features } = writeFeatureCollection(event.features.getArray())
-    const [newValues, oldValues] = features.reduce((acc, feature, index) => {
+    const [keys, newValues] = features.reduce((acc, feature, index) => {
+      const { id: key, ...value } = feature
       if (isEqual(feature.geometry, snapshot[index].geometry)) return acc
 
       // Only update geometry and keep remaining properties:
-      acc[0].push({ ...snapshot[index], geometry: feature.geometry })
-      acc[1].push(snapshot[index])
+      acc[0].push(key)
+      acc[1].push({ ...snapshot[index], geometry: value.geometry })
       return acc
     }, ([[], []]))
 
-    store.update(newValues, oldValues)
+    featureStore.update(keys, newValues, snapshot)
   })
 
   return interaction

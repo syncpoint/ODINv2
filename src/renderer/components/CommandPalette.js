@@ -30,7 +30,10 @@ export const CommandPalette = props => {
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset values to stored snapshot:
-    if (key === 'Escape') store.update(snapshot)
+    if (key === 'Escape') {
+      const focusIndex = Entries.focusIndex(state)
+      if (focusIndex !== -1) state.entries[focusIndex].revert()
+    }
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
@@ -54,8 +57,8 @@ export const CommandPalette = props => {
   React.useEffect(() => {
     (async () => {
       // Get properties snapshot of currently selection:
-      // snapshot :: [value]
-      const snapshot = await store.select(selection.selected())
+      // snapshot :: [k, v]
+      const snapshot = await store.tuples(selection.selected())
       setSnapshot(snapshot)
     })()
   }, [store, selection])
@@ -65,11 +68,8 @@ export const CommandPalette = props => {
    * Filter command entries based on features snapshot and current filter.
    */
   React.useEffect(() => {
-    // TODO: 1bc7d4e8-f294-4917-ab6c-a6bd541b49c5 - Command Palette: fuzzy search, incl. highlighting (Fuse.js)
     const isMatch = command => command.description().toLowerCase().includes(filter.toLowerCase())
-    const commands = paletteCommands.getCommands(snapshot)
-      .filter(command => !filter || isMatch(command))
-
+    const commands = paletteCommands.getCommands(snapshot).filter(command => !filter || isMatch(command))
     dispatch({ type: 'entries', entries: commands })
   }, [dispatch, filter, snapshot, paletteCommands])
 

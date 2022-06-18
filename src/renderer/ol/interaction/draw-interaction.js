@@ -9,13 +9,8 @@ import * as EPSG from '../../epsg'
 import { PI_OVER_2, PI_OVER_4, SQRT_2 } from '../../../shared/Math'
 
 
-/**
- * @param {EventEmitter} emitter
- * @param {ol/Map} map
- * @param {Store} store
- */
 export default options => {
-  const { emitter, map, store } = options
+  const { emitter, map, featureStore } = options
 
   let pendingDraw = null
   let handlers = {}
@@ -44,7 +39,7 @@ export default options => {
     // NOTE: side-effect may modify feature/geometry
     (geometry.complete || (() => {}))(map, feature)
     const geoJSON = writeFeatureObject(feature)
-    store.insertFeatures([geoJSON])
+    featureStore.insertGeoJSON([geoJSON])
     cancel()
   }
 

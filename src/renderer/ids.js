@@ -6,6 +6,7 @@ export const layerId = R.cond([
   // must be a string then...
   [R.startsWith('feature:'), x => `layer:${x.split(':')[1].split('/')[0]}`],
   [R.startsWith('layer:'), R.identity],
+  [R.includes('+layer:'), x => x.split('+')[1]],
   [R.T, x => layerId(x.id)]
 ])
 
@@ -17,36 +18,64 @@ export const layerUUID = R.cond([
 
 export const featureId = R.cond([
   [x => typeof x === 'object', R.prop('id')],
+  [R.includes('+feature:'), x => x.split('+')[1]],
   [R.T, layerId => `feature:${layerId.split(':')[1]}/${uuid()}`]
 ])
+
+export const lockedId = id => `locked+${id}`
+export const hiddenId = id => `hidden+${id}`
+export const sharedId = id => `shared+${id}`
+export const tagsId = id => `tags+${id}`
+export const linkId = id => `link+${id}/{uuid()}`
 
 /**
  * '+'-notation container id.
  *
- * link+layer:{uuid}/{uuid}
- *      |----------|
- *
- * link+feature:{uuid}/{uuid}/uuid
- *      |-------------------|
+ * link+layer:{uuid}/{uuid} => layer:{uuid}
+ * link+feature:{uuid}/{uuid}/{uuid} => feature:{uuid}/{uuid}
  */
-export const containerId = idLike => {
-  if (typeof idLike === 'object') return containerId(idLike.id)
-
-  const indexStart = idLike.indexOf('+')
-  const indexEnd = idLike.lastIndexOf('/')
-  return idLike.substring(indexStart + 1, indexEnd)
+export const containerId = id => {
+  const indexStart = id.indexOf('+') // remove '...+' part
+  const indexEnd = id.lastIndexOf('/') // remove last UUID
+  return id.substring(indexStart + 1, indexEnd)
 }
+
+/**
+ * '+'-notation associated id.
+ *
+ * tags+layer:{uuid} => layer:{uuid}
+ * locked+feature:{uuid}/{uuid} => feature:{uuid}/{uuid}
+ * feature:{uuid}/{uuid} => feature:{uuid}/{uuid} [identity]
+ */
+export const associatedId = id => {
+  const parts = id.split('+')
+  return parts.length === 2 ? parts[1] : parts[0]
+}
+
+export const detailId = id => {}
 
 export const scope = id => id.split(':')[0]
 
 const isId = prefix => id => id && id.startsWith(prefix)
 export const isLayerId = isId('layer:')
 export const isFeatureId = isId('feature:')
-export const isGroupId = isId('group:')
+export const isGroupId = isId('group:') // TODO: group -> view
 export const isSymbolId = isId('symbol:')
 export const isPlaceId = isId('place:')
-export const isLinkId = isId('link:')
+export const isLinkId = isId('link+')
+export const isDeletableId = id => !isSymbolId(id)
+export const isTaggableId = id => !isGroupId(id)
 export const isProjectId = isId('project:')
+export const isLockedId = isId('locked+')
+export const isLockedFeatureId = isId('locked+feature:')
+export const isHiddenFeatureId = isId('hidden+feature:')
+export const isHiddenId = isId('hidden+')
+export const isTagsId = isId('tags+')
+
+export const isAssociatedId = id =>
+  isHiddenId(id) ||
+  isLockedId(id) ||
+  isTagsId(id)
 
 export const FEATURE_ID = 'feature:[0-9a-f-]{36}/[0-9a-f-]{36}'
 export const LAYER_ID = 'layer:[0-9a-f-]{36}'

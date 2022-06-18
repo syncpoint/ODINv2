@@ -8,7 +8,7 @@ export default options => {
   const { label, get, set } = options
 
   const Property = props => {
-    const { store } = useServices()
+    const { featureStore } = useServices()
 
     const initialValue = () => {
       const features = Object.values(props.features)
@@ -27,13 +27,13 @@ export default options => {
 
     const handleBlur = () => {
       if (value === initialValue()) return
-      const features = Object.values(props.features)
-      store.update(features.map(set(value)), features)
+      featureStore.update(props.features, set(value))
     }
 
     return <TextField
       label={label}
       value={value}
+      disabled={props.disabled}
       onChange={handleChange}
       onBlur={handleBlur}
     />

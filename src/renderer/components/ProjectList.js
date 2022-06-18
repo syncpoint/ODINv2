@@ -180,6 +180,7 @@ export const ProjectList = () => {
   const fetch = React.useCallback(projectId => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
+      console.log('projects', projects)
       dispatch({ type: 'entries', entries: projects, candidateId: projectId })
       if (projectId) dispatch({ type: 'select', selected: [projectId] })
     })()

@@ -3,7 +3,7 @@ import { DragBox } from 'ol/interaction'
 import { platformModifierKeyOnly } from 'ol/events/condition'
 
 export default options => {
-  const { selection, featureSource } = options
+  const { selection, visibleSource } = options
 
   // Note: DragBox is not a selection interaction per se.
   // I.e. it does not manage selected features automatically.
@@ -19,15 +19,8 @@ export default options => {
 
     // Collect features intersecting extent.
     const extent = interaction.getGeometry().getExtent()
-    const features = R.uniq(featureSource.getFeaturesInExtent(extent))
-
-    // Toggle selections:
-    const isSelected = feature => selection.isSelected(feature.getId())
-    const [removals, additions] = R.partition(isSelected)(features)
-
-    // selection.set(additions.map(feature => feature.getId()))
-    // selection.deselect(removals.map(feature => feature.getId()))
-    // selection.deselect(selection.selected(id => !featureSource.getFeatureById(id))) // not on map
+    const features = R.uniq(visibleSource.getFeaturesInExtent(extent))
+    const additions = features.filter(feature => !selection.isSelected(feature.getId()))
     selection.select(additions.map(feature => feature.getId()))
   })
 
