@@ -1,3 +1,10 @@
+2.3.0-alpha
+* Updated dependencies
+* project database: improved schema and data organizaiton
+* improved FTS efficiency
+* lock layers and feature (prevents modification)
+* Fix: Support web links as documents
+
 2.1.0-alpha
 * Fix: Card: Layout issue for long names (#10)
 * Fix: Hostility Status is missing by Mobility/Survivability (#11)
