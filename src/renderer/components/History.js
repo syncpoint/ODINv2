@@ -4,35 +4,34 @@ import { Breadcrumb, Menu } from 'antd'
 
 const History = props => {
   const { entries, dispatch } = props
-  const menuItemStyle = { userSelect: 'none' }
+  const menuStyle = { userSelect: 'none' }
+
+
+  const handleMenuClick = ({ key }) => {
+    const [entryKey, itemKey] = key.split(':')
+    const entry = entries.find(entry => entry.key === entryKey)
+    const item = entry.items.find(item => item.key === itemKey)
+    dispatch({ type: 'reset', entry: { ...item, items: entry.items } })
+  }
+
 
   const breadcrumbItem = entry => {
-    const menuItem = item => {
-      const handleClick = () => {
-        dispatch({ type: 'reset', entry: { ...item, items: entry.items } })
-      }
+    const menuItem = item => ({
+      key: `${entry.key}:${item.key}`,
+      label: item.label
+    })
 
-      return (
-        <Menu.Item
-          key={`${entry.key}:${item.key}`}
-          style={menuItemStyle}
-          onClick={handleClick}
-        >{item.label}</Menu.Item>
-      )
-    }
-
+    const handleBreadcrumbItemClick = () => dispatch({ type: 'pop', key: entry.key })
     const overlay = entry.items && entry.items.length
-      ? <Menu>{ entry.items.map(menuItem) }</Menu>
+      ? <Menu onClick={handleMenuClick} style={menuStyle} items={entry.items.map(menuItem)}/>
       : null
-
-    const handleClick = () => dispatch({ type: 'pop', key: entry.key })
 
     return (
       <Breadcrumb.Item
         key={entry.key}
         overlay={overlay}
       >
-        <a onClick={handleClick}>{entry.label}</a>
+        <a onClick={handleBreadcrumbItemClick}>{entry.label}</a>
       </Breadcrumb.Item>
     )
   }
