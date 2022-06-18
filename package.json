@@ -49,7 +49,7 @@
     "webpack-dev-server": "^4.9.2"
   },
   "dependencies": {
-    "@mdi/js": "^6.6.96",
+    "@mdi/js": "^6.7.96",
     "@mdi/react": "^1.6.0",
     "@most/scheduler": "^1.3.0",
     "@syncpoint/wkx": "^0.5.2",
