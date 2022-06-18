@@ -14,7 +14,6 @@ const History = props => {
     dispatch({ type: 'reset', entry: { ...item, items: entry.items } })
   }
 
-
   const breadcrumbItem = entry => {
     const menuItem = item => ({
       key: `${entry.key}:${item.key}`,

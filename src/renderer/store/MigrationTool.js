@@ -8,12 +8,6 @@ export const MigrationTool = function (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
-
-  // ;(async () => {
-  //   await this.schemaDB.put(INLINE_IDENTIFIERS, false)
-  // })()
-
-  console.log(options)
 }
 
 MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers'
