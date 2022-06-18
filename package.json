@@ -56,7 +56,7 @@
     "abstract-leveldown": "^7.2.0",
     "antd": "^4.21.3",
     "jexl": "^2.3.0",
-    "jsts": "^2.8.1",
+    "jsts": "^2.9.0",
     "leveldown": "^6.1.1",
     "levelup": "^5.0.1",
     "lodash.debounce": "^4.0.8",
