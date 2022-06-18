@@ -9,4 +9,4 @@ win:
     - target: nsis
       arch:
         - x64
-electronVersion: 16.2.3
+electronVersion: 19.0.4
