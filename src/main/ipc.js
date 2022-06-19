@@ -4,6 +4,10 @@ import { leveldb } from '../shared/level'
 
 export const ipc = (databases, ipcMain, projectStore) => {
 
+  ipcMain.handle('ipc:get:project', (_, id) => {
+    return projectStore.getProject(id)
+  })
+
   ipcMain.handle('ipc:get:projects', () => {
     return projectStore.getProjects()
   })

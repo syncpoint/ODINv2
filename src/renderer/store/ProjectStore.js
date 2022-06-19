@@ -53,6 +53,9 @@ export function ProjectStore (ipcRenderer) {
 
 util.inherits(ProjectStore, Emitter)
 
+ProjectStore.prototype.getProject = async function (id) {
+  return this.ipcRenderer.invoke('ipc:get:project', id)
+}
 
 /**
  * @async

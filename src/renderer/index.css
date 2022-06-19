@@ -90,9 +90,9 @@ input {
     Give WebKit a chance to calculate explicit height.
     This is necessary to stretch children to desired height.
   */
-  height: calc(100vh - 10rem);
+  height: calc(100vh - 12rem);
 
-  padding-top: 5rem;
+  padding-top: 1rem;
   padding-bottom: 2rem;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -100,8 +100,10 @@ input {
   display: grid;
   grid-gap: 1rem;
   grid-template-columns: 24rem auto 24rem;
-  grid-template-rows: auto;
-  grid-template-areas: "L . R";
+  grid-template-rows: 5rem auto;
+  grid-template-areas:
+    "T T T"
+    "L . R";
 }
 
 .panel-inset {
@@ -134,6 +136,11 @@ input {
     0px 1px 10px 0px rgba(0,0,0,0.12);
 }
 
+.panel-top {
+  /* height: inherit; */
+  grid-area: T;
+}
+
 .panel-left {
   height: inherit;
   grid-area: L;
@@ -155,8 +162,17 @@ input {
 }
 
 .osd {
-  border-width: 2px;
-  border-style: dashed;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-areas:
+    "A1 B1 C1"
+    "A2 B2 C2"
+    "A3 B3 C3";
+}
+
+.osd__cell {
+  background: white;
 }
 
 .palette {

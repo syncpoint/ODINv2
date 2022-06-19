@@ -1,6 +1,7 @@
 import React from 'react'
 import { Map } from './Map'
 import { CommandPalette, Sidebar, FeatureProperties } from '.'
+import { OSD } from './OSD'
 import { useServices, useMemento } from './hooks'
 
 /**
@@ -110,7 +111,7 @@ export const Project = () => {
     <>
       <Map/>
       <div className='panel-container fullscreen'>
-        {/* <div className="osd panel-top"/> */}
+        <OSD/>
         { sidebar }
         <FeatureProperties></FeatureProperties>
       </div>

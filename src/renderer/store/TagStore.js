@@ -9,5 +9,6 @@ TagStore.prototype.addTag = async function (id, name) {
 }
 
 TagStore.prototype.removeTag = async function (id, name) {
-  this.store.removeTag(id, name)
+  if (name === 'default') this.featureStore.unsetDefaultLayer(id)
+  else this.store.removeTag(id, name)
 }

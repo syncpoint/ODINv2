@@ -7,6 +7,7 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import ScaleLine from 'ol/control/ScaleLine'
 import { Fill, Stroke, Circle, Style } from 'ol/style'
+import { throttle } from 'throttle-debounce'
 import '../epsg'
 import { useServices } from './hooks'
 import { featureStyle } from '../ol/style'
@@ -26,7 +27,8 @@ export const Map = () => {
     featureStore,
     undo,
     emitter,
-    viewMemento
+    viewMemento,
+    osdDriver
   } = useServices()
 
   const effect = async () => {
@@ -161,6 +163,8 @@ export const Map = () => {
     }
 
     map.once('rendercomplete', ({ target }) => sendPreview(target))
+
+    map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
 
     // Dim feature layer when we have a selection:
     const updateOpacity = () => {

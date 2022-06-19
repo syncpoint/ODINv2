@@ -1,9 +1,9 @@
 import util from 'util'
 import Emitter from '../../shared/emitter'
 
-export function PreferencesStore (preferencesLevel) {
+export function PreferencesStore (preferencesDB) {
   Emitter.call(this)
-  this.preferences_ = preferencesLevel
+  this.preferencesDB = preferencesDB
 }
 
 util.inherits(PreferencesStore, Emitter)
@@ -15,7 +15,7 @@ util.inherits(PreferencesStore, Emitter)
  */
 PreferencesStore.prototype.get = async function (key, defaultValue) {
   try {
-    return await this.preferences_.get(key)
+    return await this.preferencesDB.get(key)
   } catch (err) {
     return defaultValue
   }
@@ -28,5 +28,5 @@ PreferencesStore.prototype.get = async function (key, defaultValue) {
  */
 PreferencesStore.prototype.put = function (key, value) {
   this.emit(key, value)
-  return this.preferences_.put(key, value)
+  return this.preferencesDB.put(key, value)
 }

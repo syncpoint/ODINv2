@@ -71,6 +71,7 @@ export const isLockedFeatureId = isId('locked+feature:')
 export const isHiddenFeatureId = isId('hidden+feature:')
 export const isHiddenId = isId('hidden+')
 export const isTagsId = isId('tags+')
+export const isLayerTagsId = isId('tags+layer:')
 
 export const isAssociatedId = id =>
   isHiddenId(id) ||

@@ -3,8 +3,8 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool } from '../store'
-import { PaletteCommands, ViewMemento, Controller } from '../model'
+import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool, ProjectStore } from '../store'
+import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
@@ -43,8 +43,11 @@ export default async projectUUID => {
   const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
   const tagStore = new TagStore(store, featureStore)
   const preferencesStore = new PreferencesStore(preferencesDB)
+  const projectStore = new ProjectStore(ipcRenderer)
+
   const searchIndex = new SearchIndex(jsonDB)
   const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
+  const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, featureStore)
 
   // Key bindings.
   bindings(emitter)
@@ -99,6 +102,7 @@ export default async projectUUID => {
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
   services.controller = controller
+  services.osdDriver = osdDriver
 
   services.paletteCommands = new PaletteCommands({
     store,

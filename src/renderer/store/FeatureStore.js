@@ -21,9 +21,11 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * setDefaultLayer :: k -> unit
  * tuples :: String -> [[k, v]]
  * tuples :: [k] -> [[k, v]]
+ * unsetDefaultLayer :: k -> unit
  * update :: { k: v } -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
+ * value :: k -> v
  * values :: String -> [v]
  * values :: [k] -> [v]
  */
@@ -92,6 +94,16 @@ FeatureStore.prototype.tuples = async function (arg) {
 FeatureStore.prototype.values = async function (arg) {
   return L.values(this.db, arg)
 }
+
+
+/**
+ * @async
+ * value :: k -> v
+ */
+FeatureStore.prototype.value = async function (key) {
+  return this.db.get(key)
+}
+
 
 
 /**
@@ -289,6 +301,7 @@ FeatureStore.prototype.geometryBounds = async function (ids, resolution) {
 const addTag = (name, tags) => R.uniq([...(tags || []), name])
 const removeTag = (name, tags) => (tags || []).filter(tag => tag !== name)
 
+
 /**
  * setDefaultLayer :: k -> unit
  */
@@ -306,6 +319,19 @@ FeatureStore.prototype.setDefaultLayer = async function (id) {
   })
 
   const command = this.updateCommand(this.jsonDB, keys, newValues, oldValues)
+  this.undo.apply(command)
+}
+
+
+/**
+ * unsetDefaultLayer :: k -> unit
+ */
+FeatureStore.prototype.unsetDefaultLayer = async function (id) {
+  const key = tagsId(id)
+  const value = await this.jsonDB.get(key)
+  const oldValue = value || []
+  const newValue = removeTag('default', oldValue)
+  const command = this.updateCommand(this.jsonDB, [key], [newValue], [oldValue])
   this.undo.apply(command)
 }
 
