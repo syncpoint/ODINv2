@@ -132,7 +132,9 @@ export const mgetEntities = mget((key, value) => ({ id: key, ...value }))
  */
 export const tuples = (db, arg) => Array.isArray(arg)
   ? mgetTuples(db, arg)
-  : readTuples(db, prefix(arg))
+  : arg
+    ? readTuples(db, prefix(arg))
+    : readTuples(db, {})
 
 /**
  * values :: levelup -> [k] -> [v]

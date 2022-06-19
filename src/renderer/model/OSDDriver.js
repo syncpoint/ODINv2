@@ -31,12 +31,17 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
 
     if (update) this.updateDefaultLayer()
   })
+
+  preferencesStore.on('coordinatesFormatChanged', ({ format }) => {
+    this.coordinatesFormat = format
+    if (this.lastCoordinate) this.pointermove({ coordinate: this.lastCoordinate })
+  })
 }
 
-OSDDriver.prototype.pointermove = function (event) {
-  if (!this.coordinatesFormat) return
+OSDDriver.prototype.pointermove = function ({ coordinate }) {
+  this.lastCoordinate = coordinate
 
-  const { coordinate } = event
+  if (!this.coordinatesFormat) return
   const lonLat = toLonLat(coordinate)
   const message = formats[this.coordinatesFormat](lonLat)
   this.emitter.emit('osd', { message, cell: 'C2' })

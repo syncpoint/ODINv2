@@ -23,9 +23,10 @@ export function ApplicationMenu (sessionStore) {
 util.inherits(ApplicationMenu, Emitter)
 
 
-ApplicationMenu.prototype.show = async function () {
+ApplicationMenu.prototype.show = async function (preferences) {
 
   const options = {
+    preferences,
     platform: process.platform,
     appName: app.name,
     sessionStore: this.sessionStore,

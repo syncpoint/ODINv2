@@ -4,7 +4,6 @@ import { useServices } from './hooks'
 const reducer = (state, { message, cell }) => {
   const newState = { ...state }
   newState[cell] = message
-  // console.log(message, cell, newState)
   return newState
 }
 

@@ -1,10 +1,5 @@
 import { ipcMain } from 'electron'
-
-const dispatch = fn => (_, browserWindow) => {
-  if (browserWindow) fn(browserWindow)
-}
-
-const send = (browserWindow, command) => browserWindow.webContents.send(command)
+import { dispatch, send } from './helpers'
 
 /*
   Undo/Redo:
@@ -43,7 +38,7 @@ ipcMain.on('DO_REDO', (event) => {
 })
 
 
-export default async options => {
+export default options => {
   return {
     label: 'Edit',
     submenu: [

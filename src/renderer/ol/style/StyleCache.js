@@ -12,9 +12,6 @@ StyleCache.prototype.entry = function (key, factory) {
   if (!key) return
   const entry = this.cache_.get(key)
 
-  // if (entry) console.log('[CACHE] hit', key)
-  // else console.log('[CACHE] miss', key)
-
   if (entry) return entry
   else {
     const entry = factory()

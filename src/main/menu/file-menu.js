@@ -30,7 +30,7 @@ export default async options => {
       {
         label: 'Manage Projects',
         accelerator: 'CmdOrCtrl+Shift+N',
-        click: async (/* menuItem, browserWindow, event */) => {
+        click: (/* menuItem, browserWindow, event */) => {
           emitter.emit('project/create')
         }
       },

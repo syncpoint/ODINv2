@@ -42,7 +42,7 @@ export default async projectUUID => {
   const store = new Store(jsonDB, undo, selection)
   const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
   const tagStore = new TagStore(store, featureStore)
-  const preferencesStore = new PreferencesStore(preferencesDB)
+  const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const projectStore = new ProjectStore(ipcRenderer)
 
   const searchIndex = new SearchIndex(jsonDB)

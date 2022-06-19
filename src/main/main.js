@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { app, ipcMain, shell } from 'electron'
+import { app, ipcMain, shell, BrowserWindow } from 'electron'
 import URL from 'url'
 import * as paths from './paths'
 import { transferLegacy } from './legacy/transfer'
@@ -8,7 +8,7 @@ import { IPCServer } from '../shared/level/ipc'
 import { Session } from './Session'
 import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
-import { ProjectStore, SessionStore, LegacyStore } from './stores'
+import { ProjectStore, SessionStore, LegacyStore, PreferencesProvider } from './stores'
 import { ipc } from './ipc'
 
 /**
@@ -44,6 +44,17 @@ const ready = async () => {
   const windowManager = new WindowManager()
   const session = new Session({ sessionStore, projectStore, windowManager })
   const menu = new ApplicationMenu(sessionStore)
+  const preferencesProvider = new PreferencesProvider(windowManager, ipcMain)
+
+  preferencesProvider.on('preferencesChanged', ({ projectId, preferences }) => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (!focusedWindow) return
+
+    const handle = windowManager.handleFromId(focusedWindow.id)
+    if (handle !== projectId) return
+
+    menu.show(preferences)
+  })
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())
@@ -61,8 +72,8 @@ const ready = async () => {
     if (id.startsWith('project:')) await projectStore.addTag(id, 'open')
   })
 
-  windowManager.on('window/focus-gained/:id', event => {
-    menu.show()
+  windowManager.on('window/focus-gained/:id', ({ id }) => {
+    menu.show(preferencesProvider.preferences(id))
   })
 
   ipcMain.on('PREVIEW', ({ sender }, url) => {

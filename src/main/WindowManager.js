@@ -76,7 +76,6 @@ WindowManager.prototype.createWindow = function (options) {
         // Useful for passing small bits of data down to renderer
         // process preload scripts.
         additionalArguments
-
       }
     })
 
