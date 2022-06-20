@@ -17,7 +17,7 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
   this.featureStore = featureStore
 
   ;(async () => {
-    this.coordinatesFormat = await preferencesStore.get('coordinates-format')
+    this.coordinatesFormat = await preferencesStore.get('coordinates-format', 'MGRS')
     this.updateProjectName()
     this.updateDefaultLayer()
   })()
