@@ -163,6 +163,7 @@ input {
 
 .osd {
   display: grid;
+  user-select: none;
   grid-template-columns: auto auto auto;
   grid-template-rows: repeat(3, 1fr);
   grid-template-areas:

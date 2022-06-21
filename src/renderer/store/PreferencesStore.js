@@ -15,9 +15,7 @@ export function PreferencesStore (preferencesDB, ipcRenderer) {
   preferencesDB.on('put', (key, value) => ipcRenderer.send('ipc:post:preferences', key, value))
   preferencesDB.on('del', key => ipcRenderer.send('ipc:del:preferences', key))
 
-  ipcRenderer.on('VIEW_COORDINATES_MGRS', () => this.setCoordinatesFromat('MGRS'))
-  ipcRenderer.on('VIEW_COORDINATES_UTM', () => this.setCoordinatesFromat('UTM'))
-  ipcRenderer.on('VIEW_COORDINATES_LATLON', () => this.setCoordinatesFromat('LATLON'))
+  ipcRenderer.on('VIEW_COORDINATES_FORMAT', (_, format) => this.setCoordinatesFromat(format))
 }
 
 util.inherits(PreferencesStore, Emitter)

@@ -1,12 +1,27 @@
 import { toLonLat } from 'ol/proj'
 import { LatLon } from 'geodesy/mgrs.js'
+import Dms from 'geodesy/dms.js'
 import { militaryFormat } from '../../shared/datetime'
 import { isLayerTagsId } from '../ids'
+import OpenLocationCode from './openlocationcode'
+
+
+/**
+ * DMS:  40°26′46″N 79°58′56″W
+ * DM:   40°26.767′N 79°58.933′W
+ * D:    40.446°N 79.982°W
+ * UTM:  32U 461344 5481745
+ * MGRS: 32U MV 61344 81745
+ */
 
 const formats = {
-  LATLON: (coordinates) => `${coordinates[1].toFixed(5)}, ${coordinates[0].toFixed(5)}`,
-  MGRS: (coordinates) => new LatLon(coordinates[1], coordinates[0]).toUtm().toMgrs().toString(),
-  UTM: (coordinates) => new LatLon(coordinates[1], coordinates[0]).toUtm().toString()
+  LATLON: ([lng, lat]) => `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+  DMS: ([lng, lat]) => `${Dms.toLat(lat, 'dms')} ${Dms.toLon(lng, 'dms')}`,
+  DDM: ([lng, lat]) => `${Dms.toLat(lat, 'dm')} ${Dms.toLon(lng, 'dm')}`,
+  DD: ([lng, lat]) => `${Dms.toLat(lat, 'd')} ${Dms.toLon(lng, 'd')}`,
+  MGRS: ([lng, lat]) => new LatLon(lat, lng).toUtm().toMgrs().toString(),
+  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString(),
+  PLUS: ([lng, lat]) => OpenLocationCode.encode(lat, lng)
 }
 
 export const OSDDriver = function (projectUUID, emitter, preferencesStore, projectStore, featureStore) {

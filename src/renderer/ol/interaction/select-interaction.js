@@ -13,7 +13,6 @@ export default options => {
   const interaction = new Select({
     hitTolerance,
     style,
-    // layers: [featureLayer, selectedLayer],
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
     multi: false // don't select all features under cursor at once.
