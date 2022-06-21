@@ -14,6 +14,7 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * batch :: (leveldb, operations) -> unit
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
+ * delete :: [k] -> unit
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit

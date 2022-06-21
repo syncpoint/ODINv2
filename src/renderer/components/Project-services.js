@@ -8,6 +8,7 @@ import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
+import { Clipboard } from '../Clipboard'
 import { bindings } from '../commands/bindings'
 
 export default async projectUUID => {
@@ -48,6 +49,7 @@ export default async projectUUID => {
   const searchIndex = new SearchIndex(jsonDB)
   const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, featureStore)
+  const clipboard = new Clipboard(selection, featureStore)
 
   // Key bindings.
   bindings(emitter)
@@ -103,6 +105,7 @@ export default async projectUUID => {
   services.searchIndex = searchIndex
   services.controller = controller
   services.osdDriver = osdDriver
+  services.clipboard = clipboard
 
   services.paletteCommands = new PaletteCommands({
     store,

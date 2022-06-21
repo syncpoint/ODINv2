@@ -26,7 +26,7 @@ export const lockedId = id => `locked+${id}`
 export const hiddenId = id => `hidden+${id}`
 export const sharedId = id => `shared+${id}`
 export const tagsId = id => `tags+${id}`
-export const linkId = id => `link+${id}/{uuid()}`
+export const linkId = id => `link+${id}/${uuid()}`
 
 /**
  * '+'-notation container id.
@@ -45,11 +45,14 @@ export const containerId = id => {
  *
  * tags+layer:{uuid} => layer:{uuid}
  * locked+feature:{uuid}/{uuid} => feature:{uuid}/{uuid}
+ * tags+link+feature:{uuid}/{uuid}/{uuid} => link+feature:{uuid}/{uuid}/{uuid}
  * feature:{uuid}/{uuid} => feature:{uuid}/{uuid} [identity]
  */
 export const associatedId = id => {
-  const parts = id.split('+')
-  return parts.length === 2 ? parts[1] : parts[0]
+  const indexStart = id.indexOf('+') // remove '...+' part
+  return indexStart === -1
+    ? id /* identity */
+    : id.substring(indexStart + 1)
 }
 
 export const detailId = id => {}
@@ -86,3 +89,10 @@ export const SYMBOL_ID = 'symbol:[A-Z-*]{10}'
 export const LINK_ID = 'link:[0-9a-f-]{36}'
 export const PROJECT_ID = 'project:[0-9a-f-]{36}'
 export const FIELD_ID = 'field:[0-9a-f-]{36}'
+
+export const ord = R.cond([
+  [isLayerId, R.always(0)],
+  [isFeatureId, R.always(1)],
+  [isLinkId, R.always(2)],
+  [isTagsId, R.always(3)]
+])
