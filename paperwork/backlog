@@ -16,7 +16,6 @@
 * project list/menu: import project
 * basemaps: wizard, selection, order, properties
 * menu: select/all
-* clipboard: sidebar/map (incl. undo and menu)
 * mgrs grid (incl. menu item)
 * menu/view: hide/show labels (toggle), project/preferences
 * menu/help (manual, slack, email)
