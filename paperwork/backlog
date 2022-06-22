@@ -19,9 +19,7 @@
 * mgrs grid (incl. menu item)
 * menu/view: hide/show labels (toggle), project/preferences
 * menu/help (manual, slack, email)
-* OSD
 * button bar (sidebar)
-* lock layer
 * sidebar/symbol palette: configure hostility, planed/anticipated
 * draw: generic line, polygon, rectangle, text
 * measurement tools: distance, area
@@ -29,7 +27,6 @@
 * preferences/project: default styles (stroke width, font size/weight)
 * preferences/project: symbol size (optionally echelon dependent)
 * preferences/project: simple symbol (op) status
-* link: open
 * symbol: make modifer text style configurable
 * history: store/restore focused element and query
 * project list: focus new project's name for editing
@@ -38,8 +35,6 @@
 * feature style: font (size, color, etc.)
 * main: show project selection on activation (macOS)
 * menu/Window: list open projects
-* list/multiselect: support SHIFT+CLICK
-* ODIN import: support layers without ids (5ada229b-706d-4c0a-bcdd-968804992e56/09_KTN_Finanzpolizei_BearbStand_26mar20.json)
 * print map
 
 cut off (post ODIN 2):
