@@ -32,6 +32,7 @@ export default async projectUUID => {
   migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
   migrationsOptions[MigrationTool.INLINE_TAGS] = false
   migrationsOptions[MigrationTool.INLINE_FLAGS] = false
+  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
   const migration = new MigrationTool(db, migrationsOptions)
   await migration.upgrade()
 

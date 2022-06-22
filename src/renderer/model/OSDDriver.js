@@ -2,7 +2,7 @@ import { toLonLat } from 'ol/proj'
 import { LatLon } from 'geodesy/mgrs.js'
 import Dms from 'geodesy/dms.js'
 import { militaryFormat } from '../../shared/datetime'
-import { isLayerTagsId } from '../ids'
+import { isDefaultId } from '../ids'
 import OpenLocationCode from './openlocationcode'
 
 
@@ -40,10 +40,7 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
   setInterval(this.updateDateTime.bind(this), 1000)
 
   featureStore.on('batch', ({ operations }) => {
-    const update = operations
-      .filter(({ key }) => isLayerTagsId(key))
-      .length !== 0
-
+    const update = operations.some(({ key }) => isDefaultId(key))
     if (update) this.updateDefaultLayer()
   })
 

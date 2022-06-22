@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { isFeatureId, isLayerId, isLinkId, isTagsId, layerId, tagsId, ord, featureId, linkId, containerId, associatedId } from './ids'
+import { isFeatureId, isLayerId, isLinkId, isTagsId, layerId, tagsId, ord, featureId, linkId, containerId, associatedId, defaultId } from './ids'
 
 const CONTENT_TYPE = 'application/json;vnd=odin'
 
@@ -92,7 +92,7 @@ Clipboard.prototype.paste = async function () {
   if (uncoveredFeaturesIds.length && !defaultLayerId) {
     defaultLayerId = layerId()
     tuples.push([defaultLayerId, { name: 'Default Layer' }])
-    tuples.push([tagsId(defaultLayerId), ['default']])
+    tuples.push([defaultId(defaultLayerId), ['default']])
   }
 
   // All (uncovered) features where layer is not explicitly included

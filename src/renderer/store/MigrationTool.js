@@ -1,5 +1,5 @@
 import * as L from '../../shared/level'
-import { hiddenId, lockedId, sharedId, tagsId } from '../ids'
+import { hiddenId, lockedId, sharedId, tagsId, associatedId, defaultId } from '../ids'
 
 /**
  * Upgrade/downgrade databases as necessary.
@@ -13,6 +13,7 @@ export const MigrationTool = function (db, options) {
 MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers'
 MigrationTool.INLINE_TAGS = 'inlineTags'
 MigrationTool.INLINE_FLAGS = 'inlineFlags'
+MigrationTool.DEFAULT_TAG = 'defaultTag'
 
 /**
  * async
@@ -21,6 +22,7 @@ MigrationTool.prototype.upgrade = async function () {
   await this.redundantIdentifiers()
   await this.inlineTags()
   await this.inlineFlags()
+  await this.defaultTag()
 }
 
 /**
@@ -82,6 +84,30 @@ MigrationTool.prototype.inlineFlags = async function () {
 
     await this.jsonDB.batch(ops)
     await this.schemaDB.put(MigrationTool.INLINE_FLAGS, false)
+  }
+
+  if (actual && wanted === false) await upgrade()
+}
+
+MigrationTool.prototype.defaultTag = async function () {
+  const actual = await L.get(this.schemaDB, MigrationTool.DEFAULT_TAG, true)
+  const wanted = this.options[MigrationTool.DEFAULT_TAG]
+
+  const upgrade = async () => {
+    const tuples = await L.tuples(this.jsonDB, 'tags+layer:')
+    const tags = tuples.find(([_, value]) => value.includes('default'))
+    if (!tags) return
+
+    const [key, value] = tags
+    const id = associatedId(key)
+
+    const ops = [
+      L.putOp(key, value.filter(tag => tag !== 'default')),
+      L.putOp(defaultId(id), true)
+    ]
+
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.DEFAULT_TAG, false)
   }
 
   if (actual && wanted === false) await upgrade()

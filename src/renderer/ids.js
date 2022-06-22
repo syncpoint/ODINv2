@@ -25,6 +25,7 @@ export const featureId = R.cond([
 export const lockedId = id => `locked+${id}`
 export const hiddenId = id => `hidden+${id}`
 export const sharedId = id => `shared+${id}`
+export const defaultId = id => `default+${id}`
 export const tagsId = id => `tags+${id}`
 export const linkId = id => `link+${id}/${uuid()}`
 
@@ -70,15 +71,17 @@ export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isGroupId(id)
 export const isProjectId = isId('project:')
 export const isLockedId = isId('locked+')
+export const isHiddenId = isId('hidden+')
+export const isDefaultId = isId('default+')
 export const isLockedFeatureId = isId('locked+feature:')
 export const isHiddenFeatureId = isId('hidden+feature:')
-export const isHiddenId = isId('hidden+')
 export const isTagsId = isId('tags+')
 export const isLayerTagsId = isId('tags+layer:')
 
 export const isAssociatedId = id =>
   isHiddenId(id) ||
   isLockedId(id) ||
+  isDefaultId(id) ||
   isTagsId(id)
 
 export const FEATURE_ID = 'feature:[0-9a-f-]{36}/[0-9a-f-]{36}'

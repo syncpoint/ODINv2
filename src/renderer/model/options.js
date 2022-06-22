@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { layerId, containerId, lockedId, hiddenId, tagsId } from '../ids'
+import { layerId, containerId, lockedId, hiddenId, tagsId, defaultId } from '../ids'
 import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
 
@@ -78,17 +78,19 @@ options.layer = (id, cache) => {
   const layer = cache(id)
   const hidden = cache(hiddenId(id))
   const locked = cache(lockedId(id))
+  const defaultFlag = cache(defaultId(id))
 
   const tags = [
     'SCOPE:LAYER',
     hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
     ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    ...(defaultFlag ? ['USER:default:NONE'] : []),
     'PLUS'
   ].join(' ').replace('  ', ' ').trim()
 
   return {
-    id: id,
+    id,
     title: layer.name,
     description: layer.type === 'socket' ? layer.url : null,
     tags,

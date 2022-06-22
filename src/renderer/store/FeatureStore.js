@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId } from '../ids'
+import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId, defaultId, isDefaultId } from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
@@ -52,10 +52,12 @@ FeatureStore.prototype.collectKeys = async function (ids, include = []) {
   const hiddenIds = id => L.readKeys(this.jsonDB, L.prefix(hiddenId(id)))
   const linkIds = id => L.readKeys(this.jsonDB, L.prefix(`link+${id}`))
   const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(tagsId(id)))
+  const defaultIds = id => L.readKeys(this.jsonDB, L.prefix(defaultId(id)))
   const hasLinks = id => consider('link') && (isLayerId(id) || isFeatureId(id))
   const hasFeatures = isLayerId
   const maybeHidden = id => consider('hidden') && (isLayerId(id) || isFeatureId(id))
-  const isTaggable = id => consider('tags') && isTaggableId(id)
+  const maybeTagged = id => consider('tags') && isTaggableId(id)
+  const maybeDefault = id => consider('default') && isLayerId(id)
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -66,7 +68,8 @@ FeatureStore.prototype.collectKeys = async function (ids, include = []) {
       if (hasFeatures(id)) ys.push(...await featureIds(id))
       if (hasLinks(id)) ys.push(...await linkIds(id))
       if (maybeHidden(id)) ys.push(...await hiddenIds(id))
-      if (isTaggable(id)) ys.push(...await tagsIds(id))
+      if (maybeTagged(id)) ys.push(...await tagsIds(id))
+      if (maybeDefault(id)) ys.push(...await defaultIds(id))
 
       await collect(xs, ys)
       return xs
@@ -177,7 +180,7 @@ FeatureStore.prototype.delete = async function (ids) {
     .filter(isDeletableId)
     .filter(key => !locks[lockedId(key)])
 
-  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags'])
+  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default'])
   const tuples = await L.tuples(this.db, keys)
   const command = this.deleteCommand(this.db, tuples)
   this.undo.apply(command)
@@ -299,28 +302,15 @@ FeatureStore.prototype.geometryBounds = async function (ids, resolution) {
   }, [])
 }
 
-const addTag = (name, tags) => R.uniq([...(tags || []), name])
-const removeTag = (name, tags) => (tags || []).filter(tag => tag !== name)
-
-
 /**
  * setDefaultLayer :: k -> unit
  */
 FeatureStore.prototype.setDefaultLayer = async function (id) {
-  const ids = await L.readKeys(this.jsonDB, L.prefix('layer:'))
-  const values = await this.jsonDB.getMany(ids.map(tagsId))
-  const tags = R.zip(ids, values).map(([key, value]) => [tagsId(key), value || []])
-  const layers = tags.filter(([key, value]) => value.includes('default') || key === tagsId(id))
-
-  const keys = layers.map(([key]) => key)
-  const oldValues = layers.map(([_, value]) => value || [])
-  const newValues = layers.map(([key, value]) => {
-    const fn = key === tagsId(id) ? addTag : removeTag
-    return fn('default', value)
-  })
-
-  const command = this.updateCommand(this.jsonDB, keys, newValues, oldValues)
-  this.undo.apply(command)
+  const current = await L.tuples(this.jsonDB, 'default+layer:')
+  this.undo.apply(this.undo.composite([
+    this.deleteCommand(this.jsonDB, current),
+    this.insertCommand(this.jsonDB, [[defaultId(id), true]])
+  ]))
 }
 
 
@@ -328,12 +318,8 @@ FeatureStore.prototype.setDefaultLayer = async function (id) {
  * unsetDefaultLayer :: k -> unit
  */
 FeatureStore.prototype.unsetDefaultLayer = async function (id) {
-  const key = tagsId(id)
-  const value = await this.jsonDB.get(key)
-  const oldValue = value || []
-  const newValue = removeTag('default', oldValue)
-  const command = this.updateCommand(this.jsonDB, [key], [newValue], [oldValue])
-  this.undo.apply(command)
+  const current = await L.tuples(this.jsonDB, 'default+layer:')
+  this.undo.apply(this.deleteCommand(this.jsonDB, current))
 }
 
 
@@ -341,9 +327,8 @@ FeatureStore.prototype.unsetDefaultLayer = async function (id) {
  * defaultLayerId :: () -> k
  */
 FeatureStore.prototype.defaultLayerId = async function () {
-  const tuples = await L.readTuples(this.jsonDB, L.prefix(tagsId('layer')))
-  const match = tuples.find(([_, value]) => value.includes('default'))
-  return match && layerId(match[0])
+  const keys = await L.readKeys(this.jsonDB, L.prefix(defaultId('layer:')))
+  return keys.length && layerId(keys[0])
 }
 
 
@@ -366,7 +351,7 @@ FeatureStore.prototype.insertGeoJSON = async function (geoJSON) {
   if (!id) {
     id = layerId()
     tuples.push([id, { name: 'Default Layer' }])
-    tuples.push([tagsId(id), ['default']])
+    tuples.push([defaultId(id), true])
   }
 
   features.forEach(feature => tuples.push([featureId(id), feature]))
