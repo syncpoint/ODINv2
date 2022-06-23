@@ -43,7 +43,8 @@ MarkerCommands.prototype.commands = function (tuples) {
 
 MarkerCommands.prototype.createMarker = function () {
   const callback = value => {
-    const coordinates = parseCoordinate(value)
+    const replaced = value.replace(/[’′]/g, "'").replace(/[″]/g, '"')
+    const coordinates = parseCoordinate(replaced)
     if (!coordinates) return
 
     const center = fromLonLat(coordinates)
@@ -59,7 +60,7 @@ MarkerCommands.prototype.createMarker = function () {
     const id = markerId()
     this.featureStore.insert([[id, feature]])
     this.emitter.emit('map/flyto', { center })
-    this.selection.select([id])
+    this.selection.set([id])
   }
 
   return new Command({
