@@ -63,8 +63,8 @@ const makeShape = props => {
   const fill = fillColor ? new style.Fill({ color: fillColor }) : null
   const stroke = new style.Stroke({ color: Props.shapeLineColor(props), width: Props.shapeLineWidth(props) })
   return new style.RegularShape({
-    fill: fill,
-    stroke: stroke,
+    fill,
+    stroke,
     radius: Props.shapeRadius(props),
     radius1: Props.shapeRadius1(props),
     radius2: Props.shapeRadius2(props),
@@ -152,7 +152,7 @@ const makeText = props => {
     rotation: rotation ? flipped ? rotation + PI : rotation : null,
     textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
     offsetX: flipped ? -1 * offsetX : offsetX,
-    offsetY: offsetY,
+    offsetY,
     padding: Props.textPadding(props) && new Array(4).fill(Props.textPadding(props)),
     fill: new style.Fill({ color: Props.textColor(props) }),
     stroke: Props.textHaloColor(props) && new style.Stroke({

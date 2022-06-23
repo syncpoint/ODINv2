@@ -5,6 +5,7 @@ import IdentityCommands from './commands/IdentityCommands'
 import StatusCommands from './commands/StatusCommands'
 import EchelonCommands from './commands/EchelonCommands'
 import ModifierCommands from './commands/ModifierCommands'
+import MarkerCommands from './commands/MarkerCommands'
 
 
 /**
@@ -18,7 +19,8 @@ export function PaletteCommands (options) {
     new IdentityCommands(options),
     new StatusCommands(options),
     new EchelonCommands(options),
-    new ModifierCommands(options)
+    new ModifierCommands(options),
+    new MarkerCommands(options)
   ]
 }
 

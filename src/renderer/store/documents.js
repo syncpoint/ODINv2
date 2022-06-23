@@ -109,3 +109,18 @@ documents.symbol = (id, symbol, cache) => {
     tags
   })
 }
+
+/**
+ *
+ */
+documents.marker = (id, marker, cache) => {
+  const name = marker.name || ''
+  const tags = cache(tagsId(id)) || []
+
+  return {
+    id,
+    scope: 'marker',
+    text: name,
+    tags
+  }
+}

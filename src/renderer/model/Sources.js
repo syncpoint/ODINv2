@@ -6,6 +6,10 @@ import Event from 'ol/events/Event'
 import { readFeature, readFeatures } from './geometry'
 import { isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, featureId } from '../ids'
 
+
+/**
+ *
+ */
 export const featureSource = (featureStore) => {
   const source = new VectorSource()
 
@@ -50,6 +54,42 @@ export const featureSource = (featureStore) => {
   return source
 }
 
+
+/**
+ *
+ */
+export const markerSource = (featureStore) => {
+  const source = new VectorSource()
+
+  featureStore.on('batch', ({ operations }) => {
+    const candidates = operations.filter(({ key }) => key.startsWith('marker:'))
+    const additions = candidates.filter(({ type }) => type === 'put')
+
+    candidates.forEach(({ key }) => {
+      const feature = source.getFeatureById(key)
+      if (feature) source.removeFeature(feature)
+    })
+
+    // ... and add additions/updates.
+    const features = additions.map(({ key, value }) => readFeature({ id: key, ...value }))
+    source.addFeatures(features)
+  })
+
+  // On startup: load all features:
+  window.requestIdleCallback(async () => {
+    const tuples = await featureStore.tuples('marker:')
+    const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
+    const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
+    source.addFeatures(features)
+  }, { timeout: 2000 })
+
+  return source
+}
+
+
+/**
+ *
+ */
 export class TouchFeaturesEvent extends Event {
   constructor (keys) {
     super('touchfeatures')
@@ -103,29 +143,41 @@ export const filter = predicate => source => {
  * intersect :: ol/source/Vector S => S -> S -> S
  */
 export const intersect = (a, b) => {
-  const destination = new VectorSource({ features: new Collection() })
+  const intersection = new VectorSource({ features: new Collection() })
 
   a.on('addfeature', ({ feature: addition }) => {
     if (!b.getFeatureById(addition.getId())) return
-    destination.addFeature(addition)
+    intersection.addFeature(addition)
   })
 
   a.on('removefeature', ({ feature: removal }) => {
-    const feature = destination.getFeatureById(removal.getId())
-    if (feature) destination.removeFeature(feature)
+    const feature = intersection.getFeatureById(removal.getId())
+    if (feature) intersection.removeFeature(feature)
   })
 
   b.on('addfeature', ({ feature: addition }) => {
     if (!a.getFeatureById(addition.getId())) return
-    destination.addFeature(addition)
+    intersection.addFeature(addition)
   })
 
   b.on('removefeature', ({ feature: removal }) => {
-    const feature = destination.getFeatureById(removal.getId())
-    if (feature) destination.removeFeature(feature)
+    const feature = intersection.getFeatureById(removal.getId())
+    if (feature) intersection.removeFeature(feature)
   })
 
-  return destination
+  return intersection
+}
+
+/**
+ * union :: ol/source/Vector S => S -> S -> S
+ */
+export const union = (a, b) => {
+  const union = new VectorSource({ features: new Collection() })
+  a.on('addfeature', ({ feature }) => union.addFeature(feature))
+  a.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
+  b.on('addfeature', ({ feature }) => union.addFeature(feature))
+  b.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
+  return union
 }
 
 /**

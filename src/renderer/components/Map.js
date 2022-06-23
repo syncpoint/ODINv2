@@ -10,9 +10,11 @@ import { Fill, Stroke, Circle, Style } from 'ol/style'
 import { throttle } from 'throttle-debounce'
 import '../epsg'
 import { useServices } from './hooks'
-import { featureStyle } from '../ol/style'
+import { featureStyle, markerStyle } from '../ol/style'
+import crosshair from '../ol/style/crosshair'
 import defaultInteractions from '../ol/interaction'
 import * as Sources from '../model/Sources'
+import { isMarkerId } from '../ids'
 
 /**
  *
@@ -42,9 +44,11 @@ export const Map = () => {
     const view = new ol.View({ ...viewport })
 
     const featureSource = Sources.featureSource(featureStore)
+    const markerSource = Sources.markerSource(featureStore)
     const { visibleSource } = Sources.visibilityTracker(featureSource, featureStore, emitter)
     const { unlockedSource } = Sources.lockedTracker(featureSource, featureStore)
-    const { selectedSource, deselectedSource } = Sources.selectionTracker(visibleSource, selection)
+    const selectableSource = Sources.union(visibleSource, markerSource)
+    const { selectedSource, deselectedSource } = Sources.selectionTracker(selectableSource, selection)
     const highlightSource = Sources.highlightTracker(emitter, featureStore, viewMemento)
     const modifiableSource = Sources.intersect(unlockedSource, selectedSource)
 
@@ -64,11 +68,19 @@ export const Map = () => {
       updateWhileAnimating: true
     })
 
-    const style = featureStyle(selection, featureSource)
+    const fs = featureStyle(selection, featureSource)
+    const ms = markerStyle(selection)
+    const style = (feature, resolution) => isMarkerId(feature.getId())
+      ? ms(feature, resolution)
+      : fs(feature, resolution)
+
+    // const style = featureStyle(selection, featureSource)
+
     const declutter = false
     const vectorLayer = source => new VectorLayer({ style, source, declutter })
     const featureLayer = vectorLayer(deselectedSource)
     const selectedLayer = vectorLayer(selectedSource)
+    const markerLayer = vectorLayer(markerSource)
 
     // http://localhost:8000/services
     // http://localhost:8000/services/omk50_33
@@ -82,7 +94,8 @@ export const Map = () => {
       tileLayer,
       featureLayer,
       selectedLayer,
-      highlightLayer
+      highlightLayer,
+      markerLayer
     ]
 
     view.on('change', ({ target: view }) => viewMemento.update(view))
@@ -190,6 +203,16 @@ export const Map = () => {
 
     // TODO: does not really belong here -> move!
     emitter.on('command/delete', () => featureStore.delete(selection.selected()))
+
+    emitter.on('map/flyto', ({ center }) => {
+      const duration = 2000
+      const zoom = view.getZoom()
+      view.animate({ center, duration: duration })
+      view.animate(
+        { zoom: zoom - 1, duration: duration / 2 },
+        { zoom: zoom, duration: duration / 2 }
+      )
+    })
 
     // Setup Drag'n Drop.
     ;(() => {

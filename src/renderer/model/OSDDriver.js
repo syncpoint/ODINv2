@@ -5,13 +5,16 @@ import { militaryFormat } from '../../shared/datetime'
 import { isDefaultId } from '../ids'
 import OpenLocationCode from './openlocationcode'
 
+Dms.separator = ' '
 
 /**
- * DMS:  40°26′46″N 79°58′56″W
- * DM:   40°26.767′N 79°58.933′W
- * D:    40.446°N 79.982°W
- * UTM:  32U 461344 5481745
- * MGRS: 32U MV 61344 81745
+ * LATLON:  59.01502 25.99332
+ * DMS:     40°26′46″N 79°58′56″W
+ * DM:      40°26.767′N 79°58.933′W
+ * D:       40.446°N 79.982°W
+ * UTM:     35 N 411919 6521940
+ * MGRS:    32U MV 61344 81745
+ * PLUS:    9GC7XH2P+96
  */
 
 const formats = {

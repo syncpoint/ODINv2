@@ -111,7 +111,8 @@ export default async projectUUID => {
   services.paletteCommands = new PaletteCommands({
     store,
     featureStore,
-    emitter
+    emitter,
+    selection
   })
 
   return services

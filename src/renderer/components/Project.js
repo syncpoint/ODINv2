@@ -29,6 +29,15 @@ const scopeGroups = {
       { key: 'symbol', scope: '@symbol', label: 'Symbols' },
       { key: 'pinned', scope: '@symbol #pin', label: 'Pinned' }
     ]
+  },
+  location: {
+    key: 'marker',
+    scope: '@marker',
+    label: 'Markers',
+    items: [
+      { key: 'marker', scope: '@marker', label: 'Markers' },
+      { key: 'pinned', scope: '@marker #pin', label: 'Pinned' }
+    ]
   }
 }
 
@@ -85,6 +94,10 @@ export const Project = () => {
         case 'sidebar-symbol': return sidebarMemento.put({
           showing: true,
           group: 'symbol'
+        })
+        case 'sidebar-location': return sidebarMemento.put({
+          showing: true,
+          group: 'location'
         })
       }
     }

@@ -152,3 +152,24 @@ options.symbol = (id, cache) => {
     capabilities: 'TAG'
   }
 }
+
+/**
+ * marker:
+ */
+options.marker = (id, cache) => {
+  const marker = cache(id)
+
+  const tags = [
+    'SCOPE:MARKER:NONE',
+    ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ')
+
+  return {
+    id,
+    title: marker.name,
+    scope: 'MARKER',
+    tags,
+    capabilities: 'TAG|RENAME'
+  }
+}

@@ -74,6 +74,20 @@ const link = {
   }
 }
 
+const marker = {
+  onClick (id, event, spec) {},
+  onMouseDown (id, event, spec) {},
+  onMouseUp (id, event, spec) {},
+
+  async onDoubleClick (id) {
+    const markers = await this.featureStore.values([id])
+    if (markers.length === 1) {
+      const center = markers[0].geometry.coordinates
+      this.emitter.emit('map/flyto', { center })
+    }
+  }
+}
+
 export function Controller (featureStore, emitter, ipcRenderer, selection) {
   this.featureStore = featureStore
   this.emitter = emitter
@@ -85,7 +99,8 @@ export function Controller (featureStore, emitter, ipcRenderer, selection) {
     layer,
     symbol,
     'link+layer': link,
-    'link+feature': link
+    'link+feature': link,
+    marker
   }
 }
 

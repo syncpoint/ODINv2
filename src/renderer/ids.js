@@ -22,6 +22,10 @@ export const featureId = R.cond([
   [R.T, layerId => `feature:${layerId.split(':')[1]}/${uuid()}`]
 ])
 
+export const markerId = R.cond([
+  [R.isNil, () => `marker:${uuid()}`]
+])
+
 export const lockedId = id => `locked+${id}`
 export const hiddenId = id => `hidden+${id}`
 export const sharedId = id => `shared+${id}`
@@ -63,6 +67,7 @@ export const scope = id => id.split(':')[0]
 const isId = prefix => id => id && id.startsWith(prefix)
 export const isLayerId = isId('layer:')
 export const isFeatureId = isId('feature:')
+export const isMarkerId = isId('marker:')
 export const isGroupId = isId('group:') // TODO: group -> view
 export const isSymbolId = isId('symbol:')
 export const isPlaceId = isId('place:')

@@ -12,6 +12,7 @@ import './linestring'
 import './polygon'
 import './corridor'
 import './multipoint'
+import crosshair from './crosshair'
 
 styles['MultiLineString:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
 styles['MultiPolygon:DEFAULT'] = ({ geometry }) => [{ id: 'style:default', geometry }]
@@ -122,4 +123,12 @@ export const featureStyle = (selection, featureSource) => {
       return errorPipeline(options).flat()
     }
   }
+}
+
+export const markerStyle = (selection) => {
+  const defaultStyle = crosshair()
+  const selectedStyle = crosshair(true)
+  return (feature) => selection.isSelected(feature.getId())
+    ? selectedStyle
+    : defaultStyle
 }
