@@ -76,8 +76,6 @@ const link = {
 
 const marker = {
   onClick (id, event, spec) {},
-  onMouseDown (id, event, spec) {},
-  onMouseUp (id, event, spec) {},
 
   async onDoubleClick (id) {
     const markers = await this.featureStore.values([id])
@@ -85,6 +83,16 @@ const marker = {
       const center = markers[0].geometry.coordinates
       this.emitter.emit('map/flyto', { center })
     }
+  },
+
+  onMouseDown (id, event, spec) {
+    console.log('[marker/onMouseDown]', id, spec)
+    const ids = this.selected(id)
+    if (spec.match(/SCOPE:MARKER/)) this.emitter.emit('highlight/on', { ids })
+  },
+
+  onMouseUp (id, event, spec) {
+    if (spec.match(/SCOPE:MARKER/)) this.emitter.emit('highlight/off')
   }
 }
 

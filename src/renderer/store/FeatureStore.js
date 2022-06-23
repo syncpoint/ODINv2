@@ -278,7 +278,7 @@ FeatureStore.prototype.layerBounds = function (acc, ids) {
   }, acc)
 }
 
-FeatureStore.prototype.featureBounds = async function (acc, ids, resolution) {
+FeatureStore.prototype.geometryBounds = async function (acc, ids, resolution) {
   const geometries = await this.geometries(ids)
   return geometries
     .map(readGeometry)
@@ -290,6 +290,9 @@ FeatureStore.prototype.featureBounds = async function (acc, ids, resolution) {
       return acc
     }, acc)
 }
+
+FeatureStore.prototype.featureBounds = FeatureStore.prototype.geometryBounds
+FeatureStore.prototype.markerBounds = FeatureStore.prototype.geometryBounds
 
 
 FeatureStore.prototype.geometryBounds = async function (ids, resolution) {
