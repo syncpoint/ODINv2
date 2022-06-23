@@ -119,7 +119,8 @@ export const Map = () => {
       style,
       visibleSource,
       selectedSource,
-      modifiableSource
+      modifiableSource,
+      selectableSource
     })
 
     interactions.getArray().forEach(interaction => map.addInteraction(interaction))
