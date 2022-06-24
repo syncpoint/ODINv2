@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import uuid from 'uuid-random'
+import './TextField.css'
 
 const TextField = ({ id = uuid(), label, disabled, ...rest }) =>
   <div className="form-textfield">

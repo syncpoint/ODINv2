@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
+import './Section.css'
 
 const Section = ({ id, label, children, ...rest }) => (
   <div id={id} className='form-section'>

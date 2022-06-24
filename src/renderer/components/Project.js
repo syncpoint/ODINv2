@@ -3,6 +3,7 @@ import { Map } from './Map'
 import { CommandPalette, Sidebar, FeatureProperties } from '.'
 import { OSD } from './OSD'
 import { useServices, useMemento } from './hooks'
+import './Project.css'
 
 /**
  * Groups of related scopes.

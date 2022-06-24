@@ -1,0 +1,19 @@
+.spotlight {
+  grid-area: S;
+  display: flex;
+  flex-direction: column;
+}
+
+.spotlight-container {
+  z-index: 30;
+  pointer-events: none;
+  height: calc(100vh - 10rem);
+  padding-top: 0;
+
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 15em;
+  grid-template-areas:
+    ". S .";
+}

@@ -1,0 +1,90 @@
+.tag {
+  font-size: 0.7em;
+  padding: 3px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: inline-block;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.tag-active {
+  font-size: 0.7em;
+  padding: 3px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: inline-block;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.tag-active:hover {
+  background-color: #8d8d8d;
+  color: white;
+}
+
+.tag-input {
+  font-size: 0.7em;
+  display: inline-block;
+  background-color: inherit;
+  box-sizing: border-box;
+
+  padding: 3px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  line-height: 12px;
+  width: 67px;
+}
+
+.tag-input:focus {
+  border: 1px dashed darkgrey;
+  border-radius: 2px;
+}
+
+.tag-active:hover {
+  background-color: #8d8d8d;
+  color: white;
+}
+
+.tag-group {
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #1fc3ce;
+  background-color: #1fc3ce;
+}
+
+.tag-scope {
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #e03c31;
+  background-color: #e03c31;
+}
+
+.tag-system {
+  border-width: 1px;
+  border-style: solid;
+  border-color:#e03c31;
+}
+
+.tag-user {
+  border-width: 1px;
+  border-style: solid;
+  border-color:#1fc3ce;
+}
+
+.tag-image {
+  border-width: 1px;
+  border-style: solid;
+  border-color:#e03c31;
+  padding-left: 6px;
+}
+
+.tag-plus {
+  border: 1px dashed darkgrey;
+}

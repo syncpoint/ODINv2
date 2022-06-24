@@ -5,6 +5,7 @@ import { useServices, useMemento } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
 import { isFeatureId, lockedId, featureId, isLockedFeatureId } from '../../ids'
 import PropertiesTab from './PropertiesTab'
+import './FeatureProperties.css'
 
 const reducer = (state, event) => {
   switch (event.type) {

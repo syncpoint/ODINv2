@@ -1,0 +1,28 @@
+/*
+  form-select
+  form-select__options
+*/
+
+.form-select {
+  height: 2.5rem;
+  width: 100%;
+}
+
+.form-select__options {
+  width: 100%;
+  appearance: none;
+  background-color: inherit;
+  border-style: solid;
+  border-bottom-width: 2px;
+  border-color: var(--color-gray-300);
+  border-radius: 0px;
+  color: var(--color-gray-900);
+}
+
+.form-select__options:focus {
+  border-color: var(--color-blue-600);
+
+  /* outline-none */
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}

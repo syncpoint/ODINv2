@@ -1,0 +1,4 @@
+.map {
+  z-index: 10;
+  touch-action: none;
+}

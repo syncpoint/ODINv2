@@ -1,0 +1,12 @@
+.tag-icon {
+  display: inline-block;
+  color: inherit;
+  line-height: 0;
+  vertical-align: -.265em;
+  margin-right: 3px;
+}
+
+.tag-close-icon {
+  cursor: pointer;
+  margin-left: 3px;
+}

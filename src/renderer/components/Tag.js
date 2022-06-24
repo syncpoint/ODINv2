@@ -1,7 +1,7 @@
-import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
+import './Tag.css'
 import { TagIcon } from './TagIcon'
 import { cmdOrCtrl } from '../platform'
 import { useServices } from './hooks'

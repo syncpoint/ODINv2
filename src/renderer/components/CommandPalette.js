@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useList, useServices } from './hooks'
 import { FilterInput, VirtualizedList } from '.'
 import { Entries } from './selection'
-
+import './CommandPalette.css'
 
 /**
  *

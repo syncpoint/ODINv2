@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Icon from '@mdi/react'
 import * as mdi from '@mdi/js'
+import './Avatar.css'
 
 export const Avatar = ({ url, path }) => {
   return (

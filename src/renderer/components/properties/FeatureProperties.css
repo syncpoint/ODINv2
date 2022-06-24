@@ -1,0 +1,12 @@
+.panel-right {
+  height: inherit;
+  grid-area: R;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-inset {
+  padding-left: 16px;
+  padding-right: 16px;
+  overflow: auto;
+}

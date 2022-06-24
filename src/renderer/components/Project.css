@@ -1,0 +1,31 @@
+.panel-container {
+  z-index: 20;
+  pointer-events: none;
+
+  /*
+    Give WebKit a chance to calculate explicit height.
+    This is necessary to stretch children to desired height.
+  */
+  height: calc(100vh - 12rem);
+
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: 24rem auto 24rem;
+  grid-template-rows: 5rem auto;
+  grid-template-areas:
+    "T T T"
+    "L . R";
+}
+
+.panel-left {
+  height: inherit;
+  grid-area: L;
+  display: flex;
+  flex-direction: column;
+}
+

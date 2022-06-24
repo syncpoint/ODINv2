@@ -1,0 +1,19 @@
+/*
+  form-radio
+  form-radio__input
+  form-radio__label
+
+  NOTE: Same as form-checkbox.
+*/
+
+.form-radio {
+  white-space: nowrap;
+}
+
+.form-radio-input {
+  margin-right: 0.5rem;
+}
+
+.form-radio-label {
+  user-select: none;
+}

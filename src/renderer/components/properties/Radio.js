@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import uuid from 'uuid-random'
+import './Radio.css'
 
 const Radio = ({ label, id = uuid(), ...rest }) =>
   <div className='form-radio'>

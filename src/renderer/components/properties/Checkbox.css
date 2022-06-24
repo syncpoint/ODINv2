@@ -1,0 +1,17 @@
+/*
+  form-checkbox
+  form-checkbox__input
+  form-checkbox__label
+*/
+
+.form-checkbox {
+  white-space: nowrap;
+}
+
+.form-checkbox__input {
+  margin-right: 0.5rem;
+}
+
+.form-checkbox__label {
+  user-select: none;
+}

@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Icon from '@mdi/react'
+import './TagIcon.css'
 
 const TagIcon = props => {
   const { path, closable, color } = props

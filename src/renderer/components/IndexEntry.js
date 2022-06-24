@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Card, Avatar, Tag } from '.'
+import { Card, Avatar, Tag, TagList } from '.'
 import { useServices } from './hooks'
 
 /**
@@ -20,9 +20,7 @@ const IndexEntry = React.forwardRef((props, ref) => {
   }
 
   const description = entry.description && (
-    <div>
-      <span className='card-description'>{entry.description}</span>
-    </div>
+    <Card.Description>{entry.description}</Card.Description>
   )
 
   const tag = spec => <Tag key={spec} id={entry.id} spec={spec}/>
@@ -37,20 +35,20 @@ const IndexEntry = React.forwardRef((props, ref) => {
         onDoubleClick={handleDoubleClick}
       >
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <div className='card-content'>
+          <Card.Content>
             <Card.Title
               id={props.id}
               value={entry.title}
               editing={props.editing}
             />
             { description }
-          </div>
+          </Card.Content>
           { (entry.url || entry.path) && <Avatar url={entry.url} path={entry.path}/> }
         </div>
 
-        <div className='taglist'>
-          { entry.tags.split(' ').map(tag)}
-        </div>
+        <TagList>
+          { entry.tags.split(' ').map(tag) }
+        </TagList>
       </Card>
     </div>
   )

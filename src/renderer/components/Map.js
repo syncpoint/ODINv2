@@ -11,10 +11,10 @@ import { throttle } from 'throttle-debounce'
 import '../epsg'
 import { useServices } from './hooks'
 import { featureStyle, markerStyle } from '../ol/style'
-import crosshair from '../ol/style/crosshair'
 import defaultInteractions from '../ol/interaction'
 import * as Sources from '../model/Sources'
 import { isMarkerId } from '../ids'
+import './Map.css'
 
 /**
  *

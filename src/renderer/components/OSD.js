@@ -1,5 +1,6 @@
 import React from 'react'
 import { useServices } from './hooks'
+import './OSD.css'
 
 const reducer = (state, { message, cell }) => {
   const newState = { ...state }

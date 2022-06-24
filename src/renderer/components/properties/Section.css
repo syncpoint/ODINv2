@@ -1,0 +1,24 @@
+/*
+  form-section
+  form-section__label
+
+  Stand-alone label with child/children.
+*/
+
+.form-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-section__label {
+  position: absolute;
+  left: 0px;
+  top: -1.25rem;
+  color: var(--color-gray-600);
+  user-select: none;
+
+  /* text-sm */
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
