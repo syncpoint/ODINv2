@@ -6,6 +6,7 @@ import { OSM } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { Rotate } from 'ol/control'
 import ScaleLine from 'ol/control/ScaleLine'
+import Graticule from 'ol/layer/Graticule'
 import { Fill, Stroke, Circle, Style } from 'ol/style'
 import { throttle } from 'throttle-debounce'
 import '../epsg'
@@ -27,6 +28,7 @@ export const Map = () => {
     dragAndDrop,
     store,
     featureStore,
+    preferencesStore,
     undo,
     emitter,
     viewMemento,
@@ -213,6 +215,30 @@ export const Map = () => {
         { zoom: zoom - 1, duration: duration / 2 },
         { zoom: zoom, duration: duration / 2 }
       )
+    })
+
+    const type = await preferencesStore.get('graticule', null)
+    let graticule = type
+      ? type === 'WGS84'
+        ? new Graticule({ showLabels: true, wrapX: false })
+        : null
+      : null
+
+    if (graticule) map.addLayer(graticule)
+
+    preferencesStore.on('graticuleChanged', ({ type, checked }) => {
+      if (graticule) map.removeLayer(graticule)
+      graticule = null
+
+      if (checked) {
+        graticule = type
+          ? type === 'WGS84'
+            ? new Graticule({ showLabels: true, wrapX: false })
+            : null
+          : null
+
+        if (graticule) map.addLayer(graticule)
+      }
     })
 
     // Setup Drag'n Drop.

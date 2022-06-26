@@ -3,6 +3,7 @@ import { dispatch, send } from './helpers'
 export default options => {
   const preferences = options.preferences || {}
   const coordinatesFormat = preferences['coordinates-format'] || 'MGRS'
+  const graticule = preferences.graticule
 
   return [{
     label: 'View',
@@ -52,6 +53,27 @@ export default options => {
             type: 'checkbox',
             checked: coordinatesFormat === 'PLUS',
             click: dispatch(browserWindow => send(browserWindow, 'VIEW_COORDINATES_FORMAT', 'PLUS'))
+          }
+        ]
+      },
+      {
+        label: 'Graticules',
+        submenu: [
+          {
+            label: 'MGRS',
+            type: 'checkbox',
+            checked: graticule === 'MGRS',
+            click: ({ checked }, browserWindow) => {
+              if (browserWindow) browserWindow.webContents.send('VIEW_GRATICULE', 'MGRS', checked)
+            }
+          },
+          {
+            label: 'WGS84',
+            type: 'checkbox',
+            checked: graticule === 'WGS84',
+            click: ({ checked }, browserWindow) => {
+              if (browserWindow) browserWindow.webContents.send('VIEW_GRATICULE', 'WGS84', checked)
+            }
           }
         ]
       },

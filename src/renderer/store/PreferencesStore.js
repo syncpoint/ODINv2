@@ -16,6 +16,7 @@ export function PreferencesStore (preferencesDB, ipcRenderer) {
   preferencesDB.on('del', key => ipcRenderer.send('ipc:del:preferences', key))
 
   ipcRenderer.on('VIEW_COORDINATES_FORMAT', (_, format) => this.setCoordinatesFromat(format))
+  ipcRenderer.on('VIEW_GRATICULE', (_, type, checked) => this.setGraticule(type, checked))
 }
 
 util.inherits(PreferencesStore, Emitter)
@@ -23,6 +24,12 @@ util.inherits(PreferencesStore, Emitter)
 PreferencesStore.prototype.setCoordinatesFromat = async function (format) {
   await this.put('coordinates-format', format)
   this.emit('coordinatesFormatChanged', { format })
+}
+
+PreferencesStore.prototype.setGraticule = async function (type, checked) {
+  if (!checked) this.preferencesDB.del('graticule')
+  else this.put('graticule', type)
+  this.emit('graticuleChanged', { type, checked })
 }
 
 /**
