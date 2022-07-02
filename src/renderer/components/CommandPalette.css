@@ -1,19 +1,21 @@
-.spotlight {
-  grid-area: S;
-  display: flex;
-  flex-direction: column;
+.spotlight-container {
+  position: absolute;
+  z-index: 30;
+  width: 60%;
+  height: calc(30vh);
+  margin-left: 20%;
+  padding-top: 0;
+  pointer-events: auto;
+  user-select: none;
+  background-color: white;
+  box-shadow:
+    0px 2px 4px -1px rgba(0,0,0,0.2),
+    0px 4px 5px 0px rgba(0,0,0,0.14),
+    0px 1px 10px 0px rgba(0,0,0,0.12);
 }
 
-.spotlight-container {
-  z-index: 30;
-  pointer-events: none;
-  height: calc(100vh - 10rem);
-  padding-top: 0;
-
-  display: grid;
-  grid-gap: 1em;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 15em;
-  grid-template-areas:
-    ". S .";
+.spotlight {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }

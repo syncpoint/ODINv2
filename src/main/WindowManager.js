@@ -64,6 +64,8 @@ WindowManager.prototype.createWindow = function (options) {
       y: options.y,
       width: options.width,
       height: options.height,
+      frame: !(options.frame === false),
+      titleBarStyle: options.titleBarStyle || 'default',
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
@@ -167,6 +169,9 @@ WindowManager.prototype.showProject = function (key, project) {
   return this.createWindow({
     handle: key,
     title: project.name,
+    frame: false,
+    // FIXME: what about Windows platform?
+    titleBarStyle: 'hiddenInset',
     url: url(app),
     ...project.bounds,
     additionalArguments

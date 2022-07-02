@@ -121,7 +121,7 @@ export const FeatureProperties = () => {
   }
 
   const panel = () =>
-    <div className='panel-right panel'>
+    <div className='feature-properties'>
       <div className='panel-inset'>
         { tab() }
       </div>

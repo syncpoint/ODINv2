@@ -108,11 +108,11 @@ export const CommandPalette = props => {
 
   return (
     <div
-      className='spotlight-container fullscreen'
+      className='spotlight-container'
       onBlur={handleBlur}
     >
       <div
-        className='spotlight panel'
+        className='spotlight'
         onKeyDown={handleKeyDown}
       >
         <div style={{ display: 'flex', padding: '6px' }}>

@@ -1,7 +1,6 @@
 import React from 'react'
 import { Map } from './Map'
 import { CommandPalette, Sidebar, FeatureProperties } from '.'
-import { OSD } from './OSD'
 import { useServices, useMemento } from './hooks'
 import './Project.css'
 
@@ -117,19 +116,21 @@ export const Project = () => {
     />
 
   const sidebar = sidebarMemento.value && sidebarMemento.value.showing &&
-    <div className="panel-left panel">
+    <div className="project__sidebar">
       <Sidebar group={scopeGroups[sidebarMemento.value.group]}/>
     </div>
 
   return (
     <>
-      <Map/>
-      <div className='panel-container fullscreen'>
-        <OSD/>
+      <div className='project__header'></div>
+      <div className='project__sidebar-container'>
         { sidebar }
-        <FeatureProperties></FeatureProperties>
+        <div className='project__map-controls' id='map-controls'/>
       </div>
+      <FeatureProperties/>
       { palette }
+      <Map/>
+      <div className='project__footer'></div>
     </>
   )
 }

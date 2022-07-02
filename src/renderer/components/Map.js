@@ -35,9 +35,12 @@ export const Map = () => {
 
   const effect = async () => {
     const target = 'map'
+
+    const controlsTarget = document.getElementById('map-controls')
+
     const controls = [
-      new Rotate(), // macOS: OPTION + SHIFT + DRAG
-      new ScaleLine({ bar: true, text: true, minWidth: 128 })
+      new Rotate({ target: controlsTarget }), // macOS: OPTION + SHIFT + DRAG
+      new ScaleLine({ bar: true, text: true, minWidth: 128, target: controlsTarget })
     ]
 
     const viewport = await sessionStore.getViewport()
@@ -88,7 +91,6 @@ export const Map = () => {
     // const source = new XYZ({ url: 'http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg' })
     const source = new OSM()
     const tileLayer = new TileLayer({ source })
-    tileLayer.setOpacity(0.55)
 
     const layers = [
       tileLayer,
@@ -235,7 +237,7 @@ export const Map = () => {
 
   return <div
     id='map'
-    className='map fullscreen'
+    className='map'
     tabIndex='0'
   />
 }
