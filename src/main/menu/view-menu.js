@@ -60,7 +60,7 @@ export default options => {
         label: 'Graticules',
         submenu: [
           {
-            label: 'MGRS',
+            label: 'MGRS (not implemented)',
             type: 'checkbox',
             checked: graticule === 'MGRS',
             click: ({ checked }, browserWindow) => {
