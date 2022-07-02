@@ -1,5 +1,5 @@
 import React from 'react'
-import { Map } from './Map'
+import { Map } from './map/Map'
 import { CommandPalette, Sidebar, FeatureProperties } from '.'
 import { useServices, useMemento } from './hooks'
 import './Project.css'

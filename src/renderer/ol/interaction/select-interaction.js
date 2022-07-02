@@ -9,7 +9,12 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
  *
  */
 export default options => {
-  const { selection, hitTolerance, style, selectedSource } = options
+  const { hitTolerance } = options
+  const { services, styles, sources } = options
+  const { selection } = services
+  const { defaultStyle: style } = styles
+  const { selectedSource } = sources
+
   const interaction = new Select({
     hitTolerance,
     style,

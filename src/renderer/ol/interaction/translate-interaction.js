@@ -7,7 +7,9 @@ const isEqual = require('react-fast-compare')
  *
  */
 export default options => {
-  const { featureStore, hitTolerance, modifiableSource } = options
+  const { services, sources, hitTolerance } = options
+  const { modifiableSource } = sources
+  const { featureStore } = services
 
   // snapshot :: [GeoJSON/Feature]
   let snapshot = []

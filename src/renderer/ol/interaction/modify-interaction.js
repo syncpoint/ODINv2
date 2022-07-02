@@ -7,7 +7,9 @@ import { writeFeatureCollection } from '../../model/geometry'
  * @param {*} hitTolerance
  */
 export default options => {
-  const { featureStore, modifiableSource, hitTolerance } = options
+  const { services, sources, hitTolerance } = options
+  const { featureStore } = services
+  const { modifiableSource } = sources
 
   // snapshot :: [[k, GeoJSON/Feature]]
   let snapshot = []

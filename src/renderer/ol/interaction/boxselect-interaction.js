@@ -3,7 +3,9 @@ import { DragBox } from 'ol/interaction'
 import { platformModifierKeyOnly } from 'ol/events/condition'
 
 export default options => {
-  const { selection, visibleSource } = options
+  const { services, sources } = options
+  const { selection } = services
+  const { visibleSource } = sources
 
   // Note: DragBox is not a selection interaction per se.
   // I.e. it does not manage selected features automatically.

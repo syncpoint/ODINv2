@@ -9,7 +9,9 @@ import * as ids from '../../ids'
  *
  */
 export default options => {
-  const { featureStore, visibleSource, hitTolerance, selection, modifiableSource } = options
+  const { services, sources, hitTolerance } = options
+  const { visibleSource, modifiableSource } = sources
+  const { featureStore, selection } = services
 
   // Has cloning operation started?
   let cloning = false
