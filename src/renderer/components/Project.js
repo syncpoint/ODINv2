@@ -1,46 +1,24 @@
 import React from 'react'
 import { Map } from './map/Map'
 import { CommandPalette, Sidebar, FeatureProperties } from '.'
+import { Toolbar } from './Toolbar'
+import { Statusbar } from './Statusbar'
 import { useServices, useMemento } from './hooks'
 import './Project.css'
 
-/**
- * Groups of related scopes.
- */
-const scopeGroups = {
-  layer: {
-    key: 'layer',
-    scope: '@layer',
-    label: 'Layers',
-    items: [
-      { key: 'layer', scope: '@layer', label: 'Layers' },
-      { key: 'feature', scope: '@feature', label: 'Features' },
-      { key: 'link', scope: '@link', label: 'Links' },
-      { key: 'view', scope: '@view', label: 'Views' },
-      // Tag #pin and any of given scopes:
-      { key: 'pinned', scope: '@layer @feature @link #pin', label: 'Pinned' }
-    ]
-  },
-  symbol: {
-    key: 'symbol',
-    scope: '@symbol',
-    label: 'Symbols',
-    items: [
-      { key: 'symbol', scope: '@symbol', label: 'Symbols' },
-      { key: 'pinned', scope: '@symbol #pin', label: 'Pinned' }
-    ]
-  },
-  location: {
-    key: 'marker',
-    scope: '@marker',
-    label: 'Markers',
-    items: [
-      { key: 'marker', scope: '@marker', label: 'Markers' },
-      { key: 'pinned', scope: '@marker #pin', label: 'Pinned' }
-    ]
-  }
+const scopeGroup = {
+  key: 'layer',
+  scope: '@layer',
+  label: 'Layers',
+  items: [
+    { key: 'layer', scope: '@layer', label: 'Layers' },
+    { key: 'feature', scope: '@feature', label: 'Features' },
+    { key: 'link', scope: '@link', label: 'Links' },
+    { key: 'symbol', scope: '@symbol', label: 'Symbols' },
+    { key: 'marker', scope: '@marker', label: 'Markers' },
+    { key: 'pinned', scope: '#pin', label: 'Pinned' }
+  ]
 }
-
 
 const handlers = {
   palette: (state, palette) => ({ ...state, palette })
@@ -116,21 +94,21 @@ export const Project = () => {
     />
 
   const sidebar = sidebarMemento.value && sidebarMemento.value.showing &&
-    <div className="project__sidebar">
-      <Sidebar group={scopeGroups[sidebarMemento.value.group]}/>
+    <div className="sidebar">
+      <Sidebar group={scopeGroup}/>
     </div>
 
   return (
     <>
-      <div className='project__header'></div>
-      <div className='project__sidebar-container'>
+      <Toolbar/>
+      <div className='sidebar-container'>
         { sidebar }
-        <div className='project__map-controls' id='map-controls'/>
+        <div className='map-controls' id='map-controls'/>
       </div>
       <FeatureProperties/>
       { palette }
       <Map/>
-      <div className='project__footer'></div>
+      <Statusbar/>
     </>
   )
 }

@@ -7,5 +7,6 @@ import './index.css'
 import { App } from './components/App'
 
 const container = document.createElement('div')
+container.id = 'main'
 document.body.appendChild(container)
 ReactDOM.render(<App/>, container)

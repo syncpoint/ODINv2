@@ -1,0 +1,34 @@
+.toolbar {
+  box-sizing: border-box;
+  display: flex;
+  background-color: #f0f0f0;
+  height: 40px;
+  overflow-x: visible;
+  overflow-y: visible;
+  border-bottom: 1px solid #d0d0d0;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.toolbar__items-container {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  gap: 16px;
+}
+
+.toolbar__left-items {
+  padding-left: 6rem;
+  flex-grow: 1;
+}
+
+.toolbar__left-items--fullscreen {
+  padding-left: 1rem;
+  flex-grow: 1;
+}
+
+.toolbar__right-items {
+  padding-right: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}

@@ -92,6 +92,14 @@ WindowManager.prototype.createWindow = function (options) {
     // See: https://www.electronjs.org/docs/api/browser-window#event-page-title-updated
     window.on('page-title-updated', event => event.preventDefault())
 
+    window.on('enter-full-screen', ({ sender }) => {
+      sender.webContents.send('IPC_ENTER_FULLSCREEN')
+    })
+
+    window.on('leave-full-screen', ({ sender }) => {
+      sender.webContents.send('IPC_LEAVE_FULLSCREEN')
+    })
+
     window.on('focus', () => {
       this.emit(`window/focus-gained/${handle}`)
     })

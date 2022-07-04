@@ -60,7 +60,7 @@ export const Map = () => {
 
   return <div
     id='map'
-    className='map fullscreen'
+    className='map'
     tabIndex='0'
   />
 }
