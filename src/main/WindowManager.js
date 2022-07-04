@@ -177,9 +177,6 @@ WindowManager.prototype.showProject = function (key, project) {
   return this.createWindow({
     handle: key,
     title: project.name,
-    frame: false,
-    // FIXME: what about Windows platform?
-    titleBarStyle: 'hiddenInset',
     url: url(app),
     ...project.bounds,
     additionalArguments
