@@ -53,7 +53,7 @@ export default async projectUUID => {
   const clipboard = new Clipboard(selection, featureStore)
 
   // Key bindings.
-  bindings(emitter)
+  bindings(emitter, clipboard)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement

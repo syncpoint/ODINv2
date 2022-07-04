@@ -38,6 +38,10 @@ const dispatch = action => {
   }
 }
 
+
+/**
+ *
+ */
 export function Clipboard (selection, featureStore) {
   this.selection = selection
   this.featureStore = featureStore
@@ -123,4 +127,9 @@ Clipboard.prototype.paste = async function () {
   }, tuples)
 
   this.featureStore.insert(tuples)
+}
+
+Clipboard.prototype.delete = function () {
+  const selected = this.selection.selected()
+  this.featureStore.delete(selected)
 }

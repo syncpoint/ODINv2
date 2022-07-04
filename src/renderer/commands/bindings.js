@@ -5,7 +5,7 @@ const cmdOrCtrl = key => process.platform === 'darwin'
   ? `command+${key}`
   : `ctrl+${key}`
 
-export const bindings = emitter => {
+export const bindings = (emitter, clipboard) => {
   const emitCommand = command => () => emitter.emit(`command/${command}`)
 
   // Note: bindGlobal() is used to also trap inside input elements.
@@ -14,6 +14,7 @@ export const bindings = emitter => {
   Mousetrap.bindGlobal(cmdOrCtrl('1'), emitCommand('sidebar-layer'))
   Mousetrap.bindGlobal(cmdOrCtrl('2'), emitCommand('sidebar-symbol'))
   Mousetrap.bindGlobal(cmdOrCtrl('4'), emitCommand('sidebar-location'))
-  Mousetrap.bind(cmdOrCtrl('backspace'), emitCommand('delete'))
-  Mousetrap.bind('del', emitCommand('delete'))
+
+  Mousetrap.bind(cmdOrCtrl('backspace'), () => clipboard.delete())
+  Mousetrap.bind('del', () => clipboard.delete())
 }

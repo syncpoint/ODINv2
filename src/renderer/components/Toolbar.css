@@ -15,6 +15,7 @@
   align-items: center;
   font-size: 14px;
   gap: 16px;
+  color: #68696B;
 }
 
 .toolbar__left-items {
@@ -28,7 +29,22 @@
 }
 
 .toolbar__right-items {
-  padding-right: 8px;
+  padding-right: 1rem;
   flex-direction: row;
   flex-wrap: wrap;
+}
+
+.toolbar__button {
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 3px;
+}
+
+.toolbar__button:hover {
+  background-color: #e0e0e0;
+}
+
+.toolbar__button:active {
+  background-color: #d0d0d0;
 }
