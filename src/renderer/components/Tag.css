@@ -1,5 +1,5 @@
 .tag {
-  font-size: 0.7em;
+  font-size: 0.65em;
   padding: 3px;
   margin-right: 6px;
   margin-bottom: 6px;
@@ -11,7 +11,7 @@
 }
 
 .tag-active {
-  font-size: 0.7em;
+  font-size: 0.65em;
   padding: 3px;
   margin-right: 6px;
   margin-bottom: 6px;
@@ -28,7 +28,7 @@
 }
 
 .tag-input {
-  font-size: 0.7em;
+  font-size: 0.65em;
   display: inline-block;
   background-color: inherit;
   box-sizing: border-box;

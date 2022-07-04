@@ -54,7 +54,7 @@
   top: 0px;
 
   /* text-base */
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.5rem;
   color: var(--color-gray-400);
 }

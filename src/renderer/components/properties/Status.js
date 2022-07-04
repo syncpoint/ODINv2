@@ -49,7 +49,7 @@ export default props => {
         />
         <Radio
           name='status'
-          label='Anticipated/Planned'
+          label='Anticipated'
           disabled={props.disabled}
           onChange={handleChange('A')}
           checked={state === 'A'}
