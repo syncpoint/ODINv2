@@ -83,7 +83,6 @@ export const useStack = initial => {
   return React.useReducer(reducer, initial)
 }
 
-
 export const useMemento = (key, defaultValue) => {
   const { preferencesStore: store } = useServices()
   const [value, setValue] = React.useState(null)
@@ -96,11 +95,11 @@ export const useMemento = (key, defaultValue) => {
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {
     (async () => setValue(await store.get(key, defaultValue)))()
-    const handler = value => setValue(value)
+    const handler = ({ value }) => setValue(value)
     store.on(key, handler)
     return () => store.off(key, handler)
   }, [])
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  return { value, put }
+  return [value, put]
 }

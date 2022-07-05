@@ -1,33 +1,45 @@
 import * as R from 'ramda'
 import React from 'react'
-import PropTypes from 'prop-types'
 import { FilterInput, IndexBackedList, History } from '.'
-import { useList, useStack, useServices } from './hooks'
+import { useList, useStack, useServices, useMemento } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 import { matcher, preventDefault } from './events'
 import { Entries } from './selection'
+import './Sidebar.css'
+
+const scopeGroup = {
+  key: 'layer',
+  scope: '@layer',
+  label: 'Layers',
+  items: [
+    { key: 'layer', scope: '@layer', label: 'Layers' },
+    { key: 'feature', scope: '@feature', label: 'Features' },
+    { key: 'link', scope: '@link', label: 'Links' },
+    { key: 'symbol', scope: '@symbol', label: 'Symbols' },
+    { key: 'marker', scope: '@marker', label: 'Markers' },
+    { key: 'pinned', scope: '#pin', label: 'Pinned' }
+  ]
+}
 
 /**
  * Top-most component, combining history, filter input and
  * concrete filterable list, e.g. feature list.
  */
-const Sidebar = props => {
+const Sidebar = () => {
   const { selection } = useServices()
   const [listState, listDispatch] = useList({ multiselect: true })
   const [filter, setFilter] = React.useState('')
-  const [historyEntries, historyDispatch] = useStack([props.group])
+  const [historyEntries, historyDispatch] = useStack([scopeGroup])
   const ref = React.useRef()
+  const [showing] = useMemento('ui.sidebar.showing', true)
 
   // Reset filter on each history update:
   React.useEffect(() => setFilter(''), [historyEntries])
 
-  React.useEffect(() => {
-    historyDispatch({ type: 'reset', entry: props.group })
-  }, [props.group, historyDispatch])
-
   // Focus sidebar AFTER edit:
   React.useEffect(() => {
+    if (!ref.current) return
     if (!listState.editId) ref.current.focus()
   }, [listState.editId])
 
@@ -58,7 +70,6 @@ const Sidebar = props => {
           type: 'push',
           entry: {
             key: focusId,
-            // scope: `@id:feature:${layerId}|link+layer:${layerId}`,
             scope: `@feature @link !feature:${layerId} !link+layer:${layerId}`,
             label: listState.entries[focusIndex].title || 'N/A'
           }
@@ -86,37 +97,37 @@ const Sidebar = props => {
   }
 
   const handleFilterChange = React.useCallback(value => setFilter(value), [])
+  if (!showing) return null
 
   return (
-    <div
-      ref={ref}
-      tabIndex={0}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%'
-      }}
-    >
-      <History entries={historyEntries} dispatch={historyDispatch}/>
-      <div style={{ display: 'flex', padding: '0.5em' }}>
-        <FilterInput size='large' value={filter} onChange={handleFilterChange}/>
+    <div className="sidebar">
+      <div
+        ref={ref}
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%'
+        }}
+      >
+        <History entries={historyEntries} dispatch={historyDispatch}/>
+        <div style={{ display: 'flex', padding: '0.5em' }}>
+          <FilterInput size='large' value={filter} onChange={handleFilterChange}/>
+        </div>
+
+        <IndexBackedList
+          scope={R.last(historyEntries).scope}
+          history={history}
+          filter={filter}
+          dispatch={listDispatch}
+          state={listState}
+        />
       </div>
-      <IndexBackedList
-        scope={R.last(historyEntries).scope}
-        history={history}
-        filter={filter}
-        dispatch={listDispatch}
-        state={listState}
-      />
     </div>
   )
-}
-
-Sidebar.propTypes = {
-  group: PropTypes.object.isRequired
 }
 
 Sidebar.whyDidYouRender = true

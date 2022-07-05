@@ -12,11 +12,19 @@ export function PreferencesStore (preferencesDB, ipcRenderer) {
     ipcRenderer.send('ipc:put:preferences', tuples)
   })()
 
-  preferencesDB.on('put', (key, value) => ipcRenderer.send('ipc:post:preferences', key, value))
-  preferencesDB.on('del', key => ipcRenderer.send('ipc:del:preferences', key))
+  preferencesDB.on('put', (key, value) => {
+    ipcRenderer.send('ipc:post:preferences', key, value)
+    this.emit(key, { value })
+  })
+
+  preferencesDB.on('del', key => {
+    ipcRenderer.send('ipc:del:preferences', key)
+    this.emit(key, { value: undefined })
+  })
 
   ipcRenderer.on('VIEW_COORDINATES_FORMAT', (_, format) => this.setCoordinatesFromat(format))
   ipcRenderer.on('VIEW_GRATICULE', (_, type, checked) => this.setGraticule(type, checked))
+  ipcRenderer.on('VIEW_SHOW_SIDEBAR', (_, checked) => this.showSidebar(checked))
 }
 
 util.inherits(PreferencesStore, Emitter)
@@ -30,6 +38,10 @@ PreferencesStore.prototype.setGraticule = async function (type, checked) {
   if (!checked) this.preferencesDB.del('graticule')
   else this.put('graticule', type)
   this.emit('graticuleChanged', { type, checked })
+}
+
+PreferencesStore.prototype.showSidebar = function (checked) {
+  this.put('ui.sidebar.showing', checked)
 }
 
 /**
@@ -46,6 +58,5 @@ PreferencesStore.prototype.get = function (key, value) {
  * put :: string -> any
  */
 PreferencesStore.prototype.put = function (key, value) {
-  this.emit(key, value)
   return this.preferencesDB.put(key, value)
 }

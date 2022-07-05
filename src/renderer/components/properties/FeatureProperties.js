@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import * as R from 'ramda'
 import React from 'react'
-import { useServices, useMemento } from '../hooks'
+import { useServices } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
 import { isFeatureId, lockedId, featureId, isLockedFeatureId } from '../../ids'
 import PropertiesTab from './PropertiesTab'
@@ -65,7 +65,6 @@ export const FeatureProperties = () => {
 
   const [state, dispatch] = React.useReducer(reducer, initialState)
   const [featureClass, setFeatureClass] = React.useState(null)
-  const memento = useMemento('ui.properties', { tab: 'properties' })
 
   React.useEffect(() => {
     selection.on('selection', async () => {
@@ -110,20 +109,11 @@ export const FeatureProperties = () => {
     // No cleanup necessary; component listenes forever.
   }, [selection, featureStore])
 
-  const activeTab = memento.value && memento.value.tab
-
-  const tab = () => {
-    const disabled = Object.keys(state.locked).length > 0
-    switch (activeTab) {
-      case 'properties': return <PropertiesTab featureClass={featureClass} features={state.features} disabled={disabled}/>
-      default: return null
-    }
-  }
-
+  const disabled = Object.keys(state.locked).length > 0
   const panel = () =>
     <div className='feature-properties'>
       <div className='panel-inset'>
-        { tab() }
+      <PropertiesTab featureClass={featureClass} features={state.features} disabled={disabled}/>
       </div>
     </div>
 

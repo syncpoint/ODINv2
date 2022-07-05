@@ -6,20 +6,6 @@ import { Statusbar } from './Statusbar'
 import { useServices, useMemento } from './hooks'
 import './Project.css'
 
-const scopeGroup = {
-  key: 'layer',
-  scope: '@layer',
-  label: 'Layers',
-  items: [
-    { key: 'layer', scope: '@layer', label: 'Layers' },
-    { key: 'feature', scope: '@feature', label: 'Features' },
-    { key: 'link', scope: '@link', label: 'Links' },
-    { key: 'symbol', scope: '@symbol', label: 'Symbols' },
-    { key: 'marker', scope: '@marker', label: 'Markers' },
-    { key: 'pinned', scope: '#pin', label: 'Pinned' }
-  ]
-}
-
 const handlers = {
   palette: (state, palette) => ({ ...state, palette })
 }
@@ -35,7 +21,7 @@ const reducer = (state, event) => {
  */
 export const Project = () => {
   const { emitter } = useServices()
-  const sidebarMemento = useMemento('ui.sidebar', { showing: true, group: 'layer' })
+  const [sidebarShowing, setSidebarShowing] = useMemento('ui.sidebar.showing', true)
 
   const [state, dispatch] = React.useReducer(reducer, {
     palette: { showing: false },
@@ -61,28 +47,12 @@ export const Project = () => {
             callback: event.callback
           })
         }
-        case 'toggle-sidebar': return sidebarMemento.put({
-          showing: !sidebarMemento.value.showing,
-          group: sidebarMemento.value.group
-        })
-        case 'sidebar-layer': return sidebarMemento.put({
-          showing: true,
-          group: 'layer'
-        })
-        case 'sidebar-symbol': return sidebarMemento.put({
-          showing: true,
-          group: 'symbol'
-        })
-        case 'sidebar-location': return sidebarMemento.put({
-          showing: true,
-          group: 'location'
-        })
       }
     }
 
     emitter.on('command/:type', handleCommand)
     return () => emitter.off('command/:type', handleCommand)
-  }, [emitter, sidebarMemento])
+  }, [emitter, setSidebarShowing, sidebarShowing])
 
   const palette = state.palette.showing &&
     <CommandPalette
@@ -93,16 +63,11 @@ export const Project = () => {
       callback={state.palette.callback}
     />
 
-  const sidebar = sidebarMemento.value && sidebarMemento.value.showing &&
-    <div className="sidebar">
-      <Sidebar group={scopeGroup}/>
-    </div>
-
   return (
     <>
       <Toolbar/>
       <div className='sidebar-container'>
-        { sidebar }
+        <Sidebar/>
         <div className='map-controls' id='map-controls'/>
       </div>
       <FeatureProperties/>

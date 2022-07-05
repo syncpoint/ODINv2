@@ -4,6 +4,7 @@ export default options => {
   const preferences = options.preferences || {}
   const coordinatesFormat = preferences['coordinates-format'] || 'MGRS'
   const graticule = preferences.graticule
+  const sidebarShowing = preferences['ui.sidebar.showing']
 
   return [{
     label: 'View',
@@ -73,6 +74,21 @@ export default options => {
             checked: graticule === 'WGS84',
             click: ({ checked }, browserWindow) => {
               if (browserWindow) browserWindow.webContents.send('VIEW_GRATICULE', 'WGS84', checked)
+            }
+          }
+        ]
+      },
+      { type: 'separator' },
+      {
+        label: 'Appearance',
+        submenu: [
+          {
+            label: 'Show Sidebar',
+            accelerator: 'CmdOrCtrl+B',
+            type: 'checkbox',
+            checked: sidebarShowing,
+            click: ({ checked }, browserWindow) => {
+              if (browserWindow) browserWindow.webContents.send('VIEW_SHOW_SIDEBAR', checked)
             }
           }
         ]

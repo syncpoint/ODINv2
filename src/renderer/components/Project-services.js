@@ -72,7 +72,6 @@ export default async projectUUID => {
   })
 
   const fullscreenTracker = new FullscreenTracker(ipcRenderer)
-
   const dragAndDrop = new DragAndDrop()
 
   dragAndDrop.on('layers', ({ layers }) => {
