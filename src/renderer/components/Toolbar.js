@@ -21,7 +21,7 @@ const Button = props => {
       className='toolbar__button'
       onClick={handleClick(props.path)}
     >
-      <Icon path={mdi[props.path]} size='16px'/>
+      <Icon path={mdi[props.path]} size='20px'/>
     </button>
   )
 }
@@ -33,25 +33,12 @@ Button.propTypes = {
 }
 
 export const Toolbar = () => {
-  const { emitter, fullscreenTracker, clipboard, undo } = useServices()
+  const { emitter, clipboard, undo } = useServices()
   const [state, dispatch] = React.useReducer(reducer, {})
-  const [className, setClassName] = React.useState('toolbar__left-items')
 
   React.useEffect(() => {
     emitter.on('osd', dispatch)
   }, [emitter])
-
-  React.useEffect(() => {
-    const className = active => active
-      ? 'toolbar__left-items--fullscreen'
-      : 'toolbar__left-items'
-
-    setClassName(className(fullscreenTracker.isFullscreen()))
-
-    fullscreenTracker.on('FULLSCREEN_CHANGED', ({ active }) => {
-      setClassName(className(active))
-    })
-  }, [fullscreenTracker])
 
   const handleClick = path => {
     if (path === 'mdiContentCut') clipboard.cut()
@@ -64,16 +51,16 @@ export const Toolbar = () => {
 
   return (
     <header className='toolbar'>
-      <div className={`${className} toolbar__items-container`}>
-        {state.A1} - {state.C1}
-      </div>
-      <div className='toolbar__right-items toolbar__items-container'>
+      <div className='toolbar__left-items toolbar__items-container'>
         <Button path='mdiContentCut' onClick={handleClick}/>
         <Button path='mdiContentCopy' onClick={handleClick}/>
         <Button path='mdiContentPaste' onClick={handleClick}/>
         <Button path='mdiTrashCanOutline' onClick={handleClick}/>
         <Button path='mdiUndo' onClick={handleClick}/>
         <Button path='mdiRedo' onClick={handleClick}/>
+      </div>
+      <div className='toolbar__right-items toolbar__items-container'>
+        {state.C1}
       </div>
     </header>
   )
