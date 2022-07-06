@@ -3,8 +3,6 @@
   display: flex;
   background-color: #f0f0f0;
   height: 40px;
-  overflow-x: visible;
-  overflow-y: visible;
   border-bottom: 1px solid #d0d0d0;
   -webkit-app-region: drag;
   user-select: none;
@@ -14,25 +12,34 @@
   display: flex;
   align-items: center;
   font-size: 14px;
-  gap: 16px;
   color: #68696B;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .toolbar__left-items {
-  padding-left: 0.5rem;
-  flex-grow: 1;
+  flex: 0 0 21rem;
+  color: black;
+}
+
+.toolbar__center-items {
+  flex: 1 1 auto;
+  flex-direction: row;
+  justify-content: left;
 }
 
 .toolbar__right-items {
-  padding-right: 0.5rem;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex: 0 0  21rem;
+  flex-direction: row-reverse;
+  color: black;
 }
 
 .toolbar__button {
   width: 28px;
   height: 28px;
   padding: 2px;
+  margin-left: 4px;
+  margin-right: 4px;
   border-radius: 3px;
 }
 

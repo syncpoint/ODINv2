@@ -1,10 +1,9 @@
 .sidebar {
-  width: 21rem;
+  flex: 0 0 21rem;
   display: flex;
   flex-direction: column;
   background-color: white;
   pointer-events: auto;
   user-select: none;
-  background-color: white;
   border-radius: 4px;
 }

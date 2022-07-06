@@ -22,14 +22,15 @@ export const OSD = () => {
     emitter.on('osd', dispatch)
   }, [emitter])
 
-  const cells = [1, 2, 3].reduce((acc, row) => {
-    return ['A', 'B', 'C'].reduce((acc, column) => {
-      const key = `${column}${row}`
-      return acc.concat(
-        <div key={ key } className='osd__cell' style={styles[column]}>{ state[key] }</div>
-      )
-    }, acc)
-  }, [])
-
-  return <div className="panel-top osd">{ cells }</div>
+  return <div className="osd" id="osd">
+    <div className='osd__cell' style={styles.A}></div>
+    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.C}>{ state.C1 }</div>
+    <div className='osd__cell' style={styles.A}></div>
+    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.C}></div>
+    <div className='osd__cell' style={styles.A}></div>
+    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.C}></div>
+  </div>
 }

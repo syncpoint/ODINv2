@@ -5,6 +5,7 @@ export default options => {
   const coordinatesFormat = preferences['coordinates-format'] || 'MGRS'
   const graticule = preferences.graticule
   const sidebarShowing = preferences['ui.sidebar.showing']
+  const toolbarShowing = preferences['ui.toolbar.showing']
 
   return [{
     label: 'View',
@@ -89,6 +90,15 @@ export default options => {
             checked: sidebarShowing,
             click: ({ checked }, browserWindow) => {
               if (browserWindow) browserWindow.webContents.send('VIEW_SHOW_SIDEBAR', checked)
+            }
+          },
+          {
+            label: 'Show Toolbar',
+            accelerator: 'CmdOrCtrl+T',
+            type: 'checkbox',
+            checked: toolbarShowing,
+            click: ({ checked }, browserWindow) => {
+              if (browserWindow) browserWindow.webContents.send('VIEW_SHOW_TOOLBAR', checked)
             }
           }
         ]

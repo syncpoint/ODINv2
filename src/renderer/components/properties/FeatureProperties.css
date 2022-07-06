@@ -1,10 +1,6 @@
 .feature-properties {
-  position: absolute;
+  flex: 0 0 21rem;
   font-size: 0.95rem;
-  z-index: 20;
-  right: 0;
-  width: 21rem;
-  height: calc(100vh - 62px);
 
   display: flex;
   flex-direction: column;

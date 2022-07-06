@@ -1,7 +1,6 @@
 .map {
   touch-action: none;
-  width: 100%;
-  height: calc(100vh - 62px);
+  flex: 1;
 }
 
 /**

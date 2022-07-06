@@ -25,6 +25,7 @@ export function PreferencesStore (preferencesDB, ipcRenderer) {
   ipcRenderer.on('VIEW_COORDINATES_FORMAT', (_, format) => this.setCoordinatesFromat(format))
   ipcRenderer.on('VIEW_GRATICULE', (_, type, checked) => this.setGraticule(type, checked))
   ipcRenderer.on('VIEW_SHOW_SIDEBAR', (_, checked) => this.showSidebar(checked))
+  ipcRenderer.on('VIEW_SHOW_TOOLBAR', (_, checked) => this.showToolbar(checked))
 }
 
 util.inherits(PreferencesStore, Emitter)
@@ -42,6 +43,10 @@ PreferencesStore.prototype.setGraticule = async function (type, checked) {
 
 PreferencesStore.prototype.showSidebar = function (checked) {
   this.put('ui.sidebar.showing', checked)
+}
+
+PreferencesStore.prototype.showToolbar = function (checked) {
+  this.put('ui.toolbar.showing', checked)
 }
 
 /**

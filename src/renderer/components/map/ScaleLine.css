@@ -1,0 +1,17 @@
+.ol-scale-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 8px;
+}
+
+.ol-scale-bar-inner div:nth-child(4) div {
+  background-color: red !important;
+
+}
+.ol-scale-bar-inner div:nth-child(6) div {
+  background-color: red !important;
+}
+
+.ol-scale-singlebar {
+  box-sizing: border-box;
+}

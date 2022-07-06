@@ -13,7 +13,6 @@ const reducer = (state, { message, cell }) => {
 }
 
 const Button = props => {
-
   const handleClick = path => event => props.onClick(path, event)
 
   return (
@@ -38,7 +37,8 @@ export const Toolbar = () => {
 
   React.useEffect(() => {
     emitter.on('osd', dispatch)
-  }, [emitter])
+    return () => emitter.off('osd', dispatch)
+  }, [emitter, dispatch])
 
   const handleClick = path => {
     if (path === 'mdiContentCut') clipboard.cut()
@@ -52,6 +52,9 @@ export const Toolbar = () => {
   return (
     <header className='toolbar'>
       <div className='toolbar__left-items toolbar__items-container'>
+      Default Layer:&nbsp;<b>{state.A2}</b>
+      </div>
+      <div className='toolbar__center-items toolbar__items-container'>
         <Button path='mdiContentCut' onClick={handleClick}/>
         <Button path='mdiContentCopy' onClick={handleClick}/>
         <Button path='mdiContentPaste' onClick={handleClick}/>
@@ -60,7 +63,7 @@ export const Toolbar = () => {
         <Button path='mdiRedo' onClick={handleClick}/>
       </div>
       <div className='toolbar__right-items toolbar__items-container'>
-        {state.C1}
+        <b>{state.C2}</b>
       </div>
     </header>
   )

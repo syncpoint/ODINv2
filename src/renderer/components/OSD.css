@@ -1,12 +1,13 @@
-.panel-top {
-  grid-area: T;
-}
-
 .osd {
-  display: grid;
+  position: relative;
+  padding: 8px;
+  flex: 1 1 auto;
+  pointer-events: none;
   user-select: none;
+
+  display: grid;
   grid-template-columns: auto auto auto;
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1.5rem);
   grid-template-areas:
     "A1 B1 C1"
     "A2 B2 C2"

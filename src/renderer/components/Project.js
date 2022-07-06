@@ -2,7 +2,7 @@ import React from 'react'
 import { Map } from './map/Map'
 import { CommandPalette, Sidebar, FeatureProperties } from '.'
 import { Toolbar } from './Toolbar'
-import { Statusbar } from './Statusbar'
+import { OSD } from './OSD'
 import { useServices, useMemento } from './hooks'
 import './Project.css'
 
@@ -21,7 +21,8 @@ const reducer = (state, event) => {
  */
 export const Project = () => {
   const { emitter } = useServices()
-  const [sidebarShowing, setSidebarShowing] = useMemento('ui.sidebar.showing', true)
+  const [sidebarShowing] = useMemento('ui.sidebar.showing', true)
+  const [toolbarShowing] = useMemento('ui.toolbar.showing', true)
 
   const [state, dispatch] = React.useReducer(reducer, {
     palette: { showing: false },
@@ -52,7 +53,10 @@ export const Project = () => {
 
     emitter.on('command/:type', handleCommand)
     return () => emitter.off('command/:type', handleCommand)
-  }, [emitter, setSidebarShowing, sidebarShowing])
+  }, [emitter])
+
+  const sidebar = sidebarShowing ? <Sidebar/> : null
+  const toolbar = toolbarShowing ? <Toolbar/> : null
 
   const palette = state.palette.showing &&
     <CommandPalette
@@ -64,16 +68,17 @@ export const Project = () => {
     />
 
   return (
-    <>
-      <Toolbar/>
-      <div className='sidebar-container'>
-        <Sidebar/>
-        <div className='map-controls' id='map-controls'/>
+    <div className="site-container">
+      { toolbar }
+      <div className="content">
+        { palette }
+        <Map/>
+        <div className="map-overlay">
+          { sidebar }
+          <OSD/>
+          <FeatureProperties/>
+        </div>
       </div>
-      <FeatureProperties/>
-      { palette }
-      <Map/>
-      <Statusbar/>
-    </>
+    </div>
   )
 }
