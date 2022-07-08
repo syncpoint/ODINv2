@@ -98,11 +98,6 @@ const ready = async () => {
     open(link.url)
   })
 
-  ipcMain.handle('ipc:get:fullscreen', ({ sender }) => {
-    const window = BrowserWindow.fromId(sender.id)
-    return window.isFullScreen()
-  })
-
   await session.restore()
   await menu.show()
 }
