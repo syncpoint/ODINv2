@@ -25,7 +25,7 @@ export const multiselect = {
 
     // Don't mess with selection, but derrive focus index
     // from last selected.
-    const focusIndex = Entries.focusIndex(state.entries, state.selected)
+    const focusIndex = Entries.focusIndex(entries, state.selected)
 
     return {
       ...state,
