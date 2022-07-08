@@ -23,13 +23,15 @@ export const multiselect = {
     // Don't update when entries are deep equal to previous state.
     if (isEqual(state.entries, entries)) return state
 
-    const ids = entries.map(R.prop('id'))
-    const selected = (state.selected || []).filter(id => ids.includes(id))
+    // Don't mess with selection, but derrive focus index
+    // from last selected.
+    const focusIndex = Entries.focusIndex(state.entries, state.selected)
 
     return {
       ...state,
       entries,
-      selected
+      focusIndex,
+      scroll: 'auto'
     }
   },
 
@@ -37,7 +39,7 @@ export const multiselect = {
   click: (state, { id, shiftKey, metaKey, ctrlKey }) => {
 
     const shiftSelection = () => {
-      const current = Entries.focusIndex(state)
+      const current = Entries.focusIndex(state.entries, state.selected)
       const next = Entries.index(state.entries, id)
       const range = Selection.focusRange(state)
 
@@ -102,6 +104,7 @@ export const multiselect = {
     return {
       ...state,
       selected,
+      focusIndex: Entries.focusIndex(state.entries, selected),
       scroll: 'auto'
     }
   },
@@ -111,6 +114,8 @@ export const multiselect = {
    */
   selection: (state, { selected }) => {
     if (Selection.equals(state.selected, selected)) return state
+
+    // TODO: auto focus last selected?
 
     return {
       ...state,
@@ -126,7 +131,7 @@ export const multiselect = {
     // Nothing to do if list is empty:
     if (Entries.empty(state.entries)) return state
 
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === Entries.length(state) - 1) return state // EOL
 
     const id = index => Entries.id(state.entries, index)
@@ -159,6 +164,7 @@ export const multiselect = {
     return {
       ...state,
       selected,
+      focusIndex: Entries.focusIndex(state.entries, selected),
       editId: null,
       scroll: 'auto'
     }
@@ -171,9 +177,9 @@ export const multiselect = {
     // Nothing to do if list is empty:
     if (Entries.empty(state.entries)) return state
 
-    const current = Entries.focusIndex(state) === -1
+    const current = Entries.focusIndex(state.entries, state.selected) === -1
       ? Entries.length(state)
-      : Entries.focusIndex(state)
+      : Entries.focusIndex(state.entries, state.selected)
 
     if (current === 0) return state // BOL
 
@@ -207,6 +213,7 @@ export const multiselect = {
     return {
       ...state,
       selected,
+      focusIndex: Entries.focusIndex(state.entries, selected),
       editId: null,
       scroll: 'auto'
     }
@@ -216,13 +223,17 @@ export const multiselect = {
     // Nothing to do if list is empty:
     if (Entries.empty(state.entries)) return state
 
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === -1) return state
     else if (current === 0) return state
 
+    const selected = [R.head(state.entries).id]
+    const focusIndex = Entries.focusIndex(state.entries, selected)
+
     return {
       ...state,
-      selected: [R.head(state.entries).id],
+      selected,
+      focusIndex,
       scroll: 'auto'
     }
   },
@@ -231,13 +242,17 @@ export const multiselect = {
     // Nothing to do if list is empty:
     if (Entries.empty(state.entries)) return state
 
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === -1) return state
     else if (current === Entries.length(state) - 1) return state
 
+    const selected = [R.last(state.entries).id]
+    const focusIndex = Entries.focusIndex(state.entries, selected)
+
     return {
       ...state,
-      selected: [R.last(state.entries).id],
+      selected,
+      focusIndex,
       scroll: 'auto'
     }
   },
@@ -245,10 +260,14 @@ export const multiselect = {
   'keydown/a': (state, { metaKey, ctrlKey }) => {
     if (!cmdOrCtrl({ metaKey, ctrlKey })) return state
 
+    const selected = [...state.entries.map(entry => entry.id)]
+    const focusIndex = Entries.focusIndex(state.entries, selected)
+
     return {
       ...state,
-      selected: [...state.entries.map(entry => entry.id)],
-      scroll: 'none'
+      selected,
+      focusIndex,
+      scroll: 'none' // select all should not scroll
     }
   },
 
@@ -268,7 +287,7 @@ export const multiselect = {
    * Start editing of focused option.
    */
   'keydown/F2': state => {
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === -1) return state
 
     const editId = state.entries[current].id
@@ -279,7 +298,7 @@ export const multiselect = {
    * Toggle editing.
    */
   'keydown/Enter': state => {
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === -1) return state
 
     const editId = state.entries[current].id

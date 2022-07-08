@@ -67,7 +67,7 @@ export const singleselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries.length) return initialState
 
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === Entries.length(state) - 1) return state
 
     const selected = [Entries.id(state.entries, current + 1)]
@@ -83,9 +83,9 @@ export const singleselect = {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
     if (!state.entries.length) return initialState
 
-    const current = Entries.focusIndex(state) === -1
+    const current = Entries.focusIndex(state.entries, state.selected) === -1
       ? Entries.length(state)
-      : Entries.focusIndex(state)
+      : Entries.focusIndex(state.entries, state.selected)
 
     if (current === 0) return state // BOL
 
@@ -102,7 +102,7 @@ export const singleselect = {
     // Nothing to do if list is empty:
     if (Entries.empty(state.entries)) return state
 
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
     if (current === -1) return state // no selection
     if (current === -1 || current === 0) return state // BOL
 
@@ -117,7 +117,7 @@ export const singleselect = {
     // Nothing to do if list is empty:
     if (Entries.empty(state.entries)) return state
 
-    const current = Entries.focusIndex(state)
+    const current = Entries.focusIndex(state.entries, state.selected)
 
     // Return same state (reference) when we are already at the bottom.
     if (current === -1) return state // no selection

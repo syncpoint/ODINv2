@@ -19,15 +19,15 @@ const scrollIntoView = (refs, index, behavior) =>
  * Abstract list. Mainly obsessed with scrolling.
  */
 const List = props => {
-  const { child, selected, scroll, entries } = props
+  const { child, entries, selected, scroll } = props
   const cardrefs = props.entries.map(_ => React.createRef())
 
   React.useEffect(() => {
     if (scroll === 'none') return
-    const focusIndex = Entries.focusIndex(props)
+    const focusIndex = Entries.focusIndex(entries, selected)
     if (focusIndex === -1) return
     scrollIntoView(cardrefs, focusIndex, scroll)
-  }, [cardrefs, props])
+  }, [cardrefs, entries, selected, scroll])
 
   const handleKeyDown = event => {
     const { key } = event
