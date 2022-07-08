@@ -24,12 +24,13 @@ export const multiselect = {
     if (isEqual(state.entries, entries)) return state
 
     const ids = entries.map(R.prop('id'))
-    const selected = (state.selected || []).filter(id => ids.includes(id))
+    const focusIndex = ids.findIndex(id => state.selected.includes(id))
 
     return {
       ...state,
       entries,
-      selected
+      focusIndex,
+      scroll: 'auto'
     }
   },
 

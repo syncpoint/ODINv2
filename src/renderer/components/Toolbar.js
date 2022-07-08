@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import './Toolbar.css'
-import { useServices } from './hooks'
 import Icon from '@mdi/react'
 import * as mdi from '@mdi/js'
-
+import { useServices } from './hooks'
+import { DropdownMenu } from './DropdownMenu'
 
 const reducer = (state, { message, cell }) => {
   const newState = { ...state }
@@ -47,6 +47,9 @@ export const Toolbar = () => {
     else if (path === 'mdiTrashCanOutline') clipboard.delete()
     else if (path === 'mdiUndo' && undo.canUndo()) undo.undo()
     else if (path === 'mdiRedo' && undo.canRedo()) undo.redo()
+    else if (path === 'mdiPlusBoxOutline') {
+      console.log('mdiPlusBoxOutline')
+    }
   }
 
   return (
@@ -55,10 +58,13 @@ export const Toolbar = () => {
       Default Layer:&nbsp;<b>{state.A2}</b>
       </div>
       <div className='toolbar__center-items toolbar__items-container'>
+        <DropdownMenu path='mdiPlusBoxOutline' onClick={handleClick}/>
+        <span className='toolbar__divider'></span>
         <Button path='mdiContentCut' onClick={handleClick}/>
         <Button path='mdiContentCopy' onClick={handleClick}/>
         <Button path='mdiContentPaste' onClick={handleClick}/>
         <Button path='mdiTrashCanOutline' onClick={handleClick}/>
+        <span className='toolbar__divider'></span>
         <Button path='mdiUndo' onClick={handleClick}/>
         <Button path='mdiRedo' onClick={handleClick}/>
       </div>

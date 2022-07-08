@@ -10,7 +10,6 @@
 
 .card[aria-selected="true"] {
   background-color: #f4f0ec;
-  border-color: #40a9ff;
   border-width: 2px;
   outline: 0;
   padding: 7px;

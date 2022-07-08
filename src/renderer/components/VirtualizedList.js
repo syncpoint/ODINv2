@@ -1,8 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import useVirtual from 'react-cool-virtual'
-import { Entries } from './selection'
-
 
 /**
  * Abstract list. Mainly obsessed with scrolling.
@@ -12,6 +10,7 @@ const VirtualizedList = props => {
     child,
     editId,
     selected,
+    focusIndex,
     scroll,
     entries
   } = props
@@ -23,15 +22,9 @@ const VirtualizedList = props => {
 
   React.useEffect(() => {
     if (scroll === 'none') return
-
-    const focusIndex = Entries.focusIndex({
-      entries,
-      selected
-    })
-
-    if (focusIndex === -1) return
-    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
-  }, [scrollToItem, selected, scroll])
+    if (focusIndex === undefined || focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'start', smooth: false })
+  }, [entries, scroll, scrollToItem, focusIndex])
 
   const card = ({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -64,6 +57,7 @@ VirtualizedList.propTypes = {
   entries: PropTypes.array.isRequired,
   editId: PropTypes.string,
   selected: PropTypes.array.isRequired,
+  focusIndex: PropTypes.number,
   scroll: PropTypes.string,
   child: PropTypes.func.isRequired
 }

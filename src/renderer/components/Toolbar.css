@@ -35,9 +35,9 @@
 }
 
 .toolbar__button {
-  width: 28px;
-  height: 28px;
-  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
   margin-left: 4px;
   margin-right: 4px;
   border-radius: 3px;
@@ -49,4 +49,11 @@
 
 .toolbar__button:active {
   background-color: #d0d0d0;
+}
+
+.toolbar__divider {
+  display: inline-block;
+  border-left: 1px solid #ccc;
+  margin: 0 4px;
+  height: 20px;
 }

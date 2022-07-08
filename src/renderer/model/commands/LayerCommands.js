@@ -9,6 +9,7 @@ export default function LayerCommands (options) {
   this.store = options.store
   this.featureStore = options.featureStore
   this.emitter = options.emitter
+  this.selection = options.selection
 }
 
 
@@ -29,7 +30,9 @@ LayerCommands.prototype.commands = function (tuples) {
 LayerCommands.prototype.createLayer = function () {
   const callback = value => {
     if (!value) return
-    this.store.insert([[layerId(), { name: value }]])
+    const key = layerId()
+    this.store.insert([[key, { name: value }]])
+    this.selection.set([key])
   }
 
   return new Command({
