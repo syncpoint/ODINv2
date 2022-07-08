@@ -4,7 +4,7 @@ import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool, ProjectStore } from '../store'
-import { PaletteCommands, ViewMemento, Controller, OSDDriver, FullscreenTracker } from '../model'
+import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
@@ -71,7 +71,6 @@ export default async projectUUID => {
     if (undo.canRedo()) undo.redo()
   })
 
-  const fullscreenTracker = new FullscreenTracker(ipcRenderer)
   const dragAndDrop = new DragAndDrop()
 
   dragAndDrop.on('layers', ({ layers }) => {
@@ -108,7 +107,6 @@ export default async projectUUID => {
   services.controller = controller
   services.osdDriver = osdDriver
   services.clipboard = clipboard
-  services.fullscreenTracker = fullscreenTracker
 
   services.paletteCommands = new PaletteCommands({
     store,
