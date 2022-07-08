@@ -66,9 +66,9 @@ Entries.index = (entries, id) => entries.findIndex(entry => entry.id === id)
 /**
  * Index of last selected entry (if any), else -1.
  */
-Entries.focusIndex = state =>
-  Selection.empty(state.selected)
+Entries.focusIndex = (entries, selected) =>
+  Selection.empty(selected)
     ? -1
-    : Entries.index(state.entries, R.last(state.selected))
+    : Entries.index(entries, R.last(selected))
 
 

@@ -31,13 +31,13 @@ export const CommandPalette = props => {
 
     // On Escape key, reset values to stored snapshot:
     if (key === 'Escape') {
-      const focusIndex = Entries.focusIndex(state)
+      const focusIndex = Entries.focusIndex(state.entries, state.selected)
       if (focusIndex !== -1) state.entries[focusIndex].revert()
     }
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
-      const focusIndex = Entries.focusIndex(state)
+      const focusIndex = Entries.focusIndex(state.entries, state.selected)
       if (focusIndex !== -1) state.entries[focusIndex].invoke(false)
       else if (props.callback) props.callback(filter)
     }
@@ -97,7 +97,7 @@ export const CommandPalette = props => {
 
   // Invoke command for newly focused entry:
   React.useEffect(() => {
-    const focusIndex = Entries.focusIndex(state)
+    const focusIndex = Entries.focusIndex(state.entries, state.selected)
     if (focusIndex === -1) return
     state.entries[focusIndex].invoke(true)
   }, [state, state.entries])

@@ -5,7 +5,6 @@ import { useList, useStack, useServices, useMemento } from './hooks'
 import { cmdOrCtrl } from '../platform'
 import { isLayerId, isFeatureId } from '../ids'
 import { matcher, preventDefault } from './events'
-import { Entries } from './selection'
 import './Sidebar.css'
 
 const scopeGroup = {
@@ -60,8 +59,8 @@ const Sidebar = () => {
     if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
       if (listState.selected.length !== 1) return
 
-      const focusId = listState.selected[listState.selected.length - 1]
-      const focusIndex = Entries.focusIndex(listState)
+      const focusIndex = listState.focusIndex
+      const focusId = R.last(listState.selected)
 
       if (isLayerId(focusId)) {
         const layerId = focusId.split(':')[1]

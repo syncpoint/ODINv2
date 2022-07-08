@@ -22,9 +22,10 @@ const VirtualizedList = props => {
 
   React.useEffect(() => {
     if (scroll === 'none') return
-    if (focusIndex === undefined || focusIndex === -1) return
-    scrollToItem({ index: focusIndex, align: 'start', smooth: false })
-  }, [entries, scroll, scrollToItem, focusIndex])
+    if (focusIndex === undefined) return
+    if (focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+  }, [scrollToItem, focusIndex, scroll])
 
   const card = ({ index, measureRef }) => {
     // Handle 'overshooting':

@@ -26,19 +26,22 @@ describe('multiselect', function () {
       const actual = multiselect.entries(state, { entries: [{ id: 'x' }] })
       const expected = {
         entries: [{ id: 'x' }],
-        selected: []
+        focusIndex: -1,
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
     })
 
-    it('update entries (remove selection)', function () {
+    it('update entries and focus', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, selected: ['y'] }
       const actual = multiselect.entries(state, { entries: [{ id: 'x' }] })
       const expected = {
         entries: [{ id: 'x' }],
-        selected: []
+        selected: ['y'],
+        focusIndex: 1,
+        scroll: 'auto'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -54,6 +57,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -66,6 +70,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -78,6 +83,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -90,6 +96,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: [],
+        focusIndex: -1,
         scroll: 'auto'
       }
 
@@ -102,6 +109,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['y', 'x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -118,6 +126,7 @@ describe('multiselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
         selected: ['x', 'y', 'z'],
+        focusIndex: 2,
         scroll: 'auto'
       }
 
@@ -130,6 +139,7 @@ describe('multiselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
         selected: ['z', 'y', 'x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -185,6 +195,7 @@ describe('multiselect', function () {
         editId: null,
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -198,6 +209,7 @@ describe('multiselect', function () {
         editId: null,
         entries,
         selected: ['y'],
+        focusIndex: 1,
         scroll: 'auto'
       }
 
@@ -233,6 +245,7 @@ describe('multiselect', function () {
         editId: null,
         entries,
         selected: ['y'],
+        focusIndex: 1,
         scroll: 'auto'
       }
 
@@ -246,6 +259,7 @@ describe('multiselect', function () {
         editId: null,
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -280,6 +294,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -308,6 +323,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['y'],
+        focusIndex: 1,
         scroll: 'auto'
       }
 
@@ -330,6 +346,7 @@ describe('multiselect', function () {
       const expected = {
         entries,
         selected: ['x', 'y'],
+        focusIndex: 1,
         scroll: 'none'
       }
 
