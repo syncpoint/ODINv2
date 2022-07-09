@@ -1,6 +1,6 @@
 import React from 'react'
 import { Map } from './map/Map'
-import { CommandPalette, Sidebar, FeatureProperties } from '.'
+import { CommandPalette, Sidebar, Properties } from '.'
 import { Toolbar } from './Toolbar'
 import { OSD } from './OSD'
 import { useServices, useMemento } from './hooks'
@@ -76,7 +76,7 @@ export const Project = () => {
         <div className="map-overlay">
           { sidebar }
           <OSD/>
-          <FeatureProperties/>
+          <Properties/>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId, defaultId, isDefaultId } from '../ids'
+import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId, defaultId } from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
@@ -15,6 +15,10 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
  * delete :: [k] -> unit
+ * dictionary :: String -> {k: v}
+ * dictionary :: String -> (k -> k) -> {k: v}
+ * dictionary :: [k] -> {k: v}
+ * dictionary :: [k] -> (k -> k) -> {k: v}
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit
@@ -102,6 +106,24 @@ FeatureStore.prototype.values = async function (arg) {
 
 /**
  * @async
+ * dictionary :: String -> {k: v}
+ * dictionary :: String -> (k -> k) -> {k: v}
+ * dictionary :: [k] -> {k: v}
+ * dictionary :: [k] -> (k -> k) -> {k: v}
+ */
+FeatureStore.prototype.dictionary = async function (...args) {
+  const fn = args.length === 2 && typeof (args[1] === 'function')
+    ? args[1]
+    : R.identity
+
+  const tuples = await this.tuples(args[0])
+  const entries = tuples.map(([key, value]) => [fn(key), value])
+  return Object.fromEntries(entries)
+}
+
+
+/**
+ * @async
  * value :: k -> v
  */
 FeatureStore.prototype.value = async function (key) {
@@ -109,26 +131,37 @@ FeatureStore.prototype.value = async function (key) {
 }
 
 
-
 /**
  * update :: { k: v } -> (v -> v) -> unit
+ * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
  */
 FeatureStore.prototype.update = async function (...args) {
   if (args.length === 2) {
     if (typeof args[1] === 'function') {
-      const [values, fn] = args
-      const keys = Object.keys(values)
-      const oldValues = Object.values(values)
-      const newValues = oldValues.map(fn)
-      return this.update(keys, newValues, oldValues)
+      if (Array.isArray(args[0])) {
+        // update :: [k] -> (v -> v) -> unit
+        const [keys, fn] = args
+        const oldValues = await L.values(this.db, keys)
+        const newValues = oldValues.map(fn)
+        return this.update(keys, newValues, oldValues)
+      } else {
+        // update :: { k: v } -> (v -> v) -> unit
+        const [values, fn] = args
+        const keys = Object.keys(values)
+        const oldValues = Object.values(values)
+        const newValues = oldValues.map(fn)
+        return this.update(keys, newValues, oldValues)
+      }
     } else {
+      // update :: [k] -> [v] -> unit
       // No undo, direct update.
       const [keys, values] = args
       this.batch(this.db, R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
     }
   } else if (args.length === 3) {
+    // update :: [k] -> [v] -> [v] -> unit
     const [keys, newValues, oldValues] = args
     const command = this.updateCommand(this.db, keys, newValues, oldValues)
     this.undo.apply(command)

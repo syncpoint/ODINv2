@@ -88,6 +88,7 @@ Store.prototype.update = async function (...args) {
 
 /**
  * @async
+ * @deprecated
  * rename :: (k, String) -> unit
  */
 Store.prototype.rename = async function (id, name) {
