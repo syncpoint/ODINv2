@@ -25,23 +25,29 @@
 .dropdown__content {
   position: absolute;
   display: none;
-  z-index: 10;
-  background-color: #f9f9f9;
-  width: max-content;
+  z-index: 20;
+  background-color: rgba(215, 215, 215, 0.2);
+  backdrop-filter: blur(20px) saturate(160%) contrast(45%) brightness(140%);
+  padding: 8px 4px;
+  width: 10rem;
   overflow: auto;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  border: 1px solid #DDDEDF;
   border-radius: 0.2rem;
 }
 
 .dropdown__content a {
   color: black;
-  padding: 8px 16px;
+  padding: 2px 16px;
   text-decoration: none;
   display: block;
 }
 
 .dropdown a:hover {
-  background-color: #f4f0ec;
+  color: white;
+  background-color: #5590F4;
+  border-radius: 0.2rem;
+  transition: all 0.2s;
 }
 
 .show {

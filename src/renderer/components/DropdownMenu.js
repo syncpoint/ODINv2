@@ -26,9 +26,9 @@ export const DropdownMenu = props => {
         <Icon path={mdi.mdiChevronDown} size='16px'/>
       </button>
       <div id="newDropdown" className="dropdown__content">
-        <a href="#home">Layer...</a>
-        <a href="#about">Marker...</a>
-        <a href="#contact">View...</a>
+        <a href="#home">Create Layer</a>
+        <a href="#about">Create Marker</a>
+        <a href="#contact">Create View</a>
       </div>
     </div>
   )
