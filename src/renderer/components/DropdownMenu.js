@@ -15,8 +15,10 @@ export const DropdownMenu = props => {
     document.getElementById('newDropdown').classList.toggle('show')
   }
 
-  const handleBlur = () => {
-    document.getElementById('newDropdown').classList.remove('show')
+  const handleBlur = event => {
+    // Let brief background flashing show on option selection (if any).
+    const hide = () => document.getElementById('newDropdown').classList.remove('show')
+    setTimeout(hide, 200)
   }
 
   return (

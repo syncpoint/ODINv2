@@ -40,14 +40,30 @@
   color: black;
   padding: 2px 16px;
   text-decoration: none;
+  border-radius: 0.2rem;
+  transition: all 0.2s;
   display: block;
 }
 
 .dropdown a:hover {
   color: white;
   background-color: #5590F4;
-  border-radius: 0.2rem;
-  transition: all 0.2s;
+}
+
+.dropdown a:active {
+  color: white;
+  animation-duration: 0.15s;
+  animation-fill-mode: both;
+  animation-name: flash;
+}
+
+@keyframes flash {
+  50% {
+     opacity: 0;
+  }
+  100% {
+     opacity: 1;
+  }
 }
 
 .show {
