@@ -6,8 +6,8 @@ import { layerId, isLayerId } from '../../ids'
  *
  */
 export default function LayerCommands (options) {
-  this.store = options.store
   this.featureStore = options.featureStore
+  this.selection = options.selection
   this.emitter = options.emitter
 }
 
@@ -29,7 +29,9 @@ LayerCommands.prototype.commands = function (tuples) {
 LayerCommands.prototype.createLayer = function () {
   const callback = value => {
     if (!value) return
-    this.store.insert([[layerId(), { name: value }]])
+    const key = layerId()
+    this.selection.set([key])
+    this.featureStore.insert([[key, { name: value }]])
   }
 
   return new Command({
