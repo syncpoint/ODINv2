@@ -1,7 +1,7 @@
+import * as R from 'ramda'
 import { Translate } from 'ol/interaction'
 import { writeFeatureCollection } from '../../model/geometry'
 import { noModifierKeys, shiftKeyOnly } from 'ol/events/condition'
-const isEqual = require('react-fast-compare')
 
 /**
  *
@@ -33,16 +33,9 @@ export default options => {
   interaction.on('translateend', async event => {
     // Deep compare geometry and only update when changed:
     const { features } = writeFeatureCollection(event.features.getArray())
-    const [keys, newValues] = features.reduce((acc, feature, index) => {
-      const { id: key, ...value } = feature
-      if (isEqual(feature.geometry, snapshot[index].geometry)) return acc
-
-      // Only update geometry and keep remaining properties:
-      acc[0].push(key)
-      acc[1].push({ ...snapshot[index], geometry: value.geometry })
-      return acc
-    }, ([[], []]))
-
+    const keys = features.map(R.prop('id'))
+    const merge = (feature, index) => ({ ...snapshot[index], geometry: feature.geometry })
+    const newValues = features.map(merge)
     featureStore.update(keys, newValues, snapshot)
   })
 

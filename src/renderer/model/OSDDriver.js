@@ -3,7 +3,6 @@ import { LatLon } from 'geodesy/mgrs.js'
 import Dms from 'geodesy/dms.js'
 import { militaryFormat } from '../../shared/datetime'
 import { isDefaultId } from '../ids'
-import OpenLocationCode from './openlocationcode'
 
 Dms.separator = ' '
 
@@ -23,8 +22,7 @@ const formats = {
   DDM: ([lng, lat]) => `${Dms.toLat(lat, 'dm')} ${Dms.toLon(lng, 'dm')}`,
   DD: ([lng, lat]) => `${Dms.toLat(lat, 'd')} ${Dms.toLon(lng, 'd')}`,
   MGRS: ([lng, lat]) => new LatLon(lat, lng).toUtm().toMgrs().toString(),
-  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString(),
-  PLUS: ([lng, lat]) => OpenLocationCode.encode(lat, lng)
+  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString()
 }
 
 export const OSDDriver = function (projectUUID, emitter, preferencesStore, projectStore, featureStore) {

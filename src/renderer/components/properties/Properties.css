@@ -16,3 +16,21 @@
   padding-right: 8px;
   overflow: auto;
 }
+
+.properties__button {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  margin-left: 4px;
+  margin-right: 4px;
+  border-radius: 3px;
+  background-color: white;
+}
+
+.properties__button:hover {
+  background-color: #e0e0e0;
+}
+
+.properties__button:active {
+  background-color: #d0d0d0;
+}

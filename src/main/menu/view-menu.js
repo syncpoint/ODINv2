@@ -49,12 +49,6 @@ export default options => {
             type: 'checkbox',
             checked: coordinatesFormat === 'DD',
             click: dispatch(browserWindow => send(browserWindow, 'VIEW_COORDINATES_FORMAT', 'DD'))
-          },
-          {
-            label: 'Open Location Code',
-            type: 'checkbox',
-            checked: coordinatesFormat === 'PLUS',
-            click: dispatch(browserWindow => send(browserWindow, 'VIEW_COORDINATES_FORMAT', 'PLUS'))
           }
         ]
       },

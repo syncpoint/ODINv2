@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId, defaultId, isDefaultId } from '../ids'
+import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId, defaultId } from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
@@ -11,14 +11,24 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
 /**
  * Persistence for layers, features and associated information.
  *
+ * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
  * delete :: [k] -> unit
+ * dictionary :: String -> {k: v}
+ * dictionary :: String -> (k -> k) -> {k: v}
+ * dictionary :: [k] -> {k: v}
+ * dictionary :: [k] -> (k -> k) -> {k: v}
+ * geometries :: [k] -> [GeoJSON/Geometry]
+ * geometries :: 'layer:...' -> [GeoJSON/Geometry]
+ * geometries :: k -> [GeoJSON/Geometry]
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit
  * keys :: String -> [k]
+ * removeTag :: k -> String -> unit
+ * rename :: (k, String) -> unit
  * setDefaultLayer :: k -> unit
  * tuples :: String -> [[k, v]]
  * tuples :: [k] -> [[k, v]]
@@ -102,6 +112,24 @@ FeatureStore.prototype.values = async function (arg) {
 
 /**
  * @async
+ * dictionary :: String -> {k: v}
+ * dictionary :: String -> (k -> k) -> {k: v}
+ * dictionary :: [k] -> {k: v}
+ * dictionary :: [k] -> (k -> k) -> {k: v}
+ */
+FeatureStore.prototype.dictionary = async function (...args) {
+  const fn = args.length === 2 && typeof (args[1] === 'function')
+    ? args[1]
+    : R.identity
+
+  const tuples = await this.tuples(args[0])
+  const entries = tuples.map(([key, value]) => [fn(key), value])
+  return Object.fromEntries(entries)
+}
+
+
+/**
+ * @async
  * value :: k -> v
  */
 FeatureStore.prototype.value = async function (key) {
@@ -109,26 +137,37 @@ FeatureStore.prototype.value = async function (key) {
 }
 
 
-
 /**
  * update :: { k: v } -> (v -> v) -> unit
+ * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
  */
 FeatureStore.prototype.update = async function (...args) {
   if (args.length === 2) {
     if (typeof args[1] === 'function') {
-      const [values, fn] = args
-      const keys = Object.keys(values)
-      const oldValues = Object.values(values)
-      const newValues = oldValues.map(fn)
-      return this.update(keys, newValues, oldValues)
+      if (Array.isArray(args[0])) {
+        // update :: [k] -> (v -> v) -> unit
+        const [keys, fn] = args
+        const oldValues = await L.values(this.db, keys)
+        const newValues = oldValues.map(fn)
+        return this.update(keys, newValues, oldValues)
+      } else {
+        // update :: { k: v } -> (v -> v) -> unit
+        const [values, fn] = args
+        const keys = Object.keys(values)
+        const oldValues = Object.values(values)
+        const newValues = oldValues.map(fn)
+        return this.update(keys, newValues, oldValues)
+      }
     } else {
+      // update :: [k] -> [v] -> unit
       // No undo, direct update.
       const [keys, values] = args
       this.batch(this.db, R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
     }
   } else if (args.length === 3) {
+    // update :: [k] -> [v] -> [v] -> unit
     const [keys, newValues, oldValues] = args
     const command = this.updateCommand(this.db, keys, newValues, oldValues)
     this.undo.apply(command)
@@ -243,7 +282,7 @@ FeatureStore.prototype.unlock = async function (ids, active) {
 FeatureStore.prototype.geometries = function (arg) {
   if (Array.isArray(arg)) return L.values(this.wkbDB, arg)
   else if (isLayerId(arg)) return L.values(this.wkbDB, `feature:${arg.split(':')[1]}`)
-  else L.values(this.wkbDB, [arg])
+  else return L.values(this.wkbDB, [arg])
 }
 
 const featureBounds = {
@@ -362,6 +401,54 @@ FeatureStore.prototype.insertGeoJSON = async function (geoJSON) {
 }
 
 
+/**
+ * @async
+ * rename :: (k, String) -> unit
+ */
+FeatureStore.prototype.rename = async function (id, name) {
+  const oldValue = await this.jsonDB.get(id)
+  const newValue = { ...oldValue, name }
+  const command = this.updateCommand(this.jsonDB, [id], [newValue], [oldValue])
+  this.undo.apply(command)
+}
+
+
+/**
+ * @async
+ * addTag :: k -> String -> unit
+ */
+FeatureStore.prototype.addTag = async function (id, name) {
+  if (name === 'default') return this.setDefaultLayer(id)
+
+  const addTag = name => tags => R.uniq([...(tags || []), name])
+  const taggableIds = this.selection.selected(isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const values = await this.jsonDB.getMany(ids) // may include undefined entries
+  const oldValues = values.map(value => value || [])
+  const newValues = oldValues.map(addTag(name))
+  const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
+  this.undo.apply(command)
+}
+
+
+/**
+ * @async
+ * removeTag :: k -> String -> unit
+ */
+FeatureStore.prototype.removeTag = async function (id, name) {
+  if (name === 'default') return this.unsetDefaultLayer(id)
+
+  const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
+  const taggableIds = this.selection.selected(isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const values = await this.jsonDB.getMany(ids) // may include undefined entries
+  const oldValues = values.map(value => value || [])
+  const newValues = oldValues.map(removeTag(name))
+  const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
+  this.undo.apply(command)
+}
+
+
 FeatureStore.prototype.insertCommand = function (db, tuples, options = {}) {
   const apply = () => this.batch(db, tuples.map(([key, value]) => L.putOp(key, value)), options)
   const inverse = () => this.deleteCommand(db, tuples)
@@ -378,6 +465,6 @@ FeatureStore.prototype.deleteCommand = function (db, tuples, options = {}) {
 
 FeatureStore.prototype.updateCommand = function (db, keys, newValues, oldValues, options = {}) {
   const apply = () => this.batch(db, R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value)), options)
-  const inverse = () => this.updateCommand(db, keys, oldValues, newValues)
+  const inverse = () => this.updateCommand(db, keys, oldValues, newValues, options)
   return this.undo.command(apply, inverse)
 }

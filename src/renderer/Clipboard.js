@@ -1,9 +1,9 @@
 import * as R from 'ramda'
-import { isFeatureId, isLayerId, isLinkId, isTagsId, layerId, tagsId, ord, featureId, linkId, containerId, associatedId, defaultId } from './ids'
+import * as ID from './ids'
 
 const CONTENT_TYPE = 'application/json;vnd=odin'
 
-const canCopy = id => isLayerId(id) || isFeatureId(id)
+const canCopy = id => ID.isLayerId(id) || ID.isFeatureId(id) || ID.isMarkerId(id)
 
 export const writeEntries = async (entries) => {
   const clipboardObject = {
@@ -75,7 +75,8 @@ Clipboard.prototype.cut = async function () {
 }
 
 Clipboard.prototype.paste = async function () {
-  const entries = (await readEntries()).sort(([a], [b]) => ord(a) - ord(b))
+  const entries = (await readEntries()).sort(([a], [b]) => ID.ord(a) - ID.ord(b))
+  console.log(entries)
   const entrymap = Object.fromEntries(entries)
 
   // Collect all features which are not included in a layer
@@ -83,8 +84,8 @@ Clipboard.prototype.paste = async function () {
   // These (uncovered) features will be assigned to default layer.
 
   const uncoveredFeaturesIds = entries.reduce((acc, [key]) => {
-    if (!isFeatureId(key)) return acc
-    if (entrymap[layerId(key)]) return acc
+    if (!ID.isFeatureId(key)) return acc
+    if (entrymap[ID.layerId(key)]) return acc
     acc.push(key)
     return acc
   }, [])
@@ -94,9 +95,9 @@ Clipboard.prototype.paste = async function () {
   const tuples = []
   let defaultLayerId = await this.featureStore.defaultLayerId()
   if (uncoveredFeaturesIds.length && !defaultLayerId) {
-    defaultLayerId = layerId()
+    defaultLayerId = ID.layerId()
     tuples.push([defaultLayerId, { name: 'Default Layer' }])
-    tuples.push([defaultId(defaultLayerId), ['default']])
+    tuples.push([ID.defaultId(defaultLayerId), ['default']])
   }
 
   // All (uncovered) features where layer is not explicitly included
@@ -104,7 +105,7 @@ Clipboard.prototype.paste = async function () {
 
   const keymap = uncoveredFeaturesIds.reduce((acc, featureId) => {
     // Map old (uncovered) layer to default layer:
-    acc[layerId(featureId)] = defaultLayerId
+    acc[ID.layerId(featureId)] = defaultLayerId
     return acc
   }, {})
 
@@ -113,14 +114,15 @@ Clipboard.prototype.paste = async function () {
   const replace = key => R.tap(replacement => (keymap[key] = replacement))
 
   const rewrite = R.cond([
-    [isLayerId, key => replace(key)(layerId())],
-    [isFeatureId, key => replace(key)(featureId(keymap[layerId(key)]))],
-    [isLinkId, key => replace(key)(linkId(keymap[containerId(key)]))],
-    [isTagsId, key => replace(key)(tagsId(keymap[associatedId(key)]))],
+    [ID.isLayerId, key => replace(key)(ID.layerId())],
+    [ID.isFeatureId, key => replace(key)(ID.featureId(keymap[ID.layerId(key)]))],
+    [ID.isLinkId, key => replace(key)(ID.linkId(keymap[ID.containerId(key)]))],
+    [ID.isTagsId, key => replace(key)(ID.tagsId(keymap[ID.associatedId(key)]))],
+    [ID.isMarkerId, key => replace(key)(ID.markerId())],
     [R.T, key => key]
   ])
 
-  // Nasty side-effect adds tuples (aka acc):
+  // Nasty side-effect: adds tuples (aka acc):
   entries.reduce((acc, [key, value]) => {
     acc.push([rewrite(key), value])
     return acc

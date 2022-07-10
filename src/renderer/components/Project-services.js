@@ -3,8 +3,9 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool, ProjectStore } from '../store'
+import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, MigrationTool, ProjectStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
+import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
@@ -43,7 +44,6 @@ export default async projectUUID => {
 
   const store = new Store(jsonDB, undo, selection)
   const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
-  const tagStore = new TagStore(store, featureStore)
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const projectStore = new ProjectStore(ipcRenderer)
 
@@ -51,6 +51,7 @@ export default async projectUUID => {
   const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, featureStore)
   const clipboard = new Clipboard(selection, featureStore)
+  const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
 
   // Key bindings.
   bindings(emitter, clipboard)
@@ -101,12 +102,12 @@ export default async projectUUID => {
   services.dragAndDrop = dragAndDrop
   services.store = store
   services.featureStore = featureStore
-  services.tagStore = tagStore
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
   services.controller = controller
   services.osdDriver = osdDriver
   services.clipboard = clipboard
+  services.coordinatesFormat = coordinatesFormat
 
   services.paletteCommands = new PaletteCommands({
     store,

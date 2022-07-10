@@ -6,13 +6,15 @@ const History = props => {
   const { entries, dispatch } = props
   const menuStyle = { userSelect: 'none' }
 
-
   const handleMenuClick = ({ key }) => {
     const [entryKey, itemKey] = key.split(':')
     const entry = entries.find(entry => entry.key === entryKey)
     const item = entry.items.find(item => item.key === itemKey)
     dispatch({ type: 'reset', entry: { ...item, items: entry.items } })
   }
+
+  // Must not buble up, since it would reset selection.
+  const handleBreadcrumbClick = event => event.stopPropagation()
 
   const breadcrumbItem = entry => {
     const menuItem = item => ({
@@ -36,7 +38,10 @@ const History = props => {
   }
 
   return (
-    <Breadcrumb style={{ padding: '12px', paddingBottom: '6px' }}>
+    <Breadcrumb
+      style={{ padding: '12px', paddingBottom: '6px' }}
+      onClick={handleBreadcrumbClick}
+    >
       { entries.map(breadcrumbItem) }
     </Breadcrumb>
   )

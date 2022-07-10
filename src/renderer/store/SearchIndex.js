@@ -143,8 +143,8 @@ SearchIndex.prototype.document = function (key, value, cache) {
 /**
  * query :: String -> Promise(Query)
  */
-SearchIndex.prototype.query = function (terms, callback) {
-  const query = () => new Query(this, terms, callback)
+SearchIndex.prototype.query = function (services, terms, callback) {
+  const query = () => new Query(this, services, terms, callback)
   return new Promise((resolve) => {
     if (this.ready) resolve(query())
     else this.once('ready', () => resolve(query()))
@@ -169,18 +169,18 @@ SearchIndex.prototype.searchField = function (field, tokens) {
 /**
  * search :: String -> [Option]
  */
-SearchIndex.prototype.search = function (terms) {
+SearchIndex.prototype.search = async function (services, terms) {
   const [query, searchOptions] = parseQuery(terms)
   const matches = searchOptions
     ? this.index.search(query, searchOptions)
     : this.index.search(query)
 
   const option = id => {
-    const fn = options[id.split(':')[0]]
+    const fn = options(services)[id.split(':')[0]]
     if (!fn) return null
     return fn(id, this.cache)
   }
 
-  const entries = matches.map(({ id }) => option(id)).filter(Boolean)
-  return sort(entries)
+  const entries = await Promise.all(matches.map(({ id }) => option(id)))
+  return sort(entries.filter(Boolean))
 }
