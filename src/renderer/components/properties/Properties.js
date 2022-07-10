@@ -83,11 +83,15 @@ const updateFeatures = (operations, features) => operations
   .reduce((acc, { type, key, value }) => {
     if (type === 'del') delete acc[key]
     else {
-      // Retain (old) geometry (if any) when update does not supply one.
-      const geometry = acc[key] && acc[key].geometry // might be undefined
-      acc[key] = value
-      if (geometry) acc[key].geometry = geometry
+      // Retain old geometry if put operation does not supply one.
+      // This can happen when only feature properties (JSON) are updated,
+      // e.g. RENAME. In this case, geometry won't be touched and thus
+      // not send with put operation.
+      const retainGeometry = acc[key] && acc[key].geometry && !value.geometry
+      if (retainGeometry) acc[key] = { ...value, geometry: acc[key].geometry }
+      else acc[key] = value
     }
+
     return acc
   }, features)
 

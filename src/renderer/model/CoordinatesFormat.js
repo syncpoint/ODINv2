@@ -4,10 +4,6 @@ import MGRS, { LatLon } from 'geodesy/mgrs.js'
 import UTM from 'geodesy/utm.js'
 import Dms from 'geodesy/dms.js'
 import convert from 'geo-coordinates-parser' // DMS
-import OpenLocationCode from './openlocationcode'
-
-console.log(proj)
-console.log(convert.formats)
 
 Dms.separator = ' '
 
@@ -26,8 +22,7 @@ const formatters = {
   DDM: ([lng, lat]) => `${Dms.toLat(lat, 'dm')} ${Dms.toLon(lng, 'dm')}`,
   DD: ([lng, lat]) => `${Dms.toLat(lat, 'd')} ${Dms.toLon(lng, 'd')}`,
   MGRS: ([lng, lat]) => new LatLon(lat, lng).toUtm().toMgrs().toString(),
-  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString(),
-  PLUS: ([lng, lat]) => OpenLocationCode.encode(lat, lng)
+  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString()
 }
 
 /**
@@ -75,7 +70,6 @@ CoordinatesFormat.prototype.format = function (coordinate, format) {
 }
 
 CoordinatesFormat.prototype.parse = function (s, format) {
-  console.log('parse', format)
   format = format || this.coordinatesFormat
   return (parsers[format] || R.always(undefined))(s)
 }

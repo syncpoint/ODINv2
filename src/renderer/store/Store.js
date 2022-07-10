@@ -88,7 +88,7 @@ Store.prototype.update = async function (...args) {
 
 /**
  * @async
- * @deprecated
+ * @deprecated - use feature store instead
  * rename :: (k, String) -> unit
  */
 Store.prototype.rename = async function (id, name) {
@@ -105,6 +105,7 @@ const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
 
 /**
  * @async
+ * @deprecated - use feature store instead
  * addTag :: k -> String -> unit
  */
 Store.prototype.addTag = async function (id, name) {
@@ -120,6 +121,7 @@ Store.prototype.addTag = async function (id, name) {
 
 /**
  * @async
+ * @deprecated - use feature store instead
  * removeTag :: k -> String -> unit
  */
 Store.prototype.removeTag = async function (id, name) {

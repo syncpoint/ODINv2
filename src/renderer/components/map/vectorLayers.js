@@ -16,7 +16,12 @@ export default (sources, styles) => {
   const { deselectedSource, selectedSource, markerSource } = sources
   const { defaultStyle: style } = styles
   const declutter = false
-  const vectorLayer = source => new VectorLayer({ style, source, declutter })
+  const vectorLayer = source => new VectorLayer({
+    style,
+    source,
+    declutter,
+    selectable: true // non-standard: considered by select interaction
+  })
 
   return {
     featureLayer: vectorLayer(deselectedSource),

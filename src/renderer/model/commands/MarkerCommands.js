@@ -3,7 +3,6 @@ import MGRS from 'geodesy/mgrs.js'
 import UTM from 'geodesy/utm.js'
 import convert from 'geo-coordinates-parser' // DMS
 import { fromLonLat } from 'ol/proj'
-import OpenLocationCode from '../openlocationcode'
 import { Command } from '../../commands/Command'
 import { markerId } from '../../ids'
 
@@ -17,8 +16,7 @@ const extract = value => {
 const parsers = [
   s => MGRS.parse(s).toUtm().toLatLon(),
   s => UTM.parse(s).toLatLon(),
-  s => convert(s),
-  s => OpenLocationCode.decode(s)
+  s => convert(s)
 ]
 
 
