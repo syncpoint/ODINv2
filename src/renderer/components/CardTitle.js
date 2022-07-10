@@ -19,7 +19,7 @@ const CardTitle = props => {
 
   const rename = name => {
     if (props.value === name) return
-    featureStore.update([props.id], value => ({ ...value, name }))
+    featureStore.rename(props.id, name)
   }
 
   const reset = () => setValue(props.value)

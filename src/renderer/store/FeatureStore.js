@@ -11,6 +11,7 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
 /**
  * Persistence for layers, features and associated information.
  *
+ * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
@@ -23,6 +24,8 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit
  * keys :: String -> [k]
+ * removeTag :: k -> String -> unit
+ * rename :: (k, String) -> unit
  * setDefaultLayer :: k -> unit
  * tuples :: String -> [[k, v]]
  * tuples :: [k] -> [[k, v]]
@@ -392,6 +395,54 @@ FeatureStore.prototype.insertGeoJSON = async function (geoJSON) {
 
   features.forEach(feature => tuples.push([featureId(id), feature]))
   this.insert(tuples)
+}
+
+
+/**
+ * @async
+ * rename :: (k, String) -> unit
+ */
+FeatureStore.prototype.rename = async function (id, name) {
+  const oldValue = await this.jsonDB.get(id)
+  const newValue = { ...oldValue, name }
+  const command = this.updateCommand(this.jsonDB, [id], [newValue], [oldValue])
+  this.undo.apply(command)
+}
+
+
+/**
+ * @async
+ * addTag :: k -> String -> unit
+ */
+FeatureStore.prototype.addTag = async function (id, name) {
+  if (name === 'default') return this.setDefaultLayer(id)
+
+  const addTag = name => tags => R.uniq([...(tags || []), name])
+  const taggableIds = this.selection.selected(isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const values = await this.jsonDB.getMany(ids) // may include undefined entries
+  const oldValues = values.map(value => value || [])
+  const newValues = oldValues.map(addTag(name))
+  const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
+  this.undo.apply(command)
+}
+
+
+/**
+ * @async
+ * removeTag :: k -> String -> unit
+ */
+FeatureStore.prototype.removeTag = async function (id, name) {
+  if (name === 'default') return this.unsetDefaultLayer(id)
+
+  const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
+  const taggableIds = this.selection.selected(isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const values = await this.jsonDB.getMany(ids) // may include undefined entries
+  const oldValues = values.map(value => value || [])
+  const newValues = oldValues.map(removeTag(name))
+  const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
+  this.undo.apply(command)
 }
 
 
