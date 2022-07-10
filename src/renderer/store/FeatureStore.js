@@ -462,6 +462,6 @@ FeatureStore.prototype.deleteCommand = function (db, tuples, options = {}) {
 
 FeatureStore.prototype.updateCommand = function (db, keys, newValues, oldValues, options = {}) {
   const apply = () => this.batch(db, R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value)), options)
-  const inverse = () => this.updateCommand(db, keys, oldValues, newValues)
+  const inverse = () => this.updateCommand(db, keys, oldValues, newValues, options)
   return this.undo.command(apply, inverse)
 }

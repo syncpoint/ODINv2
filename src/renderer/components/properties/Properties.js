@@ -80,12 +80,7 @@ const updateFeatures = (operations, features) => operations
   .filter(({ key }) => !isAssociatedId(key))
   .reduce((acc, { type, key, value }) => {
     if (type === 'del') delete acc[key]
-    else {
-      // Retain (old) geometry (if any) when update does not supply one.
-      const geometry = acc[key].geometry // might be undefined
-      acc[key] = value
-      if (geometry) acc[key].geometry = geometry
-    }
+    else acc[key] = value
     return acc
   }, features)
 
