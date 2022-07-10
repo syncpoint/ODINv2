@@ -11,7 +11,7 @@
 .toolbar__items-container {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 0.9rem;
   color: #68696B;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
