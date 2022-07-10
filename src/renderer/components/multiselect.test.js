@@ -40,7 +40,7 @@ describe('multiselect', function () {
       const expected = {
         entries: [{ id: 'x' }],
         selected: ['y'],
-        focusIndex: 1,
+        focusIndex: -1,
         scroll: 'auto'
       }
 

@@ -52,6 +52,7 @@ Store.prototype.tuples = async function (arg) {
 
 /**
  * @async
+ * @deprecated - use feature store instead
  * insert :: [[k, v]] -> unit
  */
 Store.prototype.insert = async function (tuples) {
