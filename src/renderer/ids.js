@@ -101,6 +101,7 @@ export const FIELD_ID = 'field:[0-9a-f-]{36}'
 export const ord = R.cond([
   [isLayerId, R.always(0)],
   [isFeatureId, R.always(1)],
-  [isLinkId, R.always(2)],
-  [isTagsId, R.always(3)]
+  [isMarkerId, R.always(2)],
+  [isLinkId, R.always(3)],
+  [isTagsId, R.always(4)]
 ])

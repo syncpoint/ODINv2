@@ -7,6 +7,7 @@
 .form-textfield {
   position: relative;
   height: 2.5rem;
+  width: 100%;
 }
 
 .form-textfield__input {

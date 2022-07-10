@@ -4,15 +4,18 @@ import Emitter from '../../shared/emitter'
 /**
  * @constructor
  */
-export function Query (index, terms, callback) {
+export function Query (index, services, terms, callback) {
   Emitter.call(this)
   this.index = index
+  this.services = services
+  this.emitter = services.emitter
   this.terms = terms
   this.callback = callback
 
-  this.updatedHandler_ = () => this.refresh_()
+  this.updatedHandler_ = () => this.refresh()
   this.index.on('index/updated', this.updatedHandler_)
-  this.refresh_()
+  this.emitter.on('preferences/changed', this.updatedHandler_)
+  this.refresh()
 }
 
 util.inherits(Query, Emitter)
@@ -21,10 +24,9 @@ util.inherits(Query, Emitter)
 /**
  * Refresh query result with updated index and original search terms.
  */
-Query.prototype.refresh_ = function () {
-  // TODO: d0bb6e10-080a-4fe6-85b6-563cbd571d7f - query/performance: skip search if result does not contain updated ids
+Query.prototype.refresh = async function () {
   try {
-    const result = this.index.search(this.terms)
+    const result = await this.index.search(this.services, this.terms)
     this.callback(result)
   } catch (err) {
     /* don't invoke callback. */
@@ -39,4 +41,5 @@ Query.prototype.refresh_ = function () {
  */
 Query.prototype.dispose = function () {
   this.index.off('index/updated', this.updatedHandler_)
+  this.emitter.off('preferences/changed', this.updatedHandler_)
 }

@@ -4,8 +4,6 @@ import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
 
 
-export const options = {}
-
 const identityTag = R.cond([
   [R.equals('F'), R.always(['OWN'])],
   [R.equals('H'), R.always(['ENY'])],
@@ -17,7 +15,7 @@ const identityTag = R.cond([
 /**
  * feature:
  */
-options.feature = (id, cache) => {
+const feature = (/* services */) => (id, cache) => {
   const feature = cache(id)
 
   const properties = feature.properties || {}
@@ -74,7 +72,7 @@ options.feature = (id, cache) => {
 /**
  * layer:
  */
-options.layer = (id, cache) => {
+const layer = (/* services */) => (id, cache) => {
   const layer = cache(id)
   const hidden = cache(hiddenId(id))
   const locked = cache(lockedId(id))
@@ -102,7 +100,7 @@ options.layer = (id, cache) => {
 /**
  * link:
  */
-const link = (id, cache) => {
+const link = (/* services */) => (id, cache) => {
   const link = cache(id)
   const container = cache(containerId(id))
 
@@ -118,14 +116,10 @@ const link = (id, cache) => {
   }
 }
 
-options['link+layer'] = link
-options['link+feature'] = link
-
-
 /**
  * symbol:
  */
-options.symbol = (id, cache) => {
+const symbol = (/* services */) => (id, cache) => {
   const symbol = cache(id)
 
   const tags = [
@@ -156,20 +150,39 @@ options.symbol = (id, cache) => {
 /**
  * marker:
  */
-options.marker = (id, cache) => {
-  const marker = cache(id)
+const marker = services => {
+  const { coordinatesFormat, featureStore } = services
 
-  const tags = [
-    'SCOPE:MARKER:NONE',
-    ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
-    'PLUS'
-  ].join(' ')
+  return async (id, cache) => {
+    const marker = cache(id)
 
-  return {
-    id,
-    title: marker.name,
-    scope: 'MARKER',
-    tags,
-    capabilities: 'TAG|RENAME'
+    const geometries = await featureStore.geometries(id)
+    const description = geometries.length === 1
+      ? coordinatesFormat.format(geometries[0].coordinates)
+      : undefined
+
+    const tags = [
+      'SCOPE:MARKER:NONE',
+      ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+      'PLUS'
+    ].join(' ')
+
+    return {
+      id,
+      title: marker.name,
+      description,
+      scope: 'MARKER',
+      tags,
+      capabilities: 'TAG|RENAME'
+    }
   }
 }
+
+export const options = services => ({
+  feature: feature(services),
+  layer: layer(services),
+  'link+layer': link(services),
+  'link+feature': link(services),
+  symbol: symbol(services),
+  marker: marker(services)
+})

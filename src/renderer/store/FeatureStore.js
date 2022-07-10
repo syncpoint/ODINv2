@@ -19,6 +19,9 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * dictionary :: String -> (k -> k) -> {k: v}
  * dictionary :: [k] -> {k: v}
  * dictionary :: [k] -> (k -> k) -> {k: v}
+ * geometries :: [k] -> [GeoJSON/Geometry]
+ * geometries :: 'layer:...' -> [GeoJSON/Geometry]
+ * geometries :: k -> [GeoJSON/Geometry]
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit
@@ -276,7 +279,7 @@ FeatureStore.prototype.unlock = async function (ids, active) {
 FeatureStore.prototype.geometries = function (arg) {
   if (Array.isArray(arg)) return L.values(this.wkbDB, arg)
   else if (isLayerId(arg)) return L.values(this.wkbDB, `feature:${arg.split(':')[1]}`)
-  else L.values(this.wkbDB, [arg])
+  else return L.values(this.wkbDB, [arg])
 }
 
 const featureBounds = {

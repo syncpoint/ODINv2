@@ -1,6 +1,6 @@
 import * as R from 'ramda'
-import Mgrs from 'geodesy/mgrs.js'
-import Utm from 'geodesy/utm.js'
+import MGRS from 'geodesy/mgrs.js'
+import UTM from 'geodesy/utm.js'
 import convert from 'geo-coordinates-parser' // DMS
 import { fromLonLat } from 'ol/proj'
 import OpenLocationCode from '../openlocationcode'
@@ -15,8 +15,8 @@ const extract = value => {
 }
 
 const parsers = [
-  s => Mgrs.parse(s).toUtm().toLatLon(),
-  s => Utm.parse(s).toLatLon(),
+  s => MGRS.parse(s).toUtm().toLatLon(),
+  s => UTM.parse(s).toLatLon(),
   s => convert(s),
   s => OpenLocationCode.decode(s)
 ]

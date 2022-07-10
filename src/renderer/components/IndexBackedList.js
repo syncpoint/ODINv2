@@ -8,7 +8,9 @@ import { VirtualizedList, IndexEntry, Card } from '.'
  * Filterable list of entries from search index (multiselect).
  */
 const IndexBackedList = props => {
-  const { searchIndex, selection } = useServices()
+  const services = useServices()
+  const { searchIndex, selection } = services
+
   const { scope, filter, dispatch, state } = props
 
   // >>= QUERY/RESULT
@@ -17,7 +19,7 @@ const IndexBackedList = props => {
 
   React.useEffect(() => {
     const pendingQuery = (async () => {
-      return await searchIndex.query(`${scope} ${filter}`, entries => {
+      return await searchIndex.query(services, `${scope} ${filter}`, entries => {
         // Note: (multiselect) strategy makes sure that state is only
         // updated when entries are not deep equal.
         dispatch({ type: 'entries', entries })
@@ -28,7 +30,7 @@ const IndexBackedList = props => {
       const query = await pendingQuery
       query.dispose()
     }
-  }, [scope, filter, searchIndex, dispatch])
+  }, [scope, filter, services, searchIndex, dispatch])
 
   // <<= QUERY/RESULT
 

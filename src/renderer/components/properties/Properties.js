@@ -13,6 +13,7 @@ import ActivityProperties from './ActivityProperties'
 import GraphicsProperties from './GraphicsProperties'
 import PointProperties from './PointProperties'
 import LayerProperties from './LayerProperties'
+import MarkerProperties from './MarkerProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -22,7 +23,8 @@ const propertiesPanels = {
   'feature:ACTIVITY': props => <ActivityProperties {...props}/>,
   'feature:GRAPHICS': props => <GraphicsProperties {...props}/>,
   'feature:POINT': props => <PointProperties {...props}/>,
-  layer: props => <LayerProperties {...props}/>
+  layer: props => <LayerProperties {...props}/>,
+  marker: props => <MarkerProperties {...props}/>
 }
 
 const sidc = feature =>
@@ -82,7 +84,7 @@ const updateFeatures = (operations, features) => operations
     if (type === 'del') delete acc[key]
     else {
       // Retain (old) geometry (if any) when update does not supply one.
-      const geometry = acc[key].geometry // might be undefined
+      const geometry = acc[key] && acc[key].geometry // might be undefined
       acc[key] = value
       if (geometry) acc[key].geometry = geometry
     }

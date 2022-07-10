@@ -5,6 +5,7 @@ import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, TagStore, MigrationTool, ProjectStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
+import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
@@ -51,6 +52,7 @@ export default async projectUUID => {
   const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, featureStore)
   const clipboard = new Clipboard(selection, featureStore)
+  const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
 
   // Key bindings.
   bindings(emitter, clipboard)
@@ -107,6 +109,7 @@ export default async projectUUID => {
   services.controller = controller
   services.osdDriver = osdDriver
   services.clipboard = clipboard
+  services.coordinatesFormat = coordinatesFormat
 
   services.paletteCommands = new PaletteCommands({
     store,
