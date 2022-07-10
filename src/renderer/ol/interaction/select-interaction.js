@@ -20,7 +20,8 @@ export default options => {
     style,
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
-    multi: false // don't select all features under cursor at once.
+    multi: false, // don't select all features under cursor at once.
+    layers: layer => layer.get('selectable')
   })
 
   const features = () => interaction.getFeatures().getArray()
