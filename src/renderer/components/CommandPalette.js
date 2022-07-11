@@ -14,8 +14,6 @@ export const CommandPalette = props => {
   const [placeholder, setPlaceholder] = React.useState(props.placeholder)
   const [state, dispatch] = useList({ multiselect: false })
 
-  console.log('state', state)
-
   React.useEffect(() => setFilter(props.value), [props.value])
   React.useEffect(() => setPlaceholder(props.placeholder), [props.placeholder])
 
@@ -28,7 +26,6 @@ export const CommandPalette = props => {
     const { key, shiftKey, metaKey, ctrlKey } = event
 
     const focusIndex = state.focusIndex
-    console.log('focusIndex', focusIndex)
 
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
