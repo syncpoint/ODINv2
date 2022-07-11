@@ -70,24 +70,7 @@ export default async projectUUID => {
     if (undo.canRedo()) undo.redo()
   })
 
-  const dragAndDrop = new DragAndDrop()
-
-  dragAndDrop.on('layers', ({ layers }) => {
-    const values = layers.reduce((acc, layer) => {
-      const features = layer.features
-      delete layer.features
-      delete layer.type
-      acc.push(layer)
-
-      return features.reduce((acc, feature) => {
-        if (feature.properties) delete feature.properties.layerId
-        acc.push(feature)
-        return acc
-      }, acc)
-    }, [])
-
-    store.insert(values)
-  })
+  const dragAndDrop = new DragAndDrop(featureStore)
 
   const services = {}
   services.emitter = emitter
