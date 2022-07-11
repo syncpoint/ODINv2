@@ -25,7 +25,6 @@ export const CommandPalette = props => {
    */
   const handleBlur = ({ currentTarget, relatedTarget }) => {
     if (currentTarget.contains(relatedTarget)) return
-    console.log('blur')
     onBlur()
   }
 
@@ -114,7 +113,6 @@ export const CommandPalette = props => {
     const focusIndex = state.focusIndex
     if (focusIndex === -1) return
     const dryRun = true
-    console.log('invoke', focusIndex)
     state.entries[focusIndex].invoke(dryRun)
   }, [state, state.entries])
 
