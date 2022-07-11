@@ -8,7 +8,7 @@ export default options => {
   const { label, get, set } = options
 
   const Property = props => {
-    const { featureStore } = useServices()
+    const { store } = useServices()
 
     const initialValue = () => {
       const features = Object.values(props.features)
@@ -27,7 +27,7 @@ export default options => {
 
     const handleBlur = () => {
       if (value === initialValue()) return
-      featureStore.update(props.features, set(value))
+      store.update(props.features, set(value))
     }
 
     return <TextField

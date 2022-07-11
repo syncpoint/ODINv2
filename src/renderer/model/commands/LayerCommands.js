@@ -6,7 +6,7 @@ import { layerId, isLayerId } from '../../ids'
  *
  */
 export default function LayerCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
   this.selection = options.selection
   this.emitter = options.emitter
   this.selection = options.selection
@@ -32,7 +32,7 @@ LayerCommands.prototype.createLayer = function () {
     if (!value) return
     const key = layerId()
     this.selection.set([key])
-    this.featureStore.insert([[key, { name: value }]])
+    this.store.insert([[key, { name: value }]])
   }
 
   return new Command({
@@ -60,7 +60,7 @@ LayerCommands.prototype.setDefaultLayer = function (tuples) {
     description: 'Layer: Make default',
     body: (dryRun) => {
       if (dryRun) return
-      this.featureStore.setDefaultLayer(tuples[0][0])
+      this.store.setDefaultLayer(tuples[0][0])
     }
   })
 }

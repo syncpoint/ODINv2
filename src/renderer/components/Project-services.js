@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, Store, SearchIndex, PreferencesStore, FeatureStore, MigrationTool, ProjectStore } from '../store'
+import { SessionStore, SearchIndex, PreferencesStore, Store, MigrationTool, ProjectStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
@@ -42,15 +42,14 @@ export default async projectUUID => {
   const wbkDB = L.wbkDB(db)
   const preferencesDB = L.preferencesDB(db)
 
-  const store = new Store(jsonDB, undo, selection)
-  const featureStore = new FeatureStore(jsonDB, wbkDB, undo, selection)
+  const store = new Store(jsonDB, wbkDB, undo, selection)
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const projectStore = new ProjectStore(ipcRenderer)
 
   const searchIndex = new SearchIndex(jsonDB)
-  const controller = new Controller(featureStore, emitter, ipcRenderer, selection)
-  const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, featureStore)
-  const clipboard = new Clipboard(selection, featureStore)
+  const controller = new Controller(store, emitter, ipcRenderer, selection)
+  const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
+  const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
 
   // Key bindings.
@@ -72,24 +71,7 @@ export default async projectUUID => {
     if (undo.canRedo()) undo.redo()
   })
 
-  const dragAndDrop = new DragAndDrop()
-
-  dragAndDrop.on('layers', ({ layers }) => {
-    const values = layers.reduce((acc, layer) => {
-      const features = layer.features
-      delete layer.features
-      delete layer.type
-      acc.push(layer)
-
-      return features.reduce((acc, feature) => {
-        if (feature.properties) delete feature.properties.layerId
-        acc.push(feature)
-        return acc
-      }, acc)
-    }, [])
-
-    store.insert(values)
-  })
+  const dragAndDrop = new DragAndDrop(store)
 
   const services = {}
   services.emitter = emitter
@@ -101,7 +83,6 @@ export default async projectUUID => {
   services.selection = selection
   services.dragAndDrop = dragAndDrop
   services.store = store
-  services.featureStore = featureStore
   services.preferencesStore = preferencesStore
   services.searchIndex = searchIndex
   services.controller = controller
@@ -111,7 +92,6 @@ export default async projectUUID => {
 
   services.paletteCommands = new PaletteCommands({
     store,
-    featureStore,
     emitter,
     selection
   })

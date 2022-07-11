@@ -28,7 +28,7 @@ const parseCoordinate = s => parsers.reduce((acc, parse) => {
  *
  */
 export default function MarkerCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
   this.emitter = options.emitter
   this.selection = options.selection
 }
@@ -56,7 +56,7 @@ MarkerCommands.prototype.createMarker = function () {
     }
 
     const id = markerId()
-    this.featureStore.insert([[id, feature]])
+    this.store.insert([[id, feature]])
     this.emitter.emit('map/flyto', { center })
     this.selection.set([id])
   }

@@ -8,7 +8,7 @@ import { linkId } from '../ids'
 import './Card.css'
 
 export const Card = React.forwardRef((props, ref) => {
-  const { featureStore } = useServices()
+  const { store } = useServices()
   const { id, children, selected, capabilities } = props
   const [dropAllowed, setDropAllowed] = React.useState(null)
 
@@ -80,7 +80,7 @@ export const Card = React.forwardRef((props, ref) => {
           return links
         }, fileLinks)
 
-      featureStore.insert(await links)
+      store.insert(await links)
     }
   }
 

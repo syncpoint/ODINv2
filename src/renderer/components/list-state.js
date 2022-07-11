@@ -22,6 +22,13 @@ export const initialState = {
   selected: [],
 
   /**
+   * focusIndex :: number
+   *
+   * Index of focused/selected entry, -1 for no selection.
+   */
+  focusIndex: -1,
+
+  /**
    * scroll: 'none' | 'smooth' | 'auto'
    *
    * Scroll behavior for element.scrollIntoView().

@@ -11,7 +11,7 @@ import * as ids from '../../ids'
 export default options => {
   const { services, sources, hitTolerance } = options
   const { visibleSource, modifiableSource } = sources
-  const { featureStore, selection } = services
+  const { store, selection } = services
 
   // Has cloning operation started?
   let cloning = false
@@ -87,7 +87,7 @@ export default options => {
     })
 
     // Prepare new JSON features to put into store:
-    const properties = await featureStore.values(ids)
+    const properties = await store.values(ids)
     const json = clones.map((clone, index) => {
       const geometry = writeGeometryObject(clone.getGeometry())
       return { ...properties[index], id: clone.getId(), geometry }
@@ -97,7 +97,7 @@ export default options => {
     clones.forEach(clone => visibleSource.removeFeature(clone))
     const tuples = json.map(({ id: key, ...value }) => [key, value])
 
-    await featureStore.insert(tuples)
+    await store.insert(tuples)
     selection.set(clones.map(clone => clone.getId()))
   })
 

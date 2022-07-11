@@ -11,10 +11,10 @@ const NOOP = {
 const feature = {
   onClick (id, event, spec) {
     const ids = this.selected(id)
-    if (spec.match(/SYSTEM:HIDDEN/)) this.featureStore.show(ids)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.featureStore.hide(ids)
-    else if (spec.match(/SYSTEM:LOCKED/)) this.featureStore.unlock(ids)
-    else if (spec.match(/SYSTEM:UNLOCKED/)) this.featureStore.lock(ids)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(ids)
   },
 
   onDoubleClick (id, event) {
@@ -33,10 +33,10 @@ const feature = {
 const layer = {
   onClick (id, event, spec) {
     const ids = this.selected(id)
-    if (spec.match(/SYSTEM:HIDDEN/)) this.featureStore.show(ids)
-    else if (spec.match(/SYSTEM:VISIBLE/)) this.featureStore.hide(ids)
-    else if (spec.match(/SYSTEM:LOCKED/)) this.featureStore.unlock(ids)
-    else if (spec.match(/SYSTEM:UNLOCKED/)) this.featureStore.lock(ids)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(ids)
   },
 
   onDoubleClick (id, event) {
@@ -69,7 +69,7 @@ const link = {
   onMouseUp (id, event, spec) {},
 
   async onDoubleClick (id) {
-    const links = await this.featureStore.values([id])
+    const links = await this.store.values([id])
     links.forEach(link => this.ipcRenderer.send('OPEN_LINK', link))
   }
 }
@@ -78,7 +78,7 @@ const marker = {
   onClick (id, event, spec) {},
 
   async onDoubleClick (id) {
-    const markers = await this.featureStore.values([id])
+    const markers = await this.store.values([id])
     if (markers.length === 1) {
       const center = markers[0].geometry.coordinates
       this.emitter.emit('map/flyto', { center })
@@ -96,8 +96,8 @@ const marker = {
   }
 }
 
-export function Controller (featureStore, emitter, ipcRenderer, selection) {
-  this.featureStore = featureStore
+export function Controller (store, emitter, ipcRenderer, selection) {
+  this.store = store
   this.emitter = emitter
   this.ipcRenderer = ipcRenderer
   this.selection = selection

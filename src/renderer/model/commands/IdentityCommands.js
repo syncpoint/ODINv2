@@ -19,7 +19,7 @@ const STANDARD_IDENTITIES = [
  *
  */
 export default function IdentityCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
 }
 
 IdentityCommands.prototype.commands = function (tuples) {
@@ -46,14 +46,14 @@ IdentityCommands.prototype.identity = function (tuples) {
 
     const newValues = oldValues.map(updateIdentity)
     const body = dryRun => dryRun
-      ? this.featureStore.update(keys, newValues)
-      : this.featureStore.update(keys, newValues, oldValues)
+      ? this.store.update(keys, newValues)
+      : this.store.update(keys, newValues, oldValues)
 
     return new Command({
       id: `identity:${identity.code}`,
       description: `Identity - ${identity.name}`,
       body,
-      revert: () => this.featureStore.update(keys, oldValues)
+      revert: () => this.store.update(keys, oldValues)
     })
   }
 

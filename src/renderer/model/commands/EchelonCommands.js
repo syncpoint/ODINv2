@@ -25,7 +25,7 @@ const ECHELON = [
  *
  */
 export default function EchelonCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
 }
 
 EchelonCommands.prototype.commands = function (tuples) {
@@ -52,14 +52,14 @@ EchelonCommands.prototype.echelon = function (tuples) {
 
     const newValues = oldValues.map(updateEchelon)
     const body = dryRun => dryRun
-      ? this.featureStore.update(keys, newValues)
-      : this.featureStore.update(keys, newValues, oldValues)
+      ? this.store.update(keys, newValues)
+      : this.store.update(keys, newValues, oldValues)
 
     return new Command({
       id: `size:${echelon.code}`,
       description: `Echelon/Size - ${echelon.name}`,
       body,
-      revert: () => this.featureStore.update(keys, oldValues)
+      revert: () => this.store.update(keys, oldValues)
     })
   }
 

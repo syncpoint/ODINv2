@@ -15,7 +15,7 @@ const STATUS = [
  *
  */
 export default function StatusCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
 }
 
 StatusCommands.prototype.commands = function (tuples) {
@@ -42,14 +42,14 @@ StatusCommands.prototype.status = function (tuples) {
 
     const newValues = oldValues.map(updateStatus)
     const body = dryRun => dryRun
-      ? this.featureStore.update(keys, newValues)
-      : this.featureStore.update(keys, newValues, oldValues)
+      ? this.store.update(keys, newValues)
+      : this.store.update(keys, newValues, oldValues)
 
     return new Command({
       id: `status:${status.code}`,
       description: `Status/Condition - ${status.name}`,
       body,
-      revert: () => this.featureStore.update(keys, oldValues)
+      revert: () => this.store.update(keys, oldValues)
     })
   }
 

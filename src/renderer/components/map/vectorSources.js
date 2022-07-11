@@ -1,14 +1,14 @@
 import * as Sources from '../../model/Sources'
 
 export default services => {
-  const { featureStore, emitter, viewMemento, selection } = services
-  const featureSource = Sources.featureSource(featureStore)
-  const markerSource = Sources.markerSource(featureStore)
-  const { visibleSource } = Sources.visibilityTracker(featureSource, featureStore, emitter)
-  const { unlockedSource } = Sources.lockedTracker(featureSource, featureStore)
+  const { store, emitter, viewMemento, selection } = services
+  const featureSource = Sources.featureSource(store)
+  const markerSource = Sources.markerSource(store)
+  const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)
+  const { unlockedSource } = Sources.lockedTracker(featureSource, store)
   const selectableSource = Sources.union(visibleSource, markerSource)
   const { selectedSource, deselectedSource } = Sources.selectionTracker(selectableSource, selection)
-  const highlightSource = Sources.highlightTracker(emitter, featureStore, viewMemento)
+  const highlightSource = Sources.highlightTracker(emitter, store, viewMemento)
   const modifiableSource = Sources.intersect(unlockedSource, selectedSource)
 
   return {

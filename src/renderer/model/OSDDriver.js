@@ -25,12 +25,12 @@ const formats = {
   UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString()
 }
 
-export const OSDDriver = function (projectUUID, emitter, preferencesStore, projectStore, featureStore) {
+export const OSDDriver = function (projectUUID, emitter, preferencesStore, projectStore, store) {
   this.projectUUID = projectUUID
   this.emitter = emitter
   this.preferencesStore = preferencesStore
   this.projectStore = projectStore
-  this.featureStore = featureStore
+  this.store = store
 
   ;(async () => {
     this.coordinatesFormat = await preferencesStore.get('coordinates-format', 'MGRS')
@@ -40,7 +40,7 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
 
   setInterval(this.updateDateTime.bind(this), 1000)
 
-  featureStore.on('batch', ({ operations }) => {
+  store.on('batch', ({ operations }) => {
     const update = operations.some(({ key }) => isDefaultId(key))
     if (update) this.updateDefaultLayer()
   })
@@ -72,11 +72,11 @@ OSDDriver.prototype.updateProjectName = async function () {
 }
 
 OSDDriver.prototype.updateDefaultLayer = async function () {
-  const { featureStore } = this
+  const { store } = this
 
-  const layerId = await featureStore.defaultLayerId()
+  const layerId = await store.defaultLayerId()
   if (layerId) {
-    const layer = await featureStore.value(layerId)
+    const layer = await store.value(layerId)
     this.emitter.emit('osd', { message: layer.name, cell: 'A2' })
   } else {
     this.emitter.emit('osd', { message: '', cell: 'A2' })

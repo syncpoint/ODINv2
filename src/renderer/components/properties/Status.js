@@ -17,7 +17,7 @@ const set = value => feature => ({
 })
 
 export default props => {
-  const { featureStore } = useServices()
+  const { store } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -34,7 +34,7 @@ export default props => {
 
   const handleChange = value => () => {
     setState(value)
-    featureStore.update(props.features, set(value))
+    store.update(props.features, set(value))
   }
 
   return (

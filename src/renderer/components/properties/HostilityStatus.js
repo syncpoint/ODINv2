@@ -49,7 +49,7 @@ const set = value => feature => ({
 })
 
 export default props => {
-  const { featureStore } = useServices()
+  const { store } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -67,7 +67,7 @@ export default props => {
   const update = state => {
     setState(state)
     const value = encode(state[0], state[1])
-    featureStore.update(props.features, set(value))
+    store.update(props.features, set(value))
   }
 
   const handleSelectionChanged = event => {
