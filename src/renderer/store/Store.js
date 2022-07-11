@@ -282,7 +282,7 @@ Store.prototype.unlock = async function (ids, active) {
 Store.prototype.geometries = function (arg) {
   if (Array.isArray(arg)) return L.values(this.wkbDB, arg)
   else if (isLayerId(arg)) return L.values(this.wkbDB, `feature:${arg.split(':')[1]}`)
-  else L.values(this.wkbDB, [arg])
+  else return L.values(this.wkbDB, [arg])
 }
 
 const featureBounds = {
