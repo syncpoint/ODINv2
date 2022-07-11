@@ -3,7 +3,7 @@ import MGRS from 'geodesy/mgrs.js'
 import UTM from 'geodesy/utm.js'
 import convert from 'geo-coordinates-parser' // DMS
 import { fromLonLat } from 'ol/proj'
-import { Command } from '../../commands/Command'
+import { Command } from './Command'
 import { markerId } from '../../ids'
 
 const extract = value => {

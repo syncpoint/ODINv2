@@ -1,5 +1,5 @@
 import { isFeatureId } from '../../ids'
-import { Command } from '../../commands/Command'
+import { Command } from './Command'
 import * as MILSTD from '../../symbology/2525c'
 
 const STATUS = [

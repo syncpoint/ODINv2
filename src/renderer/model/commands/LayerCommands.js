@@ -1,4 +1,4 @@
-import { Command } from '../../commands/Command'
+import { Command } from './Command'
 import { layerId, isLayerId } from '../../ids'
 
 

@@ -10,7 +10,7 @@ import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
 import { Selection } from '../Selection'
 import { Clipboard } from '../Clipboard'
-import { bindings } from '../commands/bindings'
+import { bindings } from '../bindings'
 
 export default async projectUUID => {
   const selection = new Selection()
