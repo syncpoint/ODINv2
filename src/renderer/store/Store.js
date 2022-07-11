@@ -20,6 +20,9 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * dictionary :: String -> (k -> k) -> {k: v}
  * dictionary :: [k] -> {k: v}
  * dictionary :: [k] -> (k -> k) -> {k: v}
+ * geometries :: [k] -> [GeoJSON/Geometry]
+ * geometries :: 'layer:...' -> [GeoJSON/Geometry]
+ * geometries :: k -> [GeoJSON/Geometry]
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit
