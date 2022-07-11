@@ -8,7 +8,7 @@ import './CommandPalette.css'
  *
  */
 export const CommandPalette = props => {
-  const { selection, paletteCommands, featureStore } = useServices()
+  const { selection, paletteCommands, store } = useServices()
   const [snapshot, setSnapshot] = React.useState()
   const [filter, setFilter] = React.useState(props.value)
   const [placeholder, setPlaceholder] = React.useState(props.placeholder)
@@ -57,10 +57,10 @@ export const CommandPalette = props => {
     (async () => {
       // Get properties snapshot of currently selection:
       // snapshot :: [k, v]
-      const snapshot = await featureStore.tuples(selection.selected())
+      const snapshot = await store.tuples(selection.selected())
       setSnapshot(snapshot)
     })()
-  }, [featureStore, selection])
+  }, [store, selection])
 
 
   /**

@@ -42,36 +42,36 @@ const dispatch = action => {
 /**
  *
  */
-export function Clipboard (selection, featureStore) {
+export function Clipboard (selection, store) {
   this.selection = selection
-  this.featureStore = featureStore
+  this.store = store
 
   document.addEventListener('copy', dispatch(this.copy.bind(this)))
   document.addEventListener('cut', dispatch(this.cut.bind(this)))
   document.addEventListener('paste', dispatch(this.paste.bind(this)))
 }
 
-Clipboard.doCopy = async (featureStore, selected) => {
+Clipboard.doCopy = async (store, selected) => {
   const ids = selected.filter(canCopy)
-  const keys = await featureStore.collectKeys(ids, ['tags', 'link'])
-  const tuples = await featureStore.tuples(keys)
+  const keys = await store.collectKeys(ids, ['tags', 'link'])
+  const tuples = await store.tuples(keys)
   writeEntries(tuples)
   return keys
 }
 
-Clipboard.doDelete = (featureStore, keys) => {
-  featureStore.delete(keys)
+Clipboard.doDelete = (store, keys) => {
+  store.delete(keys)
 }
 
 Clipboard.prototype.copy = async function () {
   const selected = this.selection.selected()
-  Clipboard.doCopy(this.featureStore, selected)
+  Clipboard.doCopy(this.store, selected)
 }
 
 Clipboard.prototype.cut = async function () {
   const selected = this.selection.selected()
-  const keys = await Clipboard.doCopy(this.featureStore, selected)
-  Clipboard.doDelete(this.featureStore, keys)
+  const keys = await Clipboard.doCopy(this.store, selected)
+  Clipboard.doDelete(this.store, keys)
 }
 
 Clipboard.prototype.paste = async function () {
@@ -92,7 +92,7 @@ Clipboard.prototype.paste = async function () {
   // Create default layer if necessary.
 
   const tuples = []
-  let defaultLayerId = await this.featureStore.defaultLayerId()
+  let defaultLayerId = await this.store.defaultLayerId()
   if (uncoveredFeaturesIds.length && !defaultLayerId) {
     defaultLayerId = layerId()
     tuples.push([defaultLayerId, { name: 'Default Layer' }])
@@ -126,10 +126,10 @@ Clipboard.prototype.paste = async function () {
     return acc
   }, tuples)
 
-  this.featureStore.insert(tuples)
+  this.store.insert(tuples)
 }
 
 Clipboard.prototype.delete = function () {
   const selected = this.selection.selected()
-  this.featureStore.delete(selected)
+  this.store.delete(selected)
 }

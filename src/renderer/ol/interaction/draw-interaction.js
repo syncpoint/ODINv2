@@ -11,7 +11,7 @@ import { PI_OVER_2, PI_OVER_4, SQRT_2 } from '../../../shared/Math'
 
 export default options => {
   const { services, map } = options
-  const { emitter, featureStore } = services
+  const { emitter, store } = services
 
   let pendingDraw = null
   let handlers = {}
@@ -40,7 +40,7 @@ export default options => {
     // NOTE: side-effect may modify feature/geometry
     (geometry.complete || (() => {}))(map, feature)
     const geoJSON = writeFeatureObject(feature)
-    featureStore.insertGeoJSON([geoJSON])
+    store.insertGeoJSON([geoJSON])
     cancel()
   }
 

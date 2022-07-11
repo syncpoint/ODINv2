@@ -7,8 +7,8 @@ import encode from 'encoding-down'
 import { wkb } from './wkb'
 
 const encodings = {
-  json: { valueEncoding: 'json' },
-  wkb: wkb
+  wkb,
+  json: { valueEncoding: 'json' }
 }
 
 export const leveldb = (options = {}) => {

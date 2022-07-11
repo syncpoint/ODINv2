@@ -45,7 +45,7 @@ const encode = state => {
 }
 
 export default props => {
-  const { featureStore } = useServices()
+  const { store } = useServices()
 
   const initialValue = () => {
     const features = Object.values(props.features)
@@ -65,7 +65,7 @@ export default props => {
     update[index] = target.checked
     setState(update)
     const value = encode(update)
-    featureStore.update(props.features, set(value))
+    store.update(props.features, set(value))
   }
 
   return (

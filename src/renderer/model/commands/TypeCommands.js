@@ -19,7 +19,7 @@ const TYPES = Object
  *
  */
 export default function TypeCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
 }
 
 TypeCommands.prototype.commands = function (tuples) {
@@ -48,14 +48,14 @@ TypeCommands.prototype.commands = function (tuples) {
     const newValues = oldValues.map(updateSIDC)
 
     const body = dryRun => dryRun
-      ? this.featureStore.update(keys, newValues)
-      : this.featureStore.update(keys, newValues, oldValues)
+      ? this.store.update(keys, newValues)
+      : this.store.update(keys, newValues, oldValues)
 
     return new Command({
       id: type.sidc,
       description: type.text,
       body,
-      revert: () => this.featureStore.update(keys, oldValues)
+      revert: () => this.store.update(keys, oldValues)
     })
   }
 

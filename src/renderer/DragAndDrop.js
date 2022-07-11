@@ -15,9 +15,9 @@ const readJSON = async path => {
  * @constructor
  * @fires ...
  */
-export function DragAndDrop (featureStore) {
+export function DragAndDrop (store) {
   Emitter.call(this)
-  this.featureStore = featureStore
+  this.store = store
 }
 
 util.inherits(DragAndDrop, Emitter)
@@ -76,5 +76,5 @@ DragAndDrop.prototype.json = async function (files) {
     return tuples.concat(features)
   })
 
-  this.featureStore.insert(tuples)
+  this.store.insert(tuples)
 }

@@ -22,7 +22,7 @@ const MODIFIERS = [
  *
  */
 export default function ModifierCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
   this.emitter = options.emitter
 }
 
@@ -64,7 +64,7 @@ ModifierCommands.prototype.modifiers = function (tuple) {
       }
 
       const newValues = oldValues.map(updateModifier)
-      this.featureStore.update(keys, newValues, oldValues)
+      this.store.update(keys, newValues, oldValues)
     }
 
     return new Command({

@@ -11,7 +11,7 @@ import { matcher, stopPropagation } from './events'
  * A tag in different variants.
  */
 export const Tag = props => {
-  const { featureStore, controller } = useServices()
+  const { store, controller } = useServices()
   const { id, spec } = props
   const [variant, label, action, path] = spec.split(':')
   const closable = variant === 'USER'
@@ -30,7 +30,7 @@ export const Tag = props => {
 
   const handleMouseDown = event => controller.onMouseDown(id, event, spec)
   const handleMouseUp = event => controller.onMouseUp(id, event, spec)
-  const addTag = value => featureStore.addTag(id, value.toLowerCase())
+  const addTag = value => store.addTag(id, value.toLowerCase())
 
   const commitValue = () => {
     setMode('display')
@@ -61,8 +61,8 @@ export const Tag = props => {
   }
 
   const handleClose = React.useCallback(() => {
-    featureStore.removeTag(id, label)
-  }, [id, label, featureStore])
+    store.removeTag(id, label)
+  }, [id, label, store])
 
   const variantClassName = variant ? `tag-${variant.toLowerCase()}` : ''
   const className = action !== 'NONE'

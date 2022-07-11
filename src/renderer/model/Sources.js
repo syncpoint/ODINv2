@@ -10,10 +10,10 @@ import { isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, 
 /**
  *
  */
-export const featureSource = (featureStore) => {
+export const featureSource = (store) => {
   const source = new VectorSource()
 
-  featureStore.on('batch', ({ operations }) => {
+  store.on('batch', ({ operations }) => {
     const candidates = operations.filter(({ key }) => key.startsWith('feature:'))
     const additions = candidates.filter(({ type }) => type === 'put')
     const removals = candidates.filter(({ type }) => type === 'del')
@@ -45,7 +45,7 @@ export const featureSource = (featureStore) => {
 
   // On startup: load all features:
   window.requestIdleCallback(async () => {
-    const tuples = await featureStore.tuples('feature:')
+    const tuples = await store.tuples('feature:')
     const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
     const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
     source.addFeatures(features)
@@ -58,10 +58,10 @@ export const featureSource = (featureStore) => {
 /**
  *
  */
-export const markerSource = (featureStore) => {
+export const markerSource = (store) => {
   const source = new VectorSource()
 
-  featureStore.on('batch', ({ operations }) => {
+  store.on('batch', ({ operations }) => {
     const candidates = operations.filter(({ key }) => key.startsWith('marker:'))
     const additions = candidates.filter(({ type }) => type === 'put')
 
@@ -77,7 +77,7 @@ export const markerSource = (featureStore) => {
 
   // On startup: load all features:
   window.requestIdleCallback(async () => {
-    const tuples = await featureStore.tuples('marker:')
+    const tuples = await store.tuples('marker:')
     const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
     const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
     source.addFeatures(features)
@@ -206,7 +206,7 @@ export const selectionTracker = (source, selection) => {
 /**
  *
  */
-export const visibilityTracker = (source, featureStore, emitter) => {
+export const visibilityTracker = (source, store, emitter) => {
   const keySet = new Set()
   const hidden = key => keySet.has(key)
   const visible = key => !keySet.has(key)
@@ -224,7 +224,7 @@ export const visibilityTracker = (source, featureStore, emitter) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    featureStore.on('batch', ({ operations }) => {
+    store.on('batch', ({ operations }) => {
       const candidates = operations
         .filter(({ key }) => isHiddenFeatureId(key))
         .map(({ type, key }) => ({ type, key: featureId(key) }))
@@ -237,7 +237,7 @@ export const visibilityTracker = (source, featureStore, emitter) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await featureStore.keys(hiddenId('feature:'))
+    const keys = await store.keys(hiddenId('feature:'))
     keys.forEach(key => keySet.add(featureId(key)))
   })()
 
@@ -251,13 +251,13 @@ export const visibilityTracker = (source, featureStore, emitter) => {
 /**
  *
  */
-export const lockedTracker = (source, featureStore) => {
+export const lockedTracker = (source, store) => {
   const keySet = new Set()
   const locked = key => keySet.has(key)
   const unlocked = key => !keySet.has(key)
 
   ;(async () => {
-    featureStore.on('batch', ({ operations }) => {
+    store.on('batch', ({ operations }) => {
       const candidates = operations
         .filter(({ key }) => isLockedFeatureId(key))
         .map(({ type, key }) => ({ type, key: featureId(key) }))
@@ -270,7 +270,7 @@ export const lockedTracker = (source, featureStore) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await featureStore.keys(lockedId('feature:'))
+    const keys = await store.keys(lockedId('feature:'))
     keys.forEach(key => keySet.add(featureId(key)))
   })()
 
@@ -281,7 +281,7 @@ export const lockedTracker = (source, featureStore) => {
 }
 
 
-export const highlightTracker = (emitter, featureStore, viewMemento) => {
+export const highlightTracker = (emitter, store, viewMemento) => {
   const source = new VectorSource({ features: new Collection() })
   let timeout
   let hiddenIds = []
@@ -292,15 +292,15 @@ export const highlightTracker = (emitter, featureStore, viewMemento) => {
   }
 
   emitter.on('highlight/on', async ({ ids }) => {
-    const geometries = await featureStore.geometryBounds(ids, viewMemento.resolution())
+    const geometries = await store.geometryBounds(ids, viewMemento.resolution())
     const features = geometries.map(geometry => new Feature(geometry))
     source.addFeatures(features)
 
     // Temporarily show hidden feature.
 
-    const keys = await featureStore.collectKeys(ids)
+    const keys = await store.collectKeys(ids)
     const featureIds = keys.filter(isFeatureId)
-    const tuples = await featureStore.tuples(featureIds.map(id => `hidden+${id}`))
+    const tuples = await store.tuples(featureIds.map(id => `hidden+${id}`))
 
     hiddenIds = tuples
       .filter(([_, value]) => value)

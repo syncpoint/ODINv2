@@ -8,7 +8,7 @@ import { writeFeatureCollection } from '../../model/geometry'
  */
 export default options => {
   const { services, sources, hitTolerance } = options
-  const { featureStore } = services
+  const { store } = services
   const { modifiableSource } = sources
 
   // snapshot :: [[k, GeoJSON/Feature]]
@@ -21,7 +21,7 @@ export default options => {
 
   interaction.on('modifystart', async ({ feature }) => {
     // Get full set of properties for feature:
-    snapshot = await featureStore.tuples([feature.getId()])
+    snapshot = await store.tuples([feature.getId()])
   })
 
   interaction.on('modifyend', event => {
@@ -39,7 +39,7 @@ export default options => {
       geometry: feature.geometry
     }))
 
-    featureStore.update(keys, newValues, oldValues)
+    store.update(keys, newValues, oldValues)
   })
 
   return interaction

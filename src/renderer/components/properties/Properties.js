@@ -143,7 +143,7 @@ const reducer = (state, event) => {
  *
  */
 const useSelection = () => {
-  const { selection, featureStore } = useServices()
+  const { selection, store } = useServices()
   const [state, dispatch] = React.useReducer(reducer, {})
 
   React.useEffect(() => {
@@ -154,8 +154,8 @@ const useSelection = () => {
       const keys = selection.selected()
 
       // Not map features, but objects in general:
-      const features = await featureStore.dictionary(keys)
-      const locks = await featureStore.dictionary(keys.map(lockedId), key => associatedId(key))
+      const features = await store.dictionary(keys)
+      const locks = await store.dictionary(keys.map(lockedId), key => associatedId(key))
       dispatch({ type: 'reset', features, locks })
     }
 
@@ -163,14 +163,14 @@ const useSelection = () => {
     const handleBatch = ({ operations }) => dispatch({ type: 'update', operations })
 
     selection.on('selection', handleSelection)
-    featureStore.on('batch', handleBatch)
+    store.on('batch', handleBatch)
     handleSelection() // handle initial selection
 
     return () => {
-      featureStore.off('batch', handleBatch)
+      store.off('batch', handleBatch)
       selection.off('selection', handleSelection)
     }
-  }, [selection, featureStore])
+  }, [selection, store])
 
   return state
 }

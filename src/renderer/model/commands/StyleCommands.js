@@ -5,7 +5,7 @@ import { Command } from '../../commands/Command'
  *
  */
 export default function StyleCommands (options) {
-  this.featureStore = options.featureStore
+  this.store = options.store
 }
 
 StyleCommands.prototype.commands = function (tuples) {
@@ -38,14 +38,14 @@ StyleCommands.prototype.smoothStyle = function (tuples) {
     const newValues = oldValues.map(updatedStyle(enabled))
 
     const body = dryRun => dryRun
-      ? this.featureStore.update(keys, newValues)
-      : this.featureStore.update(keys, newValues, oldValues)
+      ? this.store.update(keys, newValues)
+      : this.store.update(keys, newValues, oldValues)
 
     return new Command({
       id: `style.smooth.${enabled}`,
       description: 'Style: Smooth - ' + (enabled ? 'Yes' : 'No'),
       body,
-      revert: () => this.featureStore.update(keys, oldValues)
+      revert: () => this.store.update(keys, oldValues)
     })
   }
 

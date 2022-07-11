@@ -114,8 +114,8 @@ const ipcHandlers = (services, sources) => {
  * FIXME: Wrong place: Move somewhere else.
  */
 const emitterHandlers = services => {
-  const { emitter, selection, featureStore } = services
-  emitter.on('command/delete', () => featureStore.delete(selection.selected()))
+  const { emitter, selection, store } = services
+  emitter.on('command/delete', () => store.delete(selection.selected()))
 }
 
 /**

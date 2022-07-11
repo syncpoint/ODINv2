@@ -9,7 +9,7 @@ import './CardTitle.css'
  *
  */
 const CardTitle = props => {
-  const { featureStore } = useServices()
+  const { store } = useServices()
   const [value, setValue] = React.useState(props.value)
   const placeholder = value
     ? null
@@ -19,7 +19,7 @@ const CardTitle = props => {
 
   const rename = name => {
     if (props.value === name) return
-    featureStore.rename(props.id, name)
+    store.rename(props.id, name)
   }
 
   const reset = () => setValue(props.value)

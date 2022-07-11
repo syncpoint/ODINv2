@@ -9,7 +9,7 @@ import { noModifierKeys, shiftKeyOnly } from 'ol/events/condition'
 export default options => {
   const { services, sources, hitTolerance } = options
   const { modifiableSource } = sources
-  const { featureStore } = services
+  const { store } = services
 
   // snapshot :: [GeoJSON/Feature]
   let snapshot = []
@@ -27,7 +27,7 @@ export default options => {
   interaction.on('translatestart', async event => {
     // Get full set of properties for each feature:
     const ids = event.features.getArray().map(feature => feature.getId())
-    snapshot = await featureStore.values(ids)
+    snapshot = await store.values(ids)
   })
 
   interaction.on('translateend', async event => {
@@ -36,7 +36,7 @@ export default options => {
     const keys = features.map(R.prop('id'))
     const merge = (feature, index) => ({ ...snapshot[index], geometry: feature.geometry })
     const newValues = features.map(merge)
-    featureStore.update(keys, newValues, snapshot)
+    store.update(keys, newValues, snapshot)
   })
 
   return interaction

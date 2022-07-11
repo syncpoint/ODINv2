@@ -20,10 +20,10 @@ describe('ProjectStore', async function () {
 
     const db = leveldb({ encoding: 'json' })
     await db.put(key, project)
-    const store = new ProjectStore(db)
+    const projectStore = new ProjectStore(db)
 
     const bounds = { x: 0, y: 0, width: 640, height: 400 }
-    await store.updateWindowBounds(key, bounds)
+    await projectStore.updateWindowBounds(key, bounds)
     const actual = await db.get(key)
     const expected = { ...project, bounds }
 
