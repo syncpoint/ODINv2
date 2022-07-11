@@ -17,9 +17,15 @@ export const CommandPalette = props => {
   React.useEffect(() => setFilter(props.value), [props.value])
   React.useEffect(() => setPlaceholder(props.placeholder), [props.placeholder])
 
+  const { onBlur, callback, onKeyDown } = props
+
+  /**
+   * Note: For `relatedTarget` to be defined, corresponding
+   * element needs `tabIndex` property.
+   */
   const handleBlur = ({ currentTarget, relatedTarget }) => {
     if (currentTarget.contains(relatedTarget)) return
-    props.onBlur()
+    onBlur()
   }
 
   const handleKeyDown = event => {
@@ -37,12 +43,13 @@ export const CommandPalette = props => {
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
-      if (focusIndex !== -1) state.entries[focusIndex].invoke(false)
-      else if (props.callback) props.callback(filter)
+      const dryRun = false
+      if (focusIndex !== -1) state.entries[focusIndex].invoke(dryRun)
+      else if (callback) callback(filter) // edit/input callback
     }
 
     dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
-    props.onKeyDown(event)
+    onKeyDown(event)
   }
 
   const handleFilterChange = React.useCallback(value => {
@@ -77,6 +84,12 @@ export const CommandPalette = props => {
   const child = React.useCallback(props => {
     const handleClick = id => ({ metaKey, shiftKey, ctrlKey }) => {
       dispatch({ type: 'click', id, shiftKey, metaKey, ctrlKey })
+      const entry = state.entries.find(entry => entry.id === id)
+      if (entry) {
+        const dryRun = false
+        entry.invoke(dryRun)
+        onBlur()
+      }
     }
 
     const backgroundColor = props.selected ? 'lightgrey' : 'white'
@@ -84,6 +97,7 @@ export const CommandPalette = props => {
       <div
         key={props.id}
         ref={props.ref}
+        tabIndex={0}
         role='option'
         onClick={handleClick(props.id)}
         style={{ backgroundColor, padding: '0px 8px' }}
@@ -91,14 +105,15 @@ export const CommandPalette = props => {
         <span>{props.entry.description()}</span>
       </div>
     )
-  }, [dispatch])
+  }, [state.entries, dispatch, onBlur])
   /* eslint-enable react/prop-types */
 
   // Invoke command for newly focused entry:
   React.useEffect(() => {
     const focusIndex = state.focusIndex
     if (focusIndex === -1) return
-    state.entries[focusIndex].invoke(true)
+    const dryRun = true
+    state.entries[focusIndex].invoke(dryRun)
   }, [state, state.entries])
 
   const list = props.value === undefined
