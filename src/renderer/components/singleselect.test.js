@@ -20,20 +20,6 @@ describe('singleselect', function () {
       assert(actual === state) // reference equal, same state
     })
 
-    it('reset selection (empty list)', function () {
-      // Note: This is pretty different from multiselect.
-      const entries = [{ id: 'x' }, { id: 'y' }] // we will remove all entries
-      const state = { entries, selected: ['x'] }
-      const actual = singleselect.entries(state, { entries: [] })
-      const expected = {
-        entries: [],
-        selected: [],
-        scroll: 'auto'
-      }
-
-      assert.deepStrictEqual(actual, expected)
-    })
-
     it('retain selection (adjust index)', function () {
       const entries = [{ id: 'x' }, { id: 'y' }] // we will remove all entries
       const state = { entries, selected: ['y'] }
@@ -41,6 +27,7 @@ describe('singleselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'w' }, { id: 'y' }],
         selected: ['y'],
+        focusIndex: 2,
         scroll: 'auto'
       }
 
@@ -57,6 +44,7 @@ describe('singleselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }],
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'smooth'
       }
 
@@ -70,6 +58,7 @@ describe('singleselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }],
         selected: [],
+        focusIndex: -1,
         scroll: 'smooth'
       }
 
@@ -92,7 +81,8 @@ describe('singleselect', function () {
       const actual = singleselect.click(state, { id: 'x' })
       const expected = {
         entries,
-        selected: ['x']
+        selected: ['x'],
+        focusIndex: 0
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -108,6 +98,7 @@ describe('singleselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -120,6 +111,7 @@ describe('singleselect', function () {
       const expected = {
         entries,
         selected: ['y'],
+        focusIndex: 1,
         scroll: 'auto'
       }
 
@@ -127,11 +119,12 @@ describe('singleselect', function () {
     })
 
     it('retain selection', function () {
-      const state = { entries, selected: ['y'], scroll: 'none' }
+      const state = { entries, selected: ['y'], focusIndex: 1, scroll: 'none' }
       const actual = singleselect['keydown/ArrowDown'](state, { shiftKey: false })
       const expected = {
         entries,
         selected: ['y'],
+        focusIndex: 1,
         scroll: 'none'
       }
 
@@ -159,6 +152,7 @@ describe('singleselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -166,11 +160,12 @@ describe('singleselect', function () {
     })
 
     it('retain selection', function () {
-      const state = { entries, selected: ['x'], scroll: 'none' }
+      const state = { entries, selected: ['x'], focusIndex: 0, scroll: 'none' }
       const actual = singleselect['keydown/ArrowUp'](state, { shiftKey: false })
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'none'
       }
 
@@ -210,6 +205,7 @@ describe('singleselect', function () {
       const expected = {
         entries,
         selected: ['x'],
+        focusIndex: 0,
         scroll: 'auto'
       }
 
@@ -238,6 +234,7 @@ describe('singleselect', function () {
       const expected = {
         entries,
         selected: ['y'],
+        focusIndex: 1,
         scroll: 'auto'
       }
 

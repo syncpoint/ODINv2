@@ -84,20 +84,20 @@ export const useStack = initial => {
 }
 
 export const useMemento = (key, defaultValue) => {
-  const { preferencesStore: store } = useServices()
+  const { preferencesStore } = useServices()
   const [value, setValue] = React.useState(null)
 
   const put = React.useCallback(newValue => {
     if (isEqual(value, newValue)) return
-    store.put(key, newValue)
-  }, [store, value, key])
+    preferencesStore.put(key, newValue)
+  }, [preferencesStore, value, key])
 
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {
-    (async () => setValue(await store.get(key, defaultValue)))()
+    (async () => setValue(await preferencesStore.get(key, defaultValue)))()
     const handler = ({ value }) => setValue(value)
-    store.on(key, handler)
-    return () => store.off(key, handler)
+    preferencesStore.on(key, handler)
+    return () => preferencesStore.off(key, handler)
   }, [])
   /* eslint-enable react-hooks/exhaustive-deps */
 

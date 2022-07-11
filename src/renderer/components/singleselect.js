@@ -29,13 +29,15 @@ export const singleselect = {
   entries: (state, { entries }) => {
     // Don't update when entries are deep equal to previous state.
     if (isEqual(state.entries, entries)) return state
-    const ids = entries.map(R.prop('id'))
-    const selected = (state.selected || []).filter(id => ids.includes(id))
+
+    // Don't mess with selection, but derrive focus index
+    // from last selected.
+    const focusIndex = Entries.focusIndex(entries, state.selected)
 
     return {
       ...state,
       entries,
-      selected,
+      focusIndex,
       scroll: 'auto'
     }
   },
@@ -46,13 +48,13 @@ export const singleselect = {
   select: (state, { id }) => {
     if (!id) return state
 
-    const selected = Entries.index(state.entries, id) !== -1
-      ? [id]
-      : []
+    const focusIndex = Entries.index(state.entries, id)
+    const selected = focusIndex !== -1 ? [id] : []
 
     return {
       ...state,
       selected,
+      focusIndex,
       scroll: 'smooth'
     }
   },
@@ -60,7 +62,8 @@ export const singleselect = {
   /** Select clicked entry. */
   click: (state, { id }) => ({
     ...state,
-    selected: [id]
+    selected: [id],
+    focusIndex: Entries.index(state.entries, id)
   }),
 
   'keydown/ArrowDown': (state, { metaKey, ctrlKey }) => {
@@ -70,11 +73,14 @@ export const singleselect = {
     const current = Entries.focusIndex(state.entries, state.selected)
     if (current === Entries.length(state) - 1) return state
 
-    const selected = [Entries.id(state.entries, current + 1)]
+    const id = Entries.id(state.entries, current + 1)
+    const selected = [id]
+    const focusIndex = Entries.index(state.entries, id)
 
     return {
       ...state,
       selected,
+      focusIndex,
       scroll: 'auto'
     }
   },
@@ -89,11 +95,14 @@ export const singleselect = {
 
     if (current === 0) return state // BOL
 
-    const selected = [Entries.id(state.entries, current - 1)]
+    const id = Entries.id(state.entries, current - 1)
+    const selected = [id]
+    const focusIndex = Entries.index(state.entries, id)
 
     return {
       ...state,
       selected,
+      focusIndex,
       scroll: 'auto'
     }
   },
@@ -106,9 +115,13 @@ export const singleselect = {
     if (current === -1) return state // no selection
     if (current === -1 || current === 0) return state // BOL
 
+    const selected = [R.head(state.entries).id]
+    const focusIndex = Entries.focusIndex(state.entries, selected)
+
     return {
       ...state,
-      selected: [R.head(state.entries).id],
+      selected,
+      focusIndex,
       scroll: 'auto'
     }
   },
@@ -123,9 +136,13 @@ export const singleselect = {
     if (current === -1) return state // no selection
     if (current === Entries.length(state) - 1) return state // BOL
 
+    const selected = [R.last(state.entries).id]
+    const focusIndex = Entries.focusIndex(state.entries, selected)
+
     return {
       ...state,
-      selected: [R.last(state.entries).id],
+      selected,
+      focusIndex,
       scroll: 'auto'
     }
   }

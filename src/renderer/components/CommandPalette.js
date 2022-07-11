@@ -2,18 +2,19 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useList, useServices } from './hooks'
 import { FilterInput, VirtualizedList } from '.'
-import { Entries } from './selection'
 import './CommandPalette.css'
 
 /**
  *
  */
 export const CommandPalette = props => {
-  const { selection, paletteCommands, store } = useServices()
+  const { selection, paletteCommands, featureStore } = useServices()
   const [snapshot, setSnapshot] = React.useState()
   const [filter, setFilter] = React.useState(props.value)
   const [placeholder, setPlaceholder] = React.useState(props.placeholder)
   const [state, dispatch] = useList({ multiselect: false })
+
+  console.log('state', state)
 
   React.useEffect(() => setFilter(props.value), [props.value])
   React.useEffect(() => setPlaceholder(props.placeholder), [props.placeholder])
@@ -26,18 +27,19 @@ export const CommandPalette = props => {
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
 
+    const focusIndex = state.focusIndex
+    console.log('focusIndex', focusIndex)
+
     // Prevent native scroll:
     if (['ArrowDown', 'ArrowUp'].includes(key)) event.preventDefault()
 
     // On Escape key, reset values to stored snapshot:
     if (key === 'Escape') {
-      const focusIndex = Entries.focusIndex(state.entries, state.selected)
       if (focusIndex !== -1) state.entries[focusIndex].revert()
     }
 
     // On Enter key, apply command for good, i.e. no dry run:
     if (key === 'Enter') {
-      const focusIndex = Entries.focusIndex(state.entries, state.selected)
       if (focusIndex !== -1) state.entries[focusIndex].invoke(false)
       else if (props.callback) props.callback(filter)
     }
@@ -58,10 +60,10 @@ export const CommandPalette = props => {
     (async () => {
       // Get properties snapshot of currently selection:
       // snapshot :: [k, v]
-      const snapshot = await store.tuples(selection.selected())
+      const snapshot = await featureStore.tuples(selection.selected())
       setSnapshot(snapshot)
     })()
-  }, [store, selection])
+  }, [featureStore, selection])
 
 
   /**
@@ -97,7 +99,7 @@ export const CommandPalette = props => {
 
   // Invoke command for newly focused entry:
   React.useEffect(() => {
-    const focusIndex = Entries.focusIndex(state.entries, state.selected)
+    const focusIndex = state.focusIndex
     if (focusIndex === -1) return
     state.entries[focusIndex].invoke(true)
   }, [state, state.entries])
