@@ -1,5 +1,5 @@
 .feature-properties {
-  flex: 0 0 21rem;
+  flex: 0 0 22rem;
   font-size: 0.95rem;
 
   display: flex;
@@ -12,8 +12,7 @@
 }
 
 .panel-inset {
-  padding-left: 8px;
-  padding-right: 8px;
+  padding: 12px 16px;
   overflow: auto;
 }
 
