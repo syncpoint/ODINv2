@@ -12,7 +12,7 @@ import InstallationProperties from './InstallationProperties'
 import ActivityProperties from './ActivityProperties'
 import GraphicsProperties from './GraphicsProperties'
 import PointProperties from './PointProperties'
-import LayerProperties from './LayerProperties'
+// import LayerProperties from './LayerProperties'
 import MarkerProperties from './MarkerProperties'
 import './Properties.css'
 
@@ -23,7 +23,7 @@ const propertiesPanels = {
   'feature:ACTIVITY': props => <ActivityProperties {...props}/>,
   'feature:GRAPHICS': props => <GraphicsProperties {...props}/>,
   'feature:POINT': props => <PointProperties {...props}/>,
-  layer: props => <LayerProperties {...props}/>,
+  // layer: props => <LayerProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>
 }
 
