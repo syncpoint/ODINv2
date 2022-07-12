@@ -4,80 +4,47 @@ import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
 import { readFeature, readFeatures } from './geometry'
-import { isFeatureId, isLockedFeatureId, isHiddenFeatureId, lockedId, hiddenId, featureId } from '../ids'
+import * as ID from '../ids'
 
 
 /**
  *
  */
-export const featureSource = (store) => {
+export const featureSource = (store, scope) => {
   const source = new VectorSource()
 
   store.on('batch', ({ operations }) => {
-    const candidates = operations.filter(({ key }) => key.startsWith('feature:'))
+    const candidates = operations.filter(({ key }) => ID.isId(scope)(key))
     const additions = candidates.filter(({ type }) => type === 'put')
-    const removals = candidates.filter(({ type }) => type === 'del')
 
-    removals.forEach(({ key }) => {
-      const feature = source.getFeatureById(key)
-      if (feature) source.removeFeature(feature)
-    })
-
-    // ... and add additions/updates.
     const features = additions.map(({ key, value }) => {
       const feature = readFeature({ id: key, ...value })
-      const staleFeature = source.getFeatureById(key)
+      const stored = source.getFeatureById(key)
+      if (!stored) return feature
 
       // When only feature properties are updated, geometry is
       // not part of value. Transfer geometry from old to new feature
       // before removing old feature from source.
 
-      if (staleFeature) {
-        if (!feature.getGeometry()) feature.setGeometry(staleFeature.getGeometry())
-        source.removeFeature(staleFeature)
-      }
-
+      const geometry = feature.getGeometry()
+      const currentGeometry = stored.getGeometry()
+      if (!geometry && currentGeometry) feature.setGeometry(currentGeometry)
       return feature
     })
 
+    // Delete all candidates ...
+    candidates
+      .map(({ key }) => source.getFeatureById(key))
+      .filter(Boolean)
+      .forEach(feature => source.removeFeature(feature))
+
+    // ... and add additions.
     source.addFeatures(features)
   })
 
   // On startup: load all features:
   window.requestIdleCallback(async () => {
-    const tuples = await store.tuples('feature:')
-    const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
-    const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
-    source.addFeatures(features)
-  }, { timeout: 2000 })
-
-  return source
-}
-
-
-/**
- *
- */
-export const markerSource = (store) => {
-  const source = new VectorSource()
-
-  store.on('batch', ({ operations }) => {
-    const candidates = operations.filter(({ key }) => key.startsWith('marker:'))
-    const additions = candidates.filter(({ type }) => type === 'put')
-
-    candidates.forEach(({ key }) => {
-      const feature = source.getFeatureById(key)
-      if (feature) source.removeFeature(feature)
-    })
-
-    // ... and add additions/updates.
-    const features = additions.map(({ key, value }) => readFeature({ id: key, ...value }))
-    source.addFeatures(features)
-  })
-
-  // On startup: load all features:
-  window.requestIdleCallback(async () => {
-    const tuples = await store.tuples('marker:')
+    const tuples = await store.tuples(scope)
     const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
     const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
     source.addFeatures(features)
@@ -213,21 +180,21 @@ export const visibilityTracker = (source, store, emitter) => {
 
   ;(async () => {
     emitter.on('feature/show', ({ ids }) => {
-      const keys = ids.map(featureId)
+      const keys = ids.map(ID.associatedId)
       keys.forEach(key => keySet.delete(key))
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
     emitter.on('feature/hide', ({ ids }) => {
-      const keys = ids.map(featureId)
+      const keys = ids.map(ID.associatedId)
       keys.forEach(key => keySet.add(key))
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
     store.on('batch', ({ operations }) => {
       const candidates = operations
-        .filter(({ key }) => isHiddenFeatureId(key))
-        .map(({ type, key }) => ({ type, key: featureId(key) }))
+        .filter(({ key }) => ID.isHiddenId(key))
+        .map(({ type, key }) => ({ type, key: ID.associatedId(key) }))
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
       additions.forEach(({ key }) => keySet.add(key))
@@ -237,8 +204,8 @@ export const visibilityTracker = (source, store, emitter) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys(hiddenId('feature:'))
-    keys.forEach(key => keySet.add(featureId(key)))
+    const keys = await store.keys(ID.hiddenId())
+    keys.forEach(key => keySet.add(ID.associatedId(key)))
   })()
 
   return {
@@ -259,8 +226,8 @@ export const lockedTracker = (source, store) => {
   ;(async () => {
     store.on('batch', ({ operations }) => {
       const candidates = operations
-        .filter(({ key }) => isLockedFeatureId(key))
-        .map(({ type, key }) => ({ type, key: featureId(key) }))
+        .filter(({ key }) => ID.isLockedId(key))
+        .map(({ type, key }) => ({ type, key: ID.associatedId(key) }))
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
       additions.forEach(({ key }) => keySet.add(key))
@@ -270,8 +237,8 @@ export const lockedTracker = (source, store) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys(lockedId('feature:'))
-    keys.forEach(key => keySet.add(featureId(key)))
+    const keys = await store.keys(ID.lockedId())
+    keys.forEach(key => keySet.add(ID.associatedId(key)))
   })()
 
   return {
@@ -297,10 +264,11 @@ export const highlightTracker = (emitter, store, viewMemento) => {
     source.addFeatures(features)
 
     // Temporarily show hidden feature.
+    const isHidable = id => ID.isFeatureId(id) || ID.isMarkerId(id)
 
     const keys = await store.collectKeys(ids)
-    const featureIds = keys.filter(isFeatureId)
-    const tuples = await store.tuples(featureIds.map(id => `hidden+${id}`))
+    const featureIds = keys.filter(isHidable)
+    const tuples = await store.tuples(featureIds.map(ID.hiddenId))
 
     hiddenIds = tuples
       .filter(([_, value]) => value)

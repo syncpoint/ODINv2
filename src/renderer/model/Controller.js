@@ -86,7 +86,6 @@ const marker = {
   },
 
   onMouseDown (id, event, spec) {
-    console.log('[marker/onMouseDown]', id, spec)
     const ids = this.selected(id)
     if (spec.match(/SCOPE:MARKER/)) this.emitter.emit('highlight/on', { ids })
   },
