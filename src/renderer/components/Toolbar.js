@@ -103,9 +103,9 @@ export const Toolbar = () => {
         <Button path='mdiUndo' onClick={handleClick}/>
         <Button path='mdiRedo' onClick={handleClick}/>
       </div>
-      <div className='toolbar__right-items toolbar__items-container'>
+      {/* <div className='toolbar__right-items toolbar__items-container'>
         <b>{state.C2}</b>
-      </div>
+      </div> */}
     </header>
   )
 }
