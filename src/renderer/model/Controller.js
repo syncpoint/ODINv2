@@ -17,8 +17,7 @@ const feature = {
     else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(ids)
   },
 
-  onDoubleClick (id, event) {
-  },
+  onDoubleClick (id, event) {},
 
   onMouseDown (id, event, spec) {
     const ids = this.selected(id)
@@ -75,7 +74,13 @@ const link = {
 }
 
 const marker = {
-  onClick (id, event, spec) {},
+  onClick (id, event, spec) {
+    const ids = this.selected(id)
+    if (spec.match(/SYSTEM:HIDDEN/)) this.store.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/)) this.store.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/)) this.store.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) this.store.lock(ids)
+  },
 
   async onDoubleClick (id) {
     const markers = await this.store.values([id])
@@ -86,7 +91,6 @@ const marker = {
   },
 
   onMouseDown (id, event, spec) {
-    console.log('[marker/onMouseDown]', id, spec)
     const ids = this.selected(id)
     if (spec.match(/SCOPE:MARKER/)) this.emitter.emit('highlight/on', { ids })
   },

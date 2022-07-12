@@ -118,6 +118,7 @@ const emitterHandlers = services => {
   emitter.on('command/delete', () => store.delete(selection.selected()))
 }
 
+
 /**
  *
  */

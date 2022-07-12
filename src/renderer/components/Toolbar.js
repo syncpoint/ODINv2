@@ -5,6 +5,8 @@ import Icon from '@mdi/react'
 import * as mdi from '@mdi/js'
 import { useServices } from './hooks'
 import { DropdownMenu } from './DropdownMenu'
+import * as ID from '../ids'
+import { militaryFormat } from '../../shared/datetime'
 
 const reducer = (state, { message, cell }) => {
   const newState = { ...state }
@@ -32,7 +34,7 @@ Button.propTypes = {
 }
 
 export const Toolbar = () => {
-  const { emitter, clipboard, undo } = useServices()
+  const { emitter, clipboard, undo, store, selection, viewMemento } = useServices()
   const [state, dispatch] = React.useReducer(reducer, {})
 
   React.useEffect(() => {
@@ -47,10 +49,41 @@ export const Toolbar = () => {
     else if (path === 'mdiTrashCanOutline') clipboard.delete()
     else if (path === 'mdiUndo' && undo.canUndo()) undo.undo()
     else if (path === 'mdiRedo' && undo.canRedo()) undo.redo()
-    else if (path === 'mdiPlusBoxOutline') {
-      console.log('mdiPlusBoxOutline')
+  }
+
+  const options = {
+    'command:layer.new': {
+      label: 'Create Layer',
+      apply: () => {
+        const key = ID.layerId()
+        selection.set([key])
+        store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
+      }
+    },
+    'command:marker.new': {
+      label: 'Create Marker',
+      apply: () => {
+        const feature = {
+          name: `Marker - ${militaryFormat.now()}`,
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: viewMemento.center()
+          }
+        }
+
+        const id = ID.markerId()
+        store.insert([[id, feature]])
+        selection.set([id])
+      }
+    },
+    'command:view.new': {
+      label: 'Create View',
+      apply: () => console.log('apply/command:view.new')
     }
   }
+
+  const option = ([key, { label, apply }]) => <a key={key} onClick={apply}>{label}</a>
 
   return (
     <header className='toolbar'>
@@ -58,7 +91,9 @@ export const Toolbar = () => {
       Default Layer:&nbsp;<b>{state.A2}</b>
       </div>
       <div className='toolbar__center-items toolbar__items-container'>
-        <DropdownMenu path='mdiPlusBoxOutline' onClick={handleClick}/>
+        <DropdownMenu path='mdiPlusBoxOutline' onClick={handleClick}>
+          { Object.entries(options).map(option) }
+        </DropdownMenu>
         <span className='toolbar__divider'></span>
         <Button path='mdiContentCut' onClick={handleClick}/>
         <Button path='mdiContentCopy' onClick={handleClick}/>

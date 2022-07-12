@@ -151,18 +151,22 @@ const symbol = (/* services */) => (id, cache) => {
  * marker:
  */
 const marker = services => {
-  const { coordinatesFormat, featureStore } = services
+  const { coordinatesFormat, store } = services
 
   return async (id, cache) => {
     const marker = cache(id)
-
-    const geometries = await featureStore.geometries(id)
+    const geometries = await store.geometries(id)
     const description = geometries.length === 1
       ? coordinatesFormat.format(geometries[0].coordinates)
       : undefined
 
+    const hidden = cache(hiddenId(id))
+    const locked = cache(lockedId(id))
+
     const tags = [
       'SCOPE:MARKER:NONE',
+      hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
+      locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
       ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
       'PLUS'
     ].join(' ')

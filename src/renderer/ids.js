@@ -26,11 +26,11 @@ export const markerId = R.cond([
   [R.isNil, () => `marker:${uuid()}`]
 ])
 
-export const lockedId = id => `locked+${id}`
-export const hiddenId = id => `hidden+${id}`
-export const sharedId = id => `shared+${id}`
-export const defaultId = id => `default+${id}`
-export const tagsId = id => `tags+${id}`
+export const lockedId = (id = '') => `locked+${id}`
+export const hiddenId = (id = '') => `hidden+${id}`
+export const sharedId = (id = '') => `shared+${id}`
+export const defaultId = (id = '') => `default+${id}`
+export const tagsId = (id = '') => `tags+${id}`
 export const linkId = id => `link+${id}/${uuid()}`
 
 /**
