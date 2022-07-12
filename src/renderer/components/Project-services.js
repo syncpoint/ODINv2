@@ -5,6 +5,7 @@ import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, SearchIndex, PreferencesStore, Store, MigrationTool, ProjectStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
+import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -95,6 +96,8 @@ export default async projectUUID => {
     emitter,
     selection
   })
+
+  services.commandRegistry = new CommandRegistry(services)
 
   return services
 }

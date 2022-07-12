@@ -5,8 +5,6 @@ import Icon from '@mdi/react'
 import * as mdi from '@mdi/js'
 import { useServices } from './hooks'
 import { DropdownMenu } from './DropdownMenu'
-import * as ID from '../ids'
-import { militaryFormat } from '../../shared/datetime'
 
 const reducer = (state, { message, cell }) => {
   const newState = { ...state }
@@ -33,57 +31,50 @@ Button.propTypes = {
   onClick: PropTypes.func.isRequired
 }
 
+const CommandButton = props => {
+  const { command } = props
+
+  return (
+    <button
+      className='toolbar__button'
+      onClick={() => command.execute()}
+    >
+      <Icon path={mdi[command.path]} size='20px'/>
+    </button>
+  )
+}
+
+CommandButton.propTypes = {
+  command: PropTypes.object.isRequired
+}
+
+
 export const Toolbar = () => {
-  const { emitter, clipboard, undo, store, selection, viewMemento } = useServices()
+  const { emitter, commandRegistry } = useServices()
   const [state, dispatch] = React.useReducer(reducer, {})
 
+  const commands = [
+    commandRegistry.separator(),
+    commandRegistry.command('CLIPBOARD_CUT'),
+    commandRegistry.command('CLIPBOARD_COPY'),
+    commandRegistry.command('CLIPBOARD_PASTE'),
+    commandRegistry.command('CLIPBOARD_DELETE'),
+    commandRegistry.separator(),
+    commandRegistry.command('UNDO_UNDO'),
+    commandRegistry.command('UNDO_REDO')
+  ]
+
+  const addCommands = [
+    commandRegistry.command('LAYER_CREATE'),
+    commandRegistry.command('MARKER_CREATE'),
+    commandRegistry.command('VIEW_CREATE')
+  ]
+
+  // TODO: split toolbar in different components (frequent updates because of time display)
   React.useEffect(() => {
     emitter.on('osd', dispatch)
     return () => emitter.off('osd', dispatch)
   }, [emitter, dispatch])
-
-  const handleClick = path => {
-    if (path === 'mdiContentCut') clipboard.cut()
-    else if (path === 'mdiContentCopy') clipboard.copy()
-    else if (path === 'mdiContentPaste') clipboard.paste()
-    else if (path === 'mdiTrashCanOutline') clipboard.delete()
-    else if (path === 'mdiUndo' && undo.canUndo()) undo.undo()
-    else if (path === 'mdiRedo' && undo.canRedo()) undo.redo()
-  }
-
-  const options = {
-    'command:layer.new': {
-      label: 'Create Layer',
-      apply: () => {
-        const key = ID.layerId()
-        selection.set([key])
-        store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
-      }
-    },
-    'command:marker.new': {
-      label: 'Create Marker',
-      apply: () => {
-        const feature = {
-          name: `Marker - ${militaryFormat.now()}`,
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: viewMemento.center()
-          }
-        }
-
-        const id = ID.markerId()
-        store.insert([[id, feature]])
-        selection.set([id])
-      }
-    },
-    'command:view.new': {
-      label: 'Create View',
-      apply: () => console.log('apply/command:view.new')
-    }
-  }
-
-  const option = ([key, { label, apply }]) => <a key={key} onClick={apply}>{label}</a>
 
   return (
     <header className='toolbar'>
@@ -91,21 +82,16 @@ export const Toolbar = () => {
       Default Layer:&nbsp;<b>{state.A2}</b>
       </div>
       <div className='toolbar__center-items toolbar__items-container'>
-        <DropdownMenu path='mdiPlusBoxOutline' onClick={handleClick}>
-          { Object.entries(options).map(option) }
-        </DropdownMenu>
-        <span className='toolbar__divider'></span>
-        <Button path='mdiContentCut' onClick={handleClick}/>
-        <Button path='mdiContentCopy' onClick={handleClick}/>
-        <Button path='mdiContentPaste' onClick={handleClick}/>
-        <Button path='mdiTrashCanOutline' onClick={handleClick}/>
-        <span className='toolbar__divider'></span>
-        <Button path='mdiUndo' onClick={handleClick}/>
-        <Button path='mdiRedo' onClick={handleClick}/>
+        <DropdownMenu path='mdiPlusBoxOutline' options={addCommands}/>
+
+        {
+          commands.map(([key, command]) => {
+            return command === 'separator'
+              ? <span key={key} className='toolbar__divider'></span>
+              : <CommandButton key={key} command={command}/>
+          })
+        }
       </div>
-      {/* <div className='toolbar__right-items toolbar__items-container'>
-        <b>{state.C2}</b>
-      </div> */}
     </header>
   )
 }
