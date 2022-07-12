@@ -23,6 +23,7 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * geometries :: [k] -> [GeoJSON/Geometry]
  * geometries :: 'layer:...' -> [GeoJSON/Geometry]
  * geometries :: k -> [GeoJSON/Geometry]
+ * import :: (operations, {k: v}) -> unit
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
  * insertGeoJSON :: [GeoJSON/Feature] -> unit
@@ -182,6 +183,14 @@ Store.prototype.update = async function (...args) {
 Store.prototype.insert = function (tuples) {
   const command = this.insertCommand(this.db, tuples)
   this.undo.apply(command)
+}
+
+
+/**
+ * import :: (operations, {k: v}) -> unit
+ */
+Store.prototype.import = function (operations, options = {}) {
+  this.batch(this.db, operations, options)
 }
 
 
