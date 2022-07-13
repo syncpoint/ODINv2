@@ -76,7 +76,6 @@ Clipboard.prototype.cut = async function () {
 
 Clipboard.prototype.paste = async function () {
   const entries = (await readEntries()).sort(([a], [b]) => ID.ord(a) - ID.ord(b))
-  console.log(entries)
   const entrymap = Object.fromEntries(entries)
 
   // Collect all features which are not included in a layer

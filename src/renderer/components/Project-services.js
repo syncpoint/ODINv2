@@ -62,13 +62,11 @@ export default async projectUUID => {
 
   ipcRenderer.on('EDIT_UNDO', () => {
     if (inputFocused()) return ipcRenderer.send('DO_UNDO')
-    console.log('canUndo', undo.canUndo())
     if (undo.canUndo()) undo.undo()
   })
 
   ipcRenderer.on('EDIT_REDO', () => {
     if (inputFocused()) return ipcRenderer.send('DO_REDO')
-    console.log('canRedo', undo.canRedo())
     if (undo.canRedo()) undo.redo()
   })
 

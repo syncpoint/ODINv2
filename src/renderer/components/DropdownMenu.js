@@ -30,8 +30,8 @@ export const DropdownMenu = props => {
         onBlur={handleBlur}
         className="dropdown__button"
       >
-        <Icon path={mdi[props.path]} size='20px'/>
-        <Icon path={mdi.mdiChevronDown} size='16px'/>
+        <Icon path={mdi[props.path]} size='20px' color='#68696B'/>
+        <Icon path={mdi.mdiChevronDown} size='16px' color='#68696B'/>
       </button>
       <div id="newDropdown" className="dropdown__content">
         { props.options.map(option) }

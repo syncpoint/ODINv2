@@ -33,13 +33,21 @@ Button.propTypes = {
 
 const CommandButton = props => {
   const { command } = props
+  const [enabled, setEnabled] = React.useState(command.enabled ? command.enabled() : true)
+  const color = enabled ? '#68696B' : 'lightgrey'
+
+  React.useEffect(() => {
+    const handle = () => setEnabled(command.enabled())
+    if (command.on) command.on('changed', handle)
+    return command.off && (() => command.off('changed', handle))
+  }, [command])
 
   return (
     <button
       className='toolbar__button'
       onClick={() => command.execute()}
     >
-      <Icon path={mdi[command.path]} size='20px'/>
+      <Icon path={mdi[command.path]} size='20px' color={color}/>
     </button>
   )
 }
@@ -79,11 +87,10 @@ export const Toolbar = () => {
   return (
     <header className='toolbar'>
       <div className='toolbar__left-items toolbar__items-container'>
-      Default Layer:&nbsp;<b>{state.A2}</b>
+        Default Layer:&nbsp;<b>{state.A2}</b>
       </div>
       <div className='toolbar__center-items toolbar__items-container'>
         <DropdownMenu path='mdiPlusBoxOutline' options={addCommands}/>
-
         {
           commands.map(([key, command]) => {
             return command === 'separator'
