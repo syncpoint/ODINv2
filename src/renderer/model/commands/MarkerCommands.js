@@ -1,73 +1,28 @@
-import * as R from 'ramda'
-import MGRS from 'geodesy/mgrs.js'
-import UTM from 'geodesy/utm.js'
-import convert from 'geo-coordinates-parser' // DMS
-import { fromLonLat } from 'ol/proj'
-import { Command } from './Command'
 import { markerId } from '../../ids'
+import { militaryFormat } from '../../../shared/datetime'
 
-const extract = value => {
-  if (value.lat && value.lon) return [value.lon, value.lat]
-  else if (value.decimalLatitude && value.decimalLongitude) return [value.decimalLongitude, value.decimalLatitude]
-  else if (value.latitudeCenter && value.longitudeCenter) return [value.longitudeCenter, value.latitudeCenter]
-  else return undefined
+/** */
+const CreateMarker = function (services) {
+  this.selection = services.selection
+  this.store = services.store
+  this.viewMemento = services.viewMemento
+  this.label = 'Create Marker'
 }
 
-const parsers = [
-  s => MGRS.parse(s).toUtm().toLatLon(),
-  s => UTM.parse(s).toLatLon(),
-  s => convert(s)
-]
-
-
-const parseCoordinate = s => parsers.reduce((acc, parse) => {
-  return acc || R.tryCatch(R.compose(extract, parse))(R.F)(s)
-}, undefined)
-
-/**
- *
- */
-export default function MarkerCommands (options) {
-  this.store = options.store
-  this.emitter = options.emitter
-  this.selection = options.selection
-}
-
-MarkerCommands.prototype.commands = function (tuples) {
-  return [
-    this.createMarker(tuples)
-  ]
-}
-
-MarkerCommands.prototype.createMarker = function () {
-  const callback = value => {
-    const replaced = value.replace(/[’′]/g, "'").replace(/[″]/g, '"')
-    const coordinates = parseCoordinate(replaced)
-    if (!coordinates) return
-
-    const center = fromLonLat(coordinates)
-    const feature = {
-      name: value,
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: center
-      }
+CreateMarker.prototype.execute = function () {
+  const key = markerId()
+  this.selection.set([key])
+  this.store.insert([[key, {
+    name: `Marker - ${militaryFormat.now()}`,
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: this.viewMemento.center()
     }
-
-    const id = markerId()
-    this.store.insert([[id, feature]])
-    this.emitter.emit('map/flyto', { center })
-    this.selection.set([id])
-  }
-
-  return new Command({
-    id: 'marker:create',
-    description: 'Marker: Create new',
-    body: (dryRun) => {
-      if (dryRun) return
-      const event = { value: '', callback, placeholder: 'Marker Coordinate' }
-      this.emitter.emit('command/open-command-palette', event)
-    }
-  })
+  }]])
 }
+
+
+export default services => ({
+  MARKER_CREATE: new CreateMarker(services)
+})

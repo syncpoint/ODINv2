@@ -69,7 +69,10 @@ export const Toolbar = () => {
     commandRegistry.command('CLIPBOARD_DELETE'),
     commandRegistry.separator(),
     commandRegistry.command('UNDO_UNDO'),
-    commandRegistry.command('UNDO_REDO')
+    commandRegistry.command('UNDO_REDO'),
+    commandRegistry.separator(),
+    commandRegistry.command('LAYER_SET_DEFAULT'),
+    commandRegistry.command('PIN')
   ]
 
   const addCommands = [

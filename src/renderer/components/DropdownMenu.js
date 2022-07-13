@@ -18,9 +18,9 @@ export const DropdownMenu = props => {
 
   // TODO: handle ESCAPE key to close menu
 
-  const option = ([key, { label, execute }]) => {
-    const handleClick = execute || (() => {})
-    return <a key={key} onClick={handleClick}>{label}</a>
+  const option = ([key, command]) => {
+    const handleClick = () => command.execute && command.execute()
+    return <a key={key} onClick={handleClick}>{command.label}</a>
   }
 
   return (

@@ -1,44 +1,20 @@
 import uuid from 'uuid-random'
-import * as ID from '../ids'
-import { militaryFormat } from '../../shared/datetime'
-import UndoCommands from './commands/UndoCommands'
-import ClipboardCommands from './commands/ClipboardCommands'
+import globalCommands from './commands/GlobalCommands'
+import undoCommands from './commands/UndoCommands'
+import clipboardCommands from './commands/ClipboardCommands'
+import layerCommands from './commands/LayerCommands'
+import markerCommands from './commands/MarkerCommands'
 
 /**
  *
  */
 export function CommandRegistry (services) {
-  const { selection, store, viewMemento } = services
-
   this.separator = () => [uuid(), 'separator']
-  Object.assign(this, ClipboardCommands(services))
-  Object.assign(this, UndoCommands(services))
-
-
-  this.LAYER_CREATE = {
-    label: 'Create Layer',
-    execute: () => {
-      const key = ID.layerId()
-      selection.set([key])
-      store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
-    }
-  }
-
-  this.MARKER_CREATE = {
-    label: 'Create Marker',
-    execute: () => {
-      const key = ID.markerId()
-      selection.set([key])
-      store.insert([[key, {
-        name: `Marker - ${militaryFormat.now()}`,
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: viewMemento.center()
-        }
-      }]])
-    }
-  }
+  Object.assign(this, globalCommands(services))
+  Object.assign(this, clipboardCommands(services))
+  Object.assign(this, undoCommands(services))
+  Object.assign(this, layerCommands(services))
+  Object.assign(this, markerCommands(services))
 
   this.VIEW_CREATE = {
     label: 'Create View'
