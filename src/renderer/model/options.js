@@ -182,11 +182,35 @@ const marker = services => {
   }
 }
 
+const tileService = () => {
+
+  return (id, cache) => {
+    const service = cache(id)
+
+    const tags = [
+      `SCOPE:${service.type}:NONE`,
+      ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+      'PLUS'
+    ].join(' ')
+
+    const option = {
+      id,
+      title: service.name,
+      scope: service.type,
+      tags,
+      capabilities: 'TAG|RENAME'
+    }
+
+    return option
+  }
+}
+
 export const options = services => ({
   feature: feature(services),
   layer: layer(services),
   'link+layer': link(services),
   'link+feature': link(services),
   symbol: symbol(services),
-  marker: marker(services)
+  marker: marker(services),
+  'tile-service': tileService(services)
 })

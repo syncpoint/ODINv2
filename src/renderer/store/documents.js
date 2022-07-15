@@ -124,3 +124,13 @@ documents.marker = (id, marker, cache) => {
     tags
   }
 }
+
+documents['tile-service'] = (id, service, cache) => {
+  const document = {
+    id,
+    scope: 'tile-service',
+    tags: [service.type]
+  }
+
+  return document
+}

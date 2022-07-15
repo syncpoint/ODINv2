@@ -17,6 +17,7 @@ const scopeGroup = {
     { key: 'link', scope: '@link', label: 'Links' },
     { key: 'symbol', scope: '@symbol', label: 'Symbols' },
     { key: 'marker', scope: '@marker', label: 'Markers' },
+    { key: 'tile-service', scope: '@tile-service', label: 'Tile Services' },
     { key: 'pinned', scope: '#pin', label: 'Pinned' }
   ]
 }

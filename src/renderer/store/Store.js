@@ -15,6 +15,7 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * batch :: (leveldb, operations) -> unit
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
+ * delete :: String -> unit
  * delete :: [k] -> unit
  * dictionary :: String -> {k: v}
  * dictionary :: String -> (k -> k) -> {k: v}
@@ -218,14 +219,21 @@ Store.prototype.batch = async function (db, operations, options = {}) {
 
 /**
  * @async
+ * delete :: String -> unit
  * delete :: [k] -> unit
  */
-Store.prototype.delete = async function (ids) {
+Store.prototype.delete = async function (arg) {
+
+  // Little convenience (prefix -> [k]):
+  if (typeof arg === 'string') return this.delete(await this.keys(arg))
+
+  // [k]:
+  const ids = arg
 
   // Don't delete locked entries:
   const locks = Object.fromEntries(await this.tuples(ids.map(lockedId)))
   const deletableIds = ids
-    .filter(isDeletableId)
+    .filter(isDeletableId) // symbols for example cannot be deleted.
     .filter(key => !locks[lockedId(key)])
 
   const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default'])

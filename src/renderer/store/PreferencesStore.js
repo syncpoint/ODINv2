@@ -2,6 +2,10 @@ import util from 'util'
 import Emitter from '../../shared/emitter'
 import * as L from '../../shared/level'
 
+const COORDINATES_FORMAT = 'coordinates-format'
+const GRATICULE = 'graticule'
+const TILE_LAYERS = 'tile-layers'
+
 export function PreferencesStore (preferencesDB, ipcRenderer) {
   Emitter.call(this)
   this.preferencesDB = preferencesDB
@@ -31,13 +35,13 @@ export function PreferencesStore (preferencesDB, ipcRenderer) {
 util.inherits(PreferencesStore, Emitter)
 
 PreferencesStore.prototype.setCoordinatesFromat = async function (format) {
-  await this.put('coordinates-format', format)
+  await this.put(COORDINATES_FORMAT, format)
   this.emit('coordinatesFormatChanged', { format })
 }
 
 PreferencesStore.prototype.setGraticule = async function (type, checked) {
-  if (!checked) this.preferencesDB.del('graticule')
-  else this.put('graticule', type)
+  if (!checked) this.preferencesDB.del(GRATICULE)
+  else this.put(GRATICULE, type)
   this.emit('graticuleChanged', { type, checked })
 }
 
@@ -47,6 +51,20 @@ PreferencesStore.prototype.showSidebar = function (checked) {
 
 PreferencesStore.prototype.showToolbar = function (checked) {
   this.put('ui.toolbar.showing', checked)
+}
+
+/**
+ * @deprecated
+ */
+PreferencesStore.prototype.putTileLayers = function (layers) {
+  this.put(TILE_LAYERS, layers)
+}
+
+/**
+ * @deprecated
+ */
+PreferencesStore.prototype.getTileLayers = function () {
+  return this.get(TILE_LAYERS, [])
 }
 
 /**
