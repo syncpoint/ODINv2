@@ -93,7 +93,7 @@ const updateFeatures = (operations, features) => operations
       // not send with put operation.
       const retainGeometry = acc[key] && acc[key].geometry && !value.geometry
       if (retainGeometry) acc[key] = { ...value, geometry: acc[key].geometry }
-      else acc[key] = value
+      else if (acc[key]) acc[key] = value // don't add new entries, only update existing
     }
 
     return acc

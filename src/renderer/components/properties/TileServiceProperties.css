@@ -1,6 +1,6 @@
 
 .service-abstract {
-  height: 8rem;
+  height: 6rem;
   border-color: lightgrey;
   border-radius: 3px;
   border-width: 1px;
@@ -9,7 +9,7 @@
 }
 
 .layer-list {
-  height: 15rem;
+  height: 12rem;
   overflow: auto;
   border-color: lightgrey;
   border-radius: 3px;
@@ -32,7 +32,7 @@
 }
 
 .map-preview {
-  height: 15rem;
+  height: 12rem;
   border-color: lightgrey;
   border-radius: 3px;
   border-width: 1px;

@@ -1,12 +1,14 @@
 /* eslint-disable react/prop-types */
 import WMTSCapabilities from 'ol/format/WMTSCapabilities'
-/* import WMSCapabilities from 'ol/format/WMSCapabilities' */
+import WMSCapabilities from 'ol/format/WMSCapabilities'
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import Map from 'ol/Map'
 import View from 'ol/View'
+import { fromLonLat } from 'ol/proj'
+import { boundingExtent } from 'ol/extent'
 import React from 'react'
 import ColSpan2 from './ColSpan2'
 import TextField from './TextField'
@@ -28,7 +30,15 @@ const fetchCapabilities = parser => async url => {
   //  }
   const response = await fetch(url)
   const text = await response.text()
+  adapter(text)
   return parser.read(text)
+}
+
+const adapter = text => {
+  let capabilities = WMSCapabilities.read(text)
+  console.log('WMS', capabilities)
+  capabilities = WMTSCapabilities.read(text)
+  console.log('WMTS', capabilities)
 }
 
 
@@ -39,6 +49,7 @@ const ServiceAbstract = props => {
   const { capabilities } = props
   const abstract = capabilities?.ServiceIdentification?.Abstract
   if (!abstract) return null
+  if (abstract.length < 8) return null
 
   return (
     <ColSpan2>
@@ -88,11 +99,33 @@ const map = (emitter, viewport) => {
     view
   })
 
-  emitter.on('layer', ({ capabilities, id: layer }) => {
-    const options = optionsFromCapabilities(capabilities, { layer })
+  const fitView = wgs84boundingBox => {
+    if (wgs84boundingBox) {
+      const southWest = fromLonLat(wgs84boundingBox.slice(0, 2))
+      const northEast = fromLonLat(wgs84boundingBox.slice(2, 4))
+      const extent = boundingExtent([southWest, northEast])
+      map.getView().fit(extent)
+    }
+  }
+
+
+  const setSource = (capabilities, id) => {
+    const layer = capabilities.Contents.Layer.find(layer => layer.Identifier === id)
+    fitView(layer.WGS84BoundingBox)
+
+    const options = optionsFromCapabilities(capabilities, { layer: id })
     const layers = map.getAllLayers()
     layers[0].setSource(new WMTS(options))
-  })
+
+  }
+
+  const resetSource = () => {
+    const layers = map.getAllLayers()
+    layers[0].setSource(source)
+  }
+
+  emitter.on('set-source', ({ capabilities, id }) => setSource(capabilities, id))
+  emitter.on('reset-source', () => resetSource())
 }
 
 
@@ -113,17 +146,7 @@ const entriesFromCapabilities = capabilities => {
  */
 const TileServiceProperties = props => {
   const [key, tileService] = (Object.entries(props.features))[0]
-
-  // TODO: write selected layers to store instead preferences store.
-  /*
-    const prefix = (([scope, id]) => `${scope}+layer:${id}`)(key.split(':')) // TODO: ids module
-    tile-service:{UUID}
-    tile-service+layer:{UUID}/{IDENTIFIER} [WMS, WMTS]
-    tile-service+layer:{UUID} [XYZ]
-    tile-service+z-index:({UUID}/{IDENTIFIER} | {UUID}) number
-  */
-
-  const { sessionStore, preferencesStore, store } = useServices()
+  const { sessionStore, store } = useServices()
   const [list, dispatch] = useList({ multiselect: false })
   const [emitter] = React.useState(new EventEmitter())
   const [url, setUrl] = React.useState(tileService.url)
@@ -133,22 +156,19 @@ const TileServiceProperties = props => {
   //
   React.useEffect(() => {
     (async () => {
-      const selectedLayers = await preferencesStore.getTileLayers()
-
+      const selectedLayers = await store.keys(`tile-layer:${key.split(':')[1]}`)
       const entries = entriesFromCapabilities(tileService.capabilities).reduce((acc, entry) => {
-        const layerId = `${key}/${entry.id}`
-        const checked = selectedLayers.findIndex(layer => layer.id === layerId) !== -1
+        const layerId = `tile-layer:${key.split(':')[1]}/${entry.id}`
+        const checked = selectedLayers.includes(layerId)
         acc.push({ ...entry, checked })
         return acc
       }, [])
 
       dispatch({ type: 'entries', entries })
       setUrl(tileService.url)
-
-      // TODO: reset preview
-
+      emitter.emit('reset-source')
     })()
-  }, [preferencesStore, key, tileService, dispatch])
+  }, [store, emitter, key, tileService, dispatch])
 
   // TODO: prevent default for ArrowUp/-Down keys in list
 
@@ -156,8 +176,7 @@ const TileServiceProperties = props => {
   // Update selected/focused entry in list model.
   //
   const handleEntryClick = id => {
-    // TODO: respect layer bounding box if available
-    emitter.emit('layer', { capabilities: tileService.capabilities, id })
+    emitter.emit('set-source', { capabilities: tileService.capabilities, id })
     dispatch({ type: 'select', id })
   }
 
@@ -170,10 +189,7 @@ const TileServiceProperties = props => {
 
     // Remove corresponding layers from selected layers.
     //
-    const selectedLayers = await preferencesStore.getTileLayers()
-    const selected = selectedLayers.filter(layer => layer.id.startsWith(url))
-    await preferencesStore.putTileLayers(selected)
-
+    await store.delete(`tile-layer:${key.split(':')[1]}`)
 
     // Fetch capabilities and update tile service and list model.
     const capabilities = await fetchCapabilities(new WMTSCapabilities())(url)
@@ -193,23 +209,21 @@ const TileServiceProperties = props => {
   //
   const handleEntryChange = async id => {
 
-    // Update tile layers selection in preferences store.
+    // Update tile layers selection.
     //
-    const selectedLayers = await preferencesStore.getTileLayers()
-    const layerId = `${key}/${id}`
-    const index = selectedLayers.findIndex(layer => layer.id === layerId)
+    const layerId = `tile-layer:${key.split(':')[1]}/${id}`
+    const selectedLayers = await store.keys(`tile-layer:${key.split(':')[1]}`)
 
-    const selected = index === -1
-      ? [...selectedLayers, { id: layerId }]
-      : selectedLayers.filter(layer => layer.id !== layerId)
+    if (selectedLayers.includes(layerId)) await store.delete(layerId)
+    else await store.insert([[layerId, {}]])
 
-    await preferencesStore.putTileLayers(selected)
+    const selected = selectedLayers.includes(layerId)
+      ? selectedLayers.filter(id => id !== layerId)
+      : [...selectedLayers, layerId]
 
-    // Update list model.
-    //
     const entries = list.entries.reduce((acc, entry) => {
-      const layerId = `${key}/${entry.id}`
-      const checked = selected.findIndex(layer => layer.id === layerId) !== -1
+      const layerId = `tile-layer:${key.split(':')[1]}/${entry.id}`
+      const checked = selected.includes(layerId)
       acc.push({ ...entry, checked })
       return acc
     }, [])
