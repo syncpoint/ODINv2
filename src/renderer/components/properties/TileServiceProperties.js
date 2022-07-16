@@ -1,7 +1,9 @@
 /* eslint-disable react/prop-types */
+import { URL } from 'url'
 import WMTSCapabilities from 'ol/format/WMTSCapabilities'
 import WMSCapabilities from 'ol/format/WMSCapabilities'
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS'
+import TileWMS from 'ol/source/TileWMS'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { defaults as defaultInteractions } from 'ol/interaction'
@@ -18,27 +20,103 @@ import { useList, useServices } from '../hooks'
 import EventEmitter from '../../../shared/emitter'
 
 
+const wmtsAdapter = caps => {
+  console.log('wmtsAdapter', caps)
+  const layers = caps?.Contents?.Layer || []
+
+  return {
+    type: 'WMTS',
+    capabilities: caps,
+    abstract: caps?.ServiceIdentification?.Abstract,
+    layers: () => layers.map(layer => ({
+      id: layer.Identifier,
+      title: layer.Title,
+      abstract: layer.Abstract
+    })),
+    boundingBox: layerId => {
+      const layer = layers.find(layer => layer.Identifier === layerId)
+      return layer && layer.WGS84BoundingBox
+    },
+    source: layerId => {
+      const options = optionsFromCapabilities(caps, { layer: layerId })
+      return new WMTS(options)
+    }
+  }
+}
+
+const wmsAdapter = caps => {
+  console.log('wmsAdapter', caps)
+
+  // For some providers layer names are not unique.
+  // We take this first layer and discard duplicates.
+  const seen = []
+  const layers = (caps?.Capability?.Layer?.Layer || []).reduce((acc, layer) => {
+    if (seen.includes(layer.Name)) return acc
+    seen.push(layer.Name)
+    acc.push(layer)
+    return acc
+  }, [])
+
+  return {
+    type: 'WMS',
+    capabilities: caps,
+    abstract: caps?.Service?.Abstract,
+    layers: () => layers.map(layer => ({
+      id: layer.Name,
+      title: layer.Title,
+      abstract: layer.Abstract
+    })),
+    boundingBox: layerId => null,
+    source: layerId => {
+      const options = {
+        url: 'http://data.wien.gv.at/daten/wms',
+        params: { LAYERS: layerId, TILED: true },
+        crossOrigin: 'anonymous'
+      }
+
+      console.log('WMS', options)
+      return new TileWMS(options)
+    }
+  }
+}
+
+const adapters = {
+  WMTS: wmtsAdapter,
+  WMS: wmsAdapter
+}
+
+const adapter = text => {
+  {
+    const caps = (new WMSCapabilities()).read(text)
+    if (caps && caps.Service && caps.Capability) {
+      return wmsAdapter(caps)
+    }
+  }
+
+  {
+    const caps = (new WMTSCapabilities()).read(text)
+    if (caps && caps.ServiceIdentification && caps.Contents) {
+      return wmtsAdapter(caps)
+    }
+  }
+}
+
 /**
  *
  */
-const fetchCapabilities = parser => async url => {
+const fetchCapabilities = async url => {
+  const { origin, pathname } = new URL(url)
+  console.log(origin, pathname)
   //  Note: Currently this setting is required on BrowserWindow:
   //  {
   //    webPreferences: {
   //      webSecurity: false
   //    }
   //  }
+
   const response = await fetch(url)
   const text = await response.text()
-  adapter(text)
-  return parser.read(text)
-}
-
-const adapter = text => {
-  let capabilities = WMSCapabilities.read(text)
-  console.log('WMS', capabilities)
-  capabilities = WMTSCapabilities.read(text)
-  console.log('WMTS', capabilities)
+  return adapter(text)
 }
 
 
@@ -99,23 +177,21 @@ const map = (emitter, viewport) => {
     view
   })
 
-  const fitView = wgs84boundingBox => {
-    if (wgs84boundingBox) {
-      const southWest = fromLonLat(wgs84boundingBox.slice(0, 2))
-      const northEast = fromLonLat(wgs84boundingBox.slice(2, 4))
+  const fitView = boundingBox => {
+    if (boundingBox) {
+      const southWest = fromLonLat(boundingBox.slice(0, 2))
+      const northEast = fromLonLat(boundingBox.slice(2, 4))
       const extent = boundingExtent([southWest, northEast])
       map.getView().fit(extent)
     }
   }
 
 
-  const setSource = (capabilities, id) => {
-    const layer = capabilities.Contents.Layer.find(layer => layer.Identifier === id)
-    fitView(layer.WGS84BoundingBox)
-
-    const options = optionsFromCapabilities(capabilities, { layer: id })
+  const setSource = (adapter, id) => {
+    fitView(adapter.boundingBox(id))
     const layers = map.getAllLayers()
-    layers[0].setSource(new WMTS(options))
+    console.log(adapter.source(id))
+    layers[0].setSource(adapter.source(id))
 
   }
 
@@ -124,22 +200,22 @@ const map = (emitter, viewport) => {
     layers[0].setSource(source)
   }
 
-  emitter.on('set-source', ({ capabilities, id }) => setSource(capabilities, id))
+  emitter.on('set-source', ({ adapter, id }) => setSource(adapter, id))
   emitter.on('reset-source', () => resetSource())
 }
 
 
-/**
- * Derive list model from capabilities.
- */
-const entriesFromCapabilities = capabilities => {
-  const layers = capabilities?.Contents?.Layer
-  return (layers || []).map(layer => ({
-    id: layer.Identifier,
-    title: layer.Title,
-    abstract: layer.Abstract
-  }))
-}
+// /**
+//  * Derive list model from capabilities.
+//  */
+// const entriesFromCapabilities = capabilities => {
+//   const layers = capabilities?.Contents?.Layer
+//   return (layers || []).map(layer => ({
+//     id: layer.Identifier,
+//     title: layer.Title,
+//     abstract: layer.Abstract
+//   }))
+// }
 
 /**
  *
@@ -157,7 +233,8 @@ const TileServiceProperties = props => {
   React.useEffect(() => {
     (async () => {
       const selectedLayers = await store.keys(`tile-layer:${key.split(':')[1]}`)
-      const entries = entriesFromCapabilities(tileService.capabilities).reduce((acc, entry) => {
+      const adapter = adapters[tileService.type](tileService.capabilities)
+      const entries = adapter.layers().reduce((acc, entry) => {
         const layerId = `tile-layer:${key.split(':')[1]}/${entry.id}`
         const checked = selectedLayers.includes(layerId)
         acc.push({ ...entry, checked })
@@ -176,7 +253,8 @@ const TileServiceProperties = props => {
   // Update selected/focused entry in list model.
   //
   const handleEntryClick = id => {
-    emitter.emit('set-source', { capabilities: tileService.capabilities, id })
+    const adapter = adapters[tileService.type](tileService.capabilities)
+    emitter.emit('set-source', { adapter, id })
     dispatch({ type: 'select', id })
   }
 
@@ -192,11 +270,11 @@ const TileServiceProperties = props => {
     await store.delete(`tile-layer:${key.split(':')[1]}`)
 
     // Fetch capabilities and update tile service and list model.
-    const capabilities = await fetchCapabilities(new WMTSCapabilities())(url)
-    const entries = entriesFromCapabilities(capabilities)
+    const adapter = await fetchCapabilities(url)
+    const entries = adapter.layers()
 
-    const newValue = { ...tileService, url }
-    if (capabilities) newValue.capabilities = capabilities
+    const newValue = { ...tileService, type: adapter.type, url }
+    if (adapter.capabilities) newValue.capabilities = adapter.capabilities
     await store.update([key], [newValue], [tileService])
 
     setUrl(url)
