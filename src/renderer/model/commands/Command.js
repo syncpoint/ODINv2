@@ -12,26 +12,19 @@
  */
 export class Command {
   constructor (options) {
+    this.options = options
     this.id = options.id
-    this.description_ = options.description
-    this.binding_ = options.binding
-    this.body_ = options.body
-    this.revert_ = options.revert
-  }
-
-  binding () {
-    return this.binding_
   }
 
   description () {
-    return this.description_
+    return this.options.description
   }
 
   invoke (dryRun) {
-    this.body_ && this.body_(dryRun)
+    this.options.body && this.options.body(dryRun)
   }
 
   revert () {
-    this.revert_ && this.revert_()
+    this.options.revert && this.options.revert()
   }
 }

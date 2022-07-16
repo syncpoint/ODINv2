@@ -18,6 +18,11 @@ export const DropdownMenu = props => {
 
   // TODO: handle ESCAPE key to close menu
 
+  const option = ([key, command]) => {
+    const handleClick = () => command.execute && command.execute()
+    return <a key={key} onClick={handleClick}>{command.label}</a>
+  }
+
   return (
     <div className="dropdown">
       <button
@@ -25,11 +30,11 @@ export const DropdownMenu = props => {
         onBlur={handleBlur}
         className="dropdown__button"
       >
-        <Icon path={mdi[props.path]} size='20px'/>
-        <Icon path={mdi.mdiChevronDown} size='16px'/>
+        <Icon path={mdi[props.path]} size='20px' color='#68696B'/>
+        <Icon path={mdi.mdiChevronDown} size='16px' color='#68696B'/>
       </button>
       <div id="newDropdown" className="dropdown__content">
-        { props.children }
+        { props.options.map(option) }
       </div>
     </div>
   )
@@ -37,5 +42,5 @@ export const DropdownMenu = props => {
 
 DropdownMenu.propTypes = {
   path: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired
+  options: PropTypes.array.isRequired
 }

@@ -1,27 +1,35 @@
-const unshift = (stack, command) => stack.unshift(command)
-
-/**
- * Apply command from first stack and
- * move inverse command to other stack.
- */
-const shift = async ([head, ...tail], to) => {
-  if (!head) return []
-  await head.apply()
-  unshift(to, await head.inverse())
-  return tail
-}
+import EventEmitter from '../shared/emitter'
 
 export function Undo () {
   this.undoStack = []
   this.redoStack = []
 }
 
+Object.assign(Undo.prototype, EventEmitter.prototype)
+
+Undo.prototype.unshift = function (stack, command) {
+  stack.unshift(command)
+  this.emit('changed', { canUndo: this.canUndo(), canRedo: this.canRedo() })
+}
+
+/**
+ * Apply command from first stack and
+ * move inverse command to other stack.
+ */
+Undo.prototype.shift = async function ([head, ...tail], to) {
+  if (!head) return []
+  await head.apply()
+  this.unshift(to, await head.inverse())
+  return tail
+}
+
+
 /**
  * Invoke apply() function of topmost command on undo stack.
  * Push inverse command unto redo stack.
  */
 Undo.prototype.undo = async function () {
-  this.undoStack = await shift(this.undoStack, this.redoStack)
+  this.undoStack = await this.shift(this.undoStack, this.redoStack)
 }
 
 /**
@@ -29,7 +37,7 @@ Undo.prototype.undo = async function () {
  * Push inverse command unto redo stack.
  */
 Undo.prototype.redo = async function () {
-  this.redoStack = await shift(this.redoStack, this.undoStack)
+  this.redoStack = await this.shift(this.redoStack, this.undoStack)
 }
 
 /**
@@ -42,7 +50,7 @@ Undo.prototype.redo = async function () {
 Undo.prototype.apply = async function (command) {
   await command.apply()
   this.redoStack = []
-  unshift(this.undoStack, await command.inverse())
+  this.unshift(this.undoStack, await command.inverse())
 }
 
 Undo.prototype.canUndo = function () {
@@ -63,4 +71,3 @@ Undo.prototype.composite = function (commands) {
     inverse: () => this.composite(commands.reverse().map(command => command.inverse()))
   }
 }
-

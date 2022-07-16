@@ -5,6 +5,7 @@ import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import { SessionStore, SearchIndex, PreferencesStore, Store, MigrationTool, ProjectStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
+import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
 import { Undo } from '../Undo'
@@ -61,13 +62,11 @@ export default async projectUUID => {
 
   ipcRenderer.on('EDIT_UNDO', () => {
     if (inputFocused()) return ipcRenderer.send('DO_UNDO')
-    console.log('canUndo', undo.canUndo())
     if (undo.canUndo()) undo.undo()
   })
 
   ipcRenderer.on('EDIT_REDO', () => {
     if (inputFocused()) return ipcRenderer.send('DO_REDO')
-    console.log('canRedo', undo.canRedo())
     if (undo.canRedo()) undo.redo()
   })
 
@@ -95,6 +94,8 @@ export default async projectUUID => {
     emitter,
     selection
   })
+
+  services.commandRegistry = new CommandRegistry(services)
 
   return services
 }
