@@ -126,7 +126,6 @@ documents.marker = (id, marker, cache) => {
 }
 
 documents['tile-service'] = (id, service, cache) => {
-  console.log('service', service)
   const tags = cache(tagsId(id)) || []
 
   const document = {

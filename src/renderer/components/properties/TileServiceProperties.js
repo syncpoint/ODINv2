@@ -91,11 +91,22 @@ const xyzAdapter = caps => ({
   source: () => new XYZ({ url: caps.url })
 })
 
+const osmAdapter = () => ({
+  type: 'OSM',
+  capabilities: {},
+  abstract: null,
+  layers: () => [],
+  boundingBox: () => null,
+  source: () => new OSM()
+})
+
 const adapters = {
   WMTS: wmtsAdapter,
   WMS: wmsAdapter,
-  XYZ: xyzAdapter
+  XYZ: xyzAdapter,
+  OSM: osmAdapter
 }
+
 
 const adapter = text => {
   {
@@ -242,7 +253,7 @@ const TileServiceProperties = props => {
       dispatch({ type: 'entries', entries })
       setUrl(tileService.url)
 
-      if (tileService.type === 'XYZ') emitter.emit('set-source', { adapter })
+      if (['XYZ', 'OSM'].includes(tileService.type)) emitter.emit('set-source', { adapter })
       else emitter.emit('reset-source')
     })()
   }, [store, emitter, key, tileService, dispatch])
@@ -345,10 +356,10 @@ const TileServiceProperties = props => {
 
   return (
     <>
+      <Name {...props}/>
       <ColSpan2>
         <TextField label='URL' value={url} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
       </ColSpan2>
-      <Name {...props}/>
       <ServiceAbstract capabilities={tileService.capabilities}/>
       { layerList }
       <ColSpan2>

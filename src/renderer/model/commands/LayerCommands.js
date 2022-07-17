@@ -1,5 +1,5 @@
 import EventEmitter from '../../../shared/emitter'
-import { isLayerId, layerId } from '../../ids'
+import { isLayerId, layerId, tileServiceId } from '../../ids'
 import { militaryFormat } from '../../../shared/datetime'
 
 /** */
@@ -37,8 +37,21 @@ CreateLayer.prototype.execute = function () {
   this.store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
 }
 
+/** */
+const CreateTileService = function (services) {
+  this.selection = services.selection
+  this.store = services.store
+  this.label = 'Create Tile Service'
+}
+
+CreateTileService.prototype.execute = function () {
+  const key = tileServiceId()
+  this.selection.set([key])
+  this.store.insert([[key, { type: 'OSM', url: '', name: '' }]])
+}
 
 export default services => ({
   LAYER_SET_DEFAULT: new SetDefaultLayer(services),
-  LAYER_CREATE: new CreateLayer(services)
+  LAYER_CREATE: new CreateLayer(services),
+  TILE_SERVICE_CREATE: new CreateTileService(services)
 })

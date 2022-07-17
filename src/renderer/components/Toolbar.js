@@ -78,6 +78,7 @@ export const Toolbar = () => {
   const addCommands = [
     commandRegistry.command('LAYER_CREATE'),
     commandRegistry.command('MARKER_CREATE'),
+    commandRegistry.command('TILE_SERVICE_CREATE'),
     commandRegistry.command('VIEW_CREATE')
   ]
 
