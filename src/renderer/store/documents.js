@@ -126,10 +126,14 @@ documents.marker = (id, marker, cache) => {
 }
 
 documents['tile-service'] = (id, service, cache) => {
+  console.log('service', service)
+  const tags = cache(tagsId(id)) || []
+
   const document = {
     id,
     scope: 'tile-service',
-    tags: [service.type]
+    text: service.name,
+    tags: [...tags, service.type]
   }
 
   return document
