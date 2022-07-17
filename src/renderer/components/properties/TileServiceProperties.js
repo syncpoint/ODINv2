@@ -1,10 +1,9 @@
 /* eslint-disable react/prop-types */
-import { URL } from 'url'
 import WMTSCapabilities from 'ol/format/WMTSCapabilities'
 import WMSCapabilities from 'ol/format/WMSCapabilities'
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS'
 import TileWMS from 'ol/source/TileWMS'
-import { OSM } from 'ol/source'
+import { OSM, XYZ } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import Map from 'ol/Map'
@@ -21,7 +20,6 @@ import EventEmitter from '../../../shared/emitter'
 
 
 const wmtsAdapter = caps => {
-  console.log('wmtsAdapter', caps)
   const layers = caps?.Contents?.Layer || []
 
   return {
@@ -45,9 +43,10 @@ const wmtsAdapter = caps => {
 }
 
 const wmsAdapter = caps => {
-  console.log('wmsAdapter', caps)
+  const version = caps?.version
+  const url = caps?.Capability?.Request?.GetMap?.DCPType[0]?.HTTP?.Get?.OnlineResource
 
-  // For some providers layer names are not unique.
+  // Layer names are not always unique.
   // We take this first layer and discard duplicates.
   const seen = []
   const layers = (caps?.Capability?.Layer?.Layer || []).reduce((acc, layer) => {
@@ -66,23 +65,36 @@ const wmsAdapter = caps => {
       title: layer.Title,
       abstract: layer.Abstract
     })),
-    boundingBox: layerId => null,
+    boundingBox: layerId => {
+      if (version !== '1.3.0') return /* guess work */
+      const layer = layers.find(layer => layer.Name === layerId)
+      return layer?.EX_GeographicBoundingBox
+    },
     source: layerId => {
       const options = {
-        url: 'http://data.wien.gv.at/daten/wms',
+        url,
         params: { LAYERS: layerId, TILED: true },
         crossOrigin: 'anonymous'
       }
 
-      console.log('WMS', options)
       return new TileWMS(options)
     }
   }
 }
 
+const xyzAdapter = caps => ({
+  type: 'XYZ',
+  capabilities: caps,
+  abstract: null,
+  layers: () => [],
+  boundingBox: () => null,
+  source: () => new XYZ({ url: caps.url })
+})
+
 const adapters = {
   WMTS: wmtsAdapter,
-  WMS: wmsAdapter
+  WMS: wmsAdapter,
+  XYZ: xyzAdapter
 }
 
 const adapter = text => {
@@ -101,22 +113,21 @@ const adapter = text => {
   }
 }
 
+
 /**
  *
  */
 const fetchCapabilities = async url => {
-  const { origin, pathname } = new URL(url)
-  console.log(origin, pathname)
   //  Note: Currently this setting is required on BrowserWindow:
-  //  {
-  //    webPreferences: {
-  //      webSecurity: false
-  //    }
-  //  }
+  //  {webPreferences: {webSecurity: false}}
 
-  const response = await fetch(url)
-  const text = await response.text()
-  return adapter(text)
+  try {
+    const response = await fetch(url)
+    const text = await response.text()
+    return adapter(text)
+  } catch (err) {
+    return adapters.XYZ({ url })
+  }
 }
 
 
@@ -154,7 +165,7 @@ const LayerEntry = props => {
         checked={props.checked || false}
         onChange={() => props.onChange(props.id)}
       />
-      {props.title}
+      <span className='layer-list__title'>{props.title}</span>
     </div>
   )
 }
@@ -187,12 +198,10 @@ const map = (emitter, viewport) => {
   }
 
 
-  const setSource = (adapter, id) => {
+  const setSource = (adapter, id = null) => {
     fitView(adapter.boundingBox(id))
     const layers = map.getAllLayers()
-    console.log(adapter.source(id))
     layers[0].setSource(adapter.source(id))
-
   }
 
   const resetSource = () => {
@@ -205,18 +214,6 @@ const map = (emitter, viewport) => {
 }
 
 
-// /**
-//  * Derive list model from capabilities.
-//  */
-// const entriesFromCapabilities = capabilities => {
-//   const layers = capabilities?.Contents?.Layer
-//   return (layers || []).map(layer => ({
-//     id: layer.Identifier,
-//     title: layer.Title,
-//     abstract: layer.Abstract
-//   }))
-// }
-
 /**
  *
  */
@@ -226,6 +223,7 @@ const TileServiceProperties = props => {
   const [list, dispatch] = useList({ multiselect: false })
   const [emitter] = React.useState(new EventEmitter())
   const [url, setUrl] = React.useState(tileService.url)
+  const [urlDirty, setUrlDirty] = React.useState(false)
 
 
   // Update selected layers and checked/selected state of list entries.
@@ -243,7 +241,9 @@ const TileServiceProperties = props => {
 
       dispatch({ type: 'entries', entries })
       setUrl(tileService.url)
-      emitter.emit('reset-source')
+
+      if (tileService.type === 'XYZ') emitter.emit('set-source', { adapter })
+      else emitter.emit('reset-source')
     })()
   }, [store, emitter, key, tileService, dispatch])
 
@@ -258,12 +258,18 @@ const TileServiceProperties = props => {
     dispatch({ type: 'select', id })
   }
 
-  const handleUrlChange = ({ target }) => setUrl(target.value)
+  const handleUrlChange = ({ target }) => {
+    if (url === target.value) return
+    setUrl(target.value)
+    setUrlDirty(true)
+  }
 
 
   // Load capabilities and update tile service and list model.
   //
   const handleUrlBlur = async () => {
+    if (!urlDirty) return
+    setUrlDirty(false)
 
     // Remove corresponding layers from selected layers.
     //
@@ -317,6 +323,25 @@ const TileServiceProperties = props => {
     sessionStore.getViewport().then(viewport => map(emitter, viewport))
   }, [sessionStore, emitter])
 
+  const layerList = list.entries.length === 0
+    ? null
+    : <ColSpan2>
+        <div className='layer-list'>
+        {
+          list.entries.map((layer, index) => (
+            <LayerEntry
+              key={layer.id}
+              selected={index === list.focusIndex}
+              checked={layer.checked}
+              onClick={handleEntryClick}
+              onChange={handleEntryChange}
+              { ...layer }
+            />
+          ))
+        }
+        </div>
+      </ColSpan2>
+
 
   return (
     <>
@@ -325,22 +350,7 @@ const TileServiceProperties = props => {
       </ColSpan2>
       <Name {...props}/>
       <ServiceAbstract capabilities={tileService.capabilities}/>
-      <ColSpan2>
-        <div className='layer-list'>
-          {
-            list.entries.map((layer, index) => (
-              <LayerEntry
-                key={layer.id}
-                selected={index === list.focusIndex}
-                checked={layer.checked}
-                onClick={handleEntryClick}
-                onChange={handleEntryChange}
-                { ...layer }
-              />
-            ))
-          }
-        </div>
-      </ColSpan2>
+      { layerList }
       <ColSpan2>
         <div className='map-preview' id='map-preview'></div>
       </ColSpan2>

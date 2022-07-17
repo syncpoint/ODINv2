@@ -27,6 +27,12 @@
   background-color: #f4f0ec;
 }
 
+.layer-list__title {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .layer-list_checkbox {
   margin-left: 2px;
 }
