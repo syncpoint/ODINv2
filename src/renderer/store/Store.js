@@ -6,7 +6,7 @@ import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
 import { readGeometry, transform, geometryType } from '../model/geometry'
-
+import { importSymbols } from './symbols'
 
 /**
  * Persistence for layers, features and associated information.
@@ -49,6 +49,12 @@ export function Store (jsonDB, wkbDB, undo, selection) {
   this.undo = undo
   this.selection = selection
   this.db = L.leveldb({ down: new PartitionDOWN(jsonDB, wkbDB) })
+
+  // Import symbols once for each fresh project database.
+  window.requestIdleCallback(async () => {
+    const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
+    if (!alreadyImported) await importSymbols(this.jsonDB)
+  }, { timeout: 2000 })
 }
 
 util.inherits(Store, Emitter)
