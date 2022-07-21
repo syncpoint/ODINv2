@@ -13,10 +13,11 @@ import Status from './Status'
 import Condition from './Condition'
 import Reinforcement from './Reinforcement'
 import UnitModifiers from './UnitModifiers'
+import GridCols2 from './GridCols2'
 
 const UnitProperties = props => {
   return (
-    <>
+    <GridCols2>
       <Name {...props}/>
       <UniqueDesignationHigherFormation {...props}/>
       <SpecialC2HQEchelon {...props}/>
@@ -31,7 +32,7 @@ const UnitProperties = props => {
       <Condition {...props}/>
       <Reinforcement {...props}/>
       <UnitModifiers {...props}/>
-    </>
+    </GridCols2>
   )
 }
 

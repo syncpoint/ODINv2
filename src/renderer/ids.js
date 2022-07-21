@@ -36,6 +36,7 @@ export const hiddenId = (id = '') => `hidden+${id}`
 export const sharedId = (id = '') => `shared+${id}`
 export const defaultId = (id = '') => `default+${id}`
 export const tagsId = (id = '') => `tags+${id}`
+export const tileLayerId = (id = '') => `tile-layer:${id}`
 export const linkId = id => `link+${id}/${uuid()}`
 
 /**

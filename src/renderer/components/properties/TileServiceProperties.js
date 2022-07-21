@@ -13,6 +13,7 @@ import { boundingExtent } from 'ol/extent'
 import React from 'react'
 import ColSpan2 from './ColSpan2'
 import TextField from './TextField'
+import FlexColumnGap from './FlexColumnGap'
 import Name from './Name'
 import './TileServiceProperties.css'
 import { useList, useServices } from '../hooks'
@@ -21,6 +22,7 @@ import EventEmitter from '../../../shared/emitter'
 
 const wmtsAdapter = caps => {
   const layers = caps?.Contents?.Layer || []
+  const findLayer = layerId => layers.find(layer => layer.Identifier === layerId)
 
   return {
     type: 'WMTS',
@@ -31,10 +33,8 @@ const wmtsAdapter = caps => {
       title: layer.Title,
       abstract: layer.Abstract
     })),
-    boundingBox: layerId => {
-      const layer = layers.find(layer => layer.Identifier === layerId)
-      return layer && layer.WGS84BoundingBox
-    },
+    layerName: layerId => findLayer(layerId)?.Title,
+    boundingBox: layerId => findLayer(layerId)?.WGS84BoundingBox,
     source: layerId => {
       const options = optionsFromCapabilities(caps, { layer: layerId })
       return new WMTS(options)
@@ -56,6 +56,8 @@ const wmsAdapter = caps => {
     return acc
   }, [])
 
+  const findLayer = layerId => layers.find(layer => layer.Name === layerId)
+
   return {
     type: 'WMS',
     capabilities: caps,
@@ -67,9 +69,10 @@ const wmsAdapter = caps => {
     })),
     boundingBox: layerId => {
       if (version !== '1.3.0') return /* guess work */
-      const layer = layers.find(layer => layer.Name === layerId)
+      const layer = findLayer(layerId)
       return layer?.EX_GeographicBoundingBox
     },
+    layerName: layerId => findLayer(layerId)?.Title,
     source: layerId => {
       const options = {
         url,
@@ -88,6 +91,7 @@ const xyzAdapter = caps => ({
   abstract: null,
   layers: () => [],
   boundingBox: () => null,
+  layerName: () => null,
   source: () => new XYZ({ url: caps.url })
 })
 
@@ -97,6 +101,7 @@ const osmAdapter = () => ({
   abstract: null,
   layers: () => [],
   boundingBox: () => null,
+  layerName: () => null,
   source: () => new OSM()
 })
 
@@ -131,6 +136,8 @@ const adapter = text => {
 const fetchCapabilities = async url => {
   //  Note: Currently this setting is required on BrowserWindow:
   //  {webPreferences: {webSecurity: false}}
+
+  if (!url || url.length === 0) return adapters.OSM()
 
   try {
     const response = await fetch(url)
@@ -258,6 +265,14 @@ const TileServiceProperties = props => {
     })()
   }, [store, emitter, key, tileService, dispatch])
 
+
+  // Create map preview with current viewport.
+  //
+  React.useEffect(() => {
+    sessionStore.getViewport().then(viewport => map(emitter, viewport))
+  }, [sessionStore, emitter])
+
+
   // TODO: prevent default for ArrowUp/-Down keys in list
 
 
@@ -288,6 +303,13 @@ const TileServiceProperties = props => {
 
     // Fetch capabilities and update tile service and list model.
     const adapter = await fetchCapabilities(url)
+
+    // Immediately create tile layer for XYZ.
+    if (adapter.type === 'XYZ') {
+      const layerId = `tile-layer:${key.split(':')[1]}`
+      await store.insert([[layerId, { opacity: 1.0, hidden: true }]])
+    }
+
     const entries = adapter.layers()
 
     const newValue = { ...tileService, type: adapter.type, url }
@@ -309,8 +331,10 @@ const TileServiceProperties = props => {
     const layerId = `tile-layer:${key.split(':')[1]}/${id}`
     const selectedLayers = await store.keys(`tile-layer:${key.split(':')[1]}`)
 
+    const adapter = adapters[tileService.type](tileService.capabilities)
+    const layerName = adapter.layerName(id)
     if (selectedLayers.includes(layerId)) await store.delete(layerId)
-    else await store.insert([[layerId, {}]])
+    else await store.insert([[layerId, { opacity: 1.0, hidden: true, name: layerName }]])
 
     const selected = selectedLayers.includes(layerId)
       ? selectedLayers.filter(id => id !== layerId)
@@ -326,13 +350,6 @@ const TileServiceProperties = props => {
     dispatch({ type: 'entries', entries })
     dispatch({ type: 'select', id })
   }
-
-
-  // Create map preview with current viewport.
-  //
-  React.useEffect(() => {
-    sessionStore.getViewport().then(viewport => map(emitter, viewport))
-  }, [sessionStore, emitter])
 
   const layerList = list.entries.length === 0
     ? null
@@ -355,17 +372,13 @@ const TileServiceProperties = props => {
 
 
   return (
-    <>
+    <FlexColumnGap>
       <Name {...props}/>
-      <ColSpan2>
-        <TextField label='URL' value={url} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
-      </ColSpan2>
+      <TextField label='URL' value={url} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
       <ServiceAbstract capabilities={tileService.capabilities}/>
       { layerList }
-      <ColSpan2>
-        <div className='map-preview' id='map-preview'></div>
-      </ColSpan2>
-    </>
+      <div className='map-preview' id='map-preview'></div>
+    </FlexColumnGap>
   )
 }
 

@@ -10,9 +10,10 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
 import Status from './Status'
+import GridCols2 from './GridCols2'
 
 const ActivityProperties = props =>
-  <>
+  <GridCols2>
     <Name {...props}/>
     <ColSpan2>
       <UniqueDesignation {...props}/>
@@ -25,6 +26,6 @@ const ActivityProperties = props =>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>
     <Status {...props}/>
-  </>
+  </GridCols2>
 
 export default ActivityProperties

@@ -76,6 +76,7 @@
     "react": "^17.0.2",
     "react-cool-virtual": "^0.7.0",
     "react-dom": "^17.0.2",
+    "react-easy-sort": "^1.5.0",
     "react-fast-compare": "^3.2.0",
     "reproject": "^1.2.6",
     "subleveldown": "^6.0.1",

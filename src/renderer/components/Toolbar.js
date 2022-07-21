@@ -72,7 +72,8 @@ export const Toolbar = () => {
     commandRegistry.command('UNDO_REDO'),
     commandRegistry.separator(),
     commandRegistry.command('LAYER_SET_DEFAULT'),
-    commandRegistry.command('PIN')
+    commandRegistry.command('PIN'),
+    commandRegistry.command('SELECT_TILE_LAYERS')
   ]
 
   const addCommands = [

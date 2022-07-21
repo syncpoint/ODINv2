@@ -8,9 +8,10 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
 import Status from './Status'
+import GridCols2 from './GridCols2'
 
 const InstallationProperties = props =>
-  <>
+  <GridCols2>
     <Name {...props}/>
     <UniqueDesignationHigherFormation {...props}/>
     <SpecialC2HQ {...props}/>
@@ -20,6 +21,6 @@ const InstallationProperties = props =>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>
     <Status {...props}/>
-  </>
+  </GridCols2>
 
 export default InstallationProperties

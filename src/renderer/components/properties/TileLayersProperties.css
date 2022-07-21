@@ -1,0 +1,28 @@
+.tile-layer-item {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(84, 84, 241);
+  color: white;
+  margin: 8px;
+  height: 60px;
+  cursor: grab;
+}
+
+.tile-layer-item--dragged {
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.item {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(84, 84, 241);
+  color: white;
+  margin: 8px;
+  height: 60px;
+  cursor: grab;
+}

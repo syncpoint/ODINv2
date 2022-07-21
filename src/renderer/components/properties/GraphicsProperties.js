@@ -15,6 +15,7 @@ import RectangleWidth from './RectangleWidth'
 import Length from './Length'
 import Attitude from './Attitude'
 import Radius from './Radius'
+import GridCols2 from './GridCols2'
 import CorridorWidth from './CorridorWidth'
 import * as MILSTD from '../../symbology/2525c'
 import * as GEOM from '../../model/geometry'
@@ -53,7 +54,7 @@ export default props => {
   }
 
   return (
-    <>
+    <GridCols2>
       <Name {...props}/>
       <ColSpan2>
         <UniqueDesignation {...props}/>
@@ -65,6 +66,6 @@ export default props => {
       <StaffComments {...props}/>
       <AdditionalInformation {...props}/>
       <Status {...props}/>
-    </>
+    </GridCols2>
   )
 }

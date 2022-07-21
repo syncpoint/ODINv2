@@ -4,8 +4,6 @@ import React from 'react'
 import { useServices } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
 import { isFeatureId, lockedId, associatedId, scope, isAssociatedId } from '../../ids'
-import GridCols2 from './GridCols2'
-import MarginTop3 from './MarginTop3'
 import UnitProperties from './UnitProperties'
 import EquipmentProperties from './EquipmentProperties'
 import InstallationProperties from './InstallationProperties'
@@ -15,6 +13,7 @@ import PointProperties from './PointProperties'
 // import LayerProperties from './LayerProperties'
 import MarkerProperties from './MarkerProperties'
 import TileServiceProperties from './TileServiceProperties'
+import TileLayersProperties from './TileLayersProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -26,10 +25,11 @@ const propertiesPanels = {
   'feature:POINT': props => <PointProperties {...props}/>,
   // layer: props => <LayerProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>,
-  'tile-service': props => <TileServiceProperties {...props}/>
+  'tile-service': props => <TileServiceProperties {...props}/>,
+  'tile-layers': props => <TileLayersProperties {...props}/>
 }
 
-const singletons = ['tile-service']
+const singletons = ['tile-service', 'tile-layers']
 
 const sidc = feature =>
   feature &&
@@ -187,7 +187,6 @@ const useSelection = () => {
  */
 export const Properties = () => {
   const state = useSelection()
-
   const panel = propertiesPanels[state.propertiesClass] || null
   if (!panel) return null
 
@@ -197,12 +196,7 @@ export const Properties = () => {
 
   return (
     <div className='feature-properties'>
-      <div className='panel-inset'>
-        <GridCols2>
-          <MarginTop3/>
-            { panel({ ...state }) }
-        </GridCols2>
-      </div>
+      { panel({ ...state }) }
     </div>
   )
 }
