@@ -49,7 +49,7 @@
     "webpack-dev-server": "^4.9.2"
   },
   "dependencies": {
-    "@mdi/js": "^6.7.96",
+    "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
     "@most/scheduler": "^1.3.0",
     "@syncpoint/wkx": "^0.5.2",
@@ -64,7 +64,7 @@
     "levelup": "^5.0.1",
     "lodash.debounce": "^4.0.8",
     "lru-ttl-cache": "^2.4.3",
-    "luxon": "^2.4.0",
+    "luxon": "^3.0.1",
     "milsymbol": "^2.0.0",
     "minisearch": "^5.0.0",
     "most-subject": "^6.0.0",
