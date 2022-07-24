@@ -14,6 +14,8 @@ https://ows.terrestris.de/osm/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapab
 XYZ:
 http://localhost:8000/services/omk50_33/tiles/{z}/{x}/{y}.jpg
 https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png
+https://{a-b}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png
+https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png
 https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg
 https://stamen-tiles-{a-d}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png
 https://stamen-tiles-{a-d}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg
@@ -34,3 +36,5 @@ https://tile.waymarkedtrails.org/riding/{z}/{x}/{y}.png
 https://tile.waymarkedtrails.org/skating/{z}/{x}/{y}.png
 https://tile.waymarkedtrails.org/slopes/{z}/{x}/{y}.png
 http://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg
+
+Öpnvkarte: https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png
