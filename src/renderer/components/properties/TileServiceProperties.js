@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import * as R from 'ramda'
 import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { defaults as defaultInteractions } from 'ol/interaction'
@@ -7,13 +8,14 @@ import View from 'ol/View'
 import { fromLonLat } from 'ol/proj'
 import { boundingExtent } from 'ol/extent'
 import React from 'react'
-import './TileServiceProperties.css'
+import Fuse from 'fuse.js'
 import ColSpan2 from './ColSpan2'
 import TextField from './TextField'
 import FlexColumnGap from './FlexColumnGap'
 import Name from './Name'
 import { useList, useServices } from '../hooks'
 import * as TileService from '../../store/tileServiceAdapters'
+import './TileServiceProperties.css'
 
 
 /**
@@ -39,6 +41,15 @@ const LayerEntry = props => {
 }
 
 
+const fuseOptions = {
+  includeScore: false,
+  shouldSort: false,
+  ignoreLocation: true,
+  threshold: 0.0,
+  keys: ['title']
+}
+
+
 /**
  *
  */
@@ -46,15 +57,26 @@ const TileServiceProperties = props => {
   const { tileLayerStore, sessionStore } = useServices()
   const [key, service] = (Object.entries(props.features))[0]
   const [url, setUrl] = React.useState({ dirty: false, value: service.url || '' })
+  const [entries, setEntries] = React.useState([])
+  const [filter, setFilter] = React.useState('')
   const [list, dispatch] = useList({ multiselect: false })
 
   React.useEffect(() => {
     (async () => {
       const entries = await tileLayerStore.serviceLayers(key)
-      dispatch({ type: 'entries', entries })
+      setEntries(entries)
       setUrl({ dirty: false, value: service.url })
     })()
-  }, [key, service, dispatch, tileLayerStore])
+  }, [key, service, tileLayerStore])
+
+  React.useEffect(() => {
+    const fuse = new Fuse(entries, fuseOptions)
+    const filtered = filter
+      ? fuse.search(filter).map(R.prop('item'))
+      : entries
+
+    dispatch({ type: 'entries', entries: filtered })
+  }, [entries, filter, dispatch])
 
   React.useEffect(() => {
     const target = document.getElementById('map-preview')
@@ -105,18 +127,14 @@ const TileServiceProperties = props => {
     tileLayerStore.updateService(key, { ...service, url: url.value })
   }
 
-  const handleEntryChange = async id => {
-    console.log('handleEntryChange', key, id)
-    tileLayerStore.toggleActiveLayer(key, id)
-  }
-
-  const handleEntryClick = id => {
-    dispatch({ type: 'select', id })
-  }
+  const handleEntryChange = async id => tileLayerStore.toggleActiveLayer(key, id)
+  const handleEntryClick = id => dispatch({ type: 'select', id })
+  const handleFilterChange = ({ target }) => setFilter(target.value)
 
   const layerList = list.entries.length === 0
     ? null
     : <ColSpan2>
+        <TextField label='Filter' value={filter} onChange={handleFilterChange}/>
         <div className='layer-list'>
         {
           list.entries.map((layer, index) => (
@@ -138,7 +156,8 @@ const TileServiceProperties = props => {
   return (
     <FlexColumnGap>
       <Name {...props}/>
-      <TextField label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>      { layerList }
+      <TextField label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
+      { layerList }
       <div className='map-preview' id='map-preview'></div>
     </FlexColumnGap>
   )

@@ -50,7 +50,7 @@ export function TileLayerStore (store) {
 /**
  *
  */
-TileLayerStore.prototype.tiles = async function () {
+TileLayerStore.prototype.tileLayers = async function () {
   const preset = await this.preset()
   const services = Object.fromEntries(await this.store.tuples('tile-service:'))
 
@@ -189,6 +189,7 @@ TileLayerStore.prototype.updateOrder = function (preset, from, to) {
   return newValue
 }
 
+
 /**
  *
  */
@@ -215,11 +216,11 @@ TileLayerStore.prototype.updatePreset = async function () {
       : adapters[key].layerName(ID.containedId(id))
   }
 
-  // const layer = id => ({ id, name: layerName(id), opacity: 1.0, visible: false })
   const layer = id => ({ id, opacity: 1.0, visible: false })
   const additions = activeLayers.filter(x => !currentLayers.includes(x)).map(layer)
 
   // Propagate name changes from service to preset (only for OSM, XYZ.)
+  //
   const propagateName = layer => ({ ...layer, name: layerName(layer.id) })
   const preset = (currentPreset.concat(additions))
     .filter(layer => !removals.includes(layer.id))
@@ -232,6 +233,7 @@ const lazy = fn => {
   let promise /* undefined */
   return () => (promise = (promise || fn()))
 }
+
 
 /**
  *
