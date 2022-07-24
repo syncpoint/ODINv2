@@ -1,13 +1,23 @@
 import * as R from 'ramda'
 import Mousetrap from 'mousetrap'
 import Draw from 'ol/interaction/Draw'
-import GeometryType from 'ol/geom/GeometryType'
 import * as MILSTD from '../../symbology/2525c'
 import { writeFeatureObject } from '../../model/geometry'
 import * as TS from '../ts'
 import * as EPSG from '../../epsg'
 import { PI_OVER_2, PI_OVER_4, SQRT_2 } from '../../../shared/Math'
 
+const GeometryType = {
+  POINT: 'Point',
+  LINE_STRING: 'LineString',
+  LINEAR_RING: 'LinearRing',
+  POLYGON: 'Polygon',
+  MULTI_POINT: 'MultiPoint',
+  MULTI_LINE_STRING: 'MultiLineString',
+  MULTI_POLYGON: 'MultiPolygon',
+  GEOMETRY_COLLECTION: 'GeometryCollection',
+  CIRCLE: 'Circle'
+}
 
 export default options => {
   const { services, map } = options
