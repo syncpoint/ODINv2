@@ -123,7 +123,6 @@ Clipboard.prototype.paste = async function () {
     [ID.isTagsId, key => replace(key)(ID.tagsId(keymap[ID.associatedId(key)]))],
     [ID.isMarkerId, key => replace(key)(ID.markerId())],
     [ID.isTileServiceId, key => replace(key)(ID.tileServiceId())],
-    [ID.isTileLayerId, key => replace(key)(`tile-layer:${keymap[ID.tileServiceId(key)]}/${ID.containedId(key)}`)],
     [R.T, key => key]
   ])
 

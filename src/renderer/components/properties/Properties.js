@@ -13,7 +13,7 @@ import PointProperties from './PointProperties'
 // import LayerProperties from './LayerProperties'
 import MarkerProperties from './MarkerProperties'
 import TileServiceProperties from './TileServiceProperties'
-import TileLayersProperties from './TileLayersProperties'
+import TilePresetProperties from './TilePresetProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -26,7 +26,7 @@ const propertiesPanels = {
   // layer: props => <LayerProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
-  'tile-layers': props => <TileLayersProperties {...props}/>
+  'tile-preset': props => <TilePresetProperties {...props}/>
 }
 
 const singletons = ['tile-service', 'tile-layers']

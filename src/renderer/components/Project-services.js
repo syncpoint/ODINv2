@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, SearchIndex, PreferencesStore, Store, MigrationTool, ProjectStore } from '../store'
+import { SessionStore, SearchIndex, PreferencesStore, Store, MigrationTool, ProjectStore, TileLayerStore } from '../store'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
@@ -46,6 +46,7 @@ export default async projectUUID => {
   const store = new Store(jsonDB, wbkDB, undo, selection)
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const projectStore = new ProjectStore(ipcRenderer)
+  const tileLayerStore = new TileLayerStore(store)
 
   const searchIndex = new SearchIndex(jsonDB)
   const controller = new Controller(store, emitter, ipcRenderer, selection)
@@ -83,6 +84,7 @@ export default async projectUUID => {
   services.dragAndDrop = dragAndDrop
   services.store = store
   services.preferencesStore = preferencesStore
+  services.tileLayerStore = tileLayerStore
   services.searchIndex = searchIndex
   services.controller = controller
   services.osdDriver = osdDriver

@@ -36,6 +36,7 @@ import { readGeometry, transform, geometryType } from '../model/geometry'
  * tuples :: [k] -> [[k, v]]
  * unsetDefaultLayer :: k -> unit
  * update :: { k: v } -> (v -> v) -> unit
+ * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
  * value :: k -> v

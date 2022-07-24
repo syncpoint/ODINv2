@@ -1,9 +1,5 @@
 /* eslint-disable react/prop-types */
-import WMTSCapabilities from 'ol/format/WMTSCapabilities'
-import WMSCapabilities from 'ol/format/WMSCapabilities'
-import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS'
-import TileWMS from 'ol/source/TileWMS'
-import { OSM, XYZ } from 'ol/source'
+import { OSM } from 'ol/source'
 import { Tile as TileLayer } from 'ol/layer'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import Map from 'ol/Map'
@@ -11,159 +7,13 @@ import View from 'ol/View'
 import { fromLonLat } from 'ol/proj'
 import { boundingExtent } from 'ol/extent'
 import React from 'react'
+import './TileServiceProperties.css'
 import ColSpan2 from './ColSpan2'
 import TextField from './TextField'
 import FlexColumnGap from './FlexColumnGap'
 import Name from './Name'
-import './TileServiceProperties.css'
 import { useList, useServices } from '../hooks'
-import EventEmitter from '../../../shared/emitter'
-
-
-const wmtsAdapter = caps => {
-  const layers = caps?.Contents?.Layer || []
-  const findLayer = layerId => layers.find(layer => layer.Identifier === layerId)
-
-  return {
-    type: 'WMTS',
-    capabilities: caps,
-    abstract: caps?.ServiceIdentification?.Abstract,
-    layers: () => layers.map(layer => ({
-      id: layer.Identifier,
-      title: layer.Title,
-      abstract: layer.Abstract
-    })),
-    layerName: layerId => findLayer(layerId)?.Title,
-    boundingBox: layerId => findLayer(layerId)?.WGS84BoundingBox,
-    source: layerId => {
-      const options = optionsFromCapabilities(caps, { layer: layerId })
-      return new WMTS(options)
-    }
-  }
-}
-
-const wmsAdapter = caps => {
-  const version = caps?.version
-  const url = caps?.Capability?.Request?.GetMap?.DCPType[0]?.HTTP?.Get?.OnlineResource
-
-  // Layer names are not always unique.
-  // We take this first layer and discard duplicates.
-  const seen = []
-  const layers = (caps?.Capability?.Layer?.Layer || []).reduce((acc, layer) => {
-    if (seen.includes(layer.Name)) return acc
-    seen.push(layer.Name)
-    acc.push(layer)
-    return acc
-  }, [])
-
-  const findLayer = layerId => layers.find(layer => layer.Name === layerId)
-
-  return {
-    type: 'WMS',
-    capabilities: caps,
-    abstract: caps?.Service?.Abstract,
-    layers: () => layers.map(layer => ({
-      id: layer.Name,
-      title: layer.Title,
-      abstract: layer.Abstract
-    })),
-    boundingBox: layerId => {
-      if (version !== '1.3.0') return /* guess work */
-      const layer = findLayer(layerId)
-      return layer?.EX_GeographicBoundingBox
-    },
-    layerName: layerId => findLayer(layerId)?.Title,
-    source: layerId => {
-      const options = {
-        url,
-        params: { LAYERS: layerId, TILED: true },
-        crossOrigin: 'anonymous'
-      }
-
-      return new TileWMS(options)
-    }
-  }
-}
-
-const xyzAdapter = caps => ({
-  type: 'XYZ',
-  capabilities: caps,
-  abstract: null,
-  layers: () => [],
-  boundingBox: () => null,
-  layerName: () => null,
-  source: () => new XYZ({ url: caps.url })
-})
-
-const osmAdapter = () => ({
-  type: 'OSM',
-  capabilities: {},
-  abstract: null,
-  layers: () => [],
-  boundingBox: () => null,
-  layerName: () => null,
-  source: () => new OSM()
-})
-
-const adapters = {
-  WMTS: wmtsAdapter,
-  WMS: wmsAdapter,
-  XYZ: xyzAdapter,
-  OSM: osmAdapter
-}
-
-
-const adapter = text => {
-  {
-    const caps = (new WMSCapabilities()).read(text)
-    if (caps && caps.Service && caps.Capability) {
-      return wmsAdapter(caps)
-    }
-  }
-
-  {
-    const caps = (new WMTSCapabilities()).read(text)
-    if (caps && caps.ServiceIdentification && caps.Contents) {
-      return wmtsAdapter(caps)
-    }
-  }
-}
-
-
-/**
- *
- */
-const fetchCapabilities = async url => {
-  //  Note: Currently this setting is required on BrowserWindow:
-  //  {webPreferences: {webSecurity: false}}
-
-  if (!url || url.length === 0) return adapters.OSM()
-
-  try {
-    const response = await fetch(url)
-    const text = await response.text()
-    return adapter(text)
-  } catch (err) {
-    return adapters.XYZ({ url })
-  }
-}
-
-
-/**
- *
- */
-const ServiceAbstract = props => {
-  const { capabilities } = props
-  const abstract = capabilities?.ServiceIdentification?.Abstract
-  if (!abstract) return null
-  if (abstract.length < 8) return null
-
-  return (
-    <ColSpan2>
-      <div className='service-abstract'>{abstract}</div>
-    </ColSpan2>
-  )
-}
+import * as TileService from '../../store/tileServiceAdapters'
 
 
 /**
@@ -180,7 +30,7 @@ const LayerEntry = props => {
       <input
         className='layer-list_checkbox'
         type='checkbox'
-        checked={props.checked || false}
+        checked={props.active || false}
         onChange={() => props.onChange(props.id)}
       />
       <span className='layer-list__title'>{props.title}</span>
@@ -192,162 +42,75 @@ const LayerEntry = props => {
 /**
  *
  */
-const map = (emitter, viewport) => {
-  const target = document.getElementById('map-preview')
-  const source = new OSM()
-  const tileLayer = new TileLayer({ source })
-  const view = new View({ ...viewport })
+const TileServiceProperties = props => {
+  const { tileLayerStore, sessionStore } = useServices()
+  const [key, service] = (Object.entries(props.features))[0]
+  const [url, setUrl] = React.useState({ dirty: false, value: service.url || '' })
+  const [list, dispatch] = useList({ multiselect: false })
 
-  const map = new Map({
-    target,
-    interactions: defaultInteractions(),
-    controls: [],
-    layers: [tileLayer],
-    view
-  })
+  React.useEffect(() => {
+    (async () => {
+      const entries = await tileLayerStore.serviceLayers(key)
+      dispatch({ type: 'entries', entries })
+      setUrl({ dirty: false, value: service.url })
+    })()
+  }, [key, service, dispatch, tileLayerStore])
 
-  const fitView = boundingBox => {
+  React.useEffect(() => {
+    const target = document.getElementById('map-preview')
+    const { type, capabilities } = service
+    const adapter = type && TileService.adapters[type](capabilities)
+    const selected = list.selected.length === 1 ? list.selected[0] : null
+    const source = (adapter && adapter.source(selected)) || new OSM()
+    const tileLayer = new TileLayer({ source })
+    const view = new View({}) // configured down below.
+
+    const map = new Map({
+      target,
+      interactions: defaultInteractions(),
+      controls: [],
+      layers: [tileLayer],
+      view
+    })
+
+    // Fit view after map is added to DOM (target pixel size).
+    const boundingBox = adapter?.boundingBox(selected)
     if (boundingBox) {
       const southWest = fromLonLat(boundingBox.slice(0, 2))
       const northEast = fromLonLat(boundingBox.slice(2, 4))
       const extent = boundingExtent([southWest, northEast])
-      map.getView().fit(extent)
+      view.fit(extent)
+    } else {
+      (async () => {
+        const { center, resolution } = await sessionStore.getViewport()
+        view.setCenter(center)
+        view.setResolution(resolution)
+      })()
     }
-  }
 
-
-  const setSource = (adapter, id = null) => {
-    fitView(adapter.boundingBox(id))
-    const layers = map.getAllLayers()
-    layers[0].setSource(adapter.source(id))
-  }
-
-  const resetSource = () => {
-    const layers = map.getAllLayers()
-    layers[0].setSource(source)
-  }
-
-  emitter.on('set-source', ({ adapter, id }) => setSource(adapter, id))
-  emitter.on('reset-source', () => resetSource())
-}
-
-
-/**
- *
- */
-const TileServiceProperties = props => {
-  const [key, tileService] = (Object.entries(props.features))[0]
-  const { sessionStore, store } = useServices()
-  const [list, dispatch] = useList({ multiselect: false })
-  const [emitter] = React.useState(new EventEmitter())
-  const [url, setUrl] = React.useState(tileService.url)
-  const [urlDirty, setUrlDirty] = React.useState(false)
-
-
-  // Update selected layers and checked/selected state of list entries.
-  //
-  React.useEffect(() => {
-    (async () => {
-      const selectedLayers = await store.keys(`tile-layer:${key.split(':')[1]}`)
-      const adapter = adapters[tileService.type](tileService.capabilities)
-      const entries = adapter.layers().reduce((acc, entry) => {
-        const layerId = `tile-layer:${key.split(':')[1]}/${entry.id}`
-        const checked = selectedLayers.includes(layerId)
-        acc.push({ ...entry, checked })
-        return acc
-      }, [])
-
-      dispatch({ type: 'entries', entries })
-      setUrl(tileService.url)
-
-      if (['XYZ', 'OSM'].includes(tileService.type)) emitter.emit('set-source', { adapter })
-      else emitter.emit('reset-source')
-    })()
-  }, [store, emitter, key, tileService, dispatch])
-
-
-  // Create map preview with current viewport.
-  //
-  React.useEffect(() => {
-    sessionStore.getViewport().then(viewport => map(emitter, viewport))
-  }, [sessionStore, emitter])
-
+    // Setting null target should dispose map.
+    return () => map.setTarget(null)
+  }, [service, list.selected, sessionStore])
 
   // TODO: prevent default for ArrowUp/-Down keys in list
 
-
-  // Update selected/focused entry in list model.
-  //
-  const handleEntryClick = id => {
-    const adapter = adapters[tileService.type](tileService.capabilities)
-    emitter.emit('set-source', { adapter, id })
-    dispatch({ type: 'select', id })
-  }
-
   const handleUrlChange = ({ target }) => {
-    if (url === target.value) return
-    setUrl(target.value)
-    setUrlDirty(true)
+    if (url.value === target.value) return
+    setUrl({ dirty: true, value: target.value })
   }
 
-
-  // Load capabilities and update tile service and list model.
-  //
   const handleUrlBlur = async () => {
-    if (!urlDirty) return
-    setUrlDirty(false)
-
-    // Remove corresponding layers from selected layers.
-    //
-    await store.delete(`tile-layer:${key.split(':')[1]}`)
-
-    // Fetch capabilities and update tile service and list model.
-    const adapter = await fetchCapabilities(url)
-
-    // Immediately create tile layer for XYZ.
-    if (adapter.type === 'XYZ') {
-      const layerId = `tile-layer:${key.split(':')[1]}`
-      await store.insert([[layerId, { opacity: 1.0, hidden: true }]])
-    }
-
-    const entries = adapter.layers()
-
-    const newValue = { ...tileService, type: adapter.type, url }
-    if (adapter.capabilities) newValue.capabilities = adapter.capabilities
-    await store.update([key], [newValue], [tileService])
-
-    setUrl(url)
-    dispatch({ type: 'entries', entries })
+    if (!url.dirty) return
+    setUrl({ dirty: false, value: url.value })
+    tileLayerStore.updateService(key, { ...service, url: url.value })
   }
 
-
-  // Toggle entry checked state and update list model
-  // including selection.
-  //
   const handleEntryChange = async id => {
+    console.log('handleEntryChange', key, id)
+    tileLayerStore.toggleActiveLayer(key, id)
+  }
 
-    // Update tile layers selection.
-    //
-    const layerId = `tile-layer:${key.split(':')[1]}/${id}`
-    const selectedLayers = await store.keys(`tile-layer:${key.split(':')[1]}`)
-
-    const adapter = adapters[tileService.type](tileService.capabilities)
-    const layerName = adapter.layerName(id)
-    if (selectedLayers.includes(layerId)) await store.delete(layerId)
-    else await store.insert([[layerId, { opacity: 1.0, hidden: true, name: layerName }]])
-
-    const selected = selectedLayers.includes(layerId)
-      ? selectedLayers.filter(id => id !== layerId)
-      : [...selectedLayers, layerId]
-
-    const entries = list.entries.reduce((acc, entry) => {
-      const layerId = `tile-layer:${key.split(':')[1]}/${entry.id}`
-      const checked = selected.includes(layerId)
-      acc.push({ ...entry, checked })
-      return acc
-    }, [])
-
-    dispatch({ type: 'entries', entries })
+  const handleEntryClick = id => {
     dispatch({ type: 'select', id })
   }
 
@@ -360,7 +123,7 @@ const TileServiceProperties = props => {
             <LayerEntry
               key={layer.id}
               selected={index === list.focusIndex}
-              checked={layer.checked}
+              active={layer.active}
               onClick={handleEntryClick}
               onChange={handleEntryChange}
               { ...layer }
@@ -370,16 +133,16 @@ const TileServiceProperties = props => {
         </div>
       </ColSpan2>
 
+  // TODO: add layer filter field
 
   return (
     <FlexColumnGap>
       <Name {...props}/>
-      <TextField label='URL' value={url} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
-      <ServiceAbstract capabilities={tileService.capabilities}/>
-      { layerList }
+      <TextField label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>      { layerList }
       <div className='map-preview' id='map-preview'></div>
     </FlexColumnGap>
   )
+
 }
 
 export default TileServiceProperties
