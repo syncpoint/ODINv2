@@ -1,8 +1,7 @@
 import * as R from 'ramda'
-import { layerId, containerId, lockedId, hiddenId, tagsId, defaultId } from '../ids'
+import * as ID from '../ids'
 import * as MILSTD from '../symbology/2525c'
 import { url } from '../symbology/symbol'
-
 
 const identityTag = R.cond([
   [R.equals('F'), R.always(['OWN'])],
@@ -11,11 +10,16 @@ const identityTag = R.cond([
   [R.T, R.always([])]
 ])
 
+export default function OptionStore (coordinatesFormat, store) {
+  this.coordinatesFormat = coordinatesFormat
+  this.store = store
+}
+
 
 /**
- * feature:
+ *
  */
-const feature = (/* services */) => (id, cache) => {
+OptionStore.prototype.feature = function (id, cache) {
   const feature = cache(id)
 
   const properties = feature.properties || {}
@@ -26,13 +30,12 @@ const feature = (/* services */) => (id, cache) => {
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
 
   const identity = identityTag(MILSTD.identityCode(sidc))
-  const layer = cache(layerId(id))
+  const layer = cache(ID.layerId(id))
   const description = layer.name
     ? layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
     : hierarchy.join(' • ')
 
-  // FIXME: somehow null tags can/could be introduced. check!
-  const userTags = (cache(tagsId(id)) || []).filter(R.identity)
+  const userTags = (cache(ID.tagsId(id)) || []).filter(R.identity)
 
   // Echelon's only permitted for units and stability operations.
   const preview = () => {
@@ -44,8 +47,8 @@ const feature = (/* services */) => (id, cache) => {
     return standardSIDC ? url(standardSIDC) : null
   }
 
-  const hidden = cache(hiddenId(id))
-  const locked = cache(lockedId(id))
+  const hidden = cache(ID.hiddenId(id))
+  const locked = cache(ID.lockedId(id))
 
   const tags = [
     'SCOPE:FEATURE',
@@ -70,19 +73,19 @@ const feature = (/* services */) => (id, cache) => {
 
 
 /**
- * layer:
+ *
  */
-const layer = (/* services */) => (id, cache) => {
+OptionStore.prototype.layer = function (id, cache) {
   const layer = cache(id)
-  const hidden = cache(hiddenId(id))
-  const locked = cache(lockedId(id))
-  const defaultFlag = cache(defaultId(id))
+  const hidden = cache(ID.hiddenId(id))
+  const locked = cache(ID.lockedId(id))
+  const defaultFlag = cache(ID.defaultId(id))
 
   const tags = [
     'SCOPE:LAYER',
     hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
     locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
-    ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
     ...(defaultFlag ? ['USER:default:NONE'] : []),
     'PLUS'
   ].join(' ').replace('  ', ' ').trim()
@@ -100,9 +103,9 @@ const layer = (/* services */) => (id, cache) => {
 /**
  * link:
  */
-const link = (/* services */) => (id, cache) => {
+OptionStore.prototype.link = function (id, cache) {
   const link = cache(id)
-  const container = cache(containerId(id))
+  const container = cache(ID.containerId(id))
 
   return {
     id,
@@ -110,23 +113,27 @@ const link = (/* services */) => (id, cache) => {
     description: container.name,
     tags: [
       'SCOPE:LINK:NONE',
-      ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+      ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
       'PLUS'
     ].join(' ')
   }
 }
 
+OptionStore.prototype['link+layer'] = OptionStore.prototype.link
+OptionStore.prototype['link+feature'] = OptionStore.prototype.link
+
+
 /**
- * symbol:
+ *
  */
-const symbol = (/* services */) => (id, cache) => {
+OptionStore.prototype.symbol = function (id, cache) {
   const symbol = cache(id)
 
   const tags = [
     'SCOPE:SYMBOL:NONE',
     ...symbol.dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...symbol.scope ? [`SYSTEM:${symbol.scope}:NONE`] : [],
-    ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ')
 
@@ -150,67 +157,51 @@ const symbol = (/* services */) => (id, cache) => {
 /**
  * marker:
  */
-const marker = services => {
-  const { coordinatesFormat, store } = services
+OptionStore.prototype.marker = async function (id, cache) {
+  const marker = cache(id)
+  const geometries = await this.store.geometries(id)
+  const description = geometries.length === 1
+    ? this.coordinatesFormat.format(geometries[0].coordinates)
+    : undefined
 
-  return async (id, cache) => {
-    const marker = cache(id)
-    const geometries = await store.geometries(id)
-    const description = geometries.length === 1
-      ? coordinatesFormat.format(geometries[0].coordinates)
-      : undefined
+  const hidden = cache(ID.hiddenId(id))
+  const locked = cache(ID.lockedId(id))
 
-    const hidden = cache(hiddenId(id))
-    const locked = cache(lockedId(id))
+  const tags = [
+    'SCOPE:MARKER:NONE',
+    hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
+    locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
+    ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ')
 
-    const tags = [
-      'SCOPE:MARKER:NONE',
-      hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
-      locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
-      ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
-      'PLUS'
-    ].join(' ')
-
-    return {
-      id,
-      title: marker.name,
-      description,
-      scope: 'MARKER',
-      tags,
-      capabilities: 'TAG|RENAME'
-    }
+  return {
+    id,
+    title: marker.name,
+    description,
+    scope: 'MARKER',
+    tags,
+    capabilities: 'TAG|RENAME'
   }
 }
 
-const tileService = () => {
 
-  return (id, cache) => {
-    const service = cache(id)
+OptionStore.prototype['tile-service'] = function (id, cache) {
+  const service = cache(id)
 
-    const tags = [
-      `SCOPE:${service.type}:NONE`,
-      ...((cache(tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
-      'PLUS'
-    ].join(' ')
+  const tags = [
+    `SCOPE:${service.type}:NONE`,
+    ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ')
 
-    const option = {
-      id,
-      title: service.name,
-      scope: service.type,
-      tags,
-      capabilities: 'TAG|RENAME'
-    }
-
-    return option
+  const option = {
+    id,
+    title: service.name,
+    scope: service.type,
+    tags,
+    capabilities: 'TAG|RENAME'
   }
-}
 
-export const options = services => ({
-  feature: feature(services),
-  layer: layer(services),
-  'link+layer': link(services),
-  'link+feature': link(services),
-  symbol: symbol(services),
-  marker: marker(services),
-  'tile-service': tileService(services)
-})
+  return option
+}

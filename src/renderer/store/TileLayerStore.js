@@ -34,7 +34,7 @@ const defaultPreset = [osmLayer]
  * Store frontend. Encapsulate rather complex tile layer and
  * configuration persistence.
  */
-export function TileLayerStore (store) {
+export default function TileLayerStore (store) {
   this.store = store
 
   store.on('batch', ({ operations }) => {

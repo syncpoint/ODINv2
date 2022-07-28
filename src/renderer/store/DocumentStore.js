@@ -1,8 +1,10 @@
 import * as R from 'ramda'
-import { layerId, lockedId, hiddenId, tagsId, defaultId } from '../ids'
+import * as ID from '../ids'
+
 import * as MILSTD from '../symbology/2525c'
 
-export const documents = {}
+export default function DocumentStore () {
+}
 
 const identity = R.cond([
   [R.equals('F'), R.always(['OWN'])],
@@ -15,7 +17,7 @@ const identity = R.cond([
 /**
  *
  */
-documents.feature = (id, feature, cache) => {
+DocumentStore.prototype.feature = function (id, feature, cache) {
   const properties = feature.properties || {}
 
   const descriptor = MILSTD.descriptor(properties.sidc)
@@ -23,20 +25,20 @@ documents.feature = (id, feature, cache) => {
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-  const layer = cache(layerId(id))
+  const layer = cache(ID.layerId(id))
   const layerName = (layer && layer.name) || ''
   const { t } = properties
   const name = feature.name || t || ''
   const links = feature.links || []
 
-  const hidden = cache(hiddenId(id))
-  const locked = cache(lockedId(id))
+  const hidden = cache(ID.hiddenId(id))
+  const locked = cache(ID.lockedId(id))
 
   const tags = [
     hidden ? 'hidden' : 'visible',
     locked ? 'locked' : 'unlocked',
     ...(links.length ? ['link'] : []),
-    ...(cache(tagsId(id)) || []),
+    ...(cache(ID.tagsId(id)) || []),
     ...dimensions,
     ...scope,
     ...identity(MILSTD.identityCode(properties.sidc))
@@ -54,18 +56,18 @@ documents.feature = (id, feature, cache) => {
 /**
  *
  */
-documents.layer = (id, layer, cache) => {
+DocumentStore.prototype.layer = function (id, layer, cache) {
   const { name: text } = layer
   const links = layer.links || []
-  const hidden = cache(hiddenId(id))
-  const locked = cache(lockedId(id))
-  const defaultFlag = cache(defaultId(id))
+  const hidden = cache(ID.hiddenId(id))
+  const locked = cache(ID.lockedId(id))
+  const defaultFlag = cache(ID.defaultId(id))
 
   const tags = [
     hidden ? 'hidden' : 'visible',
     locked ? 'locked' : 'unlocked',
     ...(links.length ? ['link'] : []),
-    ...(cache(tagsId(id)) || []),
+    ...(cache(ID.tagsId(id)) || []),
     ...(defaultFlag ? ['default'] : [])
   ]
 
@@ -81,25 +83,27 @@ documents.layer = (id, layer, cache) => {
 /**
  *
  */
-const link = (id, link, cache) => ({
-  id,
-  scope: 'link',
-  text: link.name,
-  tags: cache(tagsId(id)) || []
-})
+DocumentStore.prototype.link = function (id, link, cache) {
+  return {
+    id,
+    scope: 'link',
+    text: link.name,
+    tags: cache(ID.tagsId(id)) || []
+  }
+}
 
-documents['link+layer'] = link
-documents['link+feature'] = link
+DocumentStore.prototype['link+layer'] = DocumentStore.prototype.link
+DocumentStore.prototype['link+feature'] = DocumentStore.prototype.link
 
 
 /**
  *
  */
-documents.symbol = (id, symbol, cache) => {
+DocumentStore.prototype.symbol = function (id, symbol, cache) {
   const tags = [
     ...symbol.dimensions,
     symbol.scope,
-    ...(cache(tagsId(id)) || [])
+    ...(cache(ID.tagsId(id)) || [])
   ]
 
   return ({
@@ -110,12 +114,13 @@ documents.symbol = (id, symbol, cache) => {
   })
 }
 
+
 /**
  *
  */
-documents.marker = (id, marker, cache) => {
+DocumentStore.prototype.marker = function (id, marker, cache) {
   const name = marker.name || ''
-  const tags = cache(tagsId(id)) || []
+  const tags = cache(ID.tagsId(id)) || []
 
   return {
     id,
@@ -125,8 +130,12 @@ documents.marker = (id, marker, cache) => {
   }
 }
 
-documents['tile-service'] = (id, service, cache) => {
-  const tags = cache(tagsId(id)) || []
+
+/**
+ *
+ */
+DocumentStore.prototype['tile-service'] = function (id, service, cache) {
+  const tags = cache(ID.tagsId(id)) || []
 
   const document = {
     id,

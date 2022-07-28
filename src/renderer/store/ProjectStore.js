@@ -46,7 +46,7 @@ const filterProjects = tokens =>
  * @fires ProjectStore#created {Project}
  * @fired ProjectStore#deleted {id}
  */
-export function ProjectStore (ipcRenderer) {
+export default function ProjectStore (ipcRenderer) {
   Emitter.call(this)
   this.ipcRenderer = ipcRenderer
 }

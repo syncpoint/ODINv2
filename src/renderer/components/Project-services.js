@@ -3,7 +3,15 @@ import { ipcRenderer } from 'electron'
 import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
-import { SessionStore, SearchIndex, PreferencesStore, Store, MigrationTool, ProjectStore, TileLayerStore } from '../store'
+import SessionStore from '../store/SessionStore'
+import PreferencesStore from '../store/PreferencesStore'
+import Store from '../store/Store'
+import MigrationTool from '../store/MigrationTool'
+import ProjectStore from '../store/ProjectStore'
+import SearchIndex from '../store/SearchIndex'
+import DocumentStore from '../store/DocumentStore'
+import OptionStore from '../store/OptionStore'
+import TileLayerStore from '../store/TileLayerStore'
 import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
@@ -48,11 +56,13 @@ export default async projectUUID => {
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
 
-  const searchIndex = new SearchIndex(jsonDB)
+  const documentStore = new DocumentStore()
   const controller = new Controller(store, emitter, ipcRenderer, selection)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
   const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
+  const optionStore = new OptionStore(coordinatesFormat, store)
+  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter)
 
   // Key bindings.
   bindings(emitter, clipboard)
@@ -84,12 +94,15 @@ export default async projectUUID => {
   services.dragAndDrop = dragAndDrop
   services.store = store
   services.preferencesStore = preferencesStore
-  services.tileLayerStore = tileLayerStore
+  services.documentStore = documentStore
   services.searchIndex = searchIndex
+  services.tileLayerStore = tileLayerStore
   services.controller = controller
   services.osdDriver = osdDriver
   services.clipboard = clipboard
   services.coordinatesFormat = coordinatesFormat
+  services.optionStore = optionStore
+  services.searchIndex = searchIndex
 
   services.paletteCommands = new PaletteCommands({
     store,

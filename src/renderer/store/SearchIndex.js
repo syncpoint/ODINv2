@@ -1,12 +1,10 @@
 import * as R from 'ramda'
 import util from 'util'
 import Emitter from '../../shared/emitter'
-import { Query } from './Query'
-import { isGroupId, isAssociatedId, associatedId } from '../ids'
-import { options } from '../model/options'
+import * as ID from '../ids'
 import * as L from '../../shared/level'
-import { documents } from './documents'
 import { createIndex, parseQuery } from './MiniSearch'
+import { Disposable } from '../../shared/disposable'
 
 
 const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
@@ -22,8 +20,8 @@ const compare = fn => (a, b) => {
 
 export const sort = entries => entries.sort((a, b) => {
   // Sort group to the top:
-  const GA = isGroupId(a.id)
-  const GB = isGroupId(b.id)
+  const GA = ID.isGroupId(a.id)
+  const GB = ID.isGroupId(b.id)
   if (GA && !GB) return -1
   if (!GA && GB) return 1
 
@@ -36,9 +34,12 @@ export const sort = entries => entries.sort((a, b) => {
 /**
  * @constructor
  */
-export function SearchIndex (jsonDB) {
+export default function SearchIndex (jsonDB, documentStore, optionStore, emitter) {
   Emitter.call(this)
 
+  this.documentStore = documentStore
+  this.optionStore = optionStore
+  this.emitter = emitter
   this.ready = false
   this.mirror = {}
   this.cachedDocuments = {}
@@ -72,6 +73,10 @@ export function SearchIndex (jsonDB) {
 
 util.inherits(SearchIndex, Emitter)
 
+
+/**
+ *
+ */
 SearchIndex.prototype.updateMirror = function (event) {
   event.forEach(op => {
     switch (op.type) {
@@ -95,6 +100,10 @@ SearchIndex.prototype.updateMirror = function (event) {
   this.emit('index/updated')
 }
 
+
+/**
+ *
+ */
 SearchIndex.prototype.updateIndex = function (ops) {
   if (!this.index) return /* Not there yet! */
 
@@ -103,11 +112,11 @@ SearchIndex.prototype.updateIndex = function (ops) {
     // 'Associated information' is no document in its own right but some
     // arbitrary 'value object' associated with a main document.
 
-    const id = isAssociatedId(key)
-      ? associatedId(key)
+    const id = ID.isAssociatedId(key)
+      ? ID.associatedId(key)
       : key
 
-    return isAssociatedId(key)
+    return ID.isAssociatedId(key)
       ? [id, this.document(id, this.cache(id), this.cache)] // put/del: cached main entry
       : type === 'put'
         ? [id, this.document(id, value, this.cache)] // put: value from database update
@@ -127,14 +136,22 @@ SearchIndex.prototype.updateIndex = function (ops) {
   })
 }
 
+
+/**
+ *
+ */
 SearchIndex.prototype.cache = function (id) {
   return this.mirror[id]
 }
 
+
+/**
+ *
+ */
 SearchIndex.prototype.document = function (key, value, cache) {
   if (!value) return null
   const scope = key.split(':')[0]
-  const fn = documents[scope]
+  const fn = this.documentStore[scope]
   if (!fn) return null
   return fn(key, value, cache)
 }
@@ -143,8 +160,8 @@ SearchIndex.prototype.document = function (key, value, cache) {
 /**
  * query :: String -> Promise(Query)
  */
-SearchIndex.prototype.query = function (services, terms, callback) {
-  const query = () => new Query(this, services, terms, callback)
+SearchIndex.prototype.query = function (terms, callback) {
+  const query = () => this.createQuery(terms, callback)
   return new Promise((resolve) => {
     if (this.ready) resolve(query())
     else this.once('ready', () => resolve(query()))
@@ -169,18 +186,40 @@ SearchIndex.prototype.searchField = function (field, tokens) {
 /**
  * search :: String -> [Option]
  */
-SearchIndex.prototype.search = async function (services, terms) {
+SearchIndex.prototype.search = async function (terms) {
   const [query, searchOptions] = parseQuery(terms)
   const matches = searchOptions
     ? this.index.search(query, searchOptions)
     : this.index.search(query)
 
   const option = id => {
-    const fn = options(services)[id.split(':')[0]]
-    if (!fn) return null
-    return fn(id, this.cache)
+    const scope = ID.scope(id)
+    if (!this.optionStore[scope]) return null
+    return this.optionStore[scope](id, this.cache)
   }
 
   const entries = await Promise.all(matches.map(({ id }) => option(id)))
   return sort(entries.filter(Boolean))
+}
+
+
+/**
+ *
+ */
+SearchIndex.prototype.createQuery = function (terms, callback) {
+  const refresh = async () => {
+    try {
+      const result = await this.search(terms)
+      callback(result)
+    } catch (err) {
+      /* don't invoke callback. */
+      console.log(err)
+    }
+  }
+
+  refresh()
+  const disposable = Disposable.of()
+  disposable.on(this, 'index/updated', refresh)
+  disposable.on(this.emitter, 'preferences/changed', refresh)
+  return disposable
 }

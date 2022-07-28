@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { ProjectStore } from '../store'
+import ProjectStore from '../store/ProjectStore'
 import { Selection } from '../Selection'
 
 export default () => {

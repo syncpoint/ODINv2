@@ -6,7 +6,7 @@ const COORDINATES_FORMAT = 'coordinates-format'
 const GRATICULE = 'graticule'
 const TILE_LAYERS = 'tile-layers'
 
-export function PreferencesStore (preferencesDB, ipcRenderer) {
+export default function PreferencesStore (preferencesDB, ipcRenderer) {
   Emitter.call(this)
   this.preferencesDB = preferencesDB
   this.ipcRenderer = ipcRenderer

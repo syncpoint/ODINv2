@@ -6,7 +6,7 @@ const DEFAULT_VIEWPORT = {
   rotation: 0
 }
 
-export function SessionStore (db, key) {
+export default function SessionStore (db, key) {
   this.db = db
   this.key = key
 }
