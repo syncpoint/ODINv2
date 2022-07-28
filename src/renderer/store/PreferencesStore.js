@@ -2,7 +2,7 @@ import util from 'util'
 import Emitter from '../../shared/emitter'
 import * as L from '../../shared/level'
 
-export function PreferencesStore (preferencesDB, ipcRenderer) {
+export default function PreferencesStore (preferencesDB, ipcRenderer) {
   Emitter.call(this)
   this.preferencesDB = preferencesDB
   this.ipcRenderer = ipcRenderer

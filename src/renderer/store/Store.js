@@ -41,7 +41,7 @@ import { importSymbols } from './symbols'
  * values :: String -> [v]
  * values :: [k] -> [v]
  */
-export function Store (jsonDB, wkbDB, undo, selection) {
+export default function Store (jsonDB, wkbDB, undo, selection) {
   Emitter.call(this)
 
   this.jsonDB = jsonDB

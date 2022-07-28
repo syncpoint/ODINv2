@@ -19,7 +19,7 @@ describe('Disposable', function () {
     let expected = 0
     const x = Disposable.of()
     R.range(0, 10).forEach(index => {
-      x.addDisposable(() => {
+      x.add(() => {
         assert.strictEqual(index, expected)
         expected += 1
       })
@@ -35,7 +35,7 @@ describe('Disposable', function () {
 
     // Add same disposable several times:
     const x = Disposable.of()
-    R.range(0, 10).forEach(() => x.addDisposable(a))
+    R.range(0, 10).forEach(() => x.add(a))
     x.dispose()
 
     // It should be called only once.
@@ -47,9 +47,43 @@ describe('Disposable', function () {
     const x = Disposable.of()
     const a = () => (expected = true)
     const b = () => assert.strictEqual(expected, false)
-    x.addDisposable(a)
-    x.addDisposable(b)
-    x.removeDisposable(a)
+    x.add(a)
+    x.add(b)
+    x.remove(a)
     x.dispose()
+  })
+
+  it('disposes event listeners (on)', function () {
+    let expected = 0
+    const handler = () => {}
+    const target = {
+      on: () => {},
+      off: (event, fn) => {
+        if (event === 'event' && fn === handler) expected += 1
+      }
+    }
+
+    const x = Disposable.of()
+    x.on(target, 'event', handler)
+    x.dispose()
+
+    assert.strictEqual(expected, 1)
+  })
+
+  it('disposes event listeners (addEventListener)', function () {
+    let expected = 0
+    const handler = () => {}
+    const target = {
+      addEventListener: () => {},
+      removeEventListener: (event, fn) => {
+        if (event === 'event' && fn === handler) expected += 1
+      }
+    }
+
+    const x = Disposable.of()
+    x.addEventListener(target, 'event', handler)
+    x.dispose()
+
+    assert.strictEqual(expected, 1)
   })
 })

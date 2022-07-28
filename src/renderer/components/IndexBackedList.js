@@ -18,18 +18,13 @@ const IndexBackedList = props => {
   // changes on query result list due to search index updates.
 
   React.useEffect(() => {
-    const pendingQuery = (async () => {
-      return await searchIndex.query(services, `${scope} ${filter}`, entries => {
-        // Note: (multiselect) strategy makes sure that state is only
-        // updated when entries are not deep equal.
-        dispatch({ type: 'entries', entries })
-      })
-    })()
+    const disposable = searchIndex.query(`${scope} ${filter}`, entries => {
+      // Note: (multiselect) strategy makes sure that state is only
+      // updated when entries are not deep equal.
+      dispatch({ type: 'entries', entries })
+    })
 
-    return async () => {
-      const query = await pendingQuery
-      query.dispose()
-    }
+    return async () => (await disposable).dispose()
   }, [scope, filter, services, searchIndex, dispatch])
 
   // <<= QUERY/RESULT

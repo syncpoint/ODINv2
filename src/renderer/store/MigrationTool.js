@@ -4,7 +4,7 @@ import { hiddenId, lockedId, sharedId, tagsId, associatedId, defaultId } from '.
 /**
  * Upgrade/downgrade databases as necessary.
  */
-export const MigrationTool = function (db, options) {
+export default function MigrationTool (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
