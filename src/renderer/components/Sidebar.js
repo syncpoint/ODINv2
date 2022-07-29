@@ -1,136 +1,656 @@
+/* eslint-disable react/prop-types */
 import * as R from 'ramda'
 import React from 'react'
-import { FilterInput, IndexBackedList, History } from '.'
-import { useList, useStack, useServices, useMemento } from './hooks'
+import Icon from '@mdi/react'
+import * as mdi from '@mdi/js'
+import useVirtual from 'react-cool-virtual'
+import { Disposable } from '../../shared/disposable'
+import { useMemento, useList, useServices } from './hooks'
+import { History } from './History'
+import { FilterInput } from './FilterInput'
+import { matcher, stopPropagation, preventDefault } from './events'
 import { cmdOrCtrl } from '../platform'
-import { isLayerId, isFeatureId } from '../ids'
-import { matcher, preventDefault } from './events'
-import './Sidebar.css'
+import * as ID from '../ids'
+import './Sidebar.scss'
 
-const scopeGroup = {
-  key: 'layer',
-  scope: '@layer',
-  label: 'Layers',
-  items: [
-    { key: 'layer', scope: '@layer', label: 'Layers' },
-    { key: 'feature', scope: '@feature', label: 'Features' },
-    { key: 'link', scope: '@link', label: 'Links' },
-    { key: 'symbol', scope: '@symbol', label: 'Symbols' },
-    { key: 'marker', scope: '@marker', label: 'Markers' },
-    { key: 'pinned', scope: '#pin', label: 'Pinned' }
-  ]
-}
 
 /**
- * Top-most component, combining history, filter input and
- * concrete filterable list, e.g. feature list.
+ *
  */
-const Sidebar = () => {
-  const { selection } = useServices()
-  const [listState, listDispatch] = useList({ multiselect: true })
-  const [filter, setFilter] = React.useState('')
-  const [historyEntries, historyDispatch] = useStack([scopeGroup])
-  const ref = React.useRef()
-  const [showing] = useMemento('ui.sidebar.showing', true)
+const TagIcon = props => {
+  const { path, removable, color } = props
 
-  // Reset filter on each history update:
-  React.useEffect(() => setFilter(''), [historyEntries])
+  const handleClick = event => {
+    event.stopPropagation()
+    props.onClick && props.onClick()
+  }
 
-  // Focus sidebar AFTER edit:
-  React.useEffect(() => {
-    if (!ref.current) return
-    if (!listState.editId) ref.current.focus()
-  }, [listState.editId])
+  const className = removable
+    ? 'tag-icon tag-close-icon'
+    : 'tag-icon'
 
-  const handleClick = () => selection.set([])
+  return (
+    <span className={className} onClick={handleClick}>
+      <Icon path={path} size='12px' color={color}/>
+    </span>
+  )
+}
+
+
+/**
+ *
+ */
+const ScopeTag = props => {
+  const { id, spec, label, action } = props
+
+  // TODO: handle click
+  const handleClick = () => {}
+
+  const active = action !== 'NONE' ? '--active' : ''
+  const className = `e3de-tag--scope e3de-tag${active}`
+
+  return (
+    <span
+      className={className}
+      onClick={handleClick}
+      onMouseDown={event => props.onTagMouseDown(id, event, spec)}
+      onMouseUp={event => props.onTagMouseUp(id, event, spec)}
+    >
+      {label}
+    </span>
+  )
+}
+
+
+/**
+ *
+ */
+const SystemTag = props => {
+  const handleClick = event => {
+    event.stopPropagation()
+    props.onTagClick(props.id, event, props.spec)
+  }
+
+  const active = props.action !== 'NONE' ? '--active' : ''
+  const className = `e3de-tag--system e3de-tag${active}`
+
+  return (
+    <span
+      className={className}
+      onClick={handleClick}
+    >
+      {props.label}
+    </span>
+  )
+}
+
+
+/**
+ *
+ */
+const UserTag = props => {
+  const { id, label } = props
+
+  // TODO: handle click
+  const handleClick = () => {}
+  const handleRemove = () => props.removeTag(id, label)
+
+  const className = 'e3de-tag--user e3de-tag'
+
+  return (
+    <span
+      className={className}
+      onClick={handleClick}
+    >
+      {label}
+      <TagIcon
+        path={mdi.mdiClose}
+        removable={true}
+        color='grey'
+        onClick={handleRemove}
+      />
+    </span>
+  )
+}
+
+
+/**
+ *
+ */
+const PlusTag = props => {
+  const { id } = props
+  const [mode, setMode] = React.useState('display')
+  const [inputValue, setInputValue] = React.useState('')
+
+  const handleEnter = () => {
+    setMode('display')
+    if (inputValue) props.addTag(id, inputValue)
+  }
 
   const handleKeyDown = event => {
     matcher([
-      ({ key }) => key === 'ArrowDown',
-      ({ key }) => key === 'ArrowUp'
-    ], preventDefault)(event)
+      ({ key }) => key === 'Enter',
+      ({ key }) => key === 'Escape',
+      ({ key }) => key === ' ',
+      event => cmdOrCtrl(event) && event.key === 'a'
+    ], stopPropagation)(event)
 
-    // History: Back.
-    if (cmdOrCtrl(event) && event.key === 'ArrowUp') {
-      if (historyEntries.length > 1) historyDispatch({ type: 'pop' })
+    switch (event.key) {
+      case 'Enter': return handleEnter()
+      case 'Escape': return setMode('display')
     }
-
-    // History: Open details.
-    if (cmdOrCtrl(event) && event.key === 'ArrowDown') {
-      if (listState.selected.length !== 1) return
-
-      const focusIndex = listState.focusIndex
-      const focusId = R.last(listState.selected)
-
-      if (isLayerId(focusId)) {
-        const layerId = focusId.split(':')[1]
-
-        historyDispatch({
-          type: 'push',
-          entry: {
-            key: focusId,
-            scope: `@feature @link !feature:${layerId} !link+layer:${layerId}`,
-            label: listState.entries[focusIndex].title || 'N/A'
-          }
-        })
-      } else if (isFeatureId(focusId)) {
-        historyDispatch({
-          type: 'push',
-          entry: {
-            key: focusId,
-            scope: `@link !link+feature:${focusId.split(':')[1]}`,
-            label: listState.entries[focusIndex].title || 'N/A'
-          }
-        })
-      }
-    }
-
-    const { key, shiftKey, metaKey, ctrlKey } = event
-    listDispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }
 
-  // Reset ongoing editing if anything (i.e. card title) lost focus.
-  const handleBlur = event => {
-    if (event.target === ref.current) return
-    listDispatch({ type: 'blur' })
+  const handleChange = ({ target }) => {
+    const value = target.value
+      ? target.value.replace(/[^0-9a-z/]+/ig, '')
+      : ''
+    setInputValue(value.substring(0, 16).toUpperCase())
   }
 
-  const handleFilterChange = React.useCallback(value => setFilter(value), [])
-  if (!showing) return null
+  const handleClick = event => {
+    event.stopPropagation()
+    setInputValue('')
+    setMode('edit')
+  }
+
+  const tag = () =>
+    <span
+      className='e3de-tag--plus e3de-tag'
+      onClick={handleClick}
+    >
+      <TagIcon path={mdi.mdiPlus} size='12px'/>
+      {'add tag'}
+    </span>
+
+  const input = () =>
+    <input
+      className='e3de-tag__input'
+      value={inputValue}
+      onBlur={handleEnter}
+      onKeyDown={handleKeyDown}
+      onChange={handleChange}
+      autoFocus
+    >
+    </input>
+
+  return mode === 'display' ? tag() : input()
+}
+
+
+/**
+ *
+ */
+const TAG = {
+  SCOPE: props => <ScopeTag {...props}/>,
+  SYSTEM: props => <SystemTag {...props}/>,
+  USER: props => <UserTag {...props}/>,
+  PLUS: props => <PlusTag {...props}/>
+}
+
+
+/**
+ *
+ */
+const Title = props => {
+  const [value, setValue] = React.useState(props.value)
+  const inputRef = React.useRef()
+  const placeholder = value
+    ? null
+    : props.editing
+      ? null
+      : 'N/A (click to edit)'
+
+
+  React.useEffect(() => { setValue(props.value) }, [props.value])
+
+  const rename = name => {
+    if (props.value === name) return
+    props.onTitleChange(props.editing, name.trim())
+  }
+
+  const reset = () => setValue(props.value)
+  const handleChange = ({ target }) => setValue(target.value)
+
+  const handleBlur = () => {
+    if (!value) return
+    rename(value)
+  }
+
+  const handleKeyDown = event => {
+    matcher([
+      ({ key }) => key === ' ',
+      event => event.key === 'a' && cmdOrCtrl(event)
+    ], stopPropagation)(event)
+
+    if (event.key === 'Escape') return reset()
+    else if (event.key === 'Enter') return rename(value)
+  }
+
+  const input = () => <input
+    className='e3de-card__title'
+    ref={inputRef}
+    autoFocus
+    value={value || ''}
+    placeholder={placeholder}
+    onChange={handleChange}
+    onBlur={handleBlur}
+    onKeyDown={handleKeyDown}
+  />
+
+  const spanValue = props.editing
+    ? value || ''
+    : value || placeholder
+
+  const spanStyle = placeholder
+    ? { color: '#c0c0c0' }
+    : {}
+
+  const span = () =>
+    <span
+      style={spanStyle}
+      className='e3de-card__title'
+      placeholder={placeholder}
+    >
+      {spanValue}
+    </span>
+
+  return props.editing === props.id ? input() : span()
+}
+
+
+/**
+ *
+ */
+const Card = React.forwardRef((props, ref) => {
+  const [dropAllowed, setDropAllowed] = React.useState(null)
+
+  const style = dropAllowed === true
+    ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
+    : {}
+
+  const acceptDrop = () => props.capabilities && props.capabilities.includes('DROP')
+
+  const dropEffect = event => {
+    const types = [...event.dataTransfer.types]
+    return acceptDrop()
+      ? types.some(t => t === 'text/uri-list') ? 'copy' : 'link'
+      : 'none'
+  }
+
+  const handleDragOver = event => {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = dropEffect(event)
+    setDropAllowed(acceptDrop())
+  }
+
+  const handleDragEnter = event => {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = dropEffect(event)
+  }
+
+  const handleDragLeave = event => {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = dropEffect(event)
+    setDropAllowed(null)
+  }
+
+  const handleDrop = event => {
+    event.preventDefault()
+    setDropAllowed(null)
+    if (acceptDrop()) props.onDrop(props.id, event)
+  }
+
+  const tag = spec => {
+    const [variant, label, action, path] = spec.split(':')
+    return TAG[variant]({
+      key: spec,
+      id: props.id,
+      spec,
+      label,
+      action,
+      path,
+      addTag: props.addTag,
+      removeTag: props.removeTag,
+      onTagClick: props.onTagClick,
+      onTagMouseDown: props.onTagMouseDown,
+      onTagMouseUp: props.onTagMouseUp
+    })
+  }
 
   return (
-    <div className="sidebar">
+    <div className='e3de-card-container' ref={ref}>
       <div
-        ref={ref}
-        tabIndex={0}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%'
-        }}
+        className='e3de-card e3de-column'
+        style={style}
+        aria-selected={props.selected}
+        onClick={event => props.onEntryClick(props.id, event)}
+        onDoubleClick={event => props.onEntryDoubleClick(props.id, event)}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
-        <History entries={historyEntries} dispatch={historyDispatch}/>
-        <div style={{ display: 'flex', padding: '0.5em' }}>
-          <FilterInput size='large' value={filter} onChange={handleFilterChange}/>
+        <div className='header e3de-row'>
+          <Title
+            id={props.id}
+            value={props.title}
+            editing={props.editing}
+            onTitleChange={props.onTitleChange}
+          />
         </div>
+        <div className='body e3de-row'>
+          <span>{props.description}</span>
+          <div className='avatar'>
+            <img className='image' src={props.url}/>
+          </div>
+        </div>
+        <div className='taglist'>
+          {
+            props.tags.split(' ').map(spec => tag(spec))
+          }
+        </div>
+      </div>
+    </div>
+  )
+})
 
-        <IndexBackedList
-          scope={R.last(historyEntries).scope}
-          history={history}
-          filter={filter}
-          dispatch={listDispatch}
-          state={listState}
-        />
+Card.displayName = 'Card'
+Card.whyDidYouRender = true
+
+
+/**
+ *
+ */
+const EntryList = props => {
+  const { count, scroll, focusIndex } = props
+  const { outerRef, innerRef, items, scrollToItem } = useVirtual({
+    itemCount: count,
+    resetScroll: true
+  })
+
+  React.useEffect(() => {
+    if (scroll === 'none') return
+    if (focusIndex === undefined) return
+    if (focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+  }, [scrollToItem, focusIndex, scroll])
+
+  return (
+    <div className='e3de-list-container' ref={outerRef}>
+      <div ref={innerRef}>
+        { items.map(props.renderEntry) }
       </div>
     </div>
   )
 }
 
-Sidebar.whyDidYouRender = true
+EntryList.whyDidYouRender = true
 
-const SidebarMemo = React.memo(Sidebar)
-SidebarMemo.whyDidYouRender = true
-export { SidebarMemo as Sidebar }
+
+
+/**
+ *
+ */
+const useModel = () => {
+  const { searchIndex, selection, store, emitter, ipcRenderer } = useServices()
+  const [history, setHistory] = React.useState([])
+  const [scope, setScope] = useMemento('ui.sidebar.scope', 'layer')
+  const [filter, setFilter] = useMemento('ui.sidebar.filter', '')
+  const [list, dispatch] = useList({ multiselect: true })
+  const [editing, setEditing] = React.useState(false) // false || entry id
+  const sidebar = React.useRef()
+
+  // >>= QUERY/RESULT
+  // Open new query, dispatch result list and listen for
+  // changes on query result list due to search index updates.
+
+  const addTag = React.useCallback((id, value) => {
+    store.addTag(id, value.toLowerCase())
+    if (sidebar.current) sidebar.current.focus()
+  }, [store])
+
+  const removeTag = React.useCallback((id, value) => store.removeTag(id, value.toLowerCase()), [store])
+  const onFilterChange = React.useCallback(value => setFilter(value), [setFilter])
+  const onEntryClick = React.useCallback((id, { metaKey, ctrlKey, shiftKey }) => dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey }), [dispatch])
+
+  const onEntryDoubleClick = React.useCallback(id => {
+    const scope = ID.scope(id)
+    const handlers = {
+      symbol: id => emitter.emit('command/entry/draw', { id }),
+      'link+layer': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
+      'link+feature': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
+      marker: async id => {
+        const markers = await store.values([id])
+        if (markers.length !== 1) return
+        const center = markers[0].geometry.coordinates
+        emitter.emit('map/flyto', { center })
+      }
+    }
+
+    const handler = handlers[scope] || (() => {})
+    console.log('handler', handler)
+    handler(id)
+  }, [emitter, store, ipcRenderer])
+
+  // Handle actionable tags (ide, show, etc.)
+  //
+  const onTagClick = React.useCallback((id, event, spec) => {
+    const ids = R.uniq([id, ...selection.selected()])
+    if (spec.match(/SYSTEM:HIDDEN/)) store.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/)) store.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/)) store.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/)) store.lock(ids)
+  }, [selection, store])
+
+  // Handle scope tag (identify/highlight).
+  //
+  const onTagMouseDown = React.useCallback((id, event, spec) => {
+    const ids = R.uniq([id, ...selection.selected()])
+    if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/on', { ids })
+    if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/on', { ids })
+    if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/on', { ids })
+  }, [emitter, selection])
+
+  const onTagMouseUp = React.useCallback((id, event, spec) => {
+    console.log('onTagMouseUp', id, event, spec)
+    if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/off')
+  }, [emitter])
+
+
+  const onKeyDown = React.useCallback(event => {
+    matcher([
+      ({ key }) => key === 'ArrowDown',
+      ({ key }) => key === 'ArrowUp'
+    ], preventDefault)(event)
+
+    const { key, shiftKey, metaKey, ctrlKey } = event
+
+    // Handle event relevant for editing first.
+    //
+    if (key === 'Escape' && editing) {
+      setEditing(false)
+      event.stopPropagation()
+    } else if (key === 'F2' && !editing && list.selected.length) {
+      setEditing(R.last(list.selected))
+      event.stopPropagation()
+    } else if (key === 'Enter' && editing) {
+      setEditing(false)
+      event.stopPropagation()
+    } else if (key === 'Enter' && !editing) {
+      setEditing(R.last(list.selected))
+      event.stopPropagation()
+    }
+
+    // TODO: handle parent/child navigation
+
+    // If still permitted, propagate to list state reducer.
+    //
+    if (!event.isPropagationStopped()) {
+      dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
+    }
+  }, [dispatch, editing, list.selected])
+
+  const onTitleChange = React.useCallback((id, value) => {
+    store.rename(id, value)
+  }, [store])
+
+  // Reset selection.
+  //
+  const onClick = React.useCallback(() => selection.set([]), [selection])
+
+  const onDrop = React.useCallback(async (id, event) => {
+    // Process files first (if any):
+    const [...files] = event.dataTransfer.files
+    const fileLinks = files.reduce((acc, file) => {
+      const url = new URL(`file:${file.path}`)
+      const value = { name: file.name, url: url.href }
+      acc.push([ID.linkId(id), value])
+      return acc
+    }, [])
+
+    // Append possible items to existing file links:
+    const getAsString = item => new Promise(resolve => item.getAsString(resolve))
+    const [...items] = event.dataTransfer.items
+
+    const links = items
+      .filter(item => item.type === 'text/uri-list')
+      .reduce(async (acc, item) => {
+        const arg = await getAsString(item)
+
+        const url = new URL(arg)
+        if (!url.hostname || !url.href) return acc
+
+        const value = { name: url.origin, url: url.href }
+        const links = await acc
+        links.push([ID.linkId(id), value])
+        return links
+      }, fileLinks)
+
+    store.insert(await links)
+  }, [store])
+
+  React.useEffect(() => {
+    if (scope === null) return
+    if (filter === null) return
+
+    const terms = `${scope} ${filter}`
+    const disposable = searchIndex.query(terms, entries => {
+      // Note: (multiselect) strategy makes sure that state is only
+      // updated when entries are not deep equal.
+      dispatch({ type: 'entries', entries })
+    })
+
+    return async () => (await disposable).dispose()
+  }, [scope, filter, searchIndex, dispatch])
+
+  // <<= QUERY/RESULT
+
+  // =>> SELECTION
+  // Sync global selection with list state and vice versa.
+
+  React.useEffect(() => {
+    const selectionEvent = () => ({ type: 'selection', selected: selection.selected() })
+    const disposable = Disposable.of()
+    disposable.on(selection, 'selection', () => dispatch(selectionEvent()))
+    return () => disposable.dispose()
+  }, [selection, dispatch])
+
+  React.useEffect(() => {
+    selection.set(list.selected)
+  }, [selection, list.selected])
+
+  // <<= SELECTION
+
+  // Focus sidebar after edit to keep on getting key events.
+  //
+  React.useEffect(() => {
+    if (!sidebar.current) return
+    if (!editing) sidebar.current.focus()
+  }, [editing])
+
+  return {
+    state: { scope, filter, history, editing, ...list },
+    refs: { sidebar },
+    setScope,
+    setHistory,
+    addTag,
+    removeTag,
+    onTagClick,
+    onTagMouseDown,
+    onTagMouseUp,
+    onTitleChange,
+    onFilterChange,
+    onEntryClick,
+    onEntryDoubleClick,
+    onKeyDown,
+    onClick,
+    onDrop
+  }
+}
+
+
+/**
+ *
+ */
+export const Sidebar = () => {
+  const { state, refs, ...controller } = useModel()
+
+  if (state.scope === null) return null
+  if (state.filter === null) return null
+
+  console.log('state', new Date(), state)
+
+  const renderEntry = ({ index, measureRef }) => {
+    // Handle 'overshooting':
+    if (index >= state.entries.length) return null
+    const entry = state.entries[index]
+
+    return (
+      <Card
+        key={entry.id}
+        {...entry}
+        ref={measureRef}
+        selected={state.selected.includes(entry.id)}
+        editing={state.editing}
+        addTag={controller.addTag}
+        removeTag={controller.removeTag}
+        onTagClick={controller.onTagClick}
+        onTagMouseDown={controller.onTagMouseDown}
+        onTagMouseUp={controller.onTagMouseUp}
+        onEntryClick={controller.onEntryClick}
+        onEntryDoubleClick={controller.onEntryDoubleClick}
+        onTitleChange={controller.onTitleChange}
+        onDrop={controller.onDrop}
+      />
+    )
+  }
+
+  return (
+    <div className="e3de-sidebar"
+      ref={refs.sidebar}
+      tabIndex={0}
+      onKeyDown={controller.onKeyDown}
+      onClick={controller.onClick}
+    >
+      <History
+        scope={state.scope}
+        history={state.history}
+        setScope={controller.setScope}
+      />
+      <div style={{ display: 'flex', padding: '0.5em' }}>
+        <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
+      </div>
+      <EntryList
+        count={state.entries.length}
+        scroll={state.scroll}
+        focusIndex={state.focusIndex}
+        renderEntry={renderEntry}
+      />
+    </div>
+  )
+}
+
+Sidebar.whyDidYouRender = true
