@@ -3,8 +3,6 @@ const { spawn } = require('child_process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 
-const hash = 'hash:base64:8'
-
 const RULES = {
   javascript: {
     test: /\.js$/,
@@ -17,8 +15,8 @@ const RULES = {
     // style-loader: wrap CSS string from css-loader with <style> tag
     // Note: loaders are applied from right to left, i.e. css-loader -> style-loader
     //
-    test: /\.css$/,
-    use: ['style-loader', 'css-loader']
+    test: /\.(scss|css)$/,
+    use: ['style-loader', 'css-loader', 'sass-loader']
   },
 
   image: {
@@ -57,7 +55,6 @@ const rendererConfig = (env, argv) => ({
   plugins: [
     // Title is managed by BrowserWindow title option.
     new HtmlWebpackPlugin(),
-    new webpack.IgnorePlugin({ resourceRegExp: /^pg-native$/ }),
     new webpack.ExternalsPlugin('commonjs', ['leveldown'])
   ]
 })

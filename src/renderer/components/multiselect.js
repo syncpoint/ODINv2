@@ -101,12 +101,15 @@ export const multiselect = {
         ? shiftSelection()
         : [id]
 
-    return {
-      ...state,
-      selected,
-      focusIndex: Entries.focusIndex(state.entries, selected),
-      scroll: 'auto'
-    }
+    const focusIndex = Entries.focusIndex(state.entries, selected)
+
+    // TODO: only update state on changes - current this has change side-effect!
+    // const selectedChanged = !isEqual(selected, state.selected)
+    // const focusIndexChanged = focusIndex !== state.focusIndex
+    // const hasChanges = selectedChanged || focusIndexChanged
+    // console.log('hasChanges', hasChanges)
+
+    return { ...state, selected, focusIndex, scroll: 'auto' }
   },
 
   /**
@@ -165,7 +168,6 @@ export const multiselect = {
       ...state,
       selected,
       focusIndex: Entries.focusIndex(state.entries, selected),
-      editId: null,
       scroll: 'auto'
     }
   },
@@ -214,7 +216,6 @@ export const multiselect = {
       ...state,
       selected,
       focusIndex: Entries.focusIndex(state.entries, selected),
-      editId: null,
       scroll: 'auto'
     }
   },
@@ -272,45 +273,11 @@ export const multiselect = {
   },
 
   /**
-   * Cancel edit; reset selection (if any).
+   * Reset selection (if any).
    */
   'keydown/Escape': state => {
-    // Cancel edit has precedence over selection.
-    if (state.editId) return { ...state, editId: null }
-
     // Deselect all.
     if (Selection.empty(state.selected)) return state
     return { ...state, selected: [], scroll: 'none' }
-  },
-
-  /**
-   * Start editing of focused option.
-   */
-  'keydown/F2': state => {
-    const current = Entries.focusIndex(state.entries, state.selected)
-    if (current === -1) return state
-
-    const editId = state.entries[current].id
-    return { ...state, editId }
-  },
-
-  /**
-   * Toggle editing.
-   */
-  'keydown/Enter': state => {
-    const current = Entries.focusIndex(state.entries, state.selected)
-    if (current === -1) return state
-
-    const editId = state.entries[current].id
-    if (editId === state.editId) return { ...state, editId: null }
-    else return { ...state, editId }
-  },
-
-  /**
-   * Cancel ongoing edit (if any).
-   */
-  blur: state => {
-    if (state.editId) return { ...state, editId: null }
-    return state
   }
 }

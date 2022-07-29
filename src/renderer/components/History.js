@@ -1,58 +1,46 @@
+/* eslint-disable */
 import React from 'react'
-import PropTypes from 'prop-types'
 import { Breadcrumb, Menu } from 'antd'
 
-const History = props => {
-  const { entries, dispatch } = props
-  const menuStyle = { userSelect: 'none' }
+export const SCOPES = {
+  '@layer': 'Layers',
+  '@feature': 'Features',
+  '@link': 'Links',
+  '@symbol': 'Symbols',
+  '@marker': 'Markers',
+  '#pin': 'Pinned'
+}
 
-  const handleMenuClick = ({ key }) => {
-    const [entryKey, itemKey] = key.split(':')
-    const entry = entries.find(entry => entry.key === entryKey)
-    const item = entry.items.find(item => item.key === itemKey)
-    dispatch({ type: 'reset', entry: { ...item, items: entry.items } })
-  }
+export const History = props => {
+  const { scope, history } = props
+  if (!scope) return null
 
-  // Must not buble up, since it would reset selection.
-  const handleBreadcrumbClick = event => event.stopPropagation()
+  const handleScopeMenuClick = ({ key }) => props.setScope(key)
 
-  const breadcrumbItem = entry => {
-    const menuItem = item => ({
-      key: `${entry.key}:${item.key}`,
-      label: item.label
-    })
+  const menuItem = ([key, label]) => ({ key, label })
 
-    const handleBreadcrumbItemClick = () => dispatch({ type: 'pop', key: entry.key })
-    const overlay = entry.items && entry.items.length
-      ? <Menu onClick={handleMenuClick} style={menuStyle} items={entry.items.map(menuItem)}/>
-      : null
+  const scopeMenu = <Menu
+    style={{ userSelect: 'none' }}
+    items={Object.entries(SCOPES).map(menuItem)}
+    onClick={handleScopeMenuClick}
+  />
 
-    return (
-      <Breadcrumb.Item
-        key={entry.key}
-        overlay={overlay}
-      >
-        <a onClick={handleBreadcrumbItemClick}>{entry.label}</a>
-      </Breadcrumb.Item>
-    )
-  }
+  const scopeItem = <Breadcrumb.Item
+    key='scope'
+    overlay={scopeMenu}
+  >
+    <a>{SCOPES[scope]}</a>
+  </Breadcrumb.Item>
+
+  const items = history.reduce((acc, entry) => {
+    return acc
+  }, [scopeItem])
 
   return (
     <Breadcrumb
       style={{ padding: '12px', paddingBottom: '6px' }}
-      onClick={handleBreadcrumbClick}
     >
-      { entries.map(breadcrumbItem) }
+      { items }
     </Breadcrumb>
   )
 }
-
-History.propTypes = {
-  entries: PropTypes.array.isRequired,
-  dispatch: PropTypes.func.isRequired
-}
-
-History.whyDidYouRender = true
-
-const HistoryMemo = React.memo(History)
-export { HistoryMemo as History }
