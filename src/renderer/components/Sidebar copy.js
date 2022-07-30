@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import * as R from 'ramda'
 import React from 'react'
-import isEqual from 'react-fast-compare'
 import { Disposable } from '../../shared/disposable'
 import { useMemento, useList, useServices } from './hooks'
 import { ScopeSwitcher } from './ScopeSwitcher'
@@ -42,29 +41,15 @@ const useModel = () => {
   }
 
   const [preferences, setPreferences] = useMemento('ui.sidebar.preferences', defaultPreferences)
+  const { history, filter } = preferences && defaultPreferences
 
-  const setFilter = React.useCallback(value => {
-    if (!preferences) return
-    if (R.isNil(value)) return
-    if (preferences.filter === value) return
-
-    setPreferences({
-      ...preferences,
-      filter: value
-    })
+  const setHistory = React.useCallback(history => {
+    setPreferences({ ...preferences, history })
   }, [preferences, setPreferences])
 
-  const setHistory = React.useCallback(value => {
-    if (!preferences) return
-    if (R.isNil(value)) return
-    if (isEqual(preferences.history, value)) return
-
-    setPreferences({
-      history: value,
-      filter: '' // filter is always reset on history/scope change.
-    })
+  const setFilter = React.useCallback(filter => {
+    setPreferences({ ...preferences, filter })
   }, [preferences, setPreferences])
-
 
   const [list, dispatch] = useList({ multiselect: true })
   const [editing, setEditing] = React.useState(false) // false || entry id
@@ -75,8 +60,8 @@ const useModel = () => {
   // changes on query result list due to search index updates.
 
   React.useEffect(() => {
-    if (preferences === null) return
-    const { history, filter } = preferences
+    if (history === null) return
+    if (filter === null) return
 
     const terms = `${R.last(history).scope} ${filter}`
     const disposable = searchIndex.query(terms, entries => {
@@ -86,7 +71,7 @@ const useModel = () => {
     })
 
     return async () => (await disposable).dispose()
-  }, [preferences, searchIndex, dispatch])
+  }, [history, filter, searchIndex, dispatch])
 
   // <<= QUERY/RESULT
 
@@ -96,9 +81,7 @@ const useModel = () => {
   React.useEffect(() => {
     const selectionEvent = () => ({ type: 'selection', selected: selection.selected() })
     const disposable = Disposable.of()
-    disposable.on(selection, 'selection', () => {
-      dispatch(selectionEvent())
-    })
+    disposable.on(selection, 'selection', () => dispatch(selectionEvent()))
     return () => disposable.dispose()
   }, [selection, dispatch])
 
@@ -114,7 +97,9 @@ const useModel = () => {
     const disposable = Disposable.of()
     disposable.on(emitter, 'ui.sidebar.focus', ({ scope, id }) => {
       setHistory([{ key: 'root', scope, label: scope.substring(1) }])
-      dispatch({ type: 'selection', selected: [id], autoFocus: true })
+
+      // Give list time to settle before selecting/focusing entry:
+      setTimeout(() => dispatch({ type: 'selection', selected: [id], autoFocus: true }))
     })
 
     return () => disposable.dispose()
@@ -127,15 +112,19 @@ const useModel = () => {
     if (!editing) sidebar.current.focus()
   }, [editing])
 
+  // Reset filter on each history update:
+  React.useEffect(() => {
+    setFilter('')
+  }, [history, setFilter])
+
+
   const addTag = React.useCallback((id, value) => {
     store.addTag(id, value.toLowerCase())
     if (sidebar.current) sidebar.current.focus()
   }, [store])
 
   const removeTag = React.useCallback((id, value) => store.removeTag(id, value.toLowerCase()), [store])
-  const onFilterChange = React.useCallback(value => {
-    setFilter(value)
-  }, [setFilter])
+  const onFilterChange = React.useCallback(value => setFilter(value), [setFilter])
   const onEntryClick = React.useCallback((id, { metaKey, ctrlKey, shiftKey }) => dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey }), [dispatch])
 
   const onEntryDoubleClick = React.useCallback(id => {
@@ -194,7 +183,6 @@ const useModel = () => {
     const { key, shiftKey, metaKey, ctrlKey } = event
 
     if (cmdOrCtrl(event)) {
-      const { history } = preferences
       if (event.key === 'ArrowUp' && history.length > 1) {
         setHistory(R.dropLast(1, history))
       } else if (event.key === 'ArrowDown' && list.focusIndex !== -1) {
@@ -241,7 +229,7 @@ const useModel = () => {
     if (!event.isPropagationStopped()) {
       dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
     }
-  }, [dispatch, editing, preferences, list, setHistory])
+  }, [dispatch, editing, list.selected, history, setHistory, list.entries, list.focusIndex])
 
   const onTitleChange = React.useCallback((id, value) => {
     store.rename(id, value)
@@ -286,7 +274,7 @@ const useModel = () => {
   }, [store])
 
   return {
-    state: { ...preferences, editing, ...list },
+    state: { history, filter, editing, ...list },
     refs: { sidebar },
     setHistory,
     addTag,

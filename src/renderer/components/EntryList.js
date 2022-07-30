@@ -12,12 +12,12 @@ export const EntryList = props => {
     resetScroll: true
   })
 
-  React.useEffect(() => {
-    if (scroll === 'none') return
-    if (focusIndex === undefined) return
-    if (focusIndex === -1) return
-    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
-  }, [scrollToItem, focusIndex, scroll])
+  // FIXME: hackmagic!
+  // Somehow necessary to make selection/autoFocus work.
+  //
+  if (focusIndex !== -1 && scroll !== 'none') {
+    setTimeout(() => scrollToItem({ index: focusIndex, align: 'auto', smooth: false }), 50)
+  }
 
   return (
     <div className='e3de-list-container' ref={outerRef}>

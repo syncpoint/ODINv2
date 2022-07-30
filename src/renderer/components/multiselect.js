@@ -118,6 +118,7 @@ export const multiselect = {
   selection: (state, { selected, autoFocus = false }) => {
     if (Selection.equals(state.selected, selected)) return state
 
+    const scroll = autoFocus ? 'auto' : state.scroll
     const focusIndex = autoFocus
       ? Entries.focusIndex(state.entries, selected)
       : state.focusIndex
@@ -126,7 +127,7 @@ export const multiselect = {
       ...state,
       selected,
       focusIndex,
-      scroll: 'none'
+      scroll
     }
   },
 

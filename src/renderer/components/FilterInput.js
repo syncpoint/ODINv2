@@ -1,35 +1,22 @@
 import React from 'react'
+import * as R from 'ramda'
 import PropTypes from 'prop-types'
 import { Input } from 'antd'
 import { cmdOrCtrl } from '../platform'
-import { useDebounce } from './hooks'
 import { matcher, stopPropagation, preventDefault } from './events'
 
 /**
  * Input component with debounced value.
  */
 const FilterInput = props => {
-  const { onChange } = props
+  const [value, setValue] = React.useState(props.value)
+  React.useEffect(() => { setValue(props.value) }, [props.value])
 
-  /**
-   * value :: string
-   * Value (not debounced) is managed because it
-   *  1. might be supplied through props.value
-   *  2. can actively be reset by hitting escape key
-   */
-  const [value, setValue] = React.useState(props.value || '')
-  const debouncedValue = useDebounce(value, 100)
-
-  // Pass debounced value to parent:
-  React.useEffect(() => {
-    onChange && onChange(debouncedValue || '')
-  }, [onChange, debouncedValue])
-
-  React.useEffect(() => {
-    setValue(props.value)
-  }, [props.value])
-
-  const handleChange = ({ target }) => setValue(target.value)
+  const updateValue = value => {
+    if (R.isNil(value)) return
+    setValue(value)
+    props.onChange && props.onChange(value)
+  }
 
   const handleKeyDown = event => {
     matcher([
@@ -42,7 +29,7 @@ const FilterInput = props => {
       ({ key }) => key === ' '
     ], stopPropagation)(event)
 
-    if (event.key === 'Escape') setValue('')
+    if (event.key === 'Escape') updateValue('')
   }
 
   return <Input
@@ -51,7 +38,7 @@ const FilterInput = props => {
     value={value}
     placeholder={props.placeholder}
     size={props.size || 'default'}
-    onChange={handleChange}
+    onChange={({ target }) => updateValue(target.value)}
     onKeyDown={handleKeyDown}
     onClick={stopPropagation}
   />

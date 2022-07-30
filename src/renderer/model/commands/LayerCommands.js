@@ -39,7 +39,6 @@ const CreateLayer = function (services) {
 }
 
 CreateLayer.prototype.execute = async function () {
-  console.log('this', this)
   const key = ID.layerId()
   await this.store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
 
