@@ -1,7 +1,0 @@
-.card-content {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  padding-right: 16px;
-}

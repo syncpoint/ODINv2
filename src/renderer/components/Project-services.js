@@ -11,7 +11,7 @@ import ProjectStore from '../store/ProjectStore'
 import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
-import { PaletteCommands, ViewMemento, Controller, OSDDriver } from '../model'
+import { PaletteCommands, ViewMemento, OSDDriver } from '../model'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
@@ -55,7 +55,6 @@ export default async projectUUID => {
   const projectStore = new ProjectStore(ipcRenderer)
 
   const documentStore = new DocumentStore()
-  const controller = new Controller(store, emitter, ipcRenderer, selection)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
   const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
@@ -93,7 +92,6 @@ export default async projectUUID => {
   services.store = store
   services.preferencesStore = preferencesStore
   services.documentStore = documentStore
-  services.controller = controller
   services.osdDriver = osdDriver
   services.clipboard = clipboard
   services.coordinatesFormat = coordinatesFormat

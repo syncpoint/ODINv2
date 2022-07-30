@@ -14,6 +14,7 @@ export function PreferencesProvider (windowManager, ipcMain) {
 
   ipcMain.on('ipc:post:preferences', ({ sender }, key, value) => {
     const projectId = windowManager.handleFromId(sender.id)
+    this.state[projectId] = this.state[projectId] || {}
     this.state[projectId][key] = value
     this.emit('preferencesChanged', { projectId, preferences: this.state[projectId] })
   })

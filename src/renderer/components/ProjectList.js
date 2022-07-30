@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'antd'
+// TODO: replace Card and List with simple <div/>s
 import { FilterInput, List, Card } from '.'
 import { useList, useServices } from './hooks'
 import { militaryFormat } from '../../shared/datetime'
@@ -161,6 +162,7 @@ Project.propTypes = {
   onDoubleClick: PropTypes.func
 }
 
+// TODO: move state menagement to useModel()
 
 /**
  *

@@ -1,7 +1,5 @@
-import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
-import isEqual from 'react-fast-compare'
 import { initialState, multiselect, singleselect } from './list-state'
 
 
@@ -67,30 +65,13 @@ export const useList = (options = {}) => {
 /**
  *
  */
-export const useStack = initial => {
-  const reducer = (entries, event) => {
-    switch (event.type) {
-      case 'reset': return isEqual(entries, [event.entry])
-        ? entries
-        : [event.entry]
-      case 'push': return [...entries, event.entry]
-      case 'pop': return event.key
-        ? R.dropLastWhile(entry => entry.key !== event.key, entries)
-        : R.dropLast(1, entries)
-    }
-  }
-
-  return React.useReducer(reducer, initial)
-}
-
 export const useMemento = (key, defaultValue) => {
   const { preferencesStore } = useServices()
   const [value, setValue] = React.useState(null)
 
   const put = React.useCallback(newValue => {
-    if (isEqual(value, newValue)) return
     preferencesStore.put(key, newValue)
-  }, [preferencesStore, value, key])
+  }, [preferencesStore, key])
 
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {

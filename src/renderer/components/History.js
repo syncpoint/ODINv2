@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable react/prop-types */
 import React from 'react'
 import { Breadcrumb, Menu } from 'antd'
 
@@ -12,33 +12,43 @@ export const SCOPES = {
 }
 
 export const History = props => {
-  const { scope, history } = props
-  if (!scope) return null
+  if (!props.history) return null
 
-  const handleScopeMenuClick = ({ key }) => props.setScope(key)
+  // Must not buble up, since it would reset selection.
+  const handleClick = event => event.stopPropagation()
 
-  const menuItem = ([key, label]) => ({ key, label })
+  const handleMenuClick = ({ key }) => props.setHistory([{
+    key: 'root',
+    scope: key,
+    label: SCOPES[key]
+  }])
 
-  const scopeMenu = <Menu
-    style={{ userSelect: 'none' }}
-    items={Object.entries(SCOPES).map(menuItem)}
-    onClick={handleScopeMenuClick}
-  />
+  const handleItemClick = key => () => {
+    const index = props.history.findIndex(entry => entry.key === key)
+    props.setHistory(props.history.slice(0, index + 1))
+  }
 
-  const scopeItem = <Breadcrumb.Item
-    key='scope'
-    overlay={scopeMenu}
-  >
-    <a>{SCOPES[scope]}</a>
-  </Breadcrumb.Item>
+  const overlay = index => index === 0
+    ? <Menu
+        style={{ userSelect: 'none' }}
+        items={Object.entries(SCOPES).map(([key, label]) => ({ key, label }))}
+        onClick={handleMenuClick}
+      />
+    : null
 
-  const items = history.reduce((acc, entry) => {
-    return acc
-  }, [scopeItem])
+  const items = props.history.map((entry, index) =>
+    <Breadcrumb.Item
+      key={entry.key}
+      overlay={overlay(index)}
+    >
+      <a onClick={handleItemClick(entry.key)}>{entry.label}</a>
+    </Breadcrumb.Item>
+  )
 
   return (
     <Breadcrumb
       style={{ padding: '12px', paddingBottom: '6px' }}
+      onClick={handleClick}
     >
       { items }
     </Breadcrumb>

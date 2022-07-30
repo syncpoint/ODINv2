@@ -19,7 +19,6 @@ const identity = R.cond([
  */
 DocumentStore.prototype.feature = function (id, feature, cache) {
   const properties = feature.properties || {}
-
   const descriptor = MILSTD.descriptor(properties.sidc)
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : []
   const dimensions = descriptor ? descriptor.dimensions : []

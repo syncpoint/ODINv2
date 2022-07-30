@@ -26,8 +26,8 @@ const TagIcon = props => {
   }
 
   const className = removable
-    ? 'tag-icon tag-close-icon'
-    : 'tag-icon'
+    ? 'e3de-tag-icon e3de-tag-close-icon'
+    : 'e3de-tag-icon'
 
   return (
     <span className={className} onClick={handleClick}>
@@ -91,17 +91,10 @@ const SystemTag = props => {
 const UserTag = props => {
   const { id, label } = props
 
-  // TODO: handle click
-  const handleClick = () => {}
   const handleRemove = () => props.removeTag(id, label)
 
-  const className = 'e3de-tag--user e3de-tag'
-
   return (
-    <span
-      className={className}
-      onClick={handleClick}
-    >
+    <span className={'e3de-tag--user e3de-tag'}>
       {label}
       <TagIcon
         path={mdi.mdiClose}
@@ -179,7 +172,7 @@ const PlusTag = props => {
 
 
 /**
- *
+ * Different flavor of tags.
  */
 const TAG = {
   SCOPE: props => <ScopeTag {...props}/>,
@@ -318,6 +311,14 @@ const Card = React.forwardRef((props, ref) => {
     })
   }
 
+  const avatar = props.url &&
+    <div className='avatar'>
+      <img className='image' src={props.url}/>
+    </div>
+
+  const description = props.description &&
+    <span className='e3de-description'>{props.description}</span>
+
   return (
     <div className='e3de-card-container' ref={ref}>
       <div
@@ -340,10 +341,8 @@ const Card = React.forwardRef((props, ref) => {
           />
         </div>
         <div className='body e3de-row'>
-          <span>{props.description}</span>
-          <div className='avatar'>
-            <img className='image' src={props.url}/>
-          </div>
+          {description}
+          { avatar }
         </div>
         <div className='taglist'>
           {
@@ -357,6 +356,15 @@ const Card = React.forwardRef((props, ref) => {
 
 Card.displayName = 'Card'
 Card.whyDidYouRender = true
+
+/**
+ * react-cool-virtual rerenders children quite often because of
+ * seemingly insignificant changes in items array. To prevent
+ * unnecesary Card rerenders, we shallow compare its props through
+ * React.memo().
+ */
+const MemoizedCard = React.memo(Card)
+MemoizedCard.whyDidYouRender = true
 
 
 /**
@@ -390,12 +398,28 @@ EntryList.whyDidYouRender = true
 
 
 /**
+ * One model to rule 'em all...
+ * This hooks is an extreme experiment.
+ * All sidebar state is managed here, specifically
  *
+ *  . list model (entries, selection, focus)
+ *  . card title editing state (excluding current value)
+ *  . parent/child navigation history aka breadcrumbs
+ *  . search scope (incl. persistence)
+ *  . search filter (incl. persistence)
+ *
+ * Some code can and probably should be moved to some
+ * more private parts (no pun intended) of the application.
+ * Potential sections are marked with TODO: push down ...
+ *
+ * It is debatable whether low-level services such as
+ * store, emitter and ipcRenderer should be hidden behind
+ * controllers or similar.
  */
 const useModel = () => {
   const { searchIndex, selection, store, emitter, ipcRenderer } = useServices()
-  const [history, setHistory] = React.useState([])
-  const [scope, setScope] = useMemento('ui.sidebar.scope', 'layer')
+  const defaultHistory = [{ key: 'root', scope: '@layer', label: 'Layer' }]
+  const [history, setHistory] = useMemento('ui.sidebar.history', defaultHistory)
   const [filter, setFilter] = useMemento('ui.sidebar.filter', '')
   const [list, dispatch] = useList({ multiselect: true })
   const [editing, setEditing] = React.useState(false) // false || entry id
@@ -404,6 +428,51 @@ const useModel = () => {
   // >>= QUERY/RESULT
   // Open new query, dispatch result list and listen for
   // changes on query result list due to search index updates.
+
+  React.useEffect(() => {
+    if (history === null) return
+    if (filter === null) return
+
+    const terms = `${R.last(history).scope} ${filter}`
+    const disposable = searchIndex.query(terms, entries => {
+      // Note: (multiselect) strategy makes sure that state is only
+      // updated when entries are not deep equal.
+      dispatch({ type: 'entries', entries })
+    })
+
+    return async () => (await disposable).dispose()
+  }, [history, filter, searchIndex, dispatch])
+
+  // <<= QUERY/RESULT
+
+  // =>> SELECTION
+  // Sync global selection with list state and vice versa.
+
+  React.useEffect(() => {
+    const selectionEvent = () => ({ type: 'selection', selected: selection.selected() })
+    const disposable = Disposable.of()
+    disposable.on(selection, 'selection', () => dispatch(selectionEvent()))
+    return () => disposable.dispose()
+  }, [selection, dispatch])
+
+  React.useEffect(() => {
+    selection.set(list.selected)
+  }, [selection, list.selected])
+
+  // <<= SELECTION
+
+  // Focus sidebar after edit to keep on getting key events.
+  //
+  React.useEffect(() => {
+    if (!sidebar.current) return
+    if (!editing) sidebar.current.focus()
+  }, [editing])
+
+  // Reset filter on each history update:
+  React.useEffect(() => {
+    setFilter('')
+  }, [history, setFilter])
+
 
   const addTag = React.useCallback((id, value) => {
     store.addTag(id, value.toLowerCase())
@@ -415,6 +484,7 @@ const useModel = () => {
   const onEntryClick = React.useCallback((id, { metaKey, ctrlKey, shiftKey }) => dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey }), [dispatch])
 
   const onEntryDoubleClick = React.useCallback(id => {
+    // TODO: push down (LinkController)
     const scope = ID.scope(id)
     const handlers = {
       symbol: id => emitter.emit('command/entry/draw', { id }),
@@ -429,13 +499,13 @@ const useModel = () => {
     }
 
     const handler = handlers[scope] || (() => {})
-    console.log('handler', handler)
     handler(id)
   }, [emitter, store, ipcRenderer])
 
   // Handle actionable tags (ide, show, etc.)
   //
   const onTagClick = React.useCallback((id, event, spec) => {
+    // TODO: push down (TagStore or FlagStore)
     const ids = R.uniq([id, ...selection.selected()])
     if (spec.match(/SYSTEM:HIDDEN/)) store.show(ids)
     else if (spec.match(/SYSTEM:VISIBLE/)) store.hide(ids)
@@ -446,6 +516,7 @@ const useModel = () => {
   // Handle scope tag (identify/highlight).
   //
   const onTagMouseDown = React.useCallback((id, event, spec) => {
+    // TODO: push down (HighlightController)
     const ids = R.uniq([id, ...selection.selected()])
     if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/on', { ids })
     if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/on', { ids })
@@ -453,12 +524,11 @@ const useModel = () => {
   }, [emitter, selection])
 
   const onTagMouseUp = React.useCallback((id, event, spec) => {
-    console.log('onTagMouseUp', id, event, spec)
+    // TODO: push down (HighlightController)
     if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/off')
   }, [emitter])
-
 
   const onKeyDown = React.useCallback(event => {
     matcher([
@@ -468,8 +538,32 @@ const useModel = () => {
 
     const { key, shiftKey, metaKey, ctrlKey } = event
 
+    if (cmdOrCtrl(event)) {
+      if (event.key === 'ArrowUp' && history.length > 1) {
+        setHistory(R.dropLast(1, history))
+      } else if (event.key === 'ArrowDown' && list.focusIndex !== -1) {
+        const focusId = R.last(list.selected)
+        const label = list.entries[list.focusIndex].title || 'N/A'
+
+        if (ID.isLayerId(focusId)) {
+          const layerId = focusId.split(':')[1]
+          setHistory([...history, {
+            scope: `@feature @link !feature:${layerId} !link+layer:${layerId}`,
+            key: focusId,
+            label
+          }])
+        } else if (ID.isFeatureId(focusId)) {
+          setHistory([...history, {
+            scope: `@link !link+feature:${focusId.split(':')[1]}`,
+            key: focusId,
+            label
+          }])
+        }
+      }
+    }
+
     // Handle event relevant for editing first.
-    //
+    // TODO: push down (useInlineEditor())
     if (key === 'Escape' && editing) {
       setEditing(false)
       event.stopPropagation()
@@ -491,7 +585,7 @@ const useModel = () => {
     if (!event.isPropagationStopped()) {
       dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
     }
-  }, [dispatch, editing, list.selected])
+  }, [dispatch, editing, list.selected, history, setHistory, list.entries, list.focusIndex])
 
   const onTitleChange = React.useCallback((id, value) => {
     store.rename(id, value)
@@ -502,6 +596,9 @@ const useModel = () => {
   const onClick = React.useCallback(() => selection.set([]), [selection])
 
   const onDrop = React.useCallback(async (id, event) => {
+
+    // TODO: push down (DragAndDropAdapter/Controller or LinkStore)
+
     // Process files first (if any):
     const [...files] = event.dataTransfer.files
     const fileLinks = files.reduce((acc, file) => {
@@ -532,49 +629,9 @@ const useModel = () => {
     store.insert(await links)
   }, [store])
 
-  React.useEffect(() => {
-    if (scope === null) return
-    if (filter === null) return
-
-    const terms = `${scope} ${filter}`
-    const disposable = searchIndex.query(terms, entries => {
-      // Note: (multiselect) strategy makes sure that state is only
-      // updated when entries are not deep equal.
-      dispatch({ type: 'entries', entries })
-    })
-
-    return async () => (await disposable).dispose()
-  }, [scope, filter, searchIndex, dispatch])
-
-  // <<= QUERY/RESULT
-
-  // =>> SELECTION
-  // Sync global selection with list state and vice versa.
-
-  React.useEffect(() => {
-    const selectionEvent = () => ({ type: 'selection', selected: selection.selected() })
-    const disposable = Disposable.of()
-    disposable.on(selection, 'selection', () => dispatch(selectionEvent()))
-    return () => disposable.dispose()
-  }, [selection, dispatch])
-
-  React.useEffect(() => {
-    selection.set(list.selected)
-  }, [selection, list.selected])
-
-  // <<= SELECTION
-
-  // Focus sidebar after edit to keep on getting key events.
-  //
-  React.useEffect(() => {
-    if (!sidebar.current) return
-    if (!editing) sidebar.current.focus()
-  }, [editing])
-
   return {
-    state: { scope, filter, history, editing, ...list },
+    state: { history, filter, editing, ...list },
     refs: { sidebar },
-    setScope,
     setHistory,
     addTag,
     removeTag,
@@ -598,18 +655,13 @@ const useModel = () => {
 export const Sidebar = () => {
   const { state, refs, ...controller } = useModel()
 
-  if (state.scope === null) return null
-  if (state.filter === null) return null
-
-  console.log('state', new Date(), state)
-
-  const renderEntry = ({ index, measureRef }) => {
+  const renderEntry = React.useCallback(({ index, measureRef }) => {
     // Handle 'overshooting':
     if (index >= state.entries.length) return null
     const entry = state.entries[index]
 
     return (
-      <Card
+      <MemoizedCard
         key={entry.id}
         {...entry}
         ref={measureRef}
@@ -626,7 +678,10 @@ export const Sidebar = () => {
         onDrop={controller.onDrop}
       />
     )
-  }
+  }, [state, controller])
+
+  if (state.scope === null) return null
+  if (state.filter === null) return null
 
   return (
     <div className="e3de-sidebar"
@@ -636,9 +691,8 @@ export const Sidebar = () => {
       onClick={controller.onClick}
     >
       <History
-        scope={state.scope}
         history={state.history}
-        setScope={controller.setScope}
+        setHistory={controller.setHistory}
       />
       <div style={{ display: 'flex', padding: '0.5em' }}>
         <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
