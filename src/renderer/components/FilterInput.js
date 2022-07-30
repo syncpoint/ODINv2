@@ -18,7 +18,7 @@ const FilterInput = props => {
    *  2. can actively be reset by hitting escape key
    */
   const [value, setValue] = React.useState(props.value || '')
-  const debouncedValue = useDebounce(value, 200)
+  const debouncedValue = useDebounce(value, 100)
 
   // Pass debounced value to parent:
   React.useEffect(() => {
