@@ -46,10 +46,7 @@ export const History = props => {
   )
 
   return (
-    <Breadcrumb
-      style={{ padding: '12px', paddingBottom: '6px' }}
-      onClick={handleClick}
-    >
+    <Breadcrumb onClick={handleClick}>
       { items }
     </Breadcrumb>
   )

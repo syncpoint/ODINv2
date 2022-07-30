@@ -344,7 +344,7 @@ const Card = React.forwardRef((props, ref) => {
           {description}
           { avatar }
         </div>
-        <div className='taglist'>
+        <div className='e3de-taglist'>
           {
             props.tags.split(' ').map(spec => tag(spec))
           }
@@ -694,9 +694,7 @@ export const Sidebar = () => {
         history={state.history}
         setHistory={controller.setHistory}
       />
-      <div style={{ display: 'flex', padding: '0.5em' }}>
-        <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
-      </div>
+      <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
       <EntryList
         count={state.entries.length}
         scroll={state.scroll}
