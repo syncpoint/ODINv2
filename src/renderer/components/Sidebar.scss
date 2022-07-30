@@ -134,6 +134,25 @@
     }
   }
 
+  &--named {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #e03c31;
+    padding: 0;
+
+    .name {
+      color: white;
+      background-color: #e03c31;
+      padding: 3px;
+      padding-right: 4px;
+    }
+
+    .label {
+      padding: 3px;
+      padding-left: 4px;
+    }
+  }
+
   &__input {
     font-size: 0.65em;
     display: inline-block;

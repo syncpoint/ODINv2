@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import React from 'react'
 import { Disposable } from '../../shared/disposable'
 import { useMemento, useList, useServices } from './hooks'
-import { History } from './History'
+import { ScopeSwitcher } from './ScopeSwitcher'
 import { FilterInput } from './FilterInput'
 import { MemoizedCard } from './BetterCard'
 import { EntryList } from './EntryList'
@@ -306,11 +306,11 @@ export const Sidebar = () => {
       onKeyDown={controller.onKeyDown}
       onClick={controller.onClick}
     >
-      <History
+      <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
+      <ScopeSwitcher
         history={state.history}
         setHistory={controller.setHistory}
       />
-      <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
       <EntryList
         count={state.entries.length}
         scroll={state.scroll}
