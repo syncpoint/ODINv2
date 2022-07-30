@@ -115,14 +115,17 @@ export const multiselect = {
   /**
    * Sync selection with state.
    */
-  selection: (state, { selected }) => {
+  selection: (state, { selected, autoFocus = false }) => {
     if (Selection.equals(state.selected, selected)) return state
 
-    // TODO: auto focus last selected?
+    const focusIndex = autoFocus
+      ? Entries.focusIndex(state.entries, selected)
+      : state.focusIndex
 
     return {
       ...state,
       selected,
+      focusIndex,
       scroll: 'none'
     }
   },

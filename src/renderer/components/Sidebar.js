@@ -35,6 +35,8 @@ import './Sidebar.scss'
 const useModel = () => {
   const { searchIndex, selection, store, emitter, ipcRenderer } = useServices()
   const defaultHistory = [{ key: 'root', scope: '@layer', label: 'Layer' }]
+
+  // FIXME: combine mementos; upating history resets filter :-(
   const [history, setHistory] = useMemento('ui.sidebar.history', defaultHistory)
   const [filter, setFilter] = useMemento('ui.sidebar.filter', '')
   const [list, dispatch] = useList({ multiselect: true })
@@ -76,6 +78,20 @@ const useModel = () => {
   }, [selection, list.selected])
 
   // <<= SELECTION
+
+  // Auto select/focus entry.
+  //
+  React.useEffect(() => {
+    const disposable = Disposable.of()
+    disposable.on(emitter, 'ui.sidebar.focus', ({ scope, id }) => {
+      setHistory([{ key: 'root', scope, label: scope.substring(1) }])
+
+      // Give list time to settle before selecting/focusing entry:
+      setTimeout(() => dispatch({ type: 'selection', selected: [id], autoFocus: true }))
+    })
+
+    return () => disposable.dispose()
+  }, [emitter, setHistory, dispatch])
 
   // Focus sidebar after edit to keep on getting key events.
   //
@@ -306,11 +322,11 @@ export const Sidebar = () => {
       onKeyDown={controller.onKeyDown}
       onClick={controller.onClick}
     >
-      <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
       <ScopeSwitcher
         history={state.history}
         setHistory={controller.setHistory}
       />
+      <FilterInput value={state.filter} onChange={controller.onFilterChange}/>
       <EntryList
         count={state.entries.length}
         scroll={state.scroll}

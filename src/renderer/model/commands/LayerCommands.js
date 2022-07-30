@@ -1,8 +1,11 @@
 import EventEmitter from '../../../shared/emitter'
-import { isLayerId, layerId } from '../../ids'
+import * as ID from '../../ids'
 import { militaryFormat } from '../../../shared/datetime'
 
-/** */
+
+/**
+ *
+ */
 const SetDefaultLayer = function (services) {
   this.selection = services.selection
   this.store = services.store
@@ -21,20 +24,29 @@ SetDefaultLayer.prototype.enabled = function () {
 }
 
 SetDefaultLayer.prototype.selected = function () {
-  return this.selection.selected().filter(isLayerId)
+  return this.selection.selected().filter(ID.isLayerId)
 }
 
-/** */
+
+/**
+ *
+ */
 const CreateLayer = function (services) {
   this.selection = services.selection
   this.store = services.store
+  this.emitter = services.emitter
   this.label = 'Create Layer'
 }
 
-CreateLayer.prototype.execute = function () {
-  const key = layerId()
-  this.selection.set([key])
-  this.store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
+CreateLayer.prototype.execute = async function () {
+  console.log('this', this)
+  const key = ID.layerId()
+  await this.store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
+
+  this.emitter.emit('ui.sidebar.focus', {
+    scope: `@${ID.scope(key)}`,
+    id: key
+  })
 }
 
 
