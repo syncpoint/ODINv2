@@ -1,4 +1,5 @@
 import { throttle } from 'throttle-debounce'
+import * as ID from '../../ids'
 
 /**
  *
@@ -85,6 +86,12 @@ const mapHandlers = (services, map) => {
   target.addEventListener('dragleave', event => dragAndDrop.dragleave(event))
   target.addEventListener('dragover', event => dragAndDrop.dragover(event), false)
   target.addEventListener('drop', event => dragAndDrop.drop(event), false)
+
+  map.addEventListener('click', () => {
+    const include = [ID.isTileServiceId, ID.isTilePresetId]
+    const deselect = selection.selected(x => include.some(p => p(x)))
+    selection.deselect(deselect)
+  })
 }
 
 
