@@ -54,7 +54,7 @@ TileLayerStore.prototype.tileLayers = async function () {
   const preset = await this.preset()
   const services = Object.fromEntries(await this.store.tuples('tile-service:'))
 
-  const layers = preset.reverse().map(({ id, opacity, visible }, index) => {
+  const layers = preset.map(({ id, opacity, visible }, index) => {
     // FIXME: duplicate code
     const { type, capabilities } = services[ID.tileServiceId(id)]
     const adapter = TileService.adapters[type](capabilities)
@@ -276,6 +276,6 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
 
   // Prepare new layer collection to replace current.
   //
-  const layers = await [...preset].reverse().reduce(reducer, new Collection())
+  const layers = await [...preset].reduce(reducer, new Collection())
   this.layerGroup.setLayers(layers)
 }

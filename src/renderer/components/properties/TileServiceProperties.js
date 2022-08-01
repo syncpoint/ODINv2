@@ -9,7 +9,6 @@ import { fromLonLat } from 'ol/proj'
 import { boundingExtent } from 'ol/extent'
 import React from 'react'
 import Fuse from 'fuse.js'
-import ColSpan2 from './ColSpan2'
 import TextField from './TextField'
 import FlexColumnGap from './FlexColumnGap'
 import Name from './Name'
@@ -131,32 +130,32 @@ const TileServiceProperties = props => {
   const handleEntryClick = id => dispatch({ type: 'select', id })
   const handleFilterChange = ({ target }) => setFilter(target.value)
 
-  const layerList = list.entries.length === 0
-    ? null
-    : <ColSpan2>
-        <TextField label='Filter' value={filter} onChange={handleFilterChange}/>
-        <div className='layer-list'>
-        {
-          list.entries.map((layer, index) => (
-            <LayerEntry
-              key={layer.id}
-              selected={index === list.focusIndex}
-              active={layer.active}
-              onClick={handleEntryClick}
-              onChange={handleEntryChange}
-              { ...layer }
-            />
-          ))
-        }
-        </div>
-      </ColSpan2>
+  const layerList = ['WMS', 'WMTS'].includes(service.type)
+    ? <div className='layer-list'>
+      {
+        list.entries.map((layer, index) => (
+          <LayerEntry
+            key={layer.id}
+            selected={index === list.focusIndex}
+            active={layer.active}
+            onClick={handleEntryClick}
+            onChange={handleEntryChange}
+            { ...layer }
+          />
+        ))
+      }
+      </div>
+    : null
 
-  // TODO: add layer filter field
+  const filterField = ['WMS', 'WMTS'].includes(service.type)
+    ? <TextField label='Filter' value={filter} onChange={handleFilterChange}/>
+    : null
 
   return (
     <FlexColumnGap>
       <Name {...props}/>
       <TextField label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
+      { filterField }
       { layerList }
       <div className='map-preview' id='map-preview'></div>
     </FlexColumnGap>
