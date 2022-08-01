@@ -67,7 +67,7 @@ export const useList = (options = {}) => {
  */
 export const useMemento = (key, defaultValue) => {
   const { preferencesStore } = useServices()
-  const [value, setValue] = React.useState(null)
+  const [value, setValue] = React.useState(defaultValue)
 
   const put = React.useCallback(newValue => {
     preferencesStore.put(key, newValue)

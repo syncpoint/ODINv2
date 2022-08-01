@@ -90,3 +90,12 @@ Selection.prototype.set = function (entries) {
   this.selected_ = [...uniq]
   this.emit('selection', { deselected, selected })
 }
+
+
+/**
+ * Just forward a focus event with id of element to be focused.
+ * This makes a little more sense than to use emitter directly.
+ */
+Selection.prototype.focus = function (id) {
+  this.emit('focus', { id })
+}

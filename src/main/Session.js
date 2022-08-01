@@ -48,7 +48,7 @@ Session.prototype.openProject = async function (id) {
     // Create and show project window.
     const window = await this.windowManager.showProject(id, project)
 
-    ;['resized', 'moved'].forEach(event => window.on(event, () => {
+    ;['resized', 'moved', 'close'].forEach(event => window.on(event, () => {
       this.projectStore.updateWindowBounds(id, window.getBounds())
     }))
 

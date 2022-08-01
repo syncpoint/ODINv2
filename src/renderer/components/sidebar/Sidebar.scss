@@ -1,3 +1,12 @@
+$color-primary-accent: #e03c31;
+$color-primary-accent: #e9746c;
+$color-secondary-accent: #1fc3ce;
+$color-secondary-accent: #168b93;
+$color-tag-hover: #8d8d8d;
+$color-tag-hover: #b0b0b0;
+$color-tag-hover: #dcdcdc;
+$color-text-focus: #40a9ff;
+
 .e3de-sidebar {
   flex: 0 0 21rem;
   display: flex;
@@ -20,6 +29,11 @@
 .e3de-list-container {
   height: 100%;
   overflow: auto;
+  border: 1px solid darkgrey;
+  border-width: 1px 0 1px 0;
+  box-shadow:
+    inset 0 20px 20px -20px rgba(10, 10, 10, 0.2),
+    inset 0 -20px 20px -20px rgba(10, 10, 10, 0.2);
 }
 
 .e3de-column {
@@ -76,7 +90,7 @@
 .e3de-taglist {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 0.4rem;
 }
 
 .e3de-description {
@@ -86,32 +100,31 @@
 .e3de-tag {
   font-size: 0.65em;
   padding: 3px;
-  border-radius: 2px;
+  border-radius: 4px;
   white-space: nowrap;
   display: inline-block;
-  box-sizing: border-box;
   text-transform: uppercase;
 
   // Variantes: view, scope, system, user, plus.
 
   &--view {
     color: white;
-    border: 1px solid #1fc3ce;
-    background-color: #1fc3ce;
+    border: 1px solid $color-secondary-accent;
+    background-color: $color-secondary-accent;
   }
 
   &--scope {
     color: white;
-    border: 1px solid #e03c31;
-    background-color: #e03c31;
+    border: 1px solid $color-primary-accent;
+    background-color: $color-primary-accent;
   }
 
   &--system {
-    border: 1px solid #e03c31;
+    border: 1px solid $color-primary-accent;
   }
 
   &--user {
-    border: 1px solid #1fc3ce;
+    border: 1px solid $color-secondary-accent;
   }
 
   &--plus {
@@ -123,26 +136,25 @@
   &--active {
     font-size: 0.65em;
     padding: 3px;
-    border-radius: 2px;
     white-space: nowrap;
     display: inline-block;
-    text-transform: uppercase;
 
     &:hover {
-      background-color: #8d8d8d;
-      color: white;
+      background-color: $color-tag-hover;
+      border-color: $color-tag-hover;
+      color: black;
     }
   }
 
   &--named {
     display: flex;
     flex-direction: row;
-    border: 1px solid #e03c31;
+    border: 1px solid $color-primary-accent;
     padding: 0;
 
     .name {
       color: white;
-      background-color: #e03c31;
+      background-color: $color-primary-accent;
       padding: 3px;
       padding-right: 4px;
     }
@@ -157,17 +169,14 @@
     font-size: 0.65em;
     display: inline-block;
     background-color: inherit;
-    box-sizing: border-box;
+    border-radius: 4px;
 
     padding: 3px;
-    margin-right: 6px;
-    margin-bottom: 6px;
-    line-height: 12px;
-    width: 67px;
+    line-height: 15.5px;
+    width: 65px;
 
     &:focus {
       border: 1px dashed darkgrey;
-      border-radius: 2px;
     }
   }
 }
@@ -193,6 +202,6 @@
   width: 100%;
 
   &:focus {
-    color: #40a9ff;
+    color: $color-text-focus;
   }
 }

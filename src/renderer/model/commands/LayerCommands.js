@@ -34,18 +34,13 @@ SetDefaultLayer.prototype.selected = function () {
 const CreateLayer = function (services) {
   this.selection = services.selection
   this.store = services.store
-  this.emitter = services.emitter
   this.label = 'Create Layer'
 }
 
 CreateLayer.prototype.execute = async function () {
   const key = ID.layerId()
   await this.store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
-
-  this.emitter.emit('ui.sidebar.focus', {
-    scope: `@${ID.scope(key)}`,
-    id: key
-  })
+  this.selection.focus(key)
 }
 
 

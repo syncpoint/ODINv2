@@ -1,3 +1,16 @@
+2.4.0-alpha
+* Updated dependencies
+* New: Sidebar persists scope and filter
+* New: Sidebar scope switcher
+* Fix: Window position is more reliably restored (macOS)
+* Fix: Command alette entries can now also be clicked
+* New: Layout of sidebar and properties panel
+* New: Toolbar
+* New: Markers
+* New: Support different coordinate formats
+* New: WGS84 Graticule
+* New: (View Menu) Show Toolbar/Sidebar
+
 2.3.0-alpha
 * Updated dependencies
 * project database: improved schema and data organizaiton

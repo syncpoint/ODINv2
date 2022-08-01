@@ -23,14 +23,32 @@ export const multiselect = {
     // Don't update when entries are deep equal to previous state.
     if (isEqual(state.entries, entries)) return state
 
-    // Don't mess with selection, but derrive focus index
-    // from last selected.
-    const focusIndex = Entries.focusIndex(entries, state.selected)
+    // Either get focus index from temporary focus id
+    // or from last selected.
+    //
+    const focusIndex = state.focusId
+      ? Entries.index(entries, state.focusId)
+      : Entries.focusIndex(entries, state.selected)
+
+    // Select entry when focus id was set and found.
+    //
+    const selected = (state.focusId && focusIndex !== -1)
+      ? [state.focusId]
+      : state.selected
+
+    // We must only reset focus id after it was sucessfully
+    // discovered in fresh set of entries.
+    //
+    const focusId = (state.focusId && focusIndex !== -1)
+      ? null
+      : state.focusId
 
     return {
       ...state,
       entries,
+      selected,
       focusIndex,
+      focusId,
       scroll: 'auto'
     }
   },
@@ -103,32 +121,26 @@ export const multiselect = {
 
     const focusIndex = Entries.focusIndex(state.entries, selected)
 
-    // TODO: only update state on changes - current this has change side-effect!
-    // const selectedChanged = !isEqual(selected, state.selected)
-    // const focusIndexChanged = focusIndex !== state.focusIndex
-    // const hasChanges = selectedChanged || focusIndexChanged
-    // console.log('hasChanges', hasChanges)
-
     return { ...state, selected, focusIndex, scroll: 'auto' }
   },
 
   /**
    * Sync selection with state.
    */
-  selection: (state, { selected, autoFocus = false }) => {
+  selection: (state, { selected }) => {
     if (Selection.equals(state.selected, selected)) return state
-
-    const scroll = autoFocus ? 'auto' : state.scroll
-    const focusIndex = autoFocus
-      ? Entries.focusIndex(state.entries, selected)
-      : state.focusIndex
 
     return {
       ...state,
       selected,
-      focusIndex,
-      scroll
+      scroll: 'none'
     }
+  },
+
+  focus: (state, { id }) => {
+    return id
+      ? { ...state, focusId: id }
+      : state
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {

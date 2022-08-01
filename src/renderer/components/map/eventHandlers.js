@@ -77,6 +77,7 @@ const mapHandlers = (services, map) => {
 
   map.once('rendercomplete', ({ target }) => sendPreview(services, target))
   map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
+  map.on('click', () => selection.set([]))
 
   // Note: Neither dragstart nor dragend events are fired when dragging
   // a file into the browser from the OS.

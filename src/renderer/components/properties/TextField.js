@@ -3,9 +3,10 @@ import React from 'react'
 import uuid from 'uuid-random'
 import './TextField.css'
 
-const TextField = ({ id = uuid(), label, disabled, ...rest }) =>
+const TextField = React.forwardRef(({ id = uuid(), label, disabled, ...rest }, ref) =>
   <div className="form-textfield">
     <input
+      ref={ref}
       id={id}
       {...rest}
       placeholder="..."
@@ -16,5 +17,6 @@ const TextField = ({ id = uuid(), label, disabled, ...rest }) =>
       {label}
     </label>
   </div>
+)
 
 export default TextField

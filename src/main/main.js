@@ -23,9 +23,6 @@ const ready = async () => {
   paths.mkdir(databases)
   const db = leveldb({ location: paths.master(app), encoding: 'json' })
 
-  // Emitted when all windows have been closed and the application will quit.
-  app.once('will-quit', () => db.close())
-
   /* eslint-disable no-new */
   new IPCServer(db, ipcMain)
   /* eslint-enable no-new */

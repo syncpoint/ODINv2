@@ -1,15 +1,17 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import { matcher, stopPropagation } from './events'
-import { cmdOrCtrl } from '../platform'
+import { useServices } from '../hooks'
+import { matcher, stopPropagation } from '../events'
+import { cmdOrCtrl } from '../../platform'
 
 
 /**
  *
  */
 export const Title = props => {
+  const { store } = useServices()
   const [value, setValue] = React.useState(props.value)
-  const inputRef = React.useRef()
+  const ref = React.useRef()
   const placeholder = value
     ? null
     : props.editing
@@ -20,31 +22,35 @@ export const Title = props => {
   React.useEffect(() => { setValue(props.value) }, [props.value])
 
   const rename = name => {
-    if (props.value === name) return
-    props.onTitleChange(props.editing, name.trim())
+
+    // Pre-emptively focus sidebar to keep getting key events.
+    // Note: This also keeps focus on sidebar when tab is pressed while editing.
+    document.getElementsByClassName('e3de-sidebar')[0].focus()
+    if (props.value !== name) store.rename(props.editing, name.trim())
   }
 
   const reset = () => setValue(props.value)
   const handleChange = ({ target }) => setValue(target.value)
-
-  const handleBlur = () => {
-    if (!value) return
-    rename(value)
-  }
+  const handleBlur = () => { if (value) rename(value) }
 
   const handleKeyDown = event => {
     matcher([
       ({ key }) => key === ' ',
+      ({ key }) => key === 'ArrowDown',
+      ({ key }) => key === 'ArrowUp',
+      ({ key }) => key === 'Home',
+      ({ key }) => key === 'End',
       event => event.key === 'a' && cmdOrCtrl(event)
     ], stopPropagation)(event)
 
     if (event.key === 'Escape') return reset()
     else if (event.key === 'Enter') return rename(value)
+    else if (event.key === 'Tab') return rename(value)
   }
 
   const input = () => <input
     className='e3de-card__title'
-    ref={inputRef}
+    ref={ref}
     autoFocus
     value={value || ''}
     placeholder={placeholder}

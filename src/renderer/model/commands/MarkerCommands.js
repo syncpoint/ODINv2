@@ -8,7 +8,6 @@ const CreateMarker = function (services) {
   this.selection = services.selection
   this.store = services.store
   this.viewMemento = services.viewMemento
-  this.emitter = services.emitter
   this.label = 'Create Marker'
 }
 
@@ -23,10 +22,7 @@ CreateMarker.prototype.execute = function () {
     }
   }]])
 
-  this.emitter.emit('ui.sidebar.focus', {
-    scope: `@${ID.scope(key)}`,
-    id: key
-  })
+  this.selection.focus(key)
 }
 
 

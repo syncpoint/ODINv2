@@ -5,19 +5,19 @@ import useVirtual from 'react-cool-virtual'
 /**
  *
  */
-export const EntryList = props => {
+export const CardList = props => {
   const { count, scroll, focusIndex } = props
   const { outerRef, innerRef, items, scrollToItem } = useVirtual({
     itemCount: count,
     resetScroll: true
   })
 
-  // FIXME: hackmagic!
-  // Somehow necessary to make selection/autoFocus work.
-  //
-  if (focusIndex !== -1 && scroll !== 'none') {
-    setTimeout(() => scrollToItem({ index: focusIndex, align: 'auto', smooth: false }), 50)
-  }
+  React.useEffect(() => {
+    if (scroll === 'none') return
+    if (focusIndex === undefined) return
+    if (focusIndex === -1) return
+    scrollToItem({ index: focusIndex, align: 'auto', smooth: false })
+  }, [scrollToItem, focusIndex, scroll])
 
   return (
     <div className='e3de-list-container' ref={outerRef}>
@@ -28,4 +28,4 @@ export const EntryList = props => {
   )
 }
 
-EntryList.whyDidYouRender = true
+CardList.whyDidYouRender = true
