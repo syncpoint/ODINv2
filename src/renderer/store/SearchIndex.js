@@ -19,6 +19,7 @@ const compare = fn => (a, b) => {
 }
 
 export const sort = entries => entries.sort((a, b) => {
+
   // Sort group to the top:
   const GA = ID.isGroupId(a.id)
   const GB = ID.isGroupId(b.id)

@@ -1,0 +1,12 @@
+.card-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  padding: 0;
+  background: inherit;
+  text-align: start;
+}
+
+.card-title:focus {
+  color: #40a9ff;
+}

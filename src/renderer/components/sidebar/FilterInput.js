@@ -2,6 +2,8 @@ import React from 'react'
 import TextField from '../properties/TextField'
 import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
+import { matcher, stopPropagation } from '../events'
+import { cmdOrCtrl } from '../../platform'
 
 
 /**
@@ -27,7 +29,21 @@ export const FilterInput = () => {
     setSearch({ history: search.history, filter: target.value })
   }
 
+
   const handleKeyDown = event => {
+    matcher([
+      ({ key }) => key === 'Enter',
+      ({ key }) => key === 'Escape',
+      ({ key }) => key === 'ArrowDown',
+      ({ key }) => key === 'ArrowUp',
+      ({ key }) => key === 'Home',
+      ({ key }) => key === 'End',
+      ({ key }) => key === ' ',
+      event => cmdOrCtrl(event) && event.key === 'a'
+    ], stopPropagation)(event)
+
+    // TODO: focus list on ArrowDown
+
     if (event.key === 'Enter') {
       setSearch({ ...search, force: true })
     }

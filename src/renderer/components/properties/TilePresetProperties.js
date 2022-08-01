@@ -41,6 +41,9 @@ const Opacity = props => {
   )
 }
 
+console.log('Card', Card)
+console.log('FlexColumn', FlexColumn)
+console.log('FlexRow', FlexRow)
 
 /**
  *

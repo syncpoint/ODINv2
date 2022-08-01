@@ -1,5 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { CardTitle } from './CardTitle'
+import { CardContent } from './CardContent'
+import { CardDescription } from './CardDescription'
 import { useServices } from './hooks'
 import { linkId } from '../ids'
 import './Card.css'
@@ -110,3 +113,7 @@ Card.propTypes = {
   onDoubleClick: PropTypes.func,
   style: PropTypes.object
 }
+
+Card.Title = CardTitle
+Card.Content = CardContent
+Card.Description = CardDescription

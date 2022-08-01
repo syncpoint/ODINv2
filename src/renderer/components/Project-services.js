@@ -23,6 +23,12 @@ import { Clipboard } from '../Clipboard'
 import { bindings } from '../bindings'
 
 export default async projectUUID => {
+
+  const services = {}
+  const locator = () => services
+  services.locator = locator
+
+
   const selection = new Selection()
   const undo = new Undo()
 
@@ -84,7 +90,6 @@ export default async projectUUID => {
 
   const dragAndDrop = new DragAndDrop(store)
 
-  const services = {}
   services.emitter = emitter
   services.ipcRenderer = ipcRenderer
   services.master = master
