@@ -4,12 +4,8 @@ import SortableList, { SortableItem } from 'react-easy-sort'
 import Icon from '@mdi/react'
 import { mdiDrag, mdiEye, mdiEyeOff } from '@mdi/js'
 import { useServices, useList } from '../hooks'
-import { Card } from '../Card'
 import Range from './Range'
-import FlexRow from './FlexRow'
-import FlexColumn from './FlexColumn'
-import MarginTop3 from './MarginTop3'
-import './TilePresetProperties.css'
+import './TilePresetProperties.scss'
 
 
 /**
@@ -22,9 +18,8 @@ const Opacity = props => {
   const stopPropagation = event => event.stopPropagation()
 
   return (
-    <>
-      <MarginTop3/>
-      <label style={{ fontSize: '0.8rem' }}>Opacity</label>
+    <div className='bf12-opacity'>
+      <label className='bf12-opacity__label'>Opacity</label>
       <Range
         min='0'
         max='1'
@@ -37,13 +32,10 @@ const Opacity = props => {
         <option value='0'>0%</option>
         <option value='1'>100%</option>
       </Range>
-    </>
+    </div>
   )
 }
 
-console.log('Card', Card)
-console.log('FlexColumn', FlexColumn)
-console.log('FlexRow', FlexRow)
 
 /**
  *
@@ -52,30 +44,29 @@ const Layer = props => (
   <SortableItem>
 
     {/* react-easy-sort kills list style => add necessary margins.  */}
-    <Card
-      id={props.id}
-      style={{ marginTop: '8px', marginBottom: '8px' }}
+    <div
+      className='bf12-card'
       onClick={props.onSelect}
-      selected={props.selected}
+      aria-selected={props.selected}
     >
-      <FlexColumn>
-        <FlexRow>
+      <div className='bf12-column'>
+        <div className='bf12-row'>
           <Icon path={mdiDrag} size='24px'/>
-          <Card.Description>{props.name}</Card.Description>
+          <span className='bf12-card__description'>{props.name}</span>
           <Icon
             path={props.visible ? mdiEye : mdiEyeOff}
             size='24px'
             style={{ marginLeft: 'auto' }}
             onClick={props.onToggleVisible}
           />
-        </FlexRow>
+        </div>
         <Opacity
           opacity={props.opacity}
           selected={props.selected}
           onChange={props.onOpacityChange}
         />
-      </FlexColumn>
-    </Card>
+      </div>
+    </div>
   </SortableItem>
 )
 
@@ -134,8 +125,9 @@ const LayerList = props => {
 
   return (
     <SortableList
+      className='bf12-list-container'
       onSortEnd={handleSortEnd}
-      draggedItemClassName='tile-layer-item--dragged'
+      draggedItemClassName='bf12-tile-layer-item--dragged'
       tabIndex={0}
     >
       {layers}

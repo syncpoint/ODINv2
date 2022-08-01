@@ -18,6 +18,9 @@ $color-text-focus: #40a9ff;
   border-radius: 4px;
   padding: 0.5rem;
   gap: 0.5rem;
+  box-shadow:
+    rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 
   .scope-container {
     border: 1px solid #d9d9d9;
