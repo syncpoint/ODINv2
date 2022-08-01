@@ -16,5 +16,10 @@ export default async services => {
     )
   })
 
+  emitter.on('map/goto', ({ center, resolution, rotation }) => {
+    const duration = 1000
+    view.animate({ center, resolution, rotation, duration })
+  })
+
   return view
 }

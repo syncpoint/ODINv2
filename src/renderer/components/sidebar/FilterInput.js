@@ -31,7 +31,6 @@ export const FilterInput = () => {
     <div style={{ marginTop: '24px' }}>
       <TextField
         ref={ref}
-        autoFocus
         label='Search'
         value={search.filter}
         onChange={handleChange}

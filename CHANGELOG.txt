@@ -10,6 +10,9 @@
 * New: Support different coordinate formats
 * New: WGS84 Graticule
 * New: (View Menu) Show Toolbar/Sidebar
+* Fix: Map click not longer deselects features and markers
+* New: Bookmarks and goto with double click in sidebar
+* New: Feature goto with double click in sidebar
 
 2.3.0-alpha
 * Updated dependencies

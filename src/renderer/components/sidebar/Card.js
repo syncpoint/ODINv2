@@ -1,9 +1,11 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
+import * as Extent from 'ol/extent'
 import { TAG } from './tags'
 import { Title } from './Title'
 import { useServices } from '../hooks'
 import * as ID from '../../ids'
+import { readFeature } from '../../model/geometry'
 
 const useDragAndDrop = (id, acceptDrop) => {
   const { store } = useServices()
@@ -94,6 +96,22 @@ const useController = () => {
         if (markers.length !== 1) return
         const center = markers[0].geometry.coordinates
         emitter.emit('map/flyto', { center })
+      },
+      bookmark: async id => {
+        const bookmarks = await store.values([id])
+        if (bookmarks.length !== 1) return
+        emitter.emit('map/goto', {
+          center: bookmarks[0].center,
+          resolution: bookmarks[0].resolution,
+          rotation: bookmarks[0].rotation
+        })
+      },
+      feature: async id => {
+        const values = await store.values([id])
+        if (values.length !== 1) return
+        const feature = readFeature(values[0])
+        const center = Extent.getCenter(feature?.getGeometry()?.getExtent())
+        emitter.emit('map/goto', { center })
       }
     }
 

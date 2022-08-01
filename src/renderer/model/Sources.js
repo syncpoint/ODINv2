@@ -18,6 +18,7 @@ export const featureSource = (store, scope) => {
     const additions = candidates.filter(({ type }) => type === 'put')
 
     const features = additions.map(({ key, value }) => {
+      if (!value.type) return console.warn('invalid feature', key, value)
       const feature = readFeature({ id: key, ...value })
       const stored = source.getFeatureById(key)
       if (!stored) return feature
@@ -46,7 +47,9 @@ export const featureSource = (store, scope) => {
   window.requestIdleCallback(async () => {
     const tuples = await store.tuples(scope)
     const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
-    const features = readFeatures({ type: 'FeatureCollection', features: geoJSON })
+    const [valid, invalid] = R.partition(R.prop('type'), geoJSON)
+    if (invalid.length) console.warn('invalid features', invalid)
+    const features = readFeatures({ type: 'FeatureCollection', features: valid })
     source.addFeatures(features)
   }, { timeout: 2000 })
 

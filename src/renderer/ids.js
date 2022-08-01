@@ -26,6 +26,10 @@ export const markerId = R.cond([
   [R.isNil, () => `marker:${uuid()}`]
 ])
 
+export const bookmarkId = R.cond([
+  [R.isNil, () => `bookmark:${uuid()}`]
+])
+
 export const lockedId = (id = '') => `locked+${id}`
 export const hiddenId = (id = '') => `hidden+${id}`
 export const sharedId = (id = '') => `shared+${id}`
@@ -68,6 +72,7 @@ export const isId = prefix => id => id && id.startsWith(prefix)
 export const isLayerId = isId('layer:')
 export const isFeatureId = isId('feature:')
 export const isMarkerId = isId('marker:')
+export const isBookmarkId = isId('bookmark:')
 export const isGroupId = isId('group:') // TODO: group -> view
 export const isSymbolId = isId('symbol:')
 export const isPlaceId = isId('place:')

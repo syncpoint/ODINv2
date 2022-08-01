@@ -1,4 +1,5 @@
 import { throttle } from 'throttle-debounce'
+import * as ID from '../../ids'
 
 /**
  *
@@ -77,7 +78,13 @@ const mapHandlers = (services, map) => {
 
   map.once('rendercomplete', ({ target }) => sendPreview(services, target))
   map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
-  map.on('click', () => selection.set([]))
+
+  // Deselect everyting except features and markers.
+  map.on('click', () => {
+    const exclude = [ID.isFeatureId, ID.isMarkerId]
+    const deselect = selection.selected(x => !exclude.some(p => p(x)))
+    if (deselect.length) selection.deselect(deselect)
+  })
 
   // Note: Neither dragstart nor dragend events are fired when dragging
   // a file into the browser from the OS.

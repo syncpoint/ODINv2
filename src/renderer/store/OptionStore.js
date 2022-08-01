@@ -184,3 +184,24 @@ OptionStore.prototype.marker = async function (id, cache) {
     capabilities: 'TAG|RENAME'
   }
 }
+
+/**
+ * bookmark:
+ */
+OptionStore.prototype.bookmark = async function (id, cache) {
+  const bookmark = cache(id)
+
+  const tags = [
+    'SCOPE:BOOKMARK:NONE',
+    ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+    'PLUS'
+  ].join(' ')
+
+  return {
+    id,
+    title: bookmark.name,
+    scope: 'BOOKMARK',
+    tags,
+    capabilities: 'TAG|RENAME'
+  }
+}

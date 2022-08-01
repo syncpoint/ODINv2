@@ -1,6 +1,5 @@
 import EventEmitter from '../../../shared/emitter'
 import * as ID from '../../ids'
-import { militaryFormat } from '../../../shared/datetime'
 
 
 /**
@@ -28,23 +27,10 @@ SetDefaultLayer.prototype.selected = function () {
 }
 
 
+
 /**
  *
  */
-const CreateLayer = function (services) {
-  this.selection = services.selection
-  this.store = services.store
-  this.label = 'Create Layer'
-}
-
-CreateLayer.prototype.execute = async function () {
-  const key = ID.layerId()
-  await this.store.insert([[key, { name: `Layer - ${militaryFormat.now()}` }]])
-  this.selection.focus(key)
-}
-
-
 export default services => ({
-  LAYER_SET_DEFAULT: new SetDefaultLayer(services),
-  LAYER_CREATE: new CreateLayer(services)
+  LAYER_SET_DEFAULT: new SetDefaultLayer(services)
 })
