@@ -79,6 +79,13 @@ const mapHandlers = (services, map) => {
   map.once('rendercomplete', ({ target }) => sendPreview(services, target))
   map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
 
+  // Deselect everyting except features and markers.
+  map.on('click', () => {
+    const exclude = [ID.isFeatureId, ID.isMarkerId]
+    const deselect = selection.selected(x => !exclude.some(p => p(x)))
+    if (deselect.length) selection.deselect(deselect)
+  })
+
   // Note: Neither dragstart nor dragend events are fired when dragging
   // a file into the browser from the OS.
   const target = document.getElementById('map')
@@ -86,12 +93,6 @@ const mapHandlers = (services, map) => {
   target.addEventListener('dragleave', event => dragAndDrop.dragleave(event))
   target.addEventListener('dragover', event => dragAndDrop.dragover(event), false)
   target.addEventListener('drop', event => dragAndDrop.drop(event), false)
-
-  map.addEventListener('click', () => {
-    const include = [ID.isTileServiceId, ID.isTilePresetId]
-    const deselect = selection.selected(x => include.some(p => p(x)))
-    selection.deselect(deselect)
-  })
 }
 
 
