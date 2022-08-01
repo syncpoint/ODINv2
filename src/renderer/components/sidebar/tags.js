@@ -21,6 +21,7 @@ const useController = () => {
     if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/on', { ids })
     if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/on', { ids })
     if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/on', { ids })
+    if (spec.match(/SCOPE:PLACE/)) emitter.emit('highlight/on', { ids })
   }
 
   const handleMouseUp = (id, event, spec) => {
@@ -28,6 +29,7 @@ const useController = () => {
     if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:PLACE/)) emitter.emit('highlight/off')
   }
 
   const handleClick = (id, event, spec) => {
@@ -96,7 +98,7 @@ export const SystemTag = props => {
       className={className}
       onClick={handleClick}
     >
-      {props.label}
+      {props.label.replace(/[_]/g, ' ')}
     </span>
   )
 }

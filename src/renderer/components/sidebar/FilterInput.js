@@ -27,6 +27,12 @@ export const FilterInput = () => {
     setSearch({ history: search.history, filter: target.value })
   }
 
+  const handleKeyDown = event => {
+    if (event.key === 'Enter') {
+      setSearch({ ...search, force: true })
+    }
+  }
+
   return (
     <div style={{ marginTop: '24px' }}>
       <TextField
@@ -34,6 +40,7 @@ export const FilterInput = () => {
         label='Search'
         value={search.filter}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
       />
     </div>
   )

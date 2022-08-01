@@ -34,12 +34,13 @@ export const sort = entries => entries.sort((a, b) => {
 /**
  * @constructor
  */
-export default function SearchIndex (jsonDB, documentStore, optionStore, emitter) {
+export default function SearchIndex (jsonDB, documentStore, optionStore, emitter, nominatim) {
   Emitter.call(this)
 
   this.documentStore = documentStore
   this.optionStore = optionStore
   this.emitter = emitter
+  this.nominatim = nominatim
   this.ready = false
   this.mirror = {}
   this.cachedDocuments = {}
@@ -160,8 +161,8 @@ SearchIndex.prototype.document = function (key, value, cache) {
 /**
  * query :: String -> Promise(Query)
  */
-SearchIndex.prototype.query = function (terms, callback) {
-  const query = () => this.createQuery(terms, callback)
+SearchIndex.prototype.query = function (terms, options, callback) {
+  const query = () => this.createQuery(terms, callback, options)
   return new Promise((resolve) => {
     if (this.ready) resolve(query())
     else this.once('ready', () => resolve(query()))
@@ -186,7 +187,17 @@ SearchIndex.prototype.searchField = function (field, tokens) {
 /**
  * search :: String -> [Option]
  */
-SearchIndex.prototype.search = async function (terms) {
+SearchIndex.prototype.search = async function (terms, options) {
+
+  if (terms.includes('@place') && options.force) {
+    const query = terms
+      .replace(/([@#!]\S+)/gi, '')
+      .trim()
+      .replace(/[ ]+/g, '+')
+
+    this.nominatim.sync(query)
+  }
+
   const [query, searchOptions] = parseQuery(terms)
   const matches = searchOptions
     ? this.index.search(query, searchOptions)
@@ -206,10 +217,10 @@ SearchIndex.prototype.search = async function (terms) {
 /**
  *
  */
-SearchIndex.prototype.createQuery = function (terms, callback) {
+SearchIndex.prototype.createQuery = function (terms, callback, options) {
   const refresh = async () => {
     try {
-      const result = await this.search(terms)
+      const result = await this.search(terms, options)
       callback(result)
     } catch (err) {
       /* don't invoke callback. */

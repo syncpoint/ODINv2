@@ -347,6 +347,7 @@ Store.prototype.geometryBounds = async function (acc, ids, resolution) {
 
 Store.prototype.featureBounds = Store.prototype.geometryBounds
 Store.prototype.markerBounds = Store.prototype.geometryBounds
+Store.prototype.placeBounds = Store.prototype.geometryBounds
 
 
 Store.prototype.geometryBounds = async function (ids, resolution) {

@@ -32,6 +32,7 @@ export const bookmarkId = R.cond([
 
 export const lockedId = (id = '') => `locked+${id}`
 export const hiddenId = (id = '') => `hidden+${id}`
+export const stickyId = (id = '') => `sticky+${id}`
 export const sharedId = (id = '') => `shared+${id}`
 export const defaultId = (id = '') => `default+${id}`
 export const tagsId = (id = '') => `tags+${id}`

@@ -112,6 +112,13 @@ const useController = () => {
         const feature = readFeature(values[0])
         const center = Extent.getCenter(feature?.getGeometry()?.getExtent())
         emitter.emit('map/goto', { center })
+      },
+      place: async id => {
+        const values = await store.values([id])
+        if (values.length !== 1) return
+        const feature = readFeature(values[0])
+        const center = Extent.getCenter(feature?.getGeometry()?.getExtent())
+        emitter.emit('map/goto', { center })
       }
     }
 

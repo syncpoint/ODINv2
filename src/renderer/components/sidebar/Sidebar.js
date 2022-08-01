@@ -83,14 +83,15 @@ const useModel = () => {
     // console.log('EFFECT: fetch entries')
     const { searchIndex } = services
     const terms = `${R.last(search.history).scope} ${search.filter}`
-    const disposable = searchIndex.query(terms, entries => {
+    const options = { force: search.force }
+    const disposable = searchIndex.query(terms, options, entries => {
       // Note: (multiselect) strategy makes sure that state is only
       // updated when entries are not deep equal.
       dispatch({ type: 'entries', entries })
     })
 
     return async () => (await disposable).dispose()
-  }, [services, search.history, search.filter])
+  }, [services, search])
 
   // Sync global selection with list model.
   //

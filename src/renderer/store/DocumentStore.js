@@ -143,3 +143,20 @@ DocumentStore.prototype.bookmark = function (id, bookmark, cache) {
     tags
   }
 }
+
+/**
+ *
+ */
+DocumentStore.prototype.place = function (id, place, cache) {
+  const tags = [
+    ...place.tags,
+    ...(cache(ID.tagsId(id)) || [])
+  ].filter(R.identity)
+
+  return {
+    id,
+    scope: 'place',
+    text: place.display_name,
+    tags
+  }
+}

@@ -59,7 +59,8 @@ export const ScopeSwitcher = props => {
     '@link': 'link',
     '@symbol': 'symbol',
     '@marker': 'marker',
-    '@bookmark': 'bookmark'
+    '@bookmark': 'bookmark',
+    '@place': 'place'
   }
 
 

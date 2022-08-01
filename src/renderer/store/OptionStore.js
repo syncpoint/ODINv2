@@ -205,3 +205,31 @@ OptionStore.prototype.bookmark = async function (id, cache) {
     capabilities: 'TAG|RENAME'
   }
 }
+
+/**
+ * place:
+ */
+OptionStore.prototype.place = function (id, cache) {
+  const place = cache(id)
+
+  const tags = place.tags
+    .filter(s => s !== 'place')
+    .filter(R.identity)
+    .map(label => `SYSTEM:${label}:NONE`)
+
+  return {
+    id,
+    title: place.name,
+    description: place.description,
+    scope: 'PLACE',
+
+    tags: [
+      'SCOPE:PLACE:NONE',
+      ...tags,
+      ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+      'PLUS'
+    ].join(' '),
+    capabilities: 'TAG|RENAME'
+  }
+}
+

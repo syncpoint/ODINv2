@@ -11,6 +11,7 @@ import ProjectStore from '../store/ProjectStore'
 import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
+import Nominatim from '../store/Nominatim'
 import { PaletteCommands, ViewMemento, OSDDriver } from '../model'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
@@ -59,7 +60,8 @@ export default async projectUUID => {
   const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store)
-  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter)
+  const nominatim = new Nominatim(store)
+  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim)
 
   // Key bindings.
   bindings(emitter, clipboard)
