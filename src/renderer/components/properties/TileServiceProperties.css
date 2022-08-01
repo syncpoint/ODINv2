@@ -1,0 +1,44 @@
+.service-abstract {
+  height: 6rem;
+  border-color: lightgrey;
+  border-radius: 3px;
+  border-width: 1px;
+  padding: 4px;
+  overflow: auto;
+}
+
+.layer-list {
+  height: 12rem;
+  overflow: auto;
+  border-color: lightgrey;
+  border-radius: 3px;
+  border-width: 1px;
+  padding: 4px;
+}
+
+.layer-list__entry {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.layer-list__entry[aria-selected="true"] {
+  background-color: #f4f0ec;
+}
+
+.layer-list__title {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.layer-list_checkbox {
+  margin-left: 2px;
+}
+
+.map-preview {
+  height: 12rem;
+  border-color: lightgrey;
+  border-radius: 3px;
+  border-width: 1px;
+}

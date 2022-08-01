@@ -69,6 +69,7 @@ WindowManager.prototype.createWindow = function (options) {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
+        webSecurity: false,
 
         // See: https://github.com/electron/electron/issues/28511
         nativeWindowOpen: true,

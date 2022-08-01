@@ -1,7 +1,7 @@
 import util from 'util'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
-import { scope, isFeatureId, isLayerId, isDeletableId, isTaggableId, layerUUID, lockedId, hiddenId, tagsId, layerId, featureId, defaultId } from '../ids'
+import * as ID from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
@@ -15,6 +15,7 @@ import { importSymbols } from './symbols'
  * batch :: (leveldb, operations) -> unit
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
+ * delete :: String -> unit
  * delete :: [k] -> unit
  * dictionary :: String -> {k: v}
  * dictionary :: String -> (k -> k) -> {k: v}
@@ -35,6 +36,7 @@ import { importSymbols } from './symbols'
  * tuples :: [k] -> [[k, v]]
  * unsetDefaultLayer :: k -> unit
  * update :: { k: v } -> (v -> v) -> unit
+ * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
  * value :: k -> v
@@ -49,6 +51,10 @@ export default function Store (jsonDB, wkbDB, undo, selection) {
   this.undo = undo
   this.selection = selection
   this.db = L.leveldb({ down: new PartitionDOWN(jsonDB, wkbDB) })
+
+  ;(async () => {
+    // potential clean-up
+  })()
 
   // Import symbols once for each fresh project database.
   window.requestIdleCallback(async () => {
@@ -65,16 +71,18 @@ util.inherits(Store, Emitter)
  */
 Store.prototype.collectKeys = async function (ids, include = []) {
   const consider = x => include.includes(x)
-  const featureIds = id => L.readKeys(this.jsonDB, L.prefix(`feature:${layerUUID(id)}`))
-  const hiddenIds = id => L.readKeys(this.jsonDB, L.prefix(hiddenId(id)))
+  const featureIds = id => L.readKeys(this.jsonDB, L.prefix(`feature:${ID.layerUUID(id)}`))
+  const hiddenIds = id => L.readKeys(this.jsonDB, L.prefix(ID.hiddenId(id)))
   const linkIds = id => L.readKeys(this.jsonDB, L.prefix(`link+${id}`))
-  const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(tagsId(id)))
-  const defaultIds = id => L.readKeys(this.jsonDB, L.prefix(defaultId(id)))
-  const hasLinks = id => consider('link') && (isLayerId(id) || isFeatureId(id))
-  const hasFeatures = isLayerId
-  const maybeHidden = id => consider('hidden') && (isLayerId(id) || isFeatureId(id))
-  const maybeTagged = id => consider('tags') && isTaggableId(id)
-  const maybeDefault = id => consider('default') && isLayerId(id)
+  const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(ID.tagsId(id)))
+  const defaultIds = id => L.readKeys(this.jsonDB, L.prefix(ID.defaultId(id)))
+  const tileLayerIds = id => L.readKeys(this.jsonDB, L.prefix(`tile-layer:${id.split(':')[1]}`))
+  const hasLinks = id => consider('link') && (ID.isLayerId(id) || ID.isFeatureId(id))
+  const hasFeatures = ID.isLayerId
+  const hasTileLayers = ID.isTileServiceId
+  const maybeHidden = id => consider('hidden') && (ID.isLayerId(id) || ID.isFeatureId(id))
+  const maybeTagged = id => consider('tags') && ID.isTaggableId(id)
+  const maybeDefault = id => consider('default') && ID.isLayerId(id)
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -84,6 +92,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
       const ys = []
       if (hasFeatures(id)) ys.push(...await featureIds(id))
       if (hasLinks(id)) ys.push(...await linkIds(id))
+      if (hasTileLayers(id)) ys.push(...await tileLayerIds(id))
       if (maybeHidden(id)) ys.push(...await hiddenIds(id))
       if (maybeTagged(id)) ys.push(...await tagsIds(id))
       if (maybeDefault(id)) ys.push(...await defaultIds(id))
@@ -224,15 +233,22 @@ Store.prototype.batch = async function (db, operations, options = {}) {
 
 /**
  * @async
+ * delete :: String -> unit
  * delete :: [k] -> unit
  */
-Store.prototype.delete = async function (ids) {
+Store.prototype.delete = async function (arg) {
+
+  // Little convenience (prefix -> [k]):
+  if (typeof arg === 'string') return this.delete(await this.keys(arg))
+
+  // [k]:
+  const ids = arg
 
   // Don't delete locked entries:
-  const locks = Object.fromEntries(await this.tuples(ids.map(lockedId)))
+  const locks = Object.fromEntries(await this.tuples(ids.map(ID.lockedId)))
   const deletableIds = ids
-    .filter(isDeletableId)
-    .filter(key => !locks[lockedId(key)])
+    .filter(ID.isDeletableId) // symbols for example cannot be deleted.
+    .filter(key => !locks[ID.lockedId(key)])
 
   const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default'])
   const tuples = await L.tuples(this.db, keys)
@@ -248,7 +264,7 @@ Store.prototype.delete = async function (ids) {
 Store.prototype.hide = async function (ids, active) {
   if (active !== undefined) return
   const keys = await this.collectKeys(ids)
-  const operations = keys.map(key => L.putOp(hiddenId(key), true))
+  const operations = keys.map(key => L.putOp(ID.hiddenId(key), true))
   this.batch(this.jsonDB, operations)
 }
 
@@ -260,7 +276,7 @@ Store.prototype.hide = async function (ids, active) {
 Store.prototype.show = async function (ids, active) {
   if (active !== undefined) return
   const keys = await this.collectKeys(ids)
-  const operations = keys.map(key => L.delOp(hiddenId(key)))
+  const operations = keys.map(key => L.delOp(ID.hiddenId(key)))
   this.batch(this.jsonDB, operations)
 }
 
@@ -272,7 +288,7 @@ Store.prototype.show = async function (ids, active) {
 Store.prototype.lock = async function (ids, active) {
   if (active !== undefined) return
   const keys = await this.collectKeys(ids)
-  const operations = keys.map(key => L.putOp(lockedId(key), true))
+  const operations = keys.map(key => L.putOp(ID.lockedId(key), true))
   this.batch(this.jsonDB, operations)
 }
 
@@ -284,7 +300,7 @@ Store.prototype.lock = async function (ids, active) {
 Store.prototype.unlock = async function (ids, active) {
   if (active !== undefined) return
   const keys = await this.collectKeys(ids)
-  const operations = keys.map(key => L.delOp(lockedId(key)))
+  const operations = keys.map(key => L.delOp(ID.lockedId(key)))
   this.batch(this.jsonDB, operations)
 }
 
@@ -296,7 +312,7 @@ Store.prototype.unlock = async function (ids, active) {
  */
 Store.prototype.geometries = function (arg) {
   if (Array.isArray(arg)) return L.values(this.wkbDB, arg)
-  else if (isLayerId(arg)) return L.values(this.wkbDB, `feature:${arg.split(':')[1]}`)
+  else if (ID.isLayerId(arg)) return L.values(this.wkbDB, `feature:${arg.split(':')[1]}`)
   else return L.values(this.wkbDB, [arg])
 }
 
@@ -351,7 +367,7 @@ Store.prototype.placeBounds = Store.prototype.geometryBounds
 
 
 Store.prototype.geometryBounds = async function (ids, resolution) {
-  const scopes = Object.entries(R.groupBy(id => scope(id), ids))
+  const scopes = Object.entries(R.groupBy(id => ID.scope(id), ids))
 
   return scopes.reduce(async (acc, [scope, keys]) => {
     const handler = this[`${scope}Bounds`]
@@ -367,7 +383,7 @@ Store.prototype.setDefaultLayer = async function (id) {
   const current = await L.tuples(this.jsonDB, 'default+layer:')
   this.undo.apply(this.undo.composite([
     this.deleteCommand(this.jsonDB, current),
-    this.insertCommand(this.jsonDB, [[defaultId(id), true]])
+    this.insertCommand(this.jsonDB, [[ID.defaultId(id), true]])
   ]))
 }
 
@@ -385,8 +401,8 @@ Store.prototype.unsetDefaultLayer = async function (id) {
  * defaultLayerId :: () -> k
  */
 Store.prototype.defaultLayerId = async function () {
-  const keys = await L.readKeys(this.jsonDB, L.prefix(defaultId('layer:')))
-  return keys.length && layerId(keys[0])
+  const keys = await L.readKeys(this.jsonDB, L.prefix(ID.defaultId('layer:')))
+  return keys.length && ID.layerId(keys[0])
 }
 
 
@@ -407,12 +423,12 @@ Store.prototype.insertGeoJSON = async function (geoJSON) {
   // Get or create default layer.
   let id = await this.defaultLayerId()
   if (!id) {
-    id = layerId()
+    id = ID.layerId()
     tuples.push([id, { name: 'Default Layer' }])
-    tuples.push([defaultId(id), true])
+    tuples.push([ID.defaultId(id), true])
   }
 
-  features.forEach(feature => tuples.push([featureId(id), feature]))
+  features.forEach(feature => tuples.push([ID.featureId(id), feature]))
   this.insert(tuples)
 }
 
@@ -437,8 +453,8 @@ Store.prototype.addTag = async function (id, name) {
   if (name === 'default') return this.setDefaultLayer(id)
 
   const addTag = name => tags => R.uniq([...(tags || []), name])
-  const taggableIds = this.selection.selected(isTaggableId)
-  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const taggableIds = this.selection.selected(ID.isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(ID.tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
   const oldValues = values.map(value => value || [])
   const newValues = oldValues.map(addTag(name))
@@ -455,8 +471,8 @@ Store.prototype.removeTag = async function (id, name) {
   if (name === 'default') return this.unsetDefaultLayer(id)
 
   const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
-  const taggableIds = this.selection.selected(isTaggableId)
-  const ids = R.uniq([id, ...taggableIds]).map(tagsId)
+  const taggableIds = this.selection.selected(ID.isTaggableId)
+  const ids = R.uniq([id, ...taggableIds]).map(ID.tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
   const oldValues = values.map(value => value || [])
   const newValues = oldValues.map(removeTag(name))

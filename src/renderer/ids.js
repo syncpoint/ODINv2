@@ -30,13 +30,25 @@ export const bookmarkId = R.cond([
   [R.isNil, () => `bookmark:${uuid()}`]
 ])
 
+export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000000000'
+export const tileServiceId = R.cond([
+  [R.isNil, () => `tile-service:${uuid()}`],
+  [R.startsWith('tile-layer:'), x => `tile-service:${x.split(':')[1].split('/')[0]}`]
+])
+
 export const lockedId = (id = '') => `locked+${id}`
 export const hiddenId = (id = '') => `hidden+${id}`
 export const stickyId = (id = '') => `sticky+${id}`
 export const sharedId = (id = '') => `shared+${id}`
 export const defaultId = (id = '') => `default+${id}`
 export const tagsId = (id = '') => `tags+${id}`
+export const defaultTileLayerId = 'tile-layer:00000000-0000-0000-0000-000000000000'
+export const tileLayerId = (id = '') => `tile-layer:${id}`
 export const linkId = id => `link+${id}/${uuid()}`
+
+/** Only a single preset (for now.) */
+export const defaultTilePresetId = 'tile-preset:00000000-0000-0000-0000-000000000000'
+export const tilePresetId = () => defaultTilePresetId
 
 /**
  * '+'-notation container id.
@@ -65,6 +77,14 @@ export const associatedId = id => {
     : id.substring(indexStart + 1)
 }
 
+/**
+ * tile-layer:{uuid}/{id} => {id}
+ */
+export const containedId = id => {
+  const index = id.lastIndexOf('/')
+  return id.substring(index + 1)
+}
+
 export const detailId = id => {}
 
 export const scope = id => id.split(':')[0]
@@ -77,7 +97,10 @@ export const isBookmarkId = isId('bookmark:')
 export const isGroupId = isId('group:') // TODO: group -> view
 export const isSymbolId = isId('symbol:')
 export const isPlaceId = isId('place:')
+export const isTileServiceId = isId('tile-service:')
+export const isTilePresetId = isId('tile-preset:')
 export const isLinkId = isId('link+')
+
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isGroupId(id)
 export const isProjectId = isId('project:')
@@ -109,5 +132,6 @@ export const ord = R.cond([
   [isFeatureId, R.always(1)],
   [isMarkerId, R.always(2)],
   [isLinkId, R.always(3)],
-  [isTagsId, R.always(4)]
+  [isTagsId, R.always(4)],
+  [isTileServiceId, R.always(5)]
 ])

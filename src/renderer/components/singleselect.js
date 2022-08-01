@@ -59,6 +59,11 @@ export const singleselect = {
     }
   },
 
+  deselect: state => ({
+    ...state,
+    selected: []
+  }),
+
   /** Select clicked entry. */
   click: (state, { id }) => ({
     ...state,

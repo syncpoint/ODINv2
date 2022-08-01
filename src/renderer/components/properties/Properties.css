@@ -4,16 +4,13 @@
 
   display: flex;
   flex-direction: column;
+  padding: 32px 16px;
+  overflow: auto;
   background-color: white;
   pointer-events: auto;
   user-select: none;
   background-color: white;
-  border-radius: 4px;
-}
-
-.panel-inset {
-  padding: 12px 16px;
-  overflow: auto;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 }
 
 .properties__button {

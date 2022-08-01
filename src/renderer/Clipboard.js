@@ -3,7 +3,11 @@ import * as ID from './ids'
 
 const CONTENT_TYPE = 'application/json;vnd=odin'
 
-const canCopy = id => ID.isLayerId(id) || ID.isFeatureId(id) || ID.isMarkerId(id)
+const canCopy = id =>
+  ID.isLayerId(id) ||
+  ID.isFeatureId(id) ||
+  ID.isMarkerId(id) ||
+  ID.isTileServiceId(id)
 
 export const writeEntries = async (entries) => {
   const clipboardObject = {
@@ -82,7 +86,7 @@ Clipboard.prototype.paste = async function () {
   // which itself is also part of selection.
   // These (uncovered) features will be assigned to default layer.
 
-  const uncoveredFeaturesIds = entries.reduce((acc, [key]) => {
+  const uncoveredIds = entries.reduce((acc, [key]) => {
     if (!ID.isFeatureId(key)) return acc
     if (entrymap[ID.layerId(key)]) return acc
     acc.push(key)
@@ -93,7 +97,7 @@ Clipboard.prototype.paste = async function () {
 
   const tuples = []
   let defaultLayerId = await this.store.defaultLayerId()
-  if (uncoveredFeaturesIds.length && !defaultLayerId) {
+  if (uncoveredIds.length && !defaultLayerId) {
     defaultLayerId = ID.layerId()
     tuples.push([defaultLayerId, { name: 'Default Layer' }])
     tuples.push([ID.defaultId(defaultLayerId), ['default']])
@@ -102,7 +106,7 @@ Clipboard.prototype.paste = async function () {
   // All (uncovered) features where layer is not explicitly included
   // in selection are assigned to default layer.
 
-  const keymap = uncoveredFeaturesIds.reduce((acc, featureId) => {
+  const keymap = uncoveredIds.reduce((acc, featureId) => {
     // Map old (uncovered) layer to default layer:
     acc[ID.layerId(featureId)] = defaultLayerId
     return acc
@@ -118,6 +122,7 @@ Clipboard.prototype.paste = async function () {
     [ID.isLinkId, key => replace(key)(ID.linkId(keymap[ID.containerId(key)]))],
     [ID.isTagsId, key => replace(key)(ID.tagsId(keymap[ID.associatedId(key)]))],
     [ID.isMarkerId, key => replace(key)(ID.markerId())],
+    [ID.isTileServiceId, key => replace(key)(ID.tileServiceId())],
     [R.T, key => key]
   ])
 

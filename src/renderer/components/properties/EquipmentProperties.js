@@ -10,9 +10,10 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
 import Status from './Status'
+import GridCols2 from './GridCols2'
 
 const EquipmentProperties = props =>
-  <>
+  <GridCols2>
     <Name {...props}/>
     <UniqueDesignationQuantity {...props}/>
     <TypeMobility {...props}/>
@@ -24,6 +25,6 @@ const EquipmentProperties = props =>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>
     <Status {...props}/>
-  </>
+  </GridCols2>
 
 export default EquipmentProperties

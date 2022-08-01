@@ -8,9 +8,10 @@ import Altitude from './Altitude'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
+import GridCols2 from './GridCols2'
 
 const PointProperties = props =>
-  <>
+  <GridCols2>
     <Name {...props}/>
     <ColSpan2>
       <UniqueDesignation {...props}/>
@@ -21,6 +22,6 @@ const PointProperties = props =>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
     <Status {...props}/>
-  </>
+  </GridCols2>
 
 export default PointProperties

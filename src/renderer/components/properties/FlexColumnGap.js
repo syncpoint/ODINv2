@@ -1,12 +1,11 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 
-const FlexRow = ({ children }) => {
+const FlexColumnGap = ({ children }) => {
   const style = {
     display: 'flex',
-    flexDirection: 'row',
-    gap: '1rem', // gap-4
-    alignItems: 'center'
+    flexDirection: 'column',
+    gap: '1rem'
   }
 
   return (
@@ -14,4 +13,4 @@ const FlexRow = ({ children }) => {
   )
 }
 
-export default FlexRow
+export default FlexColumnGap

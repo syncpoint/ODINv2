@@ -20,6 +20,22 @@ CreateLayer.prototype.execute = async function () {
 /**
  *
  */
+const CreateTileService = function (services) {
+  this.selection = services.selection
+  this.store = services.store
+  this.label = 'Create Tile Service'
+}
+
+CreateTileService.prototype.execute = function () {
+  const key = ID.tileServiceId()
+  this.selection.set([key])
+  this.store.insert([[key, { type: 'OSM', url: '', name: '' }]])
+}
+
+
+/**
+ *
+ */
 const CreateMarker = function (services) {
   this.selection = services.selection
   this.store = services.store
@@ -71,6 +87,7 @@ CreateBookmark.prototype.execute = function () {
  */
 export default services => ({
   LAYER_CREATE: new CreateLayer(services),
+  TILE_SERVICE_CREATE: new CreateTileService(services),
   MARKER_CREATE: new CreateMarker(services),
   BOOKMARK_CREATE: new CreateBookmark(services)
 })

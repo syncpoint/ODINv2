@@ -7,12 +7,12 @@ import './Card.css'
 export const Card = React.forwardRef((props, ref) => {
   const { store } = useServices()
   const { id, children, selected, capabilities } = props
+  const style = props.style || {}
   const [dropAllowed, setDropAllowed] = React.useState(null)
 
-  const style = dropAllowed === true
-    // ? { backgroundColor: '#f1eff0', borderStyle: 'dashed', borderColor: 'black' } // Off White
-    ? { borderStyle: 'dashed', borderColor: '#40a9ff' } // (antd) hover border-color
-    : {}
+  const effectiveStyle = dropAllowed === true
+    ? { ...style, borderStyle: 'dashed', borderColor: '#40a9ff' } // (antd) hover border-color
+    : style
 
   // Only used to forward click event to focus/selection strategy:
   const handleClick = event => props.onClick && props.onClick(event)
@@ -85,7 +85,7 @@ export const Card = React.forwardRef((props, ref) => {
     <div
       ref={ref}
       className='card'
-      style={style}
+      style={effectiveStyle}
       aria-selected={selected}
       role='option'
       onClick={handleClick}
@@ -107,5 +107,6 @@ Card.propTypes = {
   editing: PropTypes.bool,
   capabilities: PropTypes.string,
   onClick: PropTypes.func,
-  onDoubleClick: PropTypes.func
+  onDoubleClick: PropTypes.func,
+  style: PropTypes.object
 }

@@ -29,7 +29,7 @@
   background-color: rgba(215, 215, 215, 0.2);
   backdrop-filter: blur(20px) saturate(160%) contrast(45%) brightness(140%);
   padding: 8px 4px;
-  width: 10rem;
+  width: min-content;
   overflow: auto;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   border: 1px solid #DDDEDF;
@@ -43,6 +43,7 @@
   border-radius: 0.2rem;
   transition: all 0.2s;
   display: block;
+  white-space: nowrap;
 }
 
 .dropdown a:hover {

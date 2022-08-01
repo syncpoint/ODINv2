@@ -27,10 +27,22 @@ SetDefaultLayer.prototype.selected = function () {
 }
 
 
+const SelectTilePreset = function (services) {
+  this.selection = services.selection
+  this.store = services.store
+  this.tileLayerStore = services.tileLayerStore
+  this.path = 'mdiMap'
+}
+
+SelectTilePreset.prototype.execute = async function () {
+  this.selection.set([ID.defaultTilePresetId])
+}
+
 
 /**
  *
  */
 export default services => ({
-  LAYER_SET_DEFAULT: new SetDefaultLayer(services)
+  LAYER_SET_DEFAULT: new SetDefaultLayer(services),
+  SELECT_TILE_LAYERS: new SelectTilePreset(services)
 })

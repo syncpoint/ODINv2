@@ -34,7 +34,9 @@ export const Map = () => {
       new ScaleLine({ bar: true, text: true, minWidth: 128, target: controlsTarget })
     ]
 
-    const layers = [...createTileLayers(), ...Object.values(vectorLayers)]
+    const tileLayers = await createTileLayers(services)
+    const layers = [...tileLayers, ...Object.values(vectorLayers)]
+
     const map = new ol.Map({
       target: 'map',
       controls,

@@ -13,6 +13,7 @@ import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
 import Nominatim from '../store/Nominatim'
 import { PaletteCommands, ViewMemento, OSDDriver } from '../model'
+import TileLayerStore from '../store/TileLayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
@@ -54,6 +55,7 @@ export default async projectUUID => {
   const store = new Store(jsonDB, wbkDB, undo, selection)
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const projectStore = new ProjectStore(ipcRenderer)
+  const tileLayerStore = new TileLayerStore(store)
 
   const documentStore = new DocumentStore()
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
@@ -94,6 +96,8 @@ export default async projectUUID => {
   services.store = store
   services.preferencesStore = preferencesStore
   services.documentStore = documentStore
+  services.searchIndex = searchIndex
+  services.tileLayerStore = tileLayerStore
   services.osdDriver = osdDriver
   services.clipboard = clipboard
   services.coordinatesFormat = coordinatesFormat
