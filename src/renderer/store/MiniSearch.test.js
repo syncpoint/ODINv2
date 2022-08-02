@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { createIndex, parseQuery } from './MiniSearch'
-import { documents } from './documents'
+import feature from './documents/feature'
 import layer from './data/layer.json'
 import fixture from './data/fixture.json'
 import _3OSC from './data/3OSC.json'
@@ -39,7 +39,7 @@ describe('MiniSearch', function () {
         }
 
         const entries = features.map(({ id, ...value }) => [id, value])
-        const docs = entries.map(([key, value]) => documents.feature(key, value, cache))
+        const docs = entries.map(([key, value]) => feature(key, value, cache))
         index.addAll(docs)
         return index
       })()
