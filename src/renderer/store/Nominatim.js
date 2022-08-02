@@ -11,14 +11,48 @@ const LOADING          = 3 // Downloading; responseText holds partial data.
 const DONE             = 4 // The operation is complete.
 /* eslint-enable */
 
-export default function Nominatim (store) {
-  this.store = store
-  this.options = {
-    formal: 'json',
-    dedupe: 1,
-    polygon_geojson: 1,
-    limit: 20
+
+/**
+ *
+ */
+const Strategy = {
+
+  /**
+   * Remove recent, non-sticky result.
+   */
+  nonSticky: store => async places => {
+    const removals = (await store.tuples('sticky+place:'))
+      .filter(([/* key */, sticky]) => !sticky)
+      .flatMap(([key]) => [
+        { type: 'del', key },
+        { type: 'del', key: ID.associatedId(key) }
+      ])
+
+    const additions = places.flatMap(([key, value]) => {
+      return [
+        { type: 'put', key, value },
+        { type: 'put', key: ID.stickyId(key), value: false }
+      ]
+    })
+
+    store.import(removals.concat(additions))
+  },
+
+  /**
+   * Keep result forever.
+   */
+  sticky: store => async places => {
+    const additions = places.map(([key, value]) => ({ type: 'put', key, value }))
+    store.import(additions.concat(additions))
   }
+}
+
+
+/**
+ *
+ */
+export default function Nominatim (store) {
+  this.strategy = Strategy.sticky(store)
 }
 
 Nominatim.prototype.sync = async function (query) {
@@ -26,29 +60,7 @@ Nominatim.prototype.sync = async function (query) {
   if (query === this.lastQuery) return
   this.lastQuery = query
 
-  console.log('[Nominatim]/sync', query)
   const response = await this.request(query)
-
-  const place = entry => {
-    const parts = entry.display_name.split(', ')
-    return [
-      `place:${entry.osm_id}`,
-      {
-        name: R.head(parts),
-        description: R.tail(parts).join(', '),
-        ...entry
-      }
-    ]
-  }
-
-  // Remove all non-sticky places.
-  //
-  const removals = (await this.store.tuples('sticky+place:'))
-    .filter(([/* key */, sticky]) => !sticky)
-    .flatMap(([key, value]) => [
-      { type: 'del', key },
-      { type: 'del', key: ID.associatedId(key) }
-    ])
 
   const pretty = ({ geojson, type, ...place }) => {
     const clazz = place.class
@@ -62,22 +74,30 @@ Nominatim.prototype.sync = async function (query) {
     }
   }
 
-  const places = response
-    .map(pretty)
-    .map(place)
-
-  const additions = places.flatMap(([key, value]) => {
+  const place = entry => {
+    const parts = entry.display_name.split(', ')
     return [
-      { type: 'put', key, value },
-      { type: 'put', key: ID.stickyId(key), value: false }
+      `place:${entry.osm_id}`,
+      {
+        name: R.head(parts),
+        description: R.tail(parts).join(', '),
+        ...entry
+      }
     ]
-  })
+  }
 
-  const operations = removals.concat(additions)
-  this.store.import(operations)
+  const places = response.map(R.compose(place, pretty))
+  this.strategy(places)
 }
 
 Nominatim.prototype.request = function (query) {
+  const options = {
+    formal: 'json',
+    dedupe: 1,
+    polygon_geojson: 1,
+    limit: 20
+  }
+
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.addEventListener('readystatechange', async event => {
@@ -95,7 +115,7 @@ Nominatim.prototype.request = function (query) {
       }
     })
 
-    const params = Object.entries(this.options)
+    const params = Object.entries(options)
       .reduce((acc, [key, value]) => acc.concat([`${key}=${value}`]), ['format=json'])
       .join('&')
 
