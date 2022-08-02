@@ -210,7 +210,11 @@ SearchIndex.prototype.search = async function (terms, options) {
     return this.optionStore[scope](id, this.cache)
   }
 
-  const entries = await Promise.all(matches.map(({ id }) => option(id)))
+  // (Pre-)sort ids to compensate for changing match scores
+  // and thus seemingly random order in sidebar.
+  //
+  const sortedIds = matches.map(R.prop('id')).sort()
+  const entries = await Promise.all(sortedIds.map(option))
   return sort(entries.filter(Boolean))
 }
 
