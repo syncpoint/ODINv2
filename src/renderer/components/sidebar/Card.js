@@ -134,9 +134,6 @@ const useController = id => {
  */
 export const Card = React.forwardRef((props, ref) => {
   const { id, capabilities, url, title, description, tags, selected, editing, ...rest } = props
-
-  console.log('rest', rest)
-
   const acceptDrop = capabilities && capabilities.includes('DROP')
   const { dropAllowed, ...dragAndDrop } = useDragAndDrop(id, acceptDrop)
   const controller = useController(id)
