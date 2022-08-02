@@ -222,8 +222,23 @@ Store.prototype.keys = function (prefix) {
  * batch :: (leveldb, operations, {k: v}) -> unit
  */
 Store.prototype.batch = async function (db, operations, options = {}) {
-  // FIXME: probably not the right place for selection handling
-  const removals = operations.filter(({ type }) => type === 'del').map(({ key }) => key)
+
+  // Clearly an entity can no longer be selected after it was deleted.
+  // Question is who is responsible for updating the selection?
+  // Architecturally speaking both store and selection are on the same
+  // level. That store depends on selection is thus not optimal. But what is?
+  // Note: Reversing this dependency would be equally bad. Some man in
+  // the middle, mediator (or whatever) above store and selection make
+  // perfect sense and should be considere if this shortcut fails.
+  //
+  // This only works as long as
+  //
+  //  A - only entities in the store can be selected, nothing else
+  //  B - store is only written through batch (this one), not single del
+
+  const removals = operations
+    .filter(({ type }) => type === 'del')
+    .map(({ key }) => key)
   this.selection.deselect(removals)
 
   await db.batch(operations)
