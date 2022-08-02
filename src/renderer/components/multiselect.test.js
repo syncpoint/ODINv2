@@ -192,7 +192,6 @@ describe('multiselect', function () {
       const state = { entries, selected: [], scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
       const expected = {
-        editId: null,
         entries,
         selected: ['x'],
         focusIndex: 0,
@@ -206,7 +205,6 @@ describe('multiselect', function () {
       const state = { entries, selected: ['x'], scroll: 'none' }
       const actual = multiselect['keydown/ArrowDown'](state, { shiftKey: false })
       const expected = {
-        editId: null,
         entries,
         selected: ['y'],
         focusIndex: 1,
@@ -242,7 +240,6 @@ describe('multiselect', function () {
       const state = { entries, selected: [], scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
       const expected = {
-        editId: null,
         entries,
         selected: ['y'],
         focusIndex: 1,
@@ -256,7 +253,6 @@ describe('multiselect', function () {
       const state = { entries, selected: ['y'], scroll: 'none' }
       const actual = multiselect['keydown/ArrowUp'](state, { shiftKey: false })
       const expected = {
-        editId: null,
         entries,
         selected: ['x'],
         focusIndex: 0,

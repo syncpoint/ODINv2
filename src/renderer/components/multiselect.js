@@ -23,32 +23,14 @@ export const multiselect = {
     // Don't update when entries are deep equal to previous state.
     if (isEqual(state.entries, entries)) return state
 
-    // Either get focus index from temporary focus id
-    // or from last selected.
-    //
-    const focusIndex = state.focusId
-      ? Entries.index(entries, state.focusId)
-      : Entries.focusIndex(entries, state.selected)
-
-    // Select entry when focus id was set and found.
-    //
-    const selected = (state.focusId && focusIndex !== -1)
-      ? [state.focusId]
-      : state.selected
-
-    // We must only reset focus id after it was sucessfully
-    // discovered in fresh set of entries.
-    //
-    const focusId = (state.focusId && focusIndex !== -1)
-      ? null
-      : state.focusId
+    // Don't mess with selection, but derrive focus index
+    // from last selected.
+    const focusIndex = Entries.focusIndex(entries, state.selected)
 
     return {
       ...state,
       entries,
-      selected,
       focusIndex,
-      focusId,
       scroll: 'auto'
     }
   },
