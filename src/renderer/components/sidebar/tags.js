@@ -25,7 +25,6 @@ const useController = () => {
   }
 
   const handleMouseUp = (id, event, spec) => {
-    // TODO: push down (HighlightController)
     if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/off')
@@ -33,7 +32,6 @@ const useController = () => {
   }
 
   const handleClick = (id, event, spec) => {
-    // TODO: push down (TagStore or FlagStore)
     const ids = R.uniq([id, ...selection.selected()])
     if (spec.match(/SYSTEM:HIDDEN/)) store.show(ids)
     else if (spec.match(/SYSTEM:VISIBLE/)) store.hide(ids)
