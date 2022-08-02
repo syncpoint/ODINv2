@@ -7,6 +7,10 @@ import { useServices } from '../hooks'
 import * as ID from '../../ids'
 import { readFeature } from '../../model/geometry'
 
+
+/**
+ *
+ */
 const useDragAndDrop = (id, acceptDrop) => {
   const { store } = useServices()
   const [dropAllowed, setDropAllowed] = React.useState(null)
@@ -18,30 +22,27 @@ const useDragAndDrop = (id, acceptDrop) => {
       : 'none'
   }
 
-  const handleDragOver = event => {
+  const onDragOver = event => {
     event.preventDefault()
     event.dataTransfer.dropEffect = dropEffect(event)
     setDropAllowed(acceptDrop)
   }
 
-  const handleDragEnter = event => {
+  const onDragEnter = event => {
     event.preventDefault()
     event.dataTransfer.dropEffect = dropEffect(event)
   }
 
-  const handleDragLeave = event => {
+  const onDragLeave = event => {
     event.preventDefault()
     event.dataTransfer.dropEffect = dropEffect(event)
     setDropAllowed(null)
-  }
-
-  const handleDrop = event => {
-    event.preventDefault()
-    setDropAllowed(null)
-    if (acceptDrop) onDrop(event)
   }
 
   const onDrop = async event => {
+    event.preventDefault()
+    setDropAllowed(null)
+    if (!acceptDrop) return
 
     // Process files first (if any):
     const [...files] = event.dataTransfer.files
@@ -75,59 +76,55 @@ const useDragAndDrop = (id, acceptDrop) => {
 
   return {
     dropAllowed,
-    handleDragOver,
-    handleDragEnter,
-    handleDragLeave,
-    handleDrop
+    onDragOver,
+    onDragEnter,
+    onDragLeave,
+    onDrop
   }
 }
 
-const useController = () => {
+
+/**
+ *
+ */
+const useController = id => {
   const { emitter, ipcRenderer, store } = useServices()
 
-  const handleDoubleClick = id => {
-    const scope = ID.scope(id)
-    const handlers = {
-      symbol: id => emitter.emit('command/entry/draw', { id }),
-      'link+layer': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
-      'link+feature': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
-      marker: async id => {
-        const markers = await store.values([id])
-        if (markers.length !== 1) return
-        const center = markers[0].geometry.coordinates
-        emitter.emit('map/flyto', { center })
-      },
-      bookmark: async id => {
-        const bookmarks = await store.values([id])
-        if (bookmarks.length !== 1) return
-        emitter.emit('map/goto', {
-          center: bookmarks[0].center,
-          resolution: bookmarks[0].resolution,
-          rotation: bookmarks[0].rotation
-        })
-      },
-      feature: async id => {
-        const values = await store.values([id])
-        if (values.length !== 1) return
-        const feature = readFeature(values[0])
-        const center = Extent.getCenter(feature?.getGeometry()?.getExtent())
-        emitter.emit('map/goto', { center })
-      },
-      place: async id => {
-        const values = await store.values([id])
-        if (values.length !== 1) return
-        const feature = readFeature(values[0])
-        const center = Extent.getCenter(feature?.getGeometry()?.getExtent())
-        emitter.emit('map/goto', { center })
-      }
-    }
+  const center = async id => {
+    const values = await store.values([id])
+    if (values.length !== 1) return
+    const entity = readFeature(values[0])
+    const center = Extent.getCenter(entity?.getGeometry()?.getExtent())
+    emitter.emit('map/goto', { center })
+  }
 
-    const handler = handlers[scope] || (() => {})
-    handler(id)
+  const viewport = async id => {
+    const entity = await store.values([id])
+    if (entity.length !== 1) return
+    emitter.emit('map/goto', {
+      center: entity[0].center,
+      resolution: entity[0].resolution,
+      rotation: entity[0].rotation
+    })
+  }
+
+  const scopes = {
+    symbol: id => emitter.emit('command/entry/draw', { id }),
+    'link+layer': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
+    'link+feature': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
+    marker: async id => {
+      const markers = await store.values([id])
+      if (markers.length !== 1) return
+      const center = markers[0].geometry.coordinates
+      emitter.emit('map/flyto', { center })
+    },
+    bookmark: viewport,
+    feature: center,
+    place: center
   }
 
   return {
-    handleDoubleClick
+    onDoubleClick: () => (scopes[ID.scope(id)] || (() => {}))(id)
   }
 }
 
@@ -136,68 +133,66 @@ const useController = () => {
  *
  */
 export const Card = React.forwardRef((props, ref) => {
-  const acceptDrop = props.capabilities && props.capabilities.includes('DROP')
-  const dragAndDrop = useDragAndDrop(props.id, acceptDrop)
-  const controller = useController()
+  const { id, capabilities, url, title, description, tags, selected, editing, ...rest } = props
 
-  const style = dragAndDrop.dropAllowed === true
+  console.log('rest', rest)
+
+  const acceptDrop = capabilities && capabilities.includes('DROP')
+  const { dropAllowed, ...dragAndDrop } = useDragAndDrop(id, acceptDrop)
+  const controller = useController(id)
+
+  const style = dropAllowed === true
     ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
     : {}
 
   const tag = spec => {
     const [variant, label, action, path] = spec.split(':')
+    // TODO: use generic Tag component
     return TAG[variant]({
       key: spec,
-      id: props.id,
+      id,
       spec,
       label,
       action,
-      path,
-      addTag: props.addTag,
-      removeTag: props.removeTag,
-      onTagClick: props.onTagClick,
-      onTagMouseDown: props.onTagMouseDown,
-      onTagMouseUp: props.onTagMouseUp
+      path
     })
   }
 
-  const avatar = props.url &&
+  const children = {}
+
+  children.description = description &&
+    <span className='e3de-description'>{description}</span>
+
+  children.avatar = url &&
     <div className='avatar'>
-      <img className='image' src={props.url}/>
+      <img className='image' src={url}/>
     </div>
 
-  const description = props.description &&
-    <span className='e3de-description'>{props.description}</span>
+  children.tags = tags.split(' ').map(spec => tag(spec))
 
   return (
     <div className='e3de-card-container' ref={ref}>
       <div
         className='e3de-card e3de-column'
         style={style}
-        aria-selected={props.selected}
-        onClick={event => props.onEntryClick(props.id, event)}
-        onDoubleClick={() => controller.handleDoubleClick(props.id)}
-        onDragOver={dragAndDrop.handleDragOver}
-        onDragEnter={dragAndDrop.handleDragEnter}
-        onDragLeave={dragAndDrop.handleDragLeave}
-        onDrop={dragAndDrop.handleDrop}
+        aria-selected={selected}
+        {...rest}
+        {...controller}
+        {...dragAndDrop}
       >
         <div className='header e3de-row'>
           <Title
-            id={props.id}
-            value={props.title}
-            editing={props.editing}
-            onTitleChange={props.onTitleChange}
+            id={id}
+            value={title}
+            editing={editing}
           />
         </div>
         <div className='body e3de-row'>
-          {description}
-          { avatar }
+          {children.description}
+          {children.avatar}
         </div>
         <div className='e3de-taglist'>
-          {
-            props.tags.split(' ').map(spec => tag(spec))
-          }
+          { children.tags }
         </div>
       </div>
     </div>

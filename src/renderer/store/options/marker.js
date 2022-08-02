@@ -22,7 +22,6 @@ export default async function (id, cache) {
     id,
     title: marker.name,
     description,
-    scope: 'MARKER',
     tags,
     capabilities: 'TAG|RENAME'
   }

@@ -51,9 +51,7 @@ const reducer = (state, event) => {
     //
     const type = event.type
     const handler = handlers[type] || multiselect[type] || R.identity
-    const succ = handler(state, event)
-    // if (state !== succ) console.log('[reducer] state changed.', state, event)
-    return succ
+    return handler(state, event)
   }
 }
 
@@ -80,7 +78,6 @@ const useModel = () => {
   // Fetch entries when history and/or filter changed.
   //
   React.useEffect(() => {
-    // console.log('EFFECT: fetch entries')
     const { searchIndex } = services
     const terms = `${R.last(search.history).scope} ${search.filter}`
     const options = { force: search.force }
@@ -104,7 +101,7 @@ const useModel = () => {
     const disposable = Disposable.of()
     disposable.on(selection, 'selection', () => dispatch(event()))
     return () => disposable.dispose()
-  }, [services, dispatch])
+  }, [services])
 
   // Sync list selection with global selection.
   //
@@ -132,11 +129,7 @@ const useModel = () => {
   // <== Effects.
   // ==> Event Handlers.
 
-  const handleEntryClick = React.useCallback((id, { metaKey, ctrlKey, shiftKey }) => {
-    dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey })
-  }, [dispatch])
-
-  const handleKeyDown = React.useCallback(event => {
+  const onKeyDown = React.useCallback(event => {
     matcher([
       ({ key }) => key === 'ArrowDown',
       ({ key }) => key === 'ArrowUp'
@@ -173,14 +166,28 @@ const useModel = () => {
         }])
       }
     }
-  }, [state, search.history, dispatch, setHistory])
+  }, [state, search.history, setHistory])
+
+  const onClick = React.useCallback(id => event => {
+    const { selection } = services
+
+    if (id) {
+      // Card click must not bubble to list (see below.)
+      event.stopPropagation()
+      const { metaKey, ctrlKey, shiftKey } = event
+      dispatch({ type: 'click', id, metaKey, ctrlKey, shiftKey })
+    } else {
+      // Reset selection on list click.
+      selection.set([])
+    }
+  }, [services])
 
   // <== Event Handlers.
 
   return {
     state,
-    handleEntryClick,
-    handleKeyDown
+    onKeyDown,
+    onClick
   }
 }
 
@@ -206,7 +213,7 @@ export const Sidebar = () => {
         ref={measureRef}
         selected={state.selected.includes(entry.id)}
         editing={state.editing}
-        onEntryClick={controller.handleEntryClick}
+        onClick={controller.onClick(entry.id)}
       />
     )
   }, [state, controller])
@@ -214,7 +221,8 @@ export const Sidebar = () => {
   return (
     <div className="e3de-sidebar"
       tabIndex={0}
-      onKeyDown={controller.handleKeyDown}
+      onKeyDown={controller.onKeyDown}
+      onClick={controller.onClick(null)}
     >
       <ScopeSwitcher/>
       <FilterInput/>

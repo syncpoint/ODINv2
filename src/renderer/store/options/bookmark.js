@@ -12,7 +12,6 @@ export default async function (id, cache) {
   return {
     id,
     title: bookmark.name,
-    scope: 'BOOKMARK',
     tags,
     capabilities: 'TAG|RENAME'
   }

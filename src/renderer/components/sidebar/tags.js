@@ -19,9 +19,9 @@ const useController = () => {
   const handleMouseDown = (id, event, spec) => {
     const ids = R.uniq([id, ...selection.selected()])
     if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/on', { ids })
-    if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/on', { ids })
-    if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/on', { ids })
-    if (spec.match(/SCOPE:PLACE/)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:PLACE/)) emitter.emit('highlight/on', { ids })
   }
 
   const handleMouseUp = (id, event, spec) => {
@@ -94,6 +94,7 @@ export const SystemTag = props => {
   return (
     <span
       className={className}
+      onMouseDown={stopPropagation}
       onClick={handleClick}
     >
       {props.label.replace(/[_]/g, ' ')}

@@ -13,8 +13,6 @@ export default function (id, cache) {
     id,
     title: place.name,
     description: place.description,
-    scope: 'PLACE',
-
     tags: [
       'SCOPE:PLACE:NONE',
       ...tags,
