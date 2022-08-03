@@ -1,10 +1,18 @@
 import * as ol from 'ol'
 
 export default async services => {
-  const { sessionStore, viewMemento, emitter } = services
-  const viewport = await sessionStore.getViewport()
+  const { sessionStore, emitter } = services
+  const viewport = await sessionStore.get('viewport', sessionStore.DEFAULT_VIEWPORT)
   const view = new ol.View({ ...viewport })
-  view.on('change', ({ target: view }) => viewMemento.update(view))
+
+  view.on('change', ({ target: view }) => {
+    sessionStore.put('viewport', {
+      center: view.getCenter(),
+      resolution: view.getResolution(),
+      zoom: view.getZoom(),
+      rotation: view.getRotation()
+    })
+  })
 
   emitter.on('map/flyto', ({ center }) => {
     const duration = 2000

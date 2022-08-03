@@ -7,9 +7,10 @@ import tileService from './options/tile-service'
 import bookmark from './options/bookmark'
 import place from './options/place'
 
-export default function OptionStore (coordinatesFormat, store) {
+export default function OptionStore (coordinatesFormat, store, sessionStore) {
   this.coordinatesFormat = coordinatesFormat
   this.store = store
+  this.sessionStore = sessionStore
 }
 
 OptionStore.prototype.feature = feature

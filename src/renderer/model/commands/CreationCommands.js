@@ -39,21 +39,23 @@ CreateTileService.prototype.execute = function () {
 const CreateMarker = function (services) {
   this.selection = services.selection
   this.store = services.store
-  this.viewMemento = services.viewMemento
+  this.sessionStore = services.sessionStore
   this.label = 'Create Marker'
 }
 
-CreateMarker.prototype.execute = function () {
+CreateMarker.prototype.execute = async function () {
+  const viewport = await this.sessionStore.get('viewport')
   const key = ID.markerId()
-  this.store.insert([[key, {
+  const value = {
     name: `Marker - ${militaryFormat.now()}`,
     type: 'Feature',
     geometry: {
       type: 'Point',
-      coordinates: this.viewMemento.center()
+      coordinates: viewport.center
     }
-  }]])
+  }
 
+  this.store.insert([[key, value]])
   this.selection.focus(key)
 }
 
@@ -64,19 +66,15 @@ CreateMarker.prototype.execute = function () {
 const CreateBookmark = function (services) {
   this.selection = services.selection
   this.store = services.store
-  this.viewMemento = services.viewMemento
+  this.sessionStore = services.sessionStore
   this.label = 'Create Bookmark'
 }
 
-CreateBookmark.prototype.execute = function () {
+CreateBookmark.prototype.execute = async function () {
+  const viewport = await this.sessionStore.get('viewport')
   const key = ID.bookmarkId()
-  const value = {
-    name: `Bookmark - ${militaryFormat.now()}`,
-    center: this.viewMemento.center(),
-    resolution: this.viewMemento.resolution(),
-    rotation: this.viewMemento.rotation()
-  }
-
+  const name = `Bookmark - ${militaryFormat.now()}`
+  const value = { name, ...viewport }
   this.store.insert([[key, value]])
   this.selection.focus(key)
 }

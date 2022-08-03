@@ -7,7 +7,7 @@ import { createIndex, parseQuery } from './MiniSearch'
 import { Disposable } from '../../shared/disposable'
 
 
-const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
+const collator = new Intl.Collator('de-DE', { numeric: true, sensitivity: 'base' })
 const compare = fn => (a, b) => {
   const A = fn(a)
   const B = fn(b)
@@ -27,6 +27,7 @@ export const sort = entries => entries.sort((a, b) => {
   if (!GA && GB) return 1
 
   return compare(R.prop('title'))(a, b) ||
+    compare(R.prop('sort'))(a, b) || // optional sort criterion (e.g. places/distance)
     compare(R.prop('description'))(a, b)
 })
 
@@ -35,13 +36,15 @@ export const sort = entries => entries.sort((a, b) => {
 /**
  * @constructor
  */
-export default function SearchIndex (jsonDB, documentStore, optionStore, emitter, nominatim) {
+export default function SearchIndex (jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore) {
   Emitter.call(this)
 
   this.documentStore = documentStore
   this.optionStore = optionStore
   this.emitter = emitter
   this.nominatim = nominatim
+  this.sessionStore = sessionStore
+
   this.ready = false
   this.mirror = {}
   this.cachedDocuments = {}
@@ -237,5 +240,6 @@ SearchIndex.prototype.createQuery = function (terms, callback, options) {
   const disposable = Disposable.of()
   disposable.on(this, 'index/updated', refresh)
   disposable.on(this.emitter, 'preferences/changed', refresh)
+  disposable.on(this.sessionStore, 'put', refresh)
   return disposable
 }

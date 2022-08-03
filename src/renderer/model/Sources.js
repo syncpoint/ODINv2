@@ -251,7 +251,7 @@ export const lockedTracker = (source, store) => {
 }
 
 
-export const highlightTracker = (emitter, store, viewMemento) => {
+export const highlightTracker = (emitter, store, sessionStore) => {
   const source = new VectorSource({ features: new Collection() })
   let timeout
   let hiddenIds = []
@@ -262,7 +262,8 @@ export const highlightTracker = (emitter, store, viewMemento) => {
   }
 
   emitter.on('highlight/on', async ({ ids }) => {
-    const geometries = await store.geometryBounds(ids, viewMemento.resolution())
+    const viewport = sessionStore.get('viewport')
+    const geometries = await store.geometryBounds(ids, viewport.resolution)
     const features = geometries.map(geometry => new Feature(geometry))
     source.addFeatures(features)
 

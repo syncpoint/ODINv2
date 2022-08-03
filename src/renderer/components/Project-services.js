@@ -1,6 +1,5 @@
 import path from 'path'
 import { ipcRenderer } from 'electron'
-import { IPCDownClient } from '../../shared/level/ipc'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import SessionStore from '../store/SessionStore'
@@ -12,7 +11,7 @@ import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
 import Nominatim from '../store/Nominatim'
-import { PaletteCommands, ViewMemento, OSDDriver } from '../model'
+import { PaletteCommands, OSDDriver } from '../model'
 import TileLayerStore from '../store/TileLayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
@@ -37,9 +36,6 @@ export default async projectUUID => {
     if (entry) return entry.split('=')[1]
   })()
 
-  const master = L.leveldb({ down: new IPCDownClient(ipcRenderer) })
-  const sessionStore = new SessionStore(master, `project:${projectUUID}`)
-  const viewMemento = new ViewMemento(sessionStore)
   const emitter = new EventEmitter()
 
   const location = path.join(databases, projectUUID)
@@ -57,9 +53,13 @@ export default async projectUUID => {
   const jsonDB = L.jsonDB(db)
   const wbkDB = L.wbkDB(db)
   const preferencesDB = L.preferencesDB(db)
+  const sessionDB = L.sessionDB(db)
 
   const store = new Store(jsonDB, wbkDB, undo, selection)
+
+  // PUSH/PULL interface, replicates to main process
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
+  const sessionStore = new SessionStore(sessionDB)
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
 
@@ -67,9 +67,9 @@ export default async projectUUID => {
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
   const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
-  const optionStore = new OptionStore(coordinatesFormat, store)
+  const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
-  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim)
+  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore)
 
   // Key bindings.
   bindings(emitter, clipboard)
@@ -92,9 +92,7 @@ export default async projectUUID => {
 
   services.emitter = emitter
   services.ipcRenderer = ipcRenderer
-  services.master = master
   services.sessionStore = sessionStore
-  services.viewMemento = viewMemento
   services.undo = undo
   services.selection = selection
   services.dragAndDrop = dragAndDrop

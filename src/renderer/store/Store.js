@@ -53,7 +53,6 @@ export default function Store (jsonDB, wkbDB, undo, selection) {
   this.db = L.leveldb({ down: new PartitionDOWN(jsonDB, wkbDB) })
 
   ;(async () => {
-    // potential clean-up
   })()
 
   // Import symbols once for each fresh project database.

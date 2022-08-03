@@ -45,6 +45,13 @@ export const preferencesDB = db => sublevel(db, 'preferences', { valueEncoding: 
 
 
 /**
+ * JSON-encoded 'session' partition on top of plain store.
+ * @param {*} db plain store without explicit encoding.
+ */
+export const sessionDB = db => sublevel(db, 'session', { valueEncoding: 'json' })
+
+
+/**
  * JSON-encoded 'schema' partition on top of plain store.
  * Holds database schema options for upgrading/downgrading schema between versions.
  * @param {*} db plain store without explicit encoding.
@@ -137,6 +144,16 @@ export const tuples = (db, arg) => Array.isArray(arg)
     : readTuples(db, {})
 
 /**
+ * keys :: [k] -> [k]
+ * keys :: String -> [k]
+ */
+export const keys = (db, arg) => Array.isArray(arg)
+  ? mgetKeys(db, arg)
+  : arg
+    ? readKeys(db, prefix(arg))
+    : readKeys(db, {})
+
+/**
  * values :: levelup -> [k] -> [v]
  * values :: levelup -> String -> [v]
  */
@@ -184,6 +201,13 @@ export const mput = (db, ...args) => {
 
     return db.batch(batch)
   }
+}
+
+/**
+ * mdel :: levelup -> [k] -> unit
+ */
+export const mdel = (db, ...args) => {
+  return db.batch(args[0].map(key => delOp(key)))
 }
 
 /**
