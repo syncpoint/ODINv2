@@ -51,6 +51,11 @@
   background-color: #d0d0d0;
 }
 
+.toolbar__button:disabled {
+  pointer-events: none;
+  color: lightgray;
+}
+
 .toolbar__divider {
   display: inline-block;
   border-left: 1px solid #ccc;

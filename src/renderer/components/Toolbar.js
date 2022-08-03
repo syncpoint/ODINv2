@@ -34,7 +34,6 @@ Button.propTypes = {
 const CommandButton = props => {
   const { command } = props
   const [enabled, setEnabled] = React.useState(command.enabled ? command.enabled() : true)
-  const color = enabled ? '#68696B' : 'lightgrey'
 
   React.useEffect(() => {
     const handle = () => setEnabled(command.enabled())
@@ -46,8 +45,9 @@ const CommandButton = props => {
     <button
       className='toolbar__button'
       onClick={() => command.execute()}
+      disabled={!enabled}
     >
-      <Icon path={mdi[command.path]} size='20px' color={color}/>
+      <Icon path={mdi[command.path]} size='20px' />
     </button>
   )
 }
