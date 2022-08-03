@@ -12,25 +12,6 @@ const reducer = (state, { message, cell }) => {
   return newState
 }
 
-const Button = props => {
-  const handleClick = path => event => props.onClick(path, event)
-
-  return (
-    <button
-      className='toolbar__button'
-      onClick={handleClick(props.path)}
-    >
-      <Icon path={mdi[props.path]} size='20px'/>
-    </button>
-  )
-}
-
-
-Button.propTypes = {
-  path: PropTypes.string.isRequired,
-  onClick: PropTypes.func.isRequired
-}
-
 const CommandButton = props => {
   const { command } = props
   const [enabled, setEnabled] = React.useState(command.enabled ? command.enabled() : true)
