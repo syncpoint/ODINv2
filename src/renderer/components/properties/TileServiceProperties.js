@@ -103,7 +103,7 @@ const TileServiceProperties = props => {
       view.fit(extent)
     } else {
       (async () => {
-        const { center, resolution } = await sessionStore.getViewport()
+        const { center, resolution } = await sessionStore.get('viewport')
         view.setCenter(center)
         view.setResolution(resolution)
       })()
