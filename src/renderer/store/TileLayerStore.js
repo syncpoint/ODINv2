@@ -36,8 +36,16 @@ const defaultPreset = [osmLayer]
  */
 export default function TileLayerStore (store) {
   this.store = store
+  this.ready = false
 
   store.on('batch', ({ operations }) => {
+
+    // No need to shoot ourselves in the foot (during initialization):
+    // Creating default service and preset would trigger updates
+    // of incomplete state.
+    //
+    if (!this.ready) return
+
     const updatePreset = operations.some(({ key }) => ID.isTileServiceId(key))
     if (updatePreset) this.updatePreset()
 
@@ -46,6 +54,14 @@ export default function TileLayerStore (store) {
   })
 }
 
+TileLayerStore.tileLayer = function (services) {
+  return ({ id, opacity, visible }, index) => {
+    const { type, capabilities } = services[ID.tileServiceId(id)]
+    const adapter = TileService.adapters[type](capabilities)
+    const source = adapter.source(ID.containedId(id))
+    return new TileLayer({ source, id, opacity, visible, zIndex: 0 - index })
+  }
+}
 
 /**
  *
@@ -53,14 +69,7 @@ export default function TileLayerStore (store) {
 TileLayerStore.prototype.tileLayers = async function () {
   const preset = await this.preset()
   const services = Object.fromEntries(await this.store.tuples('tile-service:'))
-
-  const layers = preset.map(({ id, opacity, visible }, index) => {
-    // FIXME: duplicate code
-    const { type, capabilities } = services[ID.tileServiceId(id)]
-    const adapter = TileService.adapters[type](capabilities)
-    const source = adapter.source(ID.containedId(id))
-    return new TileLayer({ source, id, opacity, visible, zIndex: 0 - index })
-  })
+  const layers = preset.map(TileLayerStore.tileLayer(services))
 
   // Lazy init group for tile layers.
   this.layerCollection = new Collection(layers)
@@ -132,13 +141,23 @@ TileLayerStore.prototype.activeLayers = function (key) {
  *
  */
 TileLayerStore.prototype.preset = async function () {
-  const [preset] = await this.store.values(ID.tilePresetId())
-  if (preset) return preset
-
   const [service] = await this.store.values(ID.defaultTileServiceId)
   if (!service) await this.store.update([ID.defaultTileServiceId], [defaultService])
-  await this.store.update([ID.tilePresetId()], [defaultPreset])
-  return defaultPreset
+
+  const createPreset = async () => {
+    await this.store.update([ID.tilePresetId()], [defaultPreset])
+    return defaultPreset
+  }
+
+  const values = await this.store.values(ID.tilePresetId())
+  const preset = values.length
+    ? values[0]
+    : createPreset()
+
+  // Switch to ready state on next tick.
+  setTimeout(() => (this.ready = true))
+
+  return preset
 }
 
 
@@ -229,11 +248,6 @@ TileLayerStore.prototype.updatePreset = async function () {
   this.store.update([ID.tilePresetId()], [preset])
 }
 
-const lazy = fn => {
-  let promise /* undefined */
-  return () => (promise = (promise || fn()))
-}
-
 
 /**
  *
@@ -241,7 +255,7 @@ const lazy = fn => {
 TileLayerStore.prototype.updateLayers = async function (preset) {
   const currentLayers = this.layerCollection.getArray()
   const findLayer = id => currentLayers.find(layer => layer.get('id') === id)
-  const services = lazy(async () => Object.fromEntries(await this.store.tuples('tile-service:')))
+  const services = Object.fromEntries(await this.store.tuples('tile-service:'))
 
   const updateLayer = (layer, properties, index) => {
     layer.setOpacity(properties.opacity)
@@ -250,27 +264,13 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
     return layer
   }
 
-  const createLayer = async (id, properties, index) => {
-    // FIXME: duplicate code
-    const { type, capabilities } = (await services())[ID.tileServiceId(id)]
-    const adapter = TileService.adapters[type](capabilities)
-    const source = adapter.source(ID.containedId(id))
-    const layer = new TileLayer({
-      source,
-      id,
-      opacity: properties.opacity,
-      visible: properties.visible,
-      zIndex: 0 - index
-    })
+  const createLayer = TileLayerStore.tileLayer(services)
 
-    return layer
-  }
-
-  const reducer = async (acc, { id, ...properties }, index) => {
+  const reducer = async (acc, properties, index) => {
     const layers = await acc
-    const layer = findLayer(id)
+    const layer = findLayer(properties.id)
     if (layer) layers.push(updateLayer(layer, properties, index))
-    else layers.push(await createLayer(id, properties, index))
+    else layers.push(createLayer(properties, index))
     return layers
   }
 
