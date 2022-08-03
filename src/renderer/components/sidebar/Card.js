@@ -133,7 +133,7 @@ const useController = id => {
  *
  */
 export const Card = React.forwardRef((props, ref) => {
-  const { id, capabilities, url, title, description, tags, selected, editing, ...rest } = props
+  const { id, capabilities, url, title, highlight, description, tags, selected, editing, ...rest } = props
   const acceptDrop = capabilities && capabilities.includes('DROP')
   const { dropAllowed, ...dragAndDrop } = useDragAndDrop(id, acceptDrop)
   const controller = useController(id)
@@ -141,6 +141,10 @@ export const Card = React.forwardRef((props, ref) => {
   const style = dropAllowed === true
     ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
     : {}
+
+  const headerClassName = highlight
+    ? 'header header--highlight e3de-row'
+    : 'header e3de-row'
 
   const tag = spec => {
     const [variant, label, action, path] = spec.split(':')
@@ -177,7 +181,7 @@ export const Card = React.forwardRef((props, ref) => {
         {...controller}
         {...dragAndDrop}
       >
-        <div className='header e3de-row'>
+        <div className={headerClassName}>
           <Title
             id={id}
             value={title}

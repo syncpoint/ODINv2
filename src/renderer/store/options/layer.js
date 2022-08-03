@@ -20,6 +20,7 @@ export default function (id, cache) {
     title: layer.name,
     description: layer.type === 'socket' ? layer.url : null,
     tags,
+    highlight: defaultFlag,
     capabilities: 'RENAME|DROP'
   }
 }

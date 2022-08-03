@@ -65,6 +65,11 @@ $color-text-focus: #40a9ff;
 
   .header {
     font-weight: 400;
+
+    &--highlight {
+      font-weight: 500;
+      text-decoration: underline;
+    }
   }
 
   .body {
