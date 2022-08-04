@@ -14,11 +14,14 @@ Current search result is updated whenever search index is refreshed (transitivel
 
 ##### Tactics
 
-By applying certain tactics we hope to improve the code structure and thus maintainability. If a tactic should fail to achieve a certain goal, at least it should be understood and documented why this approach failed. 
+By applying certain tactics we hope to improve the code structure and thus maintainability. If a tactic should fail to achieve a certain goal, at least it should be understood and documented why this approach failed.
 
 ##### T-1: Don't over-engineer
 
 Components used for <Sidebar/> are only used in this very context. We don's strive to come up with reusable components from the very beginning. <Tag/> for example might be useful in other contexts at some time, but for now it is very specific to the needs of <Sidebar/>.
+
+##### T-2: Place logic as deep as possible
+##### T-3: NEVER! update state without actual changes
 
 ...
 
