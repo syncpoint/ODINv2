@@ -28,8 +28,8 @@ const CreateTileService = function (services) {
 
 CreateTileService.prototype.execute = function () {
   const key = ID.tileServiceId()
-  this.selection.set([key])
   this.store.insert([[key, { type: 'OSM', url: '', name: '' }]])
+  this.selection.focus(key)
 }
 
 

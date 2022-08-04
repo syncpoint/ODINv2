@@ -5,7 +5,6 @@ export const defaultSearch = {
 }
 
 export const defaultState = {
-  ...defaultSearch,
   entries: [],
   selected: [],
   focusIndex: -1,

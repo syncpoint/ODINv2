@@ -85,8 +85,6 @@ export const containedId = id => {
   return id.substring(index + 1)
 }
 
-export const detailId = id => {}
-
 export const scope = id => id.split(':')[0]
 
 export const isId = prefix => id => id && id.startsWith(prefix)
