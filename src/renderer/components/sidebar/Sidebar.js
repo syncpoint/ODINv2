@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import React from 'react'
+import isEqual from 'react-fast-compare'
 import { Disposable } from '../../../shared/disposable'
 import * as ID from '../../ids'
 import { useServices, useMemento } from '../hooks'
@@ -9,7 +10,7 @@ import { matcher, preventDefault } from '../events'
 import { cmdOrCtrl } from '../../platform'
 import { ScopeSwitcher } from './ScopeSwitcher'
 import { MemoizedCard } from './Card'
-import { CardList } from './CardList'
+import { LazyList } from './LazyList'
 import { FilterInput } from './FilterInput'
 import './Sidebar.scss'
 
@@ -63,6 +64,7 @@ const useModel = () => {
   const services = useServices()
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const [state, dispatch] = React.useReducer(reducer, defaultState)
+  const lastSearch = React.useRef()
 
   // ==> Internal callbacks.
 
@@ -81,12 +83,20 @@ const useModel = () => {
     const { searchIndex } = services
     const terms = `${R.last(search.history).scope} ${search.filter}`
     const options = { force: search.force }
+
+    // Updated search/filter must clear any selection.
+    //
+    if (!isEqual(lastSearch.current, search)) {
+      dispatch({ type: 'clear' })
+    }
+
     const disposable = searchIndex.query(terms, options, entries => {
       // Note: (multiselect) strategy makes sure that state is only
       // updated when entries are not deep equal.
       dispatch({ type: 'entries', entries })
     })
 
+    lastSearch.current = search
     return async () => (await disposable).dispose()
   }, [services, search])
 
@@ -200,6 +210,7 @@ export const Sidebar = () => {
   // 3. after entries are dispatched to state
 
   const { state, ...controller } = useModel()
+  const { onClick, onKeyDown } = controller
 
   const renderEntry = React.useCallback(({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -213,20 +224,20 @@ export const Sidebar = () => {
         ref={measureRef}
         selected={state.selected.includes(entry.id)}
         editing={state.editing}
-        onClick={controller.onClick(entry.id)}
+        onClick={onClick}
       />
     )
-  }, [state, controller])
+  }, [state, onClick])
 
   return (
     <div className="e3de-sidebar"
       tabIndex={0}
-      onKeyDown={controller.onKeyDown}
-      onClick={controller.onClick(null)}
+      onKeyDown={onKeyDown}
+      onClick={onClick(null)}
     >
       <ScopeSwitcher/>
       <FilterInput/>
-      <CardList
+      <LazyList
         count={state.entries.length}
         scroll={state.scroll}
         focusIndex={state.focusIndex}

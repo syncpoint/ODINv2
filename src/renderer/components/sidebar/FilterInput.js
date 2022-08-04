@@ -57,6 +57,7 @@ export const FilterInput = () => {
         value={search.filter}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onClick={stopPropagation}
       />
     </div>
   )

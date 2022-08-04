@@ -5,12 +5,9 @@ import useVirtual from 'react-cool-virtual'
 /**
  *
  */
-export const CardList = props => {
-  const { count, scroll, focusIndex } = props
-  const { outerRef, innerRef, items, scrollToItem } = useVirtual({
-    itemCount: count,
-    resetScroll: true
-  })
+export const LazyList = props => {
+  const { count: itemCount, scroll, focusIndex } = props
+  const { outerRef, innerRef, items, scrollToItem } = useVirtual({ itemCount })
 
   React.useEffect(() => {
     if (scroll === 'none') return
@@ -28,4 +25,4 @@ export const CardList = props => {
   )
 }
 
-CardList.whyDidYouRender = true
+LazyList.whyDidYouRender = true

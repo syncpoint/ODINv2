@@ -170,6 +170,7 @@ export const Card = React.forwardRef((props, ref) => {
     </div>
 
   children.tags = tags.split(' ').map(spec => tag(spec))
+  const handleClick = event => rest.onClick(id)(event)
 
   return (
     <div className='e3de-card-container' ref={ref}>
@@ -177,7 +178,7 @@ export const Card = React.forwardRef((props, ref) => {
         className='e3de-card e3de-column'
         style={style}
         aria-selected={selected}
-        {...rest}
+        onClick={handleClick}
         {...controller}
         {...dragAndDrop}
       >

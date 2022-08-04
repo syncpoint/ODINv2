@@ -19,6 +19,15 @@ export const multiselect = {
   /**
    *
    */
+  clear: state => ({
+    ...state,
+    selection: [],
+    focusIndex: -1
+  }),
+
+  /**
+   *
+   */
   entries: (state, { entries }) => {
     // Don't update when entries are deep equal to previous state.
     if (isEqual(state.entries, entries)) return state
