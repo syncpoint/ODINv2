@@ -119,9 +119,13 @@ export const multiselect = {
 
   focus: (state, { id }) => {
     // TODO: what if entry is already available?
-    return id
-      ? { ...state, focusId: id }
-      : state
+
+    if (id) return { ...state, focusId: id }
+    else if (state.focusIndex === -1 && state.entries.length && !state.selected.length) {
+      const focusIndex = 0
+      const selected = [state.entries[focusIndex].id]
+      return { ...state, focusIndex, selected, scroll: 'auto' }
+    } else return state
   },
 
   blur: state => {
