@@ -193,12 +193,17 @@ const useModel = () => {
     }
   }, [services])
 
+  const onFocus = React.useCallback(event => {
+    dispatch({ type: 'focus' })
+  }, [])
+
   // <== Event Handlers.
 
   return {
     state,
     onKeyDown,
-    onClick
+    onClick,
+    onFocus
   }
 }
 
@@ -211,7 +216,7 @@ export const Sidebar = () => {
   // 3. after entries are dispatched to state
 
   const { state, ...controller } = useModel()
-  const { onClick, onKeyDown } = controller
+  const { onClick, onKeyDown, onFocus } = controller
 
   const renderEntry = React.useCallback(({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -243,6 +248,7 @@ export const Sidebar = () => {
         scroll={state.scroll}
         focusIndex={state.focusIndex}
         renderEntry={renderEntry}
+        onFocus={onFocus}
       />
     </div>
   )

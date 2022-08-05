@@ -4,6 +4,7 @@ import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
+import { preventDefault } from 'ol/events/Event'
 
 
 /**
@@ -42,12 +43,16 @@ export const FilterInput = () => {
       event => cmdOrCtrl(event) && event.key === 'a'
     ], stopPropagation)(event)
 
-    // TODO: focus list on ArrowDown
+    matcher([
+      ({ key }) => key === 'ArrowDown'
+    ], preventDefault)(event)
 
     if (event.key === 'Enter') {
       setSearch({ ...search, force: true })
     } else if (event.key === 'Escape') {
       if (search.filter) setSearch({ ...search, filter: '' })
+    } else if (event.key === 'ArrowDown') {
+      document.getElementsByClassName('e3de-list-container')[0].focus()
     }
   }
 

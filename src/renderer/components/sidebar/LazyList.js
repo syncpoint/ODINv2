@@ -6,7 +6,7 @@ import useVirtual from 'react-cool-virtual'
  *
  */
 export const LazyList = props => {
-  const { count: itemCount, scroll, focusIndex } = props
+  const { count: itemCount, scroll, focusIndex, renderEntry, ...rest } = props
   const { outerRef, innerRef, items, scrollToItem } = useVirtual({ itemCount })
 
   React.useEffect(() => {
@@ -17,9 +17,14 @@ export const LazyList = props => {
   }, [scrollToItem, focusIndex, scroll])
 
   return (
-    <div className='e3de-list-container' ref={outerRef}>
+    <div
+      className='e3de-list-container'
+      ref={outerRef}
+      tabIndex={0}
+      {...rest}
+    >
       <div ref={innerRef}>
-        { items.map(props.renderEntry) }
+        { items.map(renderEntry) }
       </div>
     </div>
   )
