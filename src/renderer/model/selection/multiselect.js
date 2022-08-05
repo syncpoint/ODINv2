@@ -29,11 +29,8 @@ export const multiselect = {
    */
   entries: (state, { entries }) => R.pipe(
     B.updateFocus(entries),
-    B.updateEntries(entries),
-    B.clearSelection(entries), // on focus requested
-    B.purgeSelection,
-    B.selectFocused,
-    B.clearFocusRequest(entries)
+    B.purgeSelection(entries),
+    B.updateEntries(entries)
   )(state),
 
   /** */
@@ -122,13 +119,15 @@ export const multiselect = {
 
   focus: (state, { id }) => {
     // TODO: what if entry is already available?
+    return id
+      ? { ...state, focusId: id }
+      : state
+  },
 
-    if (id) return { ...state, focusId: id }
-    else if (state.focusIndex === -1 && state.entries.length && !state.selected.length) {
-      const focusIndex = 0
-      const selected = [state.entries[focusIndex].id]
-      return { ...state, focusIndex, selected, scroll: 'auto' }
-    } else return state
+  blur: state => {
+    return state.focusIndex === -1
+      ? state
+      : { ...state, focusIndex: -1 }
   },
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
@@ -274,5 +273,14 @@ export const multiselect = {
       focusIndex,
       scroll: 'none' // select all should not scroll
     }
+  },
+
+  /**
+   * Reset selection (if any).
+   */
+  'keydown/Escape': state => {
+    // Deselect all.
+    if (Selection.empty(state.selected)) return state
+    return { ...state, selected: [], scroll: 'none' }
   }
 }

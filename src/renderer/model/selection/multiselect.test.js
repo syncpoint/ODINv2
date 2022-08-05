@@ -32,6 +32,19 @@ describe('multiselect', function () {
       assert.deepStrictEqual(actual, expected)
     })
 
+    it('update entries (keep global selection)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries, focusIndex: -1, selected: ['a', 'b'] }
+      const actual = multiselect.entries(state, { entries: [{ id: 'x' }] })
+      const expected = {
+        entries: [{ id: 'x' }],
+        focusIndex: -1,
+        selected: ['a', 'b']
+      }
+
+      assert.deepStrictEqual(actual, expected)
+    })
+
     it('remove entries - keep focus', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, focusIndex: 0, selected: ['x'] }

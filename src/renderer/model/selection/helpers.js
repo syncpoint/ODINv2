@@ -77,40 +77,70 @@ Q.ids = entries => entries.map(R.prop('id'))
 Q.id = (index, entries) => entries[index].id
 Q.index = (id, entries) => R.findIndex(R.propEq('id', id), entries)
 Q.clamp = (index, entries) => Math.min(Math.max(index, 0), entries.length - 1)
-Q.includes = (x, xs) => xs.includes(x)
+Q.includes = (xs, x) => xs.includes(x)
 Q.concat = (xs, ys) => xs.concat(ys)
+Q.append = (xs, x) => xs.includes(x) ? xs : [...xs, x]
+
 
 const P = {} // predicates
 P.isEqualSorted = (a, b) => isEqual([...a].sort(), [...b].sort())
 P.hasSameEntries = entries => state => isEqual(entries, state.entries)
 P.isFocusRequested = state => state.focusId
-P.hasStaleSelection = state => !P.isEqualSorted(R.intersection(state.selected, Q.ids(state.entries)), state.selected)
+
+P.staleSelection = (entries, state) => {
+  const removed = R.difference(Q.ids(state.entries), Q.ids(entries))
+  return R.intersection(state.selected, removed)
+}
+
+/**
+ * Selection is stale if it contains ids no longer
+ * available in entries, but were in previous state.
+ */
+P.hasStaleSelection = entries => state => {
+  return !isEqual(P.staleSelection(entries, state), state.selected)
+}
+
 P.hasEntry = (id, entries) => Q.index(id, entries) !== -1
 P.hasRequestedEntry = entries => state => P.hasEntry(state.focusId, entries)
 P.hasFocus = state => state.focusIndex !== -1
-P.isFocusSelected = state => Q.includes(Q.ids(state.entries)[state.focusIndex], state.selected)
-P.canFocusRequested = entries => R.allPass([P.isFocusRequested, P.hasRequestedEntry(entries)])
-P.canSelectFocused = R.allPass([P.hasFocus, R.complement(P.isFocusSelected)])
+P.isFocusSelected = state => Q.includes(state.selected, Q.ids(state.entries)[state.focusIndex])
 
 const O = {} // operations
 O.noop = R.identity
 O.updateEntries = entries => state => ({ ...state, entries })
-O.purgeSelection = state => ({ ...state, selected: R.intersection(state.selected, Q.ids(state.entries)) })
+
+/**
+ * Don't mess up global selection.
+ * Only remove ids from those entry which are
+ * no longer available in entries. Keep ids
+ * which never existed as entries in previous state.
+ */
+O.purgeSelection = entries => state => {
+  const stale = P.staleSelection(entries, state)
+  return ({ ...state, selected: R.difference(state.selected, stale) })
+}
+
 O.select = ids => state => ({ ...state, selected: Q.concat(state.selected, ids) })
-O.selectFocused = state => O.select(Q.id(state.focusIndex, state.entries))(state)
-O.focusRequested = entries => state => ({ ...state, focusIndex: Q.index(state.focusId, entries), scroll: 'auto' })
-O.clearSelection = state => ({ ...state, selected: [] })
-O.clearFocusRequest = ({ focusId, ...state }) => state
+
+O.focusRequested = entries => state => {
+  const focusIndex = Q.index(state.focusId, entries)
+  const selected = [state.focusId] // sole selection
+  // TODO: clear focusId
+  const { focusId, ...next } = state
+  return ({ ...next, focusIndex, selected, scroll: 'auto' })
+}
 
 O.moveFocus = entries => state => {
   if (state.focusIndex === -1) return state
   else {
-    const id = Q.id(state.focusIndex, state.entries)
-    const focusIndex = P.hasEntry(id, entries)
-      ? Q.index(id, entries)
+    const previousId = Q.id(state.focusIndex, state.entries)
+    const focusIndex = P.hasEntry(previousId, entries)
+      ? Q.index(previousId, entries)
       : Q.clamp(state.focusIndex, entries)
 
-    return { ...state, focusIndex, scroll: 'auto' }
+    const nextId = Q.id(focusIndex, entries)
+    const selected = Q.append(state.selected, nextId)
+    return { ...state, focusIndex, selected, scroll: 'auto' }
   }
 }
 
@@ -145,26 +175,8 @@ B.updateEntries = entries => R.ifElse(
  * because selection is cleared prior filtering.
  * Note: focusIndex remains untouched.
  */
-B.purgeSelection = R.ifElse(
-  P.hasStaleSelection,
-  O.purgeSelection,
-  O.noop
-)
-
-B.clearSelection = entries => R.ifElse(
-  P.canFocusRequested(entries),
-  O.clearSelection,
-  O.noop
-)
-
-B.selectFocused = R.ifElse(
-  P.canSelectFocused,
-  O.selectFocused,
-  O.noop
-)
-
-B.clearFocusRequest = entries => R.ifElse(
-  P.canFocusRequested(entries),
-  O.clearFocusRequest,
+B.purgeSelection = entries => R.ifElse(
+  P.hasStaleSelection(entries),
+  O.purgeSelection(entries),
   O.noop
 )
