@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { initialState, multiselect, singleselect } from './list-state'
+import { multiselect } from '../model/selection/multiselect'
+import { singleselect } from '../model/selection/singleselect'
 
 
 /**
@@ -52,6 +53,13 @@ export const useDebounce = (value, delay) => {
  *
  */
 export const useList = (options = {}) => {
+  const initialState = {
+    entries: [], // :: [{ id, ...any }]
+    selected: [], // :: [id]
+    focusIndex: -1, // :: number
+    scroll: 'auto' // :: 'none' | 'smooth' | 'auto'
+  }
+
   const strategy = options.multiselect ? multiselect : singleselect
   const reducer = (state, event) => {
     const handler = strategy[event.type]

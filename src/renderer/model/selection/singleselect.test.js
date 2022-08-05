@@ -1,6 +1,5 @@
 import assert from 'assert'
 import { singleselect } from './singleselect'
-import { initialState } from './list-state'
 
 describe('singleselect', function () {
 
@@ -138,8 +137,9 @@ describe('singleselect', function () {
     })
 
     it('noop (empty list)', function () {
-      const actual = singleselect['keydown/ArrowDown'](initialState, {})
-      assert.deepStrictEqual(actual, initialState)
+      const state = { entries: [], selected: [], focusIndex: -1, scroll: 'auto' }
+      const actual = singleselect['keydown/ArrowDown'](state, {})
+      assert.deepStrictEqual(actual, state)
     })
   })
 
@@ -179,8 +179,9 @@ describe('singleselect', function () {
     })
 
     it('noop (empty list)', function () {
-      const actual = singleselect['keydown/ArrowUp'](initialState, {})
-      assert.deepStrictEqual(actual, initialState)
+      const state = { entries: [], selected: [], focusIndex: -1, scroll: 'auto' }
+      const actual = singleselect['keydown/ArrowUp'](state, {})
+      assert.deepStrictEqual(actual, state)
     })
   })
 

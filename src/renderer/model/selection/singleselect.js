@@ -1,8 +1,7 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import { Entries } from './selection'
-import { initialState } from './list-state'
-import { cmdOrCtrl } from '../platform'
+import { Entries } from './helpers'
+import { cmdOrCtrl } from '../../platform'
 
 
 /**
@@ -73,7 +72,7 @@ export const singleselect = {
 
   'keydown/ArrowDown': (state, { metaKey, ctrlKey }) => {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
-    if (!state.entries.length) return initialState
+    if (!state.entries.length) return state
 
     const current = Entries.focusIndex(state.entries, state.selected)
     if (current === Entries.length(state) - 1) return state
@@ -92,7 +91,7 @@ export const singleselect = {
 
   'keydown/ArrowUp': (state, { metaKey, ctrlKey }) => {
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state // not handled here.
-    if (!state.entries.length) return initialState
+    if (!state.entries.length) return state
 
     const current = Entries.focusIndex(state.entries, state.selected) === -1
       ? Entries.length(state)

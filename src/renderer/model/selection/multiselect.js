@@ -1,7 +1,6 @@
 import * as R from 'ramda'
-import isEqual from 'react-fast-compare'
-import { cmdOrCtrl } from '../platform'
-import { Selection, Entries } from './selection'
+import { cmdOrCtrl } from '../../platform'
+import { Selection, Entries, B } from './helpers'
 
 
 /**
@@ -28,21 +27,14 @@ export const multiselect = {
   /**
    *
    */
-  entries: (state, { entries }) => {
-    // Don't update when entries are deep equal to previous state.
-    if (isEqual(state.entries, entries)) return state
-
-    // Don't mess with selection, but derrive focus index
-    // from last selected.
-    const focusIndex = Entries.focusIndex(entries, state.selected)
-
-    return {
-      ...state,
-      entries,
-      focusIndex,
-      scroll: 'auto'
-    }
-  },
+  entries: (state, { entries }) => R.pipe(
+    B.updateFocus(entries),
+    B.updateEntries(entries),
+    B.clearSelection(entries), // on focus requested
+    B.purgeSelection,
+    B.selectFocused,
+    B.clearFocusRequest(entries)
+  )(state),
 
   /** */
   click: (state, { id, shiftKey, metaKey, ctrlKey }) => {
@@ -129,6 +121,7 @@ export const multiselect = {
   },
 
   focus: (state, { id }) => {
+    // TODO: what if entry is already available?
     return id
       ? { ...state, focusId: id }
       : state
