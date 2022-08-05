@@ -368,11 +368,16 @@ Store.prototype.geometryBounds = async function (acc, ids, resolution) {
   return geometries
     .map(readGeometry)
     .reduce((acc, geometry) => {
-      const type = geometryType(geometry)
-      const { read, write } = transform(geometry)
-      const bounds = featureBounds[type] || (geometry => TS.minimumRectangle(geometry))
-      acc.push(write(bounds(read(geometry), resolution)))
-      return acc
+      try {
+        const type = geometryType(geometry)
+        const { read, write } = transform(geometry)
+        const bounds = featureBounds[type] || (geometry => TS.minimumRectangle(geometry))
+        acc.push(write(bounds(read(geometry), resolution)))
+        return acc
+      } catch (err) {
+        // Can happen, especially for geometries from OSM.
+        return acc
+      }
     }, acc)
 }
 
