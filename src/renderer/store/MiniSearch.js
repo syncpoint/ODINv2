@@ -30,9 +30,9 @@ export const createIndex = () => new MiniSearch({
 export const parseQuery = s => {
   const tokens = (s || '').split(' ')
   const parts = tokens.reduce((acc, token) => {
-    if (token.startsWith('@') && token.length > 1) acc.scope.push(token.substring(1))
-    else if (token.startsWith('#') && token.length > 1) acc.tags.push(token.substring(1))
-    else if (token.startsWith('!') && token.length > 1) acc.ids.push(token.substring(1))
+    if (token.startsWith('@')) token.length > 2 && acc.scope.push(token.substring(1))
+    else if (token.startsWith('#')) token.length > 2 && acc.tags.push(token.substring(1))
+    else if (token.startsWith('!')) token.length > 2 && acc.ids.push(token.substring(1))
     else if (token) acc.text.push(token)
     return acc
   }, { scope: [], text: [], tags: [], ids: [] })
