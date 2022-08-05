@@ -24,8 +24,9 @@ const handlers = {
     return { ...state, editing }
   },
   'edit:keydown/Escape': state => {
-    if (!state.editing) return state
-    else return { ...state, editing: false }
+    if (state.editing) return { ...state, editing: false }
+    else if (state.selected.length) return { ...state, selected: [] }
+    else return state
   },
   'edit:keydown/F2': state => {
     if (state.editing || state.selected.length === 0) return state

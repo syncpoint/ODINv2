@@ -21,15 +21,22 @@ export const Title = props => {
 
   React.useEffect(() => { setValue(props.value) }, [props.value])
 
-  const rename = name => {
-
-    // Pre-emptively focus sidebar to keep getting key events.
-    // Note: This also keeps focus on sidebar when tab is pressed while editing.
+  // Pre-emptively focus sidebar to keep getting key events.
+  // Note: This also keeps focus on sidebar when tab is pressed while editing.
+  const focusSidebar = () => {
     document.getElementsByClassName('e3de-sidebar')[0].focus()
+  }
+
+  const rename = name => {
+    focusSidebar()
     if (props.value !== name) store.rename(props.editing, name.trim())
   }
 
-  const reset = () => setValue(props.value)
+  const reset = () => {
+    focusSidebar()
+    setValue(props.value)
+  }
+
   const handleChange = ({ target }) => setValue(target.value)
   const handleBlur = () => { if (value) rename(value) }
 

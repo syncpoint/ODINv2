@@ -46,6 +46,8 @@ export const FilterInput = () => {
 
     if (event.key === 'Enter') {
       setSearch({ ...search, force: true })
+    } else if (event.key === 'Escape') {
+      if (search.filter) setSearch({ ...search, filter: '' })
     }
   }
 
