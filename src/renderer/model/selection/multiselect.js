@@ -277,14 +277,5 @@ export const multiselect = {
       focusIndex,
       scroll: 'none' // select all should not scroll
     }
-  },
-
-  /**
-   * Reset selection (if any).
-   */
-  'keydown/Escape': state => {
-    // Deselect all.
-    if (Selection.empty(state.selected)) return state
-    return { ...state, selected: [], scroll: 'none' }
   }
 }
