@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { cmdOrCtrl } from '../../platform'
-import { Selection, Entries, B } from './helpers'
+import { Selection, Entries, Q, P, B } from './helpers'
 
 
 /**
@@ -108,10 +108,18 @@ export const multiselect = {
    * Sync selection with state.
    */
   selection: (state, { selected }) => {
-    if (Selection.equals(state.selected, selected)) return state
+    if (P.hasSameSelection(selected, state)) return state
+
+    // Reset focus if selection does not include any entry ids of this list.
+    //
+    const intersection = R.intersection(selected, Q.ids(state.entries))
+    const focusIndex = intersection.length
+      ? state.focusIndex
+      : -1
 
     return {
       ...state,
+      focusIndex,
       selected,
       scroll: 'none'
     }

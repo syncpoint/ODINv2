@@ -72,8 +72,8 @@ Entries.focusIndex = (entries, selected) =>
     : Entries.index(entries, R.last(selected))
 
 
-const Q = {} // queries
-Q.ids = entries => entries.map(R.prop('id'))
+export const Q = {} // queries
+Q.ids = R.pluck('id')
 Q.id = (index, entries) => entries[index].id
 Q.index = (id, entries) => R.findIndex(R.propEq('id', id), entries)
 Q.clamp = (index, entries) => Math.min(Math.max(index, 0), entries.length - 1)
@@ -82,9 +82,10 @@ Q.concat = (xs, ys) => xs.concat(ys)
 Q.append = (xs, x) => xs.includes(x) ? xs : [...xs, x]
 
 
-const P = {} // predicates
-P.isEqualSorted = (a, b) => isEqual([...a].sort(), [...b].sort())
+export const P = {} // predicates
+P.isEqualSorted = (a, b) => isEqual(R.sort(a), R.sort(b))
 P.hasSameEntries = entries => state => isEqual(entries, state.entries)
+P.hasSameSelection = R.curry((selected, state) => P.isEqualSorted(selected, state.selected))
 P.isFocusRequested = state => state.focusId
 
 P.staleSelection = (entries, state) => {
