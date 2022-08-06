@@ -138,9 +138,12 @@ O.moveFocus = entries => state => {
       ? Q.index(previousId, entries)
       : Q.clamp(state.focusIndex, entries)
 
-    const nextId = Q.id(focusIndex, entries)
-    const selected = Q.append(state.selected, nextId)
-    return { ...state, focusIndex, selected, scroll: 'auto' }
+    if (focusIndex === -1) return state
+    else {
+      const nextId = Q.id(focusIndex, entries)
+      const selected = Q.append(state.selected, nextId)
+      return { ...state, focusIndex, selected, scroll: 'auto' }
+    }
   }
 }
 
