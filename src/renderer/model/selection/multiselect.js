@@ -136,12 +136,6 @@ export const multiselect = {
     } else return state
   },
 
-  blur: state => {
-    return state.focusIndex === -1
-      ? state
-      : { ...state, focusIndex: -1 }
-  },
-
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
     // Navigation 'forward/open' not handled here:
     if (cmdOrCtrl({ metaKey, ctrlKey })) return state

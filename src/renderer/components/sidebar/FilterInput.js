@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import TextField from '../properties/TextField'
 import { useMemento } from '../hooks'
@@ -10,7 +11,7 @@ import { preventDefault } from 'ol/events/Event'
 /**
  *
  */
-export const FilterInput = () => {
+export const FilterInput = props => {
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const [cursor, setCursor] = React.useState(null)
   const ref = React.useRef()
@@ -53,6 +54,7 @@ export const FilterInput = () => {
       if (search.filter) setSearch({ ...search, filter: '' })
     } else if (event.key === 'ArrowDown') {
       document.getElementsByClassName('e3de-list-container')[0].focus()
+      props.onFocus()
     }
   }
 

@@ -197,9 +197,6 @@ const useModel = () => {
     dispatch({ type: 'focus' })
   }, [])
 
-  const onBlur = React.useCallback(event => {
-    dispatch({ type: 'blur' })
-  }, [])
 
   // <== Event Handlers.
 
@@ -207,8 +204,7 @@ const useModel = () => {
     state,
     onKeyDown,
     onClick,
-    onFocus,
-    onBlur
+    onFocus
   }
 }
 
@@ -221,7 +217,7 @@ export const Sidebar = () => {
   // 3. after entries are dispatched to state
 
   const { state, ...controller } = useModel()
-  const { onClick, onKeyDown, onFocus, onBlur } = controller
+  const { onClick, onKeyDown, onFocus } = controller
 
   const renderEntry = React.useCallback(({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -247,14 +243,12 @@ export const Sidebar = () => {
       onClick={onClick(null)}
     >
       <ScopeSwitcher/>
-      <FilterInput/>
+      <FilterInput onFocus={onFocus}/>
       <LazyList
         count={state.entries.length}
         scroll={state.scroll}
         focusIndex={state.focusIndex}
         renderEntry={renderEntry}
-        onFocus={onFocus}
-        onBlur={onBlur}
       />
     </div>
   )
