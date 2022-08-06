@@ -39,6 +39,7 @@ import { importSymbols } from './symbols'
  * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
+ * updateCollapsible :: [k] -> [v] -> [v] -> unit
  * value :: k -> v
  * values :: String -> [v]
  * values :: [k] -> [v]
@@ -190,6 +191,15 @@ Store.prototype.update = async function (...args) {
   }
 }
 
+/**
+ * updateCollapsible :: [k] -> [v] -> [v] -> unit
+ * Like update with undo but collapses sequence of identical commands.
+ */
+Store.prototype.updateCollapsible = function (keys, newValues, oldValues, id) {
+  const options = { collapsible: true, id }
+  const command = this.updateCommand(this.db, keys, newValues, oldValues, options)
+  this.undo.apply(command)
+}
 
 /**
  * @async
@@ -516,7 +526,9 @@ Store.prototype.deleteCommand = function (db, tuples, options = {}) {
 
 
 Store.prototype.updateCommand = function (db, keys, newValues, oldValues, options = {}) {
-  const apply = () => this.batch(db, R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value)), options)
+  const { collapsible, id, ...rest } = options
+  const ops = R.zip(keys, newValues).map(([key, value]) => L.putOp(key, value))
+  const apply = () => this.batch(db, ops, rest)
   const inverse = () => this.updateCommand(db, keys, oldValues, newValues, options)
-  return this.undo.command(apply, inverse)
+  return this.undo.command(apply, inverse, { collapsible, id })
 }

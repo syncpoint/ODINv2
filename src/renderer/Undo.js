@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import EventEmitter from '../shared/emitter'
 
 export function Undo () {
@@ -8,7 +9,18 @@ export function Undo () {
 Object.assign(Undo.prototype, EventEmitter.prototype)
 
 Undo.prototype.unshift = function (stack, command) {
-  stack.unshift(command)
+  const group = command.collapsible
+    ? R.takeWhile(x => x.id === command.id && x.collapsible, stack)
+    : []
+
+  // Replace last command if there are at least
+  // two identical and collapsible commands on the stack.
+  // Thus always keeping the initial command of a sequence.
+  // [current, intermediate, initial, ...] -> [current, initial, ...]
+  //
+  if (group.length > 1) stack[0] = command
+  else stack.unshift(command)
+
   this.emit('changed', { canUndo: this.canUndo(), canRedo: this.canRedo() })
 }
 
@@ -61,8 +73,8 @@ Undo.prototype.canRedo = function () {
   return this.redoStack.length > 0
 }
 
-Undo.prototype.command = function (apply, inverse) {
-  return { apply, inverse }
+Undo.prototype.command = function (apply, inverse, options) {
+  return { apply, inverse, ...options }
 }
 
 Undo.prototype.composite = function (commands) {

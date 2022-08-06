@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { Tile as TileLayer } from 'ol/layer'
 import Collection from 'ol/Collection'
 import LayerGroup from 'ol/layer/Group'
@@ -129,11 +130,7 @@ TileLayerStore.prototype.toggleActiveLayer = async function (key, id) {
     : [...activeLayers, id]
 
   const value = { ...service, active }
-  this.store.update([key], [value])
-}
-
-TileLayerStore.prototype.activeLayers = function (key) {
-  // We support only a single preset (for now).
+  this.store.update([key], [value], [service])
 }
 
 
@@ -169,7 +166,7 @@ TileLayerStore.prototype.updateOpacity = function (preset, id, opacity) {
   const index = layers.findIndex(entry => entry.id === id)
   const newValue = [...layers]
   newValue[index] = { ...layers[index], opacity }
-  this.store.update([key], [newValue])
+  this.store.updateCollapsible([key], [newValue], [layers], '650f480a-6184-4e8a-aef8-2d6abc2c0171')
 }
 
 
@@ -181,20 +178,7 @@ TileLayerStore.prototype.toggleVisible = function (preset, id) {
   const index = layers.findIndex(entry => entry.id === id)
   const newValue = [...layers]
   newValue[index] = { ...layers[index], visible: !layers[index].visible }
-  this.store.update([key], [newValue])
-}
-
-
-const move = (array, from, to) => {
-  const clone = [...array]
-  const start = from < 0 ? clone.length + from : from
-  if (start >= 0 && start < clone.length) {
-    const end = to < 0 ? clone.length + to : to
-    const [item] = clone.splice(from, 1)
-    clone.splice(end, 0, item)
-  }
-
-  return clone
+  this.store.update([key], [newValue], [layers])
 }
 
 
@@ -203,8 +187,8 @@ const move = (array, from, to) => {
  */
 TileLayerStore.prototype.updateOrder = function (preset, from, to) {
   const [key, layers] = preset
-  const newValue = move(layers, from, to)
-  this.store.update([key], [newValue])
+  const newValue = R.move(from, to, layers)
+  this.store.update([key], [newValue], [layers])
   return newValue
 }
 

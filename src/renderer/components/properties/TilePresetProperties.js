@@ -97,7 +97,6 @@ const LayerList = props => {
     else dispatch({ type: 'select', id })
   }
 
-  // TODO: debounce?
   const handleOpacityChange = id => ({ target }) => {
     const opacity = Number.parseFloat(target.value)
     tileLayerStore.updateOpacity(props.preset, id, opacity)
