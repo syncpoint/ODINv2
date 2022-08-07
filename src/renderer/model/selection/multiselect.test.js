@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { multiselect } from './multiselect'
 
-describe('multiselect', function () {
+describe.only('multiselect', function () {
   describe('entries', function () {
 
     it('noop (deep equal)', function () {
@@ -51,7 +51,6 @@ describe('multiselect', function () {
 
       assert.deepStrictEqual(actual, expected)
     })
-
 
     it('remove entries - keep focus', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
@@ -122,6 +121,22 @@ describe('multiselect', function () {
       }
 
       assert.deepStrictEqual(actual, expected)
+    })
+  })
+
+  describe('selection', function () {
+    it('noop (same)', function () {
+      const entries = [{ id: 'y' }, { id: 'z' }]
+      const state = { entries, focusIndex: 1, selected: ['y', 'z'], scroll: 'auto' }
+      const actual = multiselect.selection(state, { selected: ['y', 'z'] })
+      assert(actual === state) // reference equal, same state
+    })
+
+    it('noop (reverse)', function () {
+      const entries = [{ id: 'y' }, { id: 'z' }]
+      const state = { entries, focusIndex: 1, selected: ['y', 'z'], scroll: 'auto' }
+      const actual = multiselect.selection(state, { selected: ['z', 'y'] })
+      assert(actual === state) // reference equal, same state
     })
   })
 
