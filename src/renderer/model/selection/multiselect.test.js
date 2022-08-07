@@ -19,6 +19,13 @@ describe('multiselect', function () {
       assert(actual === state) // reference equal, same state
     })
 
+    it('noop (same entries, scroll: none)', function () {
+      const entries = [{ id: 'x' }, { id: 'y' }]
+      const state = { entries, focusIndex: 1, selected: ['x', 'y'], scroll: 'none' }
+      const actual = multiselect.entries(state, { entries })
+      assert(actual === state) // reference equal, same state
+    })
+
     it('update entries (no selection)', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
       const state = { entries, focusIndex: -1, selected: [] }
@@ -45,15 +52,16 @@ describe('multiselect', function () {
       assert.deepStrictEqual(actual, expected)
     })
 
+
     it('remove entries - keep focus', function () {
       const entries = [{ id: 'x' }, { id: 'y' }]
-      const state = { entries, focusIndex: 0, selected: ['x'] }
+      const state = { entries, focusIndex: 0, selected: ['x'], scroll: 'none' }
       const actual = multiselect.entries(state, { entries: [{ id: 'x' }] })
       const expected = {
         entries: [{ id: 'x' }],
         selected: ['x'],
         focusIndex: 0,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -89,14 +97,14 @@ describe('multiselect', function () {
 
     it('add entries - focus requested (not available)', function () {
       const entries = [{ id: 'y' }, { id: 'z' }]
-      const state = { entries, focusIndex: 1, selected: ['z'], focusId: 'a' }
+      const state = { entries, focusIndex: 1, selected: ['z'], focusId: 'a', scroll: 'none' }
       const actual = multiselect.entries(state, { entries: [{ id: 'y' }, { id: 'z' }, { id: 'b' }] })
       const expected = {
         entries: [{ id: 'y' }, { id: 'z' }, { id: 'b' }],
         selected: ['z'],
         focusIndex: 1,
         focusId: 'a',
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)

@@ -87,20 +87,9 @@ P.isEqualSorted = (a, b) => isEqual(R.sort(a), R.sort(b))
 P.hasSameEntries = entries => state => isEqual(entries, state.entries)
 P.hasSameSelection = R.curry((selected, state) => P.isEqualSorted(selected, state.selected))
 P.isFocusRequested = state => state.focusId
-
-P.staleSelection = (entries, state) => {
-  const removed = R.difference(Q.ids(state.entries), Q.ids(entries))
-  return R.intersection(state.selected, removed)
-}
-
-/**
- * Selection is stale if it contains ids no longer
- * available in entries, but were in previous state.
- */
-P.hasStaleSelection = entries => state => {
-  return !isEqual(P.staleSelection(entries, state), state.selected)
-}
-
+P.removedEntries = (entries, state) => R.difference(Q.ids(state.entries), Q.ids(entries))
+P.outdatedSelection = (entries, state) => R.intersection(state.selected, P.removedEntries(entries, state))
+P.hasOutdatedSelection = entries => state => P.outdatedSelection(entries, state).length
 P.hasEntry = (id, entries) => Q.index(id, entries) !== -1
 P.hasRequestedEntry = entries => state => P.hasEntry(state.focusId, entries)
 P.hasFocus = state => state.focusIndex !== -1
@@ -109,24 +98,12 @@ P.isFocusSelected = state => Q.includes(state.selected, Q.ids(state.entries)[sta
 const O = {} // operations
 O.noop = R.identity
 O.updateEntries = entries => state => ({ ...state, entries })
-
-/**
- * Don't mess up global selection.
- * Only remove ids from those entry which are
- * no longer available in entries. Keep ids
- * which never existed as entries in previous state.
- */
-O.purgeSelection = entries => state => {
-  const stale = P.staleSelection(entries, state)
-  return ({ ...state, selected: R.difference(state.selected, stale) })
-}
-
+O.purgeSelection = entries => state => ({ ...state, selected: R.difference(state.selected, P.outdatedSelection(entries, state)) })
 O.select = ids => state => ({ ...state, selected: Q.concat(state.selected, ids) })
 
 O.focusRequested = entries => state => {
   const focusIndex = Q.index(state.focusId, entries)
   const selected = [state.focusId] // sole selection
-  // TODO: clear focusId
   const { focusId, ...next } = state
   return ({ ...next, focusIndex, selected, scroll: 'auto' })
 }
@@ -140,6 +117,7 @@ O.moveFocus = entries => state => {
       : Q.clamp(state.focusIndex, entries)
 
     if (focusIndex === -1) return state
+    else if (focusIndex === state.focusIndex) return state
     else {
       const nextId = Q.id(focusIndex, entries)
       const selected = Q.append(state.selected, nextId)
@@ -180,7 +158,7 @@ B.updateEntries = entries => R.ifElse(
  * Note: focusIndex remains untouched.
  */
 B.purgeSelection = entries => R.ifElse(
-  P.hasStaleSelection(entries),
+  P.hasOutdatedSelection(entries),
   O.purgeSelection(entries),
   O.noop
 )
