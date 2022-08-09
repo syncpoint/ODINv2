@@ -53,7 +53,8 @@ const reducer = (state, event) => {
     //
     const type = event.type
     const handler = handlers[type] || multiselect[type] || R.identity
-    return handler(state, event)
+    const next = handler(state, event)
+    return next
   }
 }
 

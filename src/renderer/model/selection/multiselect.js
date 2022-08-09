@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { cmdOrCtrl } from '../../platform'
-import { Selection, Entries, Q, P, B } from './helpers'
+import { Selection, Entries } from './helpers-deprecated'
+import { P, B } from './helpers'
 
 
 /**
@@ -18,11 +19,10 @@ export const multiselect = {
   /**
    *
    */
-  clear: state => ({
-    ...state,
-    selection: [],
-    focusIndex: -1
-  }),
+  clear: R.pipe(
+    B.clearSelection,
+    B.adjustFocus
+  ),
 
   /**
    *
@@ -30,7 +30,8 @@ export const multiselect = {
   entries: (state, { entries }) => R.pipe(
     B.updateFocus(entries),
     B.purgeSelection(entries),
-    B.updateEntries(entries)
+    B.updateEntries(entries),
+    B.adjustFocus
   )(state),
 
   /** */
@@ -107,34 +108,17 @@ export const multiselect = {
   /**
    * Sync selection with state.
    */
-  selection: (state, { selected }) => {
-    if (P.hasSameSelection(selected, state)) return state
+  selection: (state, { selected }) => R.pipe(
+    B.updateSelection(selected),
+    B.adjustFocus
+  )(state),
 
-    // Reset focus if selection does not include any entry ids of this list.
-    //
-    const intersection = R.intersection(selected, Q.ids(state.entries))
-    const focusIndex = intersection.length
-      ? state.focusIndex
-      : -1
-
-    return {
-      ...state,
-      focusIndex,
-      selected,
-      scroll: 'none'
-    }
-  },
-
-  focus: (state, { id }) => {
-    // TODO: what if entry is already available?
-
-    if (id) return { ...state, focusId: id }
-    else if (state.focusIndex === -1 && state.entries.length && !state.selected.length) {
-      const focusIndex = 0
-      const selected = [state.entries[focusIndex].id]
-      return { ...state, focusIndex, selected, scroll: 'auto' }
-    } else return state
-  },
+  // TODO: what if entry is already available?
+  focus: (state, { id }) => R.ifElse(
+    () => R.isNil(id),
+    B.focusHead,
+    P.requestFocus(id)
+  )(state),
 
   'keydown/ArrowDown': (state, { shiftKey, metaKey, ctrlKey }) => {
     // Navigation 'forward/open' not handled here:

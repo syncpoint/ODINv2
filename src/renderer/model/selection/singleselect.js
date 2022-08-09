@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import { Entries } from './helpers'
+import { Entries } from './helpers-deprecated'
 import { cmdOrCtrl } from '../../platform'
 
 

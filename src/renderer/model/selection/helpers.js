@@ -1,132 +1,55 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
 
-const Selection = {}
-export { Selection }
-
-Selection.empty = selected => !selected || !selected.length
-Selection.equals = (a, b) => isEqual([...a].sort(), [...b].sort())
-Selection.includes = (selected, id) => selected.includes(id)
-Selection.selected = (state, index) => Selection.includes(state.selected, state.entries[index].id)
-Selection.remove = (selected, id) => selected.filter(x => x !== id)
-Selection.append = (selected, id) => [...selected, id]
-
-Selection.toggle = (state, id) =>
-  id
-    ? Selection.includes(state.selected, id)
-      ? Selection.remove(state.selected, id)
-      : Selection.append(state.selected, id)
-    : state.selected
-
-/**
- * succ :: state -> index -> index
- * Find (downwards) next element which is not selected.
- */
-Selection.succ = (state, currentIndex) =>
-  currentIndex >= state.entries.length - 1
-    ? -1
-    : Selection.selected(state, currentIndex + 1)
-      ? Selection.succ(state, currentIndex + 1)
-      : currentIndex + 1
-
-/**
- * pred :: state -> index -> index
- * Find (upwards) next element which is not selected.
- */
-Selection.pred = (state, currentIndex) =>
-  currentIndex <= 0
-    ? -1
-    : Selection.selected(state, currentIndex - 1)
-      ? Selection.pred(state, currentIndex - 1)
-      : currentIndex - 1
-
-/**
- * Range of indexes which includes index of focused entry.
- */
-Selection.focusRange = state => {
-  if (Selection.empty(state.selected)) return []
-
-  const indexes = state.selected
-    .map(id => Entries.index(state.entries, id))
-    .sort((a, b) => a - b)
-
-  const ranges = R.groupWith((a, b) => a + 1 === b, indexes)
-  const focused = range => range.includes(Entries.index(state.entries, R.last(state.selected)))
-  return ranges.find(focused)
-}
-
-const Entries = {}
-export { Entries }
-
-Entries.empty = entries => !entries || !entries.length
-Entries.length = state => state.entries.length
-Entries.id = (entries, index) => entries[index].id
-Entries.index = (entries, id) => entries.findIndex(entry => entry.id === id)
-
-/**
- * Index of last selected entry (if any), else -1.
- */
-Entries.focusIndex = (entries, selected) =>
-  Selection.empty(selected)
-    ? -1
-    : Entries.index(entries, R.last(selected))
-
 
 export const Q = {} // queries
 Q.ids = R.pluck('id')
 Q.id = (index, entries) => entries[index].id
+Q.comparator = R.comparator(R.lt)
 Q.index = (id, entries) => R.findIndex(R.propEq('id', id), entries)
 Q.clamp = (index, entries) => Math.min(Math.max(index, 0), entries.length - 1)
-Q.includes = (xs, x) => xs.includes(x)
-Q.concat = (xs, ys) => xs.concat(ys)
 Q.append = (xs, x) => xs.includes(x) ? xs : [...xs, x]
+Q.isEmpty = xs => xs.length === 0
+Q.isEqual = R.curry((xs, ys) => xs.length === ys.length && xs.length === R.intersection(xs, ys).length)
 
+export const S = {} // selection
+S.isEmpty = R.compose(Q.isEmpty, R.prop('selected'))
+S.isNotEmpty = R.complement(S.isEmpty)
+S.isEqual = selected => R.compose(Q.isEqual(selected), R.prop('selected'))
+S.update = R.curry((selected, state) => ({ ...state, selected }))
+S.isDisjunct = state => Q.isEmpty(R.intersection(state.selected, Q.ids(state.entries)))
+S.isEmptyOrDisjunct = R.anyPass([S.isEmpty, S.isDisjunct])
+S.hasSelection = state => state.selected.length > 0
+
+const E = {} // entries
+E.isEmpty = R.compose(Q.isEmpty, R.prop('entries'))
+E.isNotEmpty = R.complement(E.isEmpty)
 
 export const P = {} // predicates
-P.isEqualSorted = (a, b) => isEqual(R.sort(a), R.sort(b))
 P.hasSameEntries = entries => state => isEqual(entries, state.entries)
-P.hasSameSelection = R.curry((selected, state) => P.isEqualSorted(selected, state.selected))
 P.isFocusRequested = state => state.focusId
-
-P.staleSelection = (entries, state) => {
-  const removed = R.difference(Q.ids(state.entries), Q.ids(entries))
-  return R.intersection(state.selected, removed)
-}
-
-/**
- * Selection is stale if it contains ids no longer
- * available in entries, but were in previous state.
- */
-P.hasStaleSelection = entries => state => {
-  return !isEqual(P.staleSelection(entries, state), state.selected)
-}
-
+P.removedEntries = (entries, state) => R.difference(Q.ids(state.entries), Q.ids(entries))
+P.outdatedSelection = (entries, state) => R.intersection(state.selected, P.removedEntries(entries, state))
+P.hasOutdatedSelection = entries => state => P.outdatedSelection(entries, state).length
 P.hasEntry = (id, entries) => Q.index(id, entries) !== -1
 P.hasRequestedEntry = entries => state => P.hasEntry(state.focusId, entries)
 P.hasFocus = state => state.focusIndex !== -1
-P.isFocusSelected = state => Q.includes(state.selected, Q.ids(state.entries)[state.focusIndex])
+P.hasSelection = state => state.selected.length > 0
+P.requestFocus = id => state => ({ ...state, focusId: id })
 
 const O = {} // operations
-O.noop = R.identity
 O.updateEntries = entries => state => ({ ...state, entries })
+O.purgeSelection = entries => state => ({ ...state, selected: R.difference(state.selected, P.outdatedSelection(entries, state)) })
 
 /**
- * Don't mess up global selection.
- * Only remove ids from those entry which are
- * no longer available in entries. Keep ids
- * which never existed as entries in previous state.
+ * Note: Clear focus implicitly with selection.
  */
-O.purgeSelection = entries => state => {
-  const stale = P.staleSelection(entries, state)
-  return ({ ...state, selected: R.difference(state.selected, stale) })
-}
-
-O.select = ids => state => ({ ...state, selected: Q.concat(state.selected, ids) })
+O.clearSelection = state => ({ ...state, selected: [], focusIndex: -1 })
+O.clearFocus = state => ({ ...state, focusIndex: -1, scroll: 'none' })
 
 O.focusRequested = entries => state => {
   const focusIndex = Q.index(state.focusId, entries)
   const selected = [state.focusId] // sole selection
-  // TODO: clear focusId
   const { focusId, ...next } = state
   return ({ ...next, focusIndex, selected, scroll: 'auto' })
 }
@@ -140,12 +63,19 @@ O.moveFocus = entries => state => {
       : Q.clamp(state.focusIndex, entries)
 
     if (focusIndex === -1) return state
+    else if (focusIndex === state.focusIndex) return state
     else {
       const nextId = Q.id(focusIndex, entries)
       const selected = Q.append(state.selected, nextId)
       return { ...state, focusIndex, selected, scroll: 'auto' }
     }
   }
+}
+
+O.focusHead = state => {
+  const focusIndex = 0
+  const selected = [Q.id(focusIndex, state.entries)]
+  return { ...state, focusIndex, selected, scroll: 'auto' }
 }
 
 export const B = {} // building blocks
@@ -167,9 +97,8 @@ B.updateFocus = entries => R.ifElse(
  * Update entries and move focus as necessary.
  * Note: Request to focus certain entry is repected.
  */
-B.updateEntries = entries => R.ifElse(
+B.updateEntries = entries => R.unless(
   P.hasSameEntries(entries),
-  O.noop,
   O.updateEntries(entries)
 )
 
@@ -179,8 +108,32 @@ B.updateEntries = entries => R.ifElse(
  * because selection is cleared prior filtering.
  * Note: focusIndex remains untouched.
  */
-B.purgeSelection = entries => R.ifElse(
-  P.hasStaleSelection(entries),
-  O.purgeSelection(entries),
-  O.noop
+B.purgeSelection = entries => R.when(
+  P.hasOutdatedSelection(entries),
+  O.purgeSelection(entries)
+)
+
+B.clearSelection = R.when(
+  P.hasSelection,
+  O.clearSelection
+)
+
+B.updateSelection = selected => R.unless(
+  S.isEqual(selected),
+  S.update(selected)
+)
+
+/**
+ * Clear focus whenever selection only contains
+ * ids of entries not contained in state or
+ * selection is empty.
+ */
+B.adjustFocus = R.when(
+  R.allPass([P.hasFocus, S.isEmptyOrDisjunct]),
+  O.clearFocus
+)
+
+B.focusHead = R.when(
+  R.allPass([R.complement(P.hasFocus), E.isNotEmpty, S.isEmpty]),
+  O.focusHead
 )
