@@ -78,6 +78,15 @@ const resetState = (_, { features, locks }) => ({
   disabled: locked(locks)
 })
 
+const isGeometry = value => {
+  if (!value) return false
+  else if (typeof value !== 'object') return false
+  else {
+    if (!value.type) return false
+    else if (!value.coordinates && !value.geometries) return false
+    return true
+  }
+}
 
 /**
  *
@@ -91,8 +100,18 @@ const updateFeatures = (operations, features) => operations
       // This can happen when only feature properties (JSON) are updated,
       // e.g. RENAME. In this case, geometry won't be touched and thus
       // not send with put operation.
-      const retainGeometry = acc[key] && acc[key].geometry && !value.geometry
+      const hasGeometry = acc[key] && acc[key].geometry
+      const retainGeometry = hasGeometry && !value.geometry && !isGeometry(value)
+      const updateGeometry = acc[key] && isGeometry(value)
+      console.log('updateGeometry', updateGeometry)
+      console.log('retainGeometry', retainGeometry)
+
       if (retainGeometry) acc[key] = { ...value, geometry: acc[key].geometry }
+      else if (updateGeometry) {
+        console.log('updateGeometry', acc[key], value)
+        acc[key] = { ...acc[key], geometry: value }
+        console.log('result', acc[key])
+      }
       else if (acc[key]) acc[key] = value // don't add new entries, only update existing
     }
 

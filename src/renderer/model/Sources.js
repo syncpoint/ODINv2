@@ -3,8 +3,18 @@ import Collection from 'ol/Collection'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
-import { readFeature, readFeatures } from './geometry'
+import { readFeature, readFeatures, readGeometry } from './geometry'
 import * as ID from '../ids'
+
+const isGeometry = value => {
+  if (!value) return false
+  else if (typeof value !== 'object') return false
+  else {
+    if (!value.type) return false
+    else if (!value.coordinates && !value.geometries) return false
+    return true
+  }
+}
 
 
 /**
@@ -19,18 +29,30 @@ export const featureSource = (store, scope) => {
 
     const features = additions.map(({ key, value }) => {
       if (!value.type) return console.warn('invalid feature', key, value)
-      const feature = readFeature({ id: key, ...value })
-      const stored = source.getFeatureById(key)
-      if (!stored) return feature
 
-      // When only feature properties are updated, geometry is
-      // not part of value. Transfer geometry from old to new feature
-      // before removing old feature from source.
+      if (isGeometry(value)) {
+        const geometry = readGeometry(value)
+        const stored = source.getFeatureById(key)
+        if (!stored) return null
 
-      const geometry = feature.getGeometry()
-      const currentGeometry = stored.getGeometry()
-      if (!geometry && currentGeometry) feature.setGeometry(currentGeometry)
-      return feature
+        const clone = stored.clone()
+        clone.setGeometry(geometry)
+        clone.setId(stored.getId())
+        return clone
+      } else {
+        const feature = readFeature({ id: key, ...value })
+        const stored = source.getFeatureById(key)
+        if (!stored) return feature
+
+        // When only feature properties are updated, geometry is
+        // not part of value. Transfer geometry from old to new feature
+        // before removing old feature from source.
+
+        const geometry = feature.getGeometry()
+        const currentGeometry = stored.getGeometry()
+        if (!geometry && currentGeometry) feature.setGeometry(currentGeometry)
+        return feature
+      }
     })
 
     // Delete all candidates ...
@@ -40,7 +62,7 @@ export const featureSource = (store, scope) => {
       .forEach(feature => source.removeFeature(feature))
 
     // ... and add additions.
-    source.addFeatures(features)
+    source.addFeatures(features.filter(Boolean))
   })
 
   // On startup: load all features:
