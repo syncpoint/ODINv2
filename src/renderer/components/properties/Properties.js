@@ -103,15 +103,9 @@ const updateFeatures = (operations, features) => operations
       const hasGeometry = acc[key] && acc[key].geometry
       const retainGeometry = hasGeometry && !value.geometry && !isGeometry(value)
       const updateGeometry = acc[key] && isGeometry(value)
-      console.log('updateGeometry', updateGeometry)
-      console.log('retainGeometry', retainGeometry)
 
       if (retainGeometry) acc[key] = { ...value, geometry: acc[key].geometry }
-      else if (updateGeometry) {
-        console.log('updateGeometry', acc[key], value)
-        acc[key] = { ...acc[key], geometry: value }
-        console.log('result', acc[key])
-      }
+      else if (updateGeometry) acc[key] = { ...acc[key], geometry: value }
       else if (acc[key]) acc[key] = value // don't add new entries, only update existing
     }
 
