@@ -1,7 +1,7 @@
 import React from 'react'
 import { Project } from './Project'
 import projectServices from './Project-services'
-import { ProjectList } from './ProjectList'
+import { ProjectList } from './projectlist/ProjectList'
 import projectListServices from './ProjectList-services'
 import { ServiceProvider } from './hooks'
 

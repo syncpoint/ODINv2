@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useServices } from './hooks'
-import { cmdOrCtrl } from '../platform'
-import { matcher, stopPropagation } from './events'
+import { useServices } from '../hooks'
+import { cmdOrCtrl } from '../../platform'
+import { matcher, stopPropagation } from '../events'
 import './CardTitle.css'
 
 /**

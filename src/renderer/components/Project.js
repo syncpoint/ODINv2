@@ -1,6 +1,7 @@
 import React from 'react'
 import { Map } from './map/Map'
-import { CommandPalette, Properties } from '.'
+import { Properties } from './properties/Properties'
+import { CommandPalette } from './commandpalette/CommandPalette'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './Toolbar'
 import { OSD } from './OSD'

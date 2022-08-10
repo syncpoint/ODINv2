@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useList, useServices } from './hooks'
-import { FilterInput, VirtualizedList } from '.'
+import { useList, useServices } from '../hooks'
+import { FilterInput } from './FilterInput'
+import { VirtualizedList } from './VirtualizedList'
 import './CommandPalette.css'
 
 /**

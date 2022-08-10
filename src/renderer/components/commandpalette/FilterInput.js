@@ -2,8 +2,8 @@ import React from 'react'
 import * as R from 'ramda'
 import PropTypes from 'prop-types'
 import { Input } from 'antd'
-import { cmdOrCtrl } from '../platform'
-import { matcher, stopPropagation, preventDefault } from './events'
+import { cmdOrCtrl } from '../../platform'
+import { matcher, stopPropagation, preventDefault } from '../events'
 
 /**
  * Input component with debounced value.
