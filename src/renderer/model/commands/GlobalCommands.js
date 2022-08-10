@@ -4,7 +4,7 @@ import * as R from 'ramda'
 const Pin = function (services) {
   this.store = services.store
   this.selection = services.selection
-  this.path = 'mdiPinOutline'
+  this.path = 'mdiHeartOutline'
   this.selection.on('selection', () => this.emit('changed'))
 }
 

@@ -1,12 +1,14 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import * as Extent from 'ol/extent'
+import * as mdi from '@mdi/js'
+import Icon from '@mdi/react'
 import { TAG } from './tags'
 import { Title } from './Title'
-import { useServices } from '../hooks'
+import { useServices, useEmitter } from '../hooks'
 import * as ID from '../../ids'
 import { readFeature } from '../../model/geometry'
-
+import './Card.scss'
 
 /**
  *
@@ -129,15 +131,26 @@ const useController = id => {
 }
 
 
+const IconButton = props => {
+  const { children, ...rest } = props
+  return (
+    <button className='e3de-button' {...rest}>
+      {children}
+    </button>
+  )
+}
+
 /**
  *
  */
 export const Card = React.forwardRef((props, ref) => {
   const { id, capabilities, url, title, highlight, description, tags, selected, editing, ...rest } = props
   const acceptDrop = capabilities && capabilities.includes('DROP')
+  const emitter = useEmitter('sidebar')
   const { dropAllowed, ...dragAndDrop } = useDragAndDrop(id, acceptDrop)
   const controller = useController(id)
 
+  const pinned = tags.split(' ').findIndex(s => s.match(/USER:pin:NONE/gi)) !== -1
   const style = dropAllowed === true
     ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
     : {}
@@ -172,6 +185,10 @@ export const Card = React.forwardRef((props, ref) => {
   children.tags = tags.split(' ').map(spec => tag(spec))
   const handleClick = event => rest.onClick(id)(event)
 
+  const pinPath = pinned
+    ? mdi.mdiHeart
+    : mdi.mdiHeartOutline
+
   return (
     <div className='e3de-card-container' ref={ref}>
       <div
@@ -188,6 +205,12 @@ export const Card = React.forwardRef((props, ref) => {
             value={title}
             editing={editing}
           />
+          <IconButton onClick={() => emitter.emit('edit', { id })}>
+            <Icon className='e3de-icon' path={mdi.mdiPencil}/>
+          </IconButton>
+          <IconButton onClick={() => emitter.emit(pinned ? 'unpin' : 'pin', { id })}>
+            <Icon className='e3de-icon' path={pinPath}/>
+          </IconButton>
         </div>
         <div className='body e3de-row'>
           {children.description}

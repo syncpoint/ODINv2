@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { multiselect } from '../model/selection/multiselect'
 import { singleselect } from '../model/selection/singleselect'
+import Emitter from '../../shared/emitter'
 
 
 /**
@@ -93,4 +94,17 @@ export const useMemento = (key, defaultValue) => {
   }, [preferencesStore, key, defaultValue])
 
   return [value, put]
+}
+
+
+/**
+ *
+ */
+export const useEmitter = key => {
+  const services = useServices()
+  return React.useMemo(() => {
+    services.emitters = services.emitters || {}
+    services.emitters[key] = services.emitters[key] || new Emitter()
+    return services.emitters[key]
+  }, [key, services])
 }

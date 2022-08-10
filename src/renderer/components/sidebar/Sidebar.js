@@ -3,7 +3,7 @@ import React from 'react'
 import isEqual from 'react-fast-compare'
 import { Disposable } from '../../../shared/disposable'
 import * as ID from '../../ids'
-import { useServices, useMemento } from '../hooks'
+import { useServices, useMemento, useEmitter } from '../hooks'
 import { multiselect } from '../../model/selection/multiselect'
 import { defaultSearch, defaultState } from './state'
 import { matcher, preventDefault } from '../events'
@@ -35,7 +35,8 @@ const handlers = {
   'edit:keydown/Tab': state => {
     if (state.editing) return { ...state, editing: false }
     else return state
-  }
+  },
+  edit: (state, { id }) => ({ ...state, editing: id })
 }
 
 
@@ -67,6 +68,7 @@ const useModel = () => {
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const [state, dispatch] = React.useReducer(reducer, defaultState)
   const lastSearch = React.useRef()
+  const emitter = useEmitter('sidebar')
 
   // ==> Internal callbacks.
 
@@ -78,6 +80,17 @@ const useModel = () => {
   // <== Internal callbacks.
 
   // ==> Effects.
+
+  React.useEffect(() => {
+    const { store } = services
+    const pin = id => store.addTag(id, 'pin')
+    const unpin = id => store.removeTag(id, 'pin')
+    const disposable = Disposable.of()
+    disposable.on(emitter, 'edit', ({ id }) => dispatch({ type: 'edit', id }))
+    disposable.on(emitter, 'pin', ({ id }) => pin(id))
+    disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
+    return () => disposable.dispose
+  }, [emitter, services])
 
   // Fetch entries when history and/or filter changed.
   //
