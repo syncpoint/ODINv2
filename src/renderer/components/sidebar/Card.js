@@ -182,6 +182,15 @@ export const Card = React.forwardRef((props, ref) => {
       <img className='image' src={url}/>
     </div>
 
+  children.body = (url || description) &&
+    <>
+      <hr></hr>
+      <div className='body e3de-row'>
+        {children.description}
+        {children.avatar}
+      </div>
+    </>
+
   children.tags = tags.split(' ').map(spec => tag(spec))
   const handleClick = event => rest.onClick(id)(event)
 
@@ -212,10 +221,8 @@ export const Card = React.forwardRef((props, ref) => {
             <Icon className='e3de-icon' path={pinPath}/>
           </IconButton>
         </div>
-        <div className='body e3de-row'>
-          {children.description}
-          {children.avatar}
-        </div>
+        { children.body }
+        <hr></hr>
         <div className='e3de-taglist'>
           { children.tags }
         </div>

@@ -6,7 +6,7 @@ import { useServices } from '../hooks'
 import { TagIcon } from './TagIcon'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
-
+import './tags.scss'
 
 /**
  *
