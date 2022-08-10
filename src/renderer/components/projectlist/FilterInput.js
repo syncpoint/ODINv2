@@ -1,7 +1,7 @@
 import React from 'react'
 import * as R from 'ramda'
 import PropTypes from 'prop-types'
-import { Input } from 'antd'
+import { Input } from './Input'
 import { cmdOrCtrl } from '../../platform'
 import { matcher, stopPropagation, preventDefault } from '../events'
 
@@ -35,7 +35,7 @@ const FilterInput = props => {
   return <Input
     autoFocus
     allowClear
-    value={value}
+    value={value || ''}
     placeholder={props.placeholder}
     size={props.size || 'default'}
     onChange={({ target }) => updateValue(target.value)}
