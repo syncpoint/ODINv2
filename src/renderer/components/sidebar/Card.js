@@ -195,8 +195,8 @@ export const Card = React.forwardRef((props, ref) => {
   const handleClick = event => rest.onClick(id)(event)
 
   const pinPath = pinned
-    ? mdi.mdiHeart
-    : mdi.mdiHeartOutline
+    ? mdi.mdiPin
+    : mdi.mdiPinOutline
 
   return (
     <div className='e3de-card-container' ref={ref}>
