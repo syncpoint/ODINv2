@@ -1,6 +1,9 @@
 import * as K from 'kbar'
 
+console.log(K)
+
 export default {
+  Context: K.KBarContext,
   Provider: K.KBarProvider,
   Portal: K.KBarPortal,
   Positioner: K.KBarPositioner,

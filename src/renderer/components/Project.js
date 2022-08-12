@@ -31,7 +31,7 @@ const actions = Object.entries(MILSTD.index)
       id: key,
       name: R.last(hierarchy),
       keywords,
-      icon: url(sidc),
+      icon: url(sidc), // FIXME: use SVG
       perform: () => console.log('perform', sidc),
       dryRun: () => console.log('dryRun', sidc)
     }
@@ -50,7 +50,7 @@ const reducer = (state, event) => {
 const Results = () => {
   const { results: matches } = KBar.useMatches()
   const onRender = ({ item, active }) => {
-    if (active) item.dryRun()
+    // if (active) item.dryRun()
 
     const icon = path => <Icon key={uuid()} className='ec35-key' path={mdi[path]}></Icon>
     const span = token => <span key={uuid()} className='ec35-key'>{token}</span>
@@ -87,9 +87,20 @@ const Results = () => {
   return <KBar.Results items={matches} onRender={onRender}/>
 }
 
-const Logger = () => {
-  const state = KBar.useKBar(state => state)
-  console.log(state)
+const DryRunner = () => {
+  const { results } = KBar.useMatches()
+  const { visualState, activeIndex } = KBar.useKBar(R.identity)
+
+  React.useEffect(() => {
+    if (visualState !== 'showing') return
+    const active = results[activeIndex]
+    active && active.dryRun && active.dryRun()
+  }, [results, activeIndex, visualState])
+
+  React.useEffect(() => {
+    if (!['animating-in', 'animating-out'].includes(visualState)) return
+    console.log('visualState', visualState)
+  }, [visualState])
 }
 
 /**
@@ -160,7 +171,7 @@ export const Project = () => {
               <KBar.Animator className='ec35-animator'>
                 <KBar.Search className='ec35-search'/>
                 <Results/>
-                <Logger/>
+                <DryRunner/>
               </KBar.Animator>
             </KBar.Positioner>
           </KBar.Portal>
