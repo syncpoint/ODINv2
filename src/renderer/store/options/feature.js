@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import * as ID from '../../ids'
 import * as MILSTD from '../../symbology/2525c'
 import { svg } from '../../symbology/symbol'
+import * as Geometry from '../geometry'
 
 const identityTag = R.cond([
   [R.equals('F'), R.always(['OWN'])],
@@ -30,6 +31,7 @@ export default function (id, cache) {
 
   const hidden = cache(ID.hiddenId(id))
   const locked = cache(ID.lockedId(id))
+  const geometryType = Geometry.type(descriptor)
 
   const tags = [
     'SCOPE:FEATURE',
@@ -38,6 +40,7 @@ export default function (id, cache) {
     ...dimensions.map(label => `SYSTEM:${label}:NONE`),
     ...scope.map(label => `SYSTEM:${label}:NONE`),
     ...identity.map(label => `SYSTEM:${label}:NONE`),
+    `SYSTEM:${geometryType.toLowerCase()}:NONE`,
     ...userTags.map(label => `USER:${label}:NONE`),
     'PLUS'
   ].join(' ')
