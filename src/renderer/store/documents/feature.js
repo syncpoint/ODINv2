@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import * as ID from '../../ids'
 import * as MILSTD from '../../symbology/2525c'
+import * as Geometry from '../geometry'
 
 const identity = R.cond([
   [R.equals('F'), R.always(['OWN'])],
@@ -29,10 +30,12 @@ export default function (id, feature, cache) {
 
   const hidden = cache(ID.hiddenId(id))
   const locked = cache(ID.lockedId(id))
+  const geometryType = Geometry.type(descriptor)
 
   const tags = [
     hidden ? 'hidden' : 'visible',
     locked ? 'locked' : 'unlocked',
+    geometryType.toLowerCase(),
     ...(links.length ? ['link'] : []),
     ...(cache(ID.tagsId(id)) || []),
     ...dimensions,

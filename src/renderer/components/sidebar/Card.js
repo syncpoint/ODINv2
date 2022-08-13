@@ -155,10 +155,6 @@ export const Card = React.forwardRef((props, ref) => {
     ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
     : {}
 
-  const headerClassName = highlight
-    ? 'header header--highlight e3de-row'
-    : 'header e3de-row'
-
   const tag = spec => {
     const [variant, label, action, path] = spec.split(':')
     // TODO: use generic Tag component
@@ -177,10 +173,8 @@ export const Card = React.forwardRef((props, ref) => {
   children.description = description &&
     <span className='e3de-description'>{description}</span>
 
-  children.avatar = url &&
-    <div className='avatar'>
-      <img className='image' src={url}/>
-    </div>
+  children.avatar = props.svg &&
+    <div className='avatar' dangerouslySetInnerHTML={{ __html: props.svg }}/>
 
   children.body = (url || description) &&
     <>
@@ -195,8 +189,8 @@ export const Card = React.forwardRef((props, ref) => {
   const handleClick = event => rest.onClick(id)(event)
 
   const pinPath = pinned
-    ? mdi.mdiHeart
-    : mdi.mdiHeartOutline
+    ? mdi.mdiPin
+    : mdi.mdiPinOutline
 
   return (
     <div className='e3de-card-container' ref={ref}>
@@ -208,11 +202,12 @@ export const Card = React.forwardRef((props, ref) => {
         {...controller}
         {...dragAndDrop}
       >
-        <div className={headerClassName}>
+        <div className='header e3de-row'>
           <Title
             id={id}
             value={title}
             editing={editing}
+            highlight={highlight}
           />
           <IconButton onClick={() => emitter.emit('edit', { id })}>
             <Icon className='e3de-icon' path={mdi.mdiPencil}/>

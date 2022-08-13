@@ -105,7 +105,7 @@ const makeSymbol = props => {
   return new style.Icon({
     anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
     imgSize: [Math.floor(width), Math.floor(height)],
-    img: symbol.asCanvas(),
+    src: 'data:image/svg+xml;utf8,' + symbol.asSVG(),
     anchorXUnits: 'pixels',
     anchorYUnits: 'pixels',
     scale: 0.5
