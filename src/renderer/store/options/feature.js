@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as ID from '../../ids'
 import * as MILSTD from '../../symbology/2525c'
-import { url } from '../../symbology/symbol'
+import { svg } from '../../symbology/symbol'
 
 const identityTag = R.cond([
   [R.equals('F'), R.always(['OWN'])],
@@ -28,16 +28,6 @@ export default function (id, cache) {
 
   const userTags = (cache(ID.tagsId(id)) || []).filter(R.identity)
 
-  // Echelon's only permitted for units and stability operations.
-  const preview = () => {
-    const standardSIDC = sidc
-      ? sidc.startsWith('S*G*U') || sidc.startsWith('O*')
-        ? sidc
-        : MILSTD.format(sidc, { echelon: '-' })
-      : null
-    return standardSIDC ? url(standardSIDC) : null
-  }
-
   const hidden = cache(ID.hiddenId(id))
   const locked = cache(ID.lockedId(id))
 
@@ -56,7 +46,7 @@ export default function (id, cache) {
     id,
     title: feature.name || properties.t || null, // might be undefined
     description,
-    url: preview(),
+    svg: svg(sidc),
     tags,
     capabilities: 'RENAME|DROP|FOLLOW'
   }

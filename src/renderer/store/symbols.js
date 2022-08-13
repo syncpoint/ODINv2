@@ -1,5 +1,4 @@
-import { index, format } from '../symbology/2525c'
-import { url } from '../symbology/symbol'
+import { index } from '../symbology/2525c'
 
 export const importSymbols = async db => {
   const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
@@ -9,15 +8,4 @@ export const importSymbols = async db => {
   })
 
   await db.batch(ops)
-
-  Object.values(index).reduce((acc, symbol) => {
-    // Eager cache symbol images in symbol cache.
-    const sidc = format(symbol.sidc, {
-      identity: 'F', // friendly
-      status: 'P' // present
-    })
-
-    acc[sidc] = url(sidc)
-    return acc
-  }, {})
 }

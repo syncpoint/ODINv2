@@ -22,11 +22,6 @@ $color-text-focus: #40a9ff;
 
   .header {
     font-weight: 400;
-
-    &--highlight {
-      font-weight: 500;
-      text-decoration: underline;
-    }
   }
 
   .body {
@@ -36,14 +31,7 @@ $color-text-focus: #40a9ff;
 
   .avatar {
     margin-left: auto;
-    max-width: 3rem;
-    max-height: 3rem;
     text-align: right;
-
-    .image {
-      max-width: 100%;
-      max-height: 100%;
-    }
   }
 }
 
@@ -68,6 +56,7 @@ $color-text-focus: #40a9ff;
   background: inherit;
   text-align: start;
   width: 100%;
+  font-size: 100%;
 
   &:focus {
     color: $color-text-focus;
@@ -75,6 +64,11 @@ $color-text-focus: #40a9ff;
 
   &:hover {
     color: $color-text-focus;
+  }
+
+  &--highlight {
+    font-weight: 500;
+    text-decoration: underline;
   }
 }
 

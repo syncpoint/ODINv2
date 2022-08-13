@@ -23,6 +23,7 @@ export const Title = props => {
 
   // Pre-emptively focus sidebar to keep getting key events.
   // Note: This also keeps focus on sidebar when tab is pressed while editing.
+  //
   const focusSidebar = () => {
     document.getElementsByClassName('e3de-sidebar')[0].focus()
   }
@@ -74,10 +75,14 @@ export const Title = props => {
     ? { color: '#c0c0c0' }
     : {}
 
+  const className = props.highlight
+    ? 'e3de-card__title e3de-card__title--highlight'
+    : 'e3de-card__title'
+
   const span = () =>
     <span
       style={spanStyle}
-      className='e3de-card__title'
+      className={className}
       placeholder={placeholder}
     >
       {spanValue}

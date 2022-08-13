@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as ID from '../../ids'
 import * as MILSTD from '../../symbology/2525c'
-import { url } from '../../symbology/symbol'
+import { svg } from '../../symbology/symbol'
 
 export default function (id, cache) {
   const symbol = cache(id)
@@ -23,7 +23,7 @@ export default function (id, cache) {
     id,
     title: R.last(symbol.hierarchy),
     description: R.dropLast(1, symbol.hierarchy).join(' • '),
-    url: url(standardSIDC),
+    svg: svg(standardSIDC),
     urn: `urn:symbol:${standardSIDC}`,
     scope: 'SYMBOL',
     tags,

@@ -1,16 +1,13 @@
 import ms from 'milsymbol'
+import * as MILSTD from '../symbology/2525c'
 import './extension'
-import urls from './urls.json'
 
-const cache = urls
-cache.placeholder = new ms.Symbol('').asCanvas().toDataURL()
+export const svg = sidc => {
+  if (!sidc) return null
+  const options = { size: 30 }
+  const symbol = sidc.match(/S.G.U/)
+    ? new ms.Symbol(sidc, options) // keep echelon for units
+    : new ms.Symbol(MILSTD.format(sidc, { echelon: '-' }), options)
 
-export const url = sidc => {
-  if (!cache[sidc]) {
-    const symbol = new ms.Symbol(sidc)
-    if (!symbol.isValid()) return cache._
-    cache[sidc] = symbol.asCanvas().toDataURL()
-  }
-
-  return cache[sidc]
+  return symbol.asSVG()
 }
