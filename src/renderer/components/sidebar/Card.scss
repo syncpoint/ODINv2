@@ -86,3 +86,10 @@ $color-text-focus: #40a9ff;
     color: $color-text-focus;
   }
 }
+
+.e3de-filter-container {
+  padding: 24px 0 0 8px;
+  border: 0.5px solid lightgrey;
+  border-radius: 4px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}

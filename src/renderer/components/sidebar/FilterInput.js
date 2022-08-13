@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import TextField from '../properties/TextField'
+import TextField from './TextField'
 import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
@@ -59,7 +59,7 @@ export const FilterInput = props => {
   }
 
   return (
-    <div style={{ marginTop: '24px' }}>
+    <div className='e3de-filter-container'>
       <TextField
         ref={ref}
         label='Search'
