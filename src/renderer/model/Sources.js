@@ -3,6 +3,7 @@ import Collection from 'ol/Collection'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
+import * as TD from 'throttle-debounce'
 import { readFeature, readFeatures, readGeometry } from './geometry'
 import * as ID from '../ids'
 
@@ -23,7 +24,8 @@ const isGeometry = value => {
 export const featureSource = (store, scope) => {
   const source = new VectorSource()
 
-  store.on('batch', ({ operations }) => {
+  const handler = operations => {
+    console.log('[featureSource/batch]', JSON.stringify(operations))
     const candidates = operations.filter(({ key }) => ID.isId(scope)(key))
     const additions = candidates.filter(({ type }) => type === 'put')
 
@@ -63,7 +65,29 @@ export const featureSource = (store, scope) => {
 
     // ... and add additions.
     source.addFeatures(features.filter(Boolean))
-  })
+  }
+
+  // Debounce a bit to minimize impact of costly map refresh:
+  const debounce_ = R.curry((options, delay, callback) => TD.debounce(delay, callback, options))
+  const debounce = debounce_({ atBegin: false })
+  const batch = delayed => fn => {
+    const acc = []
+    // const handler = delayed(() => fn(acc.splice(0)))
+
+    const handler = delayed(function () {
+      fn(acc)
+      acc.splice(0, acc.length)
+    })
+
+    return function (xs) {
+      console.log('pushing', xs)
+      acc.push(...xs)
+      handler()
+    }
+  }
+
+  const debouncedHandler = batch(debounce(32))(handler)
+  store.on('batch', ({ operations }) => debouncedHandler(operations))
 
   // On startup: load all features:
   window.requestIdleCallback(async () => {

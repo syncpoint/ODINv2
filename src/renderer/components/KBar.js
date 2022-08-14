@@ -69,7 +69,7 @@ const DryRunner = () => {
   React.useEffect(() => {
     if (visualState !== 'showing') return
     const active = results[activeIndex]
-    active && active.dryRun && active.dryRun()
+    active?.dryRun?.()
   }, [results, activeIndex, visualState])
 }
 
