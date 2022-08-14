@@ -159,9 +159,19 @@ Store.prototype.value = async function (key) {
  * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
+ * update :: [[k, v]] -> unit
  */
 Store.prototype.update = async function (...args) {
-  if (args.length === 2) {
+  if (args.length === 1) {
+    const tuples = args[0]
+    const [keys, newValues] = tuples.reduce((acc, [k, v]) => {
+      acc[0].push(k)
+      acc[1].push(v)
+      return acc
+    }, [[], []])
+
+    this.update(keys, newValues)
+  } else if (args.length === 2) {
     if (typeof args[1] === 'function') {
       if (Array.isArray(args[0])) {
         // update :: [k] -> (v -> v) -> unit

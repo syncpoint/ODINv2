@@ -10,60 +10,18 @@ import {
   KBarAnimator as Animator,
   KBarSearch as Search,
   KBarResults as Results,
+  useKBar,
   useMatches,
-  useKBar
+  useRegisterActions
 } from 'kbar'
-import * as MILSTD from '../../symbology/2525c'
-import { svg } from '../../symbology/symbol'
+import { useServices, useEmitter } from './hooks'
+import { Disposable } from '../../shared/disposable'
 import './KBar.scss'
-
-
-function setCharAt (s, i, c) {
-  if (i > s.length - 1) return s
-  return s.substring(0, i) + c + s.substring(i + 1)
-}
-
-const globalActions = [
-  {
-    id: 'command:create:layer',
-    name: 'Create - New Layer',
-    keywords: ['create', 'new', 'layer'],
-    shortcut: ['$mod+N L'],
-    perform: () => console.log('perform/command:create:layer'),
-    dryRun: () => {}
-  },
-  {
-    id: 'command:create:bookmark',
-    name: 'Create - New Bookmark',
-    keywords: ['create', 'new', 'bookmark'],
-    shortcut: ['$mod+N B'],
-    perform: () => console.log('perform/command:create:bookmark'),
-    dryRun: () => {}
-  }
-]
-
-const actions = Object.entries(MILSTD.index)
-  .filter(([key, descriptor]) => descriptor?.geometry?.type === 'Point')
-  .map(([key, descriptor]) => {
-    const { hierarchy } = descriptor
-    const sidc = setCharAt(setCharAt(key, 1, 'F'), 3, 'P')
-    const keywords = R.uniq(hierarchy.flatMap(s => s.split(' ')))
-    return {
-      id: key,
-      name: R.last(hierarchy),
-      keywords,
-      icon: svg(sidc),
-      perform: () => console.log('perform', sidc),
-      dryRun: () => console.log('dryRun', sidc)
-    }
-  })
 
 
 const List = () => {
   const { results: matches } = useMatches()
   const onRender = ({ item, active }) => {
-    // if (active) item.dryRun()
-
     const icon = path => <Icon key={uuid()} className='ec35-key' path={mdi[path]}></Icon>
     const span = token => <span key={uuid()} className='ec35-key'>{token}</span>
     const separator = () => <span key={uuid()}>&nbsp;&nbsp;</span>
@@ -97,9 +55,13 @@ const List = () => {
     )
   }
 
-  return <Results items={matches} onRender={onRender}/>
+  return <Results items={matches} onRender={onRender} maxHeight={300}/>
 }
 
+
+/**
+ *
+ */
 const DryRunner = () => {
   const { results } = useMatches()
   const { visualState, activeIndex } = useKBar(R.identity)
@@ -109,18 +71,61 @@ const DryRunner = () => {
     const active = results[activeIndex]
     active && active.dryRun && active.dryRun()
   }, [results, activeIndex, visualState])
-
-  React.useEffect(() => {
-    if (!['animating-in', 'animating-out'].includes(visualState)) return
-    console.log('visualState', visualState)
-  }, [visualState])
 }
 
+
+/**
+ *
+ */
+const ActionProvider = ({ actions }) => {
+  useRegisterActions(actions, [actions])
+}
+
+const positionerStyle = {
+  position: 'fixed',
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'center',
+  width: '100%',
+  inset: '0px',
+  padding: '40px 16px 16px',
+  zIndex: 20
+}
+
+/**
+ *
+ */
 export const KBar = () => {
+  const { selection, store, kbarActions } = useServices()
+  const emitter = useEmitter('kbar')
+  const [snapshot, setSnapshot] = React.useState([])
+  const [contextActions, setContextActions] = React.useState([])
+
+  React.useEffect(() => {
+    const disposable = Disposable.of()
+    disposable.on(emitter, 'create', async () => setSnapshot(await store.tuples(selection.selected())))
+    disposable.on(emitter, 'restore', async () => store.update(snapshot))
+    disposable.on(emitter, 'discard', () => setSnapshot([]))
+    return () => disposable.dispose()
+  }, [selection, store, emitter, snapshot])
+
+  React.useEffect(() => {
+    setContextActions(kbarActions.actions(snapshot))
+  }, [kbarActions, snapshot])
+
+  const options = {
+    callbacks: {
+      onOpen: () => emitter.emit('create'),
+      onClose: () => emitter.emit('restore'),
+      onSelectAction: () => emitter.emit('discard')
+    }
+  }
+
   return (
-    <Provider actions={[...globalActions, ...actions]}>
+    <Provider actions={[...kbarActions.global()]} options={options}>
       <Portal>
-        <Positioner className='ec35-positioner'>
+        <ActionProvider actions={contextActions}/>
+        <Positioner style={positionerStyle}>
           <Animator className='ec35-animator'>
             <Search className='ec35-search'/>
             <List/>

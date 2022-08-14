@@ -3,16 +3,15 @@
 }
 
 .ec35-animator {
-  width: 40rem;
-  max-height: 30rem;
+  width: 36rem;
+  // // max-height: 30rem;
+  // height: 10rem;
   background: var(--background);
   color: var(--foreground);
   border-radius: '6px';
   overflow: hidden;
   border: 0.5px solid lightgrey;
   border-radius: 6px;
-  // background-color: rgba(255, 255, 255, 0.5);
-  // backdrop-filter: blur(20px) saturate(160%) contrast(45%) brightness(140%);
   background-color: white;
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
   padding: 0px 10px 0px 10px;

@@ -12,6 +12,7 @@ import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
 import Nominatim from '../store/Nominatim'
 import { PaletteCommands, OSDDriver } from '../model'
+import { KBarActions } from '../model/actions/KBarActions'
 import TileLayerStore from '../store/TileLayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
@@ -111,6 +112,13 @@ export default async projectUUID => {
     store,
     emitter,
     selection
+  })
+
+  services.kbarActions = new KBarActions({
+    store,
+    emitter,
+    selection,
+    sessionStore
   })
 
   services.commandRegistry = new CommandRegistry(services)
