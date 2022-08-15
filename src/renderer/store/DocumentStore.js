@@ -7,7 +7,10 @@ import tileService from './documents/tile-service'
 import bookmark from './documents/bookmark'
 import place from './documents/place'
 
-export default function DocumentStore () {}
+export default function DocumentStore (store) {
+  this.store = store
+}
+
 DocumentStore.prototype.feature = feature
 DocumentStore.prototype.layer = layer
 DocumentStore.prototype.link = link
