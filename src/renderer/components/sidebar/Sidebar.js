@@ -185,10 +185,9 @@ const useModel = () => {
           label
         }])
       } else if (ID.isFeatureId(focusId)) {
-        console.log('[Sidebar/feature]', focusId)
-        const bbox = await store.bbox(focusId)
+        const geometry = await store.geometry(focusId)
         setHistory([...search.history, {
-          scope: `@link !link+${focusId} &bbox=${JSON.stringify(bbox)}`,
+          scope: `@link !link+${focusId} @feature &geometry:${JSON.stringify(geometry)}`,
           key: focusId,
           label
         }])

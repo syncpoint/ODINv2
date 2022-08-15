@@ -1,35 +1,49 @@
 import * as R from 'ramda'
 import RBush from 'rbush'
 import * as L from '../../shared/level'
+import { bbox } from './geometry'
+import * as TS from '../ol/ts'
 
-const item = ([key, value]) => ({
-  key,
-  minX: value.coordinates[0],
-  minY: value.coordinates[1],
-  maxX: value.coordinates[0],
-  maxY: value.coordinates[1]
-})
+console.log(TS)
+
 
 export function SpatialIndex (wkbDB) {
   this.wkbDB = wkbDB
   this.tree = new RBush()
+  this.geoJSONReader = new TS.GeoJSONReader()
 
   wkbDB.on('batch', event => console.log('[SpatialIndex/batch]', event))
   wkbDB.on('put', (key, value) => console.log('[SpatialIndex/put]', key, value))
   wkbDB.on('del', key => console.log('[SpatialIndex/del]', key))
 
-
   // Import symbols once for each fresh project database.
   window.requestIdleCallback(async () => {
     const items = (await L.tuples(this.wkbDB, 'feature:'))
       .filter(([_, value]) => value.type === 'Point')
-      .map(item)
+      .map(this.item.bind(this))
     this.tree.load(items)
   }, { timeout: 2000 })
 }
 
-SpatialIndex.prototype.search = function (bbox) {
-  const [minX, minY, maxX, maxY] = bbox
+SpatialIndex.prototype.search = function (geometry) {
+  const [minX, minY, maxX, maxY] = bbox(geometry)
   const matches = this.tree.search({ minX, minY, maxX, maxY })
-  return matches.map(R.prop('key'))
+  const bounds = this.read(geometry)
+  const exactMatches = matches.filter(match => TS.intersects(match.geometry, bounds))
+  return exactMatches.map(R.prop('key'))
+}
+
+SpatialIndex.prototype.item = function ([key, value]) {
+  return {
+    key,
+    geometry: this.read(value),
+    minX: value.coordinates[0],
+    minY: value.coordinates[1],
+    maxX: value.coordinates[0],
+    maxY: value.coordinates[1]
+  }
+}
+
+SpatialIndex.prototype.read = function (geometry) {
+  return this.geoJSONReader.read(geometry)
 }

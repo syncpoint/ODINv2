@@ -210,20 +210,25 @@ SearchIndex.prototype.search = async function (terms, options) {
     this.nominatim.sync(query)
   }
 
-  const [query, searchOptions] = parseQuery(terms)
+  // Hit spatial index if requested.
+  // Resulting identifiers are implicitly added to query filter.
+  //
+  const ids = R.ifElse(
+    terms => terms.includes('&geometry:'),
+    terms => {
+      const [, geometry] = terms.match(/&geometry:(\S+)/)
+      return this.spatialIndex.search(JSON.parse(geometry))
+    },
+    R.always([])
+  )(terms)
+
+  const [query, searchOptions] = parseQuery(terms, ids)
   const matches = searchOptions
     ? this.index.search(query, searchOptions)
     : this.index.search(query)
 
   const keys = matches.map(R.prop('id'))
 
-  // Additionally hit spatial index if requested.
-  //
-  if (terms.includes('&bbox=')) {
-    const [, bbox] = terms.match(/&bbox=(\S+)/)
-    const xs = this.spatialIndex.search(JSON.parse(bbox))
-    keys.push(...xs)
-  }
 
   const option = id => {
     const scope = ID.scope(id)

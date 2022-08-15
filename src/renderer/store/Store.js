@@ -346,6 +346,14 @@ Store.prototype.geometries = function (arg) {
 
 
 /**
+ * @async
+ * bbox :: k -> GeoJSON/Geometry
+ */
+Store.prototype.geometry = function (key) {
+  return L.get(this.wkbDB, key)
+}
+
+/**
  * bbox :: Number n => k -> [n, n, n, n]
  */
 Store.prototype.bbox = async function (key) {
