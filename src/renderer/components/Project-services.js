@@ -11,7 +11,7 @@ import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
 import Nominatim from '../store/Nominatim'
-import { PaletteCommands, OSDDriver } from '../model'
+import { OSDDriver } from '../model/OSDDriver'
 import { KBarActions } from '../model/actions/KBarActions'
 import TileLayerStore from '../store/TileLayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
@@ -73,7 +73,7 @@ export default async projectUUID => {
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore)
 
   // Key bindings.
-  bindings(emitter, clipboard)
+  bindings(clipboard)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
@@ -107,12 +107,6 @@ export default async projectUUID => {
   services.coordinatesFormat = coordinatesFormat
   services.optionStore = optionStore
   services.searchIndex = searchIndex
-
-  services.paletteCommands = new PaletteCommands({
-    store,
-    emitter,
-    selection
-  })
 
   services.kbarActions = new KBarActions({
     store,
