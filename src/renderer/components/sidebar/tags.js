@@ -163,7 +163,7 @@ export const PlusTag = props => {
 
   const handleChange = ({ target }) => {
     const value = target.value
-      ? target.value.replace(/[^0-9a-z/]+/ig, '')
+      ? target.value.replace(/[^0-9a-z-/]+/ig, '')
       : ''
     setInputValue(value.substring(0, 16).toUpperCase())
   }
