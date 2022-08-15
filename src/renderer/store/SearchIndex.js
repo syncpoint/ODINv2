@@ -46,23 +46,14 @@ export default function SearchIndex (jsonDB, documentStore, optionStore, emitter
   this.sessionStore = sessionStore
 
   this.ready = false
-  this.mirror = {}
   this.cachedDocuments = {}
 
-  const cache = function (id) {
-    return this.mirror[id]
-  }
-
-  this.cache = cache.bind(this)
-
   window.requestIdleCallback(async () => {
-    const entries = await L.readTuples(jsonDB)
-    this.mirror = Object.fromEntries(entries)
+    const keys = await L.readKeys(jsonDB)
     this.index = createIndex()
 
-    const documents = entries
-      .map(([key, value]) => this.document(key, value, this.cache))
-      .filter(R.identity)
+    const pending = keys.map((key) => this.document(key))
+    const documents = (await Promise.all(pending)).filter(Boolean)
 
     // Documents must be stored as is for later removal from index.
     documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
@@ -72,8 +63,8 @@ export default function SearchIndex (jsonDB, documentStore, optionStore, emitter
     this.emit('ready')
   }, { timeout: 2000 })
 
-  jsonDB.on('del', key => this.updateMirror([{ type: 'del', key }]))
-  jsonDB.on('batch', event => this.updateMirror(event))
+  jsonDB.on('del', key => this.updateIndex([{ type: 'del', key }]))
+  jsonDB.on('batch', event => this.updateIndex(event))
 }
 
 util.inherits(SearchIndex, Emitter)
@@ -82,37 +73,10 @@ util.inherits(SearchIndex, Emitter)
 /**
  *
  */
-SearchIndex.prototype.updateMirror = function (event) {
-  event.forEach(op => {
-    switch (op.type) {
-      case 'put': this.mirror[op.key] = op.value; break
-      case 'del': delete this.mirror[op.key]; break
-    }
-  })
-
-  if (this.busy) {
-    this.queue = this.queue || []
-    this.queue.push(event)
-    return
-  }
-
-  this.busy = true
-  this.queue = []
-  this.updateIndex(event)
-  this.busy = false
-
-  if (this.queue.length) this.handleBatch_(this.queue.flat())
-  this.emit('index/updated')
-}
-
-
-/**
- *
- */
-SearchIndex.prototype.updateIndex = function (ops) {
+SearchIndex.prototype.updateIndex = async function (ops) {
   if (!this.index) return /* Not there yet! */
 
-  const documents = ops.map(({ type, key, value }) => {
+  const pending = ops.map(async ({ type, key, value }) => {
 
     // 'Associated information' is no document in its own right but some
     // arbitrary 'value object' associated with a main document.
@@ -122,12 +86,13 @@ SearchIndex.prototype.updateIndex = function (ops) {
       : key
 
     return ID.isAssociatedId(key)
-      ? [id, this.document(id, this.cache(id), this.cache)] // put/del: cached main entry
+      ? [id, await this.document(id)] // put/del: cached main entry
       : type === 'put'
-        ? [id, this.document(id, value, this.cache)] // put: value from database update
+        ? [id, await this.document(id)] // put: value from database update
         : [id, null] // del: remove from index/cache only
   })
 
+  const documents = await Promise.all(pending)
   documents.forEach(([key, document]) => {
     if (this.cachedDocuments[key]) {
       this.index.remove(this.cachedDocuments[key])
@@ -139,26 +104,19 @@ SearchIndex.prototype.updateIndex = function (ops) {
       this.index.add(document)
     }
   })
+
+  this.emit('index/updated')
 }
 
 
 /**
  *
  */
-SearchIndex.prototype.cache = function (id) {
-  return this.mirror[id]
-}
-
-
-/**
- *
- */
-SearchIndex.prototype.document = function (key, value, cache) {
-  if (!value) return null
+SearchIndex.prototype.document = function (key) {
   const scope = key.split(':')[0]
   const fn = this.documentStore[scope]
   if (!fn) return null
-  return fn(key, value, cache)
+  return fn.call(this.documentStore, key)
 }
 
 
@@ -192,7 +150,6 @@ SearchIndex.prototype.searchField = function (field, tokens) {
  * search :: String -> [Option]
  */
 SearchIndex.prototype.search = async function (terms, options) {
-
   if (terms.includes('@place') && options.force) {
     const query = terms
       .replace(/([@#!]\S+)/gi, '')
@@ -210,7 +167,7 @@ SearchIndex.prototype.search = async function (terms, options) {
   const option = id => {
     const scope = ID.scope(id)
     if (!this.optionStore[scope]) return null
-    return this.optionStore[scope](id, this.cache)
+    return this.optionStore[scope](id)
   }
 
   // (Pre-)sort ids to compensate for changing match scores
@@ -218,7 +175,8 @@ SearchIndex.prototype.search = async function (terms, options) {
   //
   const sortedIds = matches.map(R.prop('id')).sort()
   const entries = await Promise.all(sortedIds.map(option))
-  return sort(entries.filter(Boolean))
+  const result = sort(entries.filter(Boolean))
+  return result
 }
 
 
@@ -226,10 +184,11 @@ SearchIndex.prototype.search = async function (terms, options) {
  *
  */
 SearchIndex.prototype.createQuery = function (terms, callback, options) {
+  let disposed = false
   const refresh = async () => {
     try {
       const result = await this.search(terms, options)
-      callback(result)
+      if (!disposed) callback(result)
     } catch (err) {
       /* don't invoke callback. */
       console.log(err)
@@ -238,6 +197,7 @@ SearchIndex.prototype.createQuery = function (terms, callback, options) {
 
   refresh()
   const disposable = Disposable.of()
+  disposable.add(() => (disposed = true))
   disposable.on(this, 'index/updated', refresh)
   disposable.on(this.emitter, 'preferences/changed', refresh)
   disposable.on(this.sessionStore, 'put', refresh)

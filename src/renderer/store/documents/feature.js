@@ -14,7 +14,9 @@ const identity = R.cond([
 /**
  *
  */
-export default function (id, feature, cache) {
+export default async function (id) {
+  const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.tagsId]
+  const [feature, layer, hidden, locked, tags] = await this.store.collect(id, keys)
   const properties = feature.properties || {}
 
   const descriptor = MILSTD.descriptor(properties.sidc)
@@ -22,31 +24,25 @@ export default function (id, feature, cache) {
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-  const layer = cache(ID.layerId(id))
   const layerName = (layer && layer.name) || ''
   const { t } = properties
   const name = feature.name || t || ''
   const links = feature.links || []
-
-  const hidden = cache(ID.hiddenId(id))
-  const locked = cache(ID.lockedId(id))
   const geometryType = Geometry.type(descriptor)
-
-  const tags = [
-    hidden ? 'hidden' : 'visible',
-    locked ? 'locked' : 'unlocked',
-    geometryType.toLowerCase(),
-    ...(links.length ? ['link'] : []),
-    ...(cache(ID.tagsId(id)) || []),
-    ...dimensions,
-    ...scope,
-    ...identity(MILSTD.identityCode(properties.sidc))
-  ]
 
   return {
     id,
     scope: 'feature',
-    tags,
+    tags: [
+      hidden ? 'hidden' : 'visible',
+      locked ? 'locked' : 'unlocked',
+      geometryType.toLowerCase(),
+      ...(links.length ? ['link'] : []),
+      ...(tags || []),
+      ...dimensions,
+      ...scope,
+      ...identity(MILSTD.identityCode(properties.sidc))
+    ],
     text: `${name} ${hierarchy.join(' ')} ${layerName}`.trim()
   }
 }

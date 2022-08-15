@@ -64,7 +64,7 @@ export default async projectUUID => {
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
 
-  const documentStore = new DocumentStore()
+  const documentStore = new DocumentStore(store)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
   const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)

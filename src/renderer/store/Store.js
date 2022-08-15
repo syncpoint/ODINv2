@@ -351,6 +351,11 @@ Store.prototype.geometries = function (arg) {
   else return L.values(this.wkbDB, [arg])
 }
 
+Store.prototype.collect = function (id, fns) {
+  const keys = fns.map(fn => fn(id))
+  return this.jsonDB.getMany(keys)
+}
+
 const featureBounds = {
   Polygon: R.identity,
   LineString: (geometry, resolution) => TS.lineBuffer(geometry)(resolution * 10),

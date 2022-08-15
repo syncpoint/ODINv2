@@ -1,13 +1,14 @@
+import * as R from 'ramda'
 import * as ID from '../../ids'
 
-export default function (id, bookmark, cache) {
-  const name = bookmark.name || ''
-  const tags = cache(ID.tagsId(id)) || []
+export default async function (id) {
+  const keys = [R.identity, ID.tagsId]
+  const [bookmark, tags] = await this.store.collect(id, keys)
 
   return {
     id,
     scope: 'bookmark',
-    text: name,
-    tags
+    text: bookmark.name || '',
+    tags: tags || []
   }
 }
