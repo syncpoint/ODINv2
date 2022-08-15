@@ -1,0 +1,16 @@
+$color-text-focus: #40a9ff;
+$color-border: lightgrey;
+
+$color-primary-accent: #e03c31;
+$color-primary-accent: #e9746c;
+$color-secondary-accent: #1fc3ce;
+$color-secondary-accent: #168b93;
+$color-tag-hover: #8d8d8d;
+$color-tag-hover: #b0b0b0;
+$color-tag-hover: #dcdcdc;
+
+@mixin card-border {
+  border: 0.5px solid $color-border;
+  border-radius: 4px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}

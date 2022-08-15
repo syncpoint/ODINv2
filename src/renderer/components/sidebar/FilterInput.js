@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import TextField from './TextField'
 import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
 import { preventDefault } from 'ol/events/Event'
+import './FilterInput.scss'
 
 
 /**
@@ -59,10 +59,12 @@ export const FilterInput = props => {
   }
 
   return (
-    <div className='e3de-filter-container'>
-      <TextField
+    <div className='fe6e-filter-container'>
+      <input
+        className='fe6e-filter'
+        type='text'
         ref={ref}
-        label='Search'
+        placeholder='Search'
         value={search.filter}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
