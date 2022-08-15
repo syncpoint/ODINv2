@@ -6,12 +6,6 @@ import * as mdi from '@mdi/js'
 import { useServices } from './hooks'
 import { DropdownMenu } from './DropdownMenu'
 
-const reducer = (state, { message, cell }) => {
-  const newState = { ...state }
-  newState[cell] = message
-  return newState
-}
-
 const CommandButton = props => {
   const { command } = props
   const [enabled, setEnabled] = React.useState(command.enabled ? command.enabled() : true)
@@ -39,8 +33,7 @@ CommandButton.propTypes = {
 
 
 export const Toolbar = () => {
-  const { emitter, commandRegistry } = useServices()
-  const [state, dispatch] = React.useReducer(reducer, {})
+  const { commandRegistry } = useServices()
 
   const commands = [
     commandRegistry.separator(),
@@ -64,17 +57,8 @@ export const Toolbar = () => {
     commandRegistry.command('TILE_SERVICE_CREATE')
   ]
 
-  // TODO: split toolbar in different components (frequent updates because of time display)
-  React.useEffect(() => {
-    emitter.on('osd', dispatch)
-    return () => emitter.off('osd', dispatch)
-  }, [emitter, dispatch])
-
   return (
     <header className='toolbar'>
-      <div className='toolbar__left-items toolbar__items-container'>
-        Default Layer:&nbsp;<b>{state.A2}</b>
-      </div>
       <div className='toolbar__center-items toolbar__items-container'>
         <DropdownMenu path='mdiPlusBoxOutline' options={addCommands}/>
         {
