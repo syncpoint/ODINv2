@@ -36,7 +36,15 @@ export const sort = entries => entries.sort((a, b) => {
 /**
  * @constructor
  */
-export default function SearchIndex (jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore) {
+export default function SearchIndex (
+  jsonDB,
+  documentStore,
+  optionStore,
+  emitter,
+  nominatim,
+  sessionStore,
+  spatialIndex
+) {
   Emitter.call(this)
 
   this.documentStore = documentStore
@@ -44,6 +52,7 @@ export default function SearchIndex (jsonDB, documentStore, optionStore, emitter
   this.emitter = emitter
   this.nominatim = nominatim
   this.sessionStore = sessionStore
+  this.spatialIndex = spatialIndex
 
   this.ready = false
   this.mirror = {}
@@ -192,10 +201,9 @@ SearchIndex.prototype.searchField = function (field, tokens) {
  * search :: String -> [Option]
  */
 SearchIndex.prototype.search = async function (terms, options) {
-
   if (terms.includes('@place') && options.force) {
     const query = terms
-      .replace(/([@#!]\S+)/gi, '')
+      .replace(/([@#!&]\S+)/gi, '')
       .trim()
       .replace(/[ ]+/g, '+')
 
@@ -207,6 +215,16 @@ SearchIndex.prototype.search = async function (terms, options) {
     ? this.index.search(query, searchOptions)
     : this.index.search(query)
 
+  const keys = matches.map(R.prop('id'))
+
+  // Additionally hit spatial index if requested.
+  //
+  if (terms.includes('&bbox=')) {
+    const [, bbox] = terms.match(/&bbox=(\S+)/)
+    const xs = this.spatialIndex.search(JSON.parse(bbox))
+    keys.push(...xs)
+  }
+
   const option = id => {
     const scope = ID.scope(id)
     if (!this.optionStore[scope]) return null
@@ -216,7 +234,7 @@ SearchIndex.prototype.search = async function (terms, options) {
   // (Pre-)sort ids to compensate for changing match scores
   // and thus seemingly random order in sidebar.
   //
-  const sortedIds = matches.map(R.prop('id')).sort()
+  const sortedIds = keys.sort()
   const entries = await Promise.all(sortedIds.map(option))
   return sort(entries.filter(Boolean))
 }

@@ -154,7 +154,8 @@ const useModel = () => {
   // <== Effects.
   // ==> Event Handlers.
 
-  const onKeyDown = React.useCallback(event => {
+  const onKeyDown = React.useCallback(async event => {
+    const { store } = services
     matcher([
       ({ key }) => key === 'ArrowDown',
       ({ key }) => key === 'ArrowUp'
@@ -184,14 +185,16 @@ const useModel = () => {
           label
         }])
       } else if (ID.isFeatureId(focusId)) {
+        console.log('[Sidebar/feature]', focusId)
+        const bbox = await store.bbox(focusId)
         setHistory([...search.history, {
-          scope: `@link !link+feature:${focusId.split(':')[1]}`,
+          scope: `@link !link+${focusId} &bbox=${JSON.stringify(bbox)}`,
           key: focusId,
           label
         }])
       }
     }
-  }, [state, search.history, setHistory])
+  }, [services, state, search.history, setHistory])
 
   const onClick = React.useCallback(id => event => {
     const { selection } = services
