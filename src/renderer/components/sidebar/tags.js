@@ -2,8 +2,9 @@
 import * as R from 'ramda'
 import React from 'react'
 import * as mdi from '@mdi/js'
-import { useServices } from '../hooks'
+import { useServices, useEmitter } from '../hooks'
 import { TagIcon } from './TagIcon'
+import { IconTag } from './IconTag'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
 import './tags.scss'
@@ -13,6 +14,8 @@ import './tags.scss'
  */
 const useController = () => {
   const { emitter, selection, store } = useServices()
+  const localEmitter = useEmitter('sidebar')
+
 
   // Handle scope tag (identify/highlight).
   //
@@ -37,6 +40,7 @@ const useController = () => {
     else if (spec.match(/SYSTEM:VISIBLE/)) store.hide(ids)
     else if (spec.match(/SYSTEM:LOCKED/)) store.unlock(ids)
     else if (spec.match(/SYSTEM:UNLOCKED/)) store.lock(ids)
+    else if (spec.match(/SYSTEM:LINK/)) localEmitter.emit('link', { id })
   }
 
   const addTag = (id, value) => store.addTag(id, value.toLowerCase())
@@ -91,15 +95,18 @@ export const SystemTag = props => {
   const active = props.action !== 'NONE' ? '--active' : ''
   const className = `e3de-tag e3de-tag--system e3de-tag${active}`
 
-  return (
-    <span
-      className={className}
-      onMouseDown={stopPropagation}
-      onClick={handleClick}
-    >
-      {props.label.replace(/[_]/g, ' ')}
-    </span>
-  )
+  return props.path
+    ? <IconTag
+        path={mdi[props.path]}
+        onClick={handleClick}
+      />
+    : <span
+        className={className}
+        onMouseDown={stopPropagation}
+        onClick={handleClick}
+      >
+        {props.label}
+      </span>
 }
 
 

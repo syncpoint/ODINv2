@@ -85,12 +85,24 @@ const useModel = () => {
     const { store } = services
     const pin = id => store.addTag(id, 'pin')
     const unpin = id => store.removeTag(id, 'pin')
+    const link = id => {
+      const entry = R.find(R.propEq('id', id), state.entries)
+      setSearch({
+        filter: '',
+        history: [...search.history, {
+          key: id,
+          label: entry.title,
+          scope: `@link !link+${id}`
+        }]
+      })
+    }
     const disposable = Disposable.of()
     disposable.on(emitter, 'edit', ({ id }) => dispatch({ type: 'edit', id }))
     disposable.on(emitter, 'pin', ({ id }) => pin(id))
     disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
-    return () => disposable.dispose
-  }, [emitter, services])
+    disposable.on(emitter, 'link', ({ id }) => link(id))
+    return () => disposable.dispose()
+  }, [emitter, services, state.entries, search.history, setSearch])
 
   // Fetch entries when history and/or filter changed.
   //

@@ -14,6 +14,7 @@ import { bbox } from './geometry'
  *
  * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
+ * collect :: k -> [(k -> k)] -> [v]
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
  * delete :: String -> unit
@@ -25,6 +26,7 @@ import { bbox } from './geometry'
  * geometries :: [k] -> [GeoJSON/Geometry]
  * geometries :: 'layer:...' -> [GeoJSON/Geometry]
  * geometries :: k -> [GeoJSON/Geometry]
+ * geometry :: k -> GeoJSON/Geometry
  * bbox :: Number n => k -> [n, n, n, n]
  * import :: (operations, {k: v}) -> unit
  * insert :: [[k, v]] -> unit
@@ -347,7 +349,7 @@ Store.prototype.geometries = function (arg) {
 
 /**
  * @async
- * bbox :: k -> GeoJSON/Geometry
+ * geometry :: k -> GeoJSON/Geometry
  */
 Store.prototype.geometry = function (key) {
   return L.get(this.wkbDB, key)
@@ -359,6 +361,14 @@ Store.prototype.geometry = function (key) {
 Store.prototype.bbox = async function (key) {
   const geometry = await L.get(this.wkbDB, key)
   return bbox(geometry)
+}
+
+/**
+ * collect :: k -> [(k -> k)] -> [v]
+ */
+Store.prototype.collect = function (id, fns) {
+  const keys = fns.map(fn => fn(id))
+  return this.jsonDB.getMany(keys)
 }
 
 const featureBounds = {
