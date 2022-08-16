@@ -3,7 +3,7 @@ import React from 'react'
 import Icon from '@mdi/react'
 
 /**
- *
+ * Icon inside a tag.
  */
 export const TagIcon = props => {
   const { path, removable, color } = props
