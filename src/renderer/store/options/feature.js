@@ -28,6 +28,9 @@ export default async function (id) {
     ? layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
     : hierarchy.join(' • ')
 
+  const geometryTag = geometryType === 'Polygon'
+    ? `SYSTEM:${geometryType.toLowerCase()}`
+    : `SYSTEM:${geometryType.toLowerCase()}:NONE`
 
   return {
     id,
@@ -38,11 +41,11 @@ export default async function (id) {
       'SCOPE:FEATURE',
       hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
       locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
-      ...(links.length ? ['SYSTEM:LINK:NONE:mdiLink'] : []),
+      ...(links.length ? ['SYSTEM:LINK'] : []),
+      geometryTag,
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),
       ...identity.map(label => `SYSTEM:${label}:NONE`),
-      `SYSTEM:${geometryType.toLowerCase()}:NONE`,
       ...(tags || []).map(label => `USER:${label}:NONE`),
       'PLUS'
     ].join(' '),
