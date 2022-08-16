@@ -85,24 +85,35 @@ const useModel = () => {
     const { store } = services
     const pin = id => store.addTag(id, 'pin')
     const unpin = id => store.removeTag(id, 'pin')
+
     const link = id => {
       const entry = R.find(R.propEq('id', id), state.entries)
-      setSearch({
-        filter: '',
-        history: [...search.history, {
-          key: id,
-          label: entry.title,
-          scope: `@link !link+${id}`
-        }]
-      })
+      setHistory([...search.history, {
+        key: id,
+        label: entry.title,
+        scope: `@link !link+${id}`
+      }])
     }
+
+    const polygon = async id => {
+      const entry = R.find(R.propEq('id', id), state.entries)
+      const geometry = await store.geometry(id)
+      setHistory([...search.history, {
+        scope: `@feature &geometry:${JSON.stringify(geometry)}`,
+        key: id,
+        label: entry.title
+      }])
+
+    }
+
     const disposable = Disposable.of()
     disposable.on(emitter, 'edit', ({ id }) => dispatch({ type: 'edit', id }))
     disposable.on(emitter, 'pin', ({ id }) => pin(id))
     disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
     disposable.on(emitter, 'link', ({ id }) => link(id))
+    disposable.on(emitter, 'polygon', ({ id }) => polygon(id))
     return () => disposable.dispose()
-  }, [emitter, services, state.entries, search.history, setSearch])
+  }, [emitter, services, state.entries, search.history, setHistory])
 
   // Fetch entries when history and/or filter changed.
   //
@@ -167,7 +178,6 @@ const useModel = () => {
   // ==> Event Handlers.
 
   const onKeyDown = React.useCallback(async event => {
-    const { store } = services
     matcher([
       ({ key }) => key === 'ArrowDown',
       ({ key }) => key === 'ArrowUp'
@@ -178,34 +188,7 @@ const useModel = () => {
       { type: `keydown/${key}`, shiftKey, metaKey, ctrlKey }, // list model
       { type: `edit:keydown/${key}`, shiftKey, metaKey, ctrlKey } // title inline editing
     ])
-
-    if (!cmdOrCtrl(event)) return
-
-    // Parent/child navigation.
-    //
-    if (event.key === 'ArrowUp' && search.history.length > 1) {
-      setHistory(R.dropLast(1, search.history))
-    } else if (event.key === 'ArrowDown' && state.focusIndex !== -1) {
-      const focusId = R.last(state.selected)
-      const label = state.entries[state.focusIndex].title || 'N/A'
-
-      if (ID.isLayerId(focusId)) {
-        const layerId = focusId.split(':')[1]
-        setHistory([...search.history, {
-          scope: `@feature @link !feature:${layerId} !link+layer:${layerId}`,
-          key: focusId,
-          label
-        }])
-      } else if (ID.isFeatureId(focusId)) {
-        const geometry = await store.geometry(focusId)
-        setHistory([...search.history, {
-          scope: `@link !link+${focusId} @feature &geometry:${JSON.stringify(geometry)}`,
-          key: focusId,
-          label
-        }])
-      }
-    }
-  }, [services, state, search.history, setHistory])
+  }, [])
 
   const onClick = React.useCallback(id => event => {
     const { selection } = services
