@@ -15,7 +15,7 @@ import * as L from '../../shared/level'
 export const transferProject = async (db, project) => {
   const { layers, links, preferences } = project
   const jsonDB = L.jsonDB(db)
-  const wkbDB = L.wbkDB(db)
+  const wkbDB = L.wkbDB(db)
 
   const json = []
   const wkb = []

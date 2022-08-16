@@ -34,7 +34,7 @@ export const jsonDB = db => leveldb({ up: db, encoding: 'json', prefix: 'tuples'
  * WKB-encoded 'geometries' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const wbkDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometries' })
+export const wkbDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometries' })
 
 
 /**

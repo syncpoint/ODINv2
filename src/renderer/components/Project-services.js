@@ -21,6 +21,7 @@ import { Undo } from '../Undo'
 import { Selection } from '../Selection'
 import { Clipboard } from '../Clipboard'
 import { bindings } from '../bindings'
+import { SpatialIndex } from '../store/SpatialIndex'
 
 export default async projectUUID => {
 
@@ -52,17 +53,18 @@ export default async projectUUID => {
 
 
   const jsonDB = L.jsonDB(db)
-  const wbkDB = L.wbkDB(db)
+  const wkbDB = L.wkbDB(db)
   const preferencesDB = L.preferencesDB(db)
   const sessionDB = L.sessionDB(db)
 
-  const store = new Store(jsonDB, wbkDB, undo, selection)
+  const store = new Store(jsonDB, wkbDB, undo, selection)
 
   // PUSH/PULL interface, replicates to main process
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const sessionStore = new SessionStore(sessionDB)
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
+  const spatialIndex = new SpatialIndex(wkbDB)
 
   const documentStore = new DocumentStore(store)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
@@ -70,7 +72,7 @@ export default async projectUUID => {
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
-  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore)
+  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   // Key bindings.
   bindings(clipboard)
@@ -102,6 +104,7 @@ export default async projectUUID => {
   services.documentStore = documentStore
   services.searchIndex = searchIndex
   services.tileLayerStore = tileLayerStore
+  services.spatialIndex = spatialIndex
   services.osdDriver = osdDriver
   services.clipboard = clipboard
   services.coordinatesFormat = coordinatesFormat

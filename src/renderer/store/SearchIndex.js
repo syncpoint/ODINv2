@@ -36,7 +36,15 @@ export const sort = entries => entries.sort((a, b) => {
 /**
  * @constructor
  */
-export default function SearchIndex (jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore) {
+export default function SearchIndex (
+  jsonDB,
+  documentStore,
+  optionStore,
+  emitter,
+  nominatim,
+  sessionStore,
+  spatialIndex
+) {
   Emitter.call(this)
 
   this.documentStore = documentStore
@@ -44,6 +52,7 @@ export default function SearchIndex (jsonDB, documentStore, optionStore, emitter
   this.emitter = emitter
   this.nominatim = nominatim
   this.sessionStore = sessionStore
+  this.spatialIndex = spatialIndex
 
   this.ready = false
   this.cachedDocuments = {}
@@ -152,17 +161,32 @@ SearchIndex.prototype.searchField = function (field, tokens) {
 SearchIndex.prototype.search = async function (terms, options) {
   if (terms.includes('@place') && options.force) {
     const query = terms
-      .replace(/([@#!]\S+)/gi, '')
+      .replace(/([@#!&]\S+)/gi, '')
       .trim()
       .replace(/[ ]+/g, '+')
 
     this.nominatim.sync(query)
   }
 
-  const [query, searchOptions] = parseQuery(terms)
+  // Hit spatial index if requested.
+  // Resulting identifiers are implicitly added to query filter.
+  //
+  const ids = R.ifElse(
+    terms => terms.includes('&geometry:'),
+    terms => {
+      const [, geometry] = terms.match(/&geometry:(\S+)/)
+      return this.spatialIndex.search(JSON.parse(geometry))
+    },
+    R.always([])
+  )(terms)
+
+  const [query, searchOptions] = parseQuery(terms, ids)
   const matches = searchOptions
     ? this.index.search(query, searchOptions)
     : this.index.search(query)
+
+  const keys = matches.map(R.prop('id'))
+
 
   const option = id => {
     const scope = ID.scope(id)
@@ -173,7 +197,7 @@ SearchIndex.prototype.search = async function (terms, options) {
   // (Pre-)sort ids to compensate for changing match scores
   // and thus seemingly random order in sidebar.
   //
-  const sortedIds = matches.map(R.prop('id')).sort()
+  const sortedIds = keys.sort()
   const entries = await Promise.all(sortedIds.map(option))
   const result = sort(entries.filter(Boolean))
   return result

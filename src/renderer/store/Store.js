@@ -7,6 +7,7 @@ import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
 import { readGeometry, transform, geometryType } from '../model/geometry'
 import { importSymbols } from './symbols'
+import { bbox } from './geometry'
 
 /**
  * Persistence for layers, features and associated information.
@@ -25,6 +26,8 @@ import { importSymbols } from './symbols'
  * geometries :: [k] -> [GeoJSON/Geometry]
  * geometries :: 'layer:...' -> [GeoJSON/Geometry]
  * geometries :: k -> [GeoJSON/Geometry]
+ * geometry :: k -> GeoJSON/Geometry
+ * bbox :: Number n => k -> [n, n, n, n]
  * import :: (operations, {k: v}) -> unit
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
@@ -340,6 +343,7 @@ Store.prototype.unlock = async function (ids, active) {
   this.batch(this.jsonDB, operations)
 }
 
+
 /**
  * @async
  * geometries :: [k] -> [GeoJSON/Geometry]
@@ -360,6 +364,25 @@ Store.prototype.collect = function (id, fns) {
   const keys = fns.map(fn => fn(id))
   return this.jsonDB.getMany(keys)
 }
+
+
+/**
+ * @async
+ * geometry :: k -> GeoJSON/Geometry
+ */
+Store.prototype.geometry = function (key) {
+  return L.get(this.wkbDB, key)
+}
+
+
+/**
+ * bbox :: Number n => k -> [n, n, n, n]
+ */
+Store.prototype.bbox = async function (key) {
+  const geometry = await L.get(this.wkbDB, key)
+  return bbox(geometry)
+}
+
 
 const featureBounds = {
   Polygon: R.identity,

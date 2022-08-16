@@ -166,7 +166,8 @@ const useModel = () => {
   // <== Effects.
   // ==> Event Handlers.
 
-  const onKeyDown = React.useCallback(event => {
+  const onKeyDown = React.useCallback(async event => {
+    const { store } = services
     matcher([
       ({ key }) => key === 'ArrowDown',
       ({ key }) => key === 'ArrowUp'
@@ -196,14 +197,15 @@ const useModel = () => {
           label
         }])
       } else if (ID.isFeatureId(focusId)) {
+        const geometry = await store.geometry(focusId)
         setHistory([...search.history, {
-          scope: `@link !link+feature:${focusId.split(':')[1]}`,
+          scope: `@link !link+${focusId} @feature &geometry:${JSON.stringify(geometry)}`,
           key: focusId,
           label
         }])
       }
     }
-  }, [state, search.history, setHistory])
+  }, [services, state, search.history, setHistory])
 
   const onClick = React.useCallback(id => event => {
     const { selection } = services
