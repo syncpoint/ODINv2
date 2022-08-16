@@ -5,6 +5,7 @@
   margin: 0.25rem 0;
   padding: 0.5rem;
   font-family: sans-serif;
+  box-sizing: border-box;
 
   &[aria-selected="true"] {
     background-color: #f4f0ec;

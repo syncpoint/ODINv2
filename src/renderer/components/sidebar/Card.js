@@ -152,7 +152,7 @@ export const Card = React.forwardRef((props, ref) => {
 
   const pinned = tags.split(' ').findIndex(s => s.match(/USER:pin:NONE/gi)) !== -1
   const style = dropAllowed === true
-    ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
+    ? { border: '0.2rem dashed #40a9ff', padding: '0.38rem' }
     : {}
 
   const tag = spec => {
