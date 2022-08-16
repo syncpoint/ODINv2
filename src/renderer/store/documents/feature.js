@@ -10,13 +10,13 @@ const identity = R.cond([
   [R.T, R.always([])]
 ])
 
-
 /**
  *
  */
 export default async function (id) {
   const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.tagsId]
   const [feature, layer, hidden, locked, tags] = await this.store.collect(id, keys)
+  const links = await this.store.keys(ID.prefix('link')(id))
   const properties = feature.properties || {}
 
   const descriptor = MILSTD.descriptor(properties.sidc)
@@ -27,7 +27,6 @@ export default async function (id) {
   const layerName = (layer && layer.name) || ''
   const { t } = properties
   const name = feature.name || t || ''
-  const links = feature.links || []
   const geometryType = Geometry.type(descriptor)
 
   return {
@@ -36,8 +35,8 @@ export default async function (id) {
     tags: [
       hidden ? 'hidden' : 'visible',
       locked ? 'locked' : 'unlocked',
-      geometryType.toLowerCase(),
       ...(links.length ? ['link'] : []),
+      geometryType.toLowerCase(),
       ...(tags || []),
       ...dimensions,
       ...scope,

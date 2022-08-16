@@ -13,6 +13,7 @@ import { importSymbols } from './symbols'
  *
  * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
+ * collect :: k -> [(k -> k)] -> [v]
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
  * delete :: String -> unit
@@ -341,6 +342,10 @@ Store.prototype.geometries = function (arg) {
   else return L.values(this.wkbDB, [arg])
 }
 
+
+/**
+ * collect :: k -> [(k -> k)] -> [v]
+ */
 Store.prototype.collect = function (id, fns) {
   const keys = fns.map(fn => fn(id))
   return this.jsonDB.getMany(keys)

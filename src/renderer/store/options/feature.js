@@ -14,6 +14,7 @@ const identityTag = R.cond([
 export default async function (id) {
   const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.tagsId]
   const [feature, layer, hidden, locked, tags] = await this.store.collect(id, keys)
+  const links = await this.store.keys(ID.prefix('link')(id))
 
   const properties = feature.properties || {}
   const sidc = properties.sidc
@@ -37,6 +38,7 @@ export default async function (id) {
       'SCOPE:FEATURE',
       hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
       locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
+      ...(links.length ? ['SYSTEM:LINK:NONE:mdiLink'] : []),
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),
       ...identity.map(label => `SYSTEM:${label}:NONE`),
