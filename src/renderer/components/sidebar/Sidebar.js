@@ -89,7 +89,7 @@ const useModel = () => {
     disposable.on(emitter, 'edit', ({ id }) => dispatch({ type: 'edit', id }))
     disposable.on(emitter, 'pin', ({ id }) => pin(id))
     disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
-    return () => disposable.dispose
+    return () => disposable.dispose()
   }, [emitter, services])
 
   // Fetch entries when history and/or filter changed.
