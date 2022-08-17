@@ -90,3 +90,14 @@
 .e3de-tag-close-icon {
   cursor: pointer;
 }
+
+.e3de-icon-tag {
+  width: 22px;
+  height: 22px;
+
+  &:hover {
+    background-color: $color-tag-hover;
+    border-color: $color-tag-hover;
+    cursor: pointer;
+  }
+}

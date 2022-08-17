@@ -7,7 +7,6 @@ import { useServices, useMemento, useEmitter } from '../hooks'
 import { multiselect } from '../../model/selection/multiselect'
 import { defaultSearch, defaultState } from './state'
 import { matcher, preventDefault } from '../events'
-import { cmdOrCtrl } from '../../platform'
 import { ScopeSwitcher } from './ScopeSwitcher'
 import { MemoizedCard } from './Card'
 import { LazyList } from './LazyList'
@@ -103,7 +102,15 @@ const useModel = () => {
         key: id,
         label: entry.title
       }])
+    }
 
+    const layerOpen = id => {
+      const entry = R.find(R.propEq('id', id), state.entries)
+      setHistory([...search.history, {
+        scope: `@feature !feature:${ID.layerUUID(id)}`,
+        key: id,
+        label: entry.title
+      }])
     }
 
     const disposable = Disposable.of()
@@ -112,6 +119,8 @@ const useModel = () => {
     disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
     disposable.on(emitter, 'link', ({ id }) => link(id))
     disposable.on(emitter, 'polygon', ({ id }) => polygon(id))
+    disposable.on(emitter, 'layer/open', ({ id }) => layerOpen(id))
+
     return () => disposable.dispose()
   }, [emitter, services, state.entries, search.history, setHistory])
 

@@ -1,9 +1,11 @@
 import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
+import * as mdi from '@mdi/js'
 import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import * as ID from '../../ids'
+import { IconTag } from './IconTag'
 
 
 /**
@@ -49,8 +51,17 @@ ScopeSwitch.propTypes = {
  *
  */
 export const ScopeSwitcher = props => {
-  const [search] = useMemento('ui.sidebar.search', defaultSearch)
+  const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const { history } = search
+
+  const setHistory = React.useCallback(history => {
+    // Note: Setting/resetting history always resets filter.
+    setSearch({ filter: '', history })
+  }, [setSearch])
+
+  const handleClick = () => {
+    setHistory(R.dropLast(1, history))
+  }
 
   const SCOPES = {
     '#pin': 'pinned',
@@ -82,10 +93,18 @@ export const ScopeSwitcher = props => {
     />
   )
 
+  const back = history.length > 1
+    ? <IconTag
+        path={mdi.mdiArrowUp}
+        onClick={handleClick}
+      />
+    : null
+
   return (
     <div className='scope-container e3de-row'>
       <div className='e3de-taglist'>
         { defaultSwitches.concat(childSwitches) }
+        { back }
       </div>
     </div>
   )

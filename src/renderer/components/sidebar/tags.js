@@ -6,6 +6,7 @@ import { useServices, useEmitter } from '../hooks'
 import { TagIcon } from './TagIcon'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
+import { IconTag } from './IconTag'
 import './tags.scss'
 
 /**
@@ -41,6 +42,7 @@ const useController = () => {
     else if (spec.match(/SYSTEM:UNLOCKED/i)) store.lock(ids)
     else if (spec.match(/SYSTEM:LINK/i)) localEmitter.emit('link', { id })
     else if (spec.match(/SYSTEM:POLYGON/i)) localEmitter.emit('polygon', { id })
+    else if (spec.match(/SYSTEM:LAYER:OPEN/i)) localEmitter.emit('layer/open', { id })
   }
 
   const addTag = (id, value) => store.addTag(id, value.toLowerCase())
@@ -95,15 +97,18 @@ export const SystemTag = props => {
   const active = props.action !== 'NONE' ? '--active' : ''
   const className = `e3de-tag e3de-tag--system e3de-tag${active}`
 
-  return (
-    <span
-      className={className}
-      onMouseDown={stopPropagation}
-      onClick={handleClick}
-    >
-      {props.label}
-    </span>
-  )
+  return props.path
+    ? <IconTag
+        path={mdi[props.path]}
+        onClick={handleClick}
+      />
+    : <span
+        className={className}
+        onMouseDown={stopPropagation}
+        onClick={handleClick}
+      >
+        {props.label}
+      </span>
 }
 
 

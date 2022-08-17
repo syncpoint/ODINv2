@@ -14,7 +14,8 @@ export default async function (id) {
       'SCOPE:LAYER',
       hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
       locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
-      ...(links.length ? ['SYSTEM:LINK:NONE:mdiLink'] : []),
+      ...(links.length ? ['SYSTEM:LINK'] : []),
+      'SYSTEM:LAYER:OPEN:mdiArrowDown', // navigate to contained features
       ...((tags || [])).map(label => `USER:${label}:NONE`),
       ...(defaultFlag ? ['USER:default:NONE'] : []),
       'PLUS'
