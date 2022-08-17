@@ -90,7 +90,7 @@ const xyzAdapter = caps => ({
   layers: () => [],
   boundingBox: () => null,
   layerName: () => null,
-  source: () => new XYZ({ url: caps.url })
+  source: () => new XYZ({ url: caps.url, minZoom: caps.minZoom, maxZoom: caps.maxZoom })
 })
 
 

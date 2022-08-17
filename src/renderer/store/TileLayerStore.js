@@ -8,15 +8,22 @@ import * as TileService from './tileServiceAdapters'
 /**
  *
  */
-const fetchCapabilities = async url => {
-  if (!url || url.length === 0) return TileService.adapters.OSM()
+const fetchCapabilities = async service => {
+  if (!service || !service.url || service.url.length === 0) return TileService.adapters.OSM()
 
   try {
-    const response = await fetch(url)
+    const response = await fetch(service.url)
+    if ([400, 404, 500].includes(response.status)) {
+      throw new Error(response.statusText)
+    }
     const text = await response.text()
     return TileService.adapter(text)
   } catch (err) {
-    return TileService.adapters.XYZ({ url })
+    return TileService.adapters.XYZ({
+      url: service.url,
+      minZoom: service.capabilities?.minZoom,
+      maxZoom: service.capabilities?.maxZoom
+    })
   }
 }
 
@@ -90,7 +97,7 @@ TileLayerStore.prototype.updateService = async function (key, service) {
     // Nothing to fetch: Keep name, default to OSM.
     if (!service.url) return { type: 'OSM', name: service.name || '', url: '' }
 
-    const { type, title, capabilities } = await fetchCapabilities(service.url)
+    const { type, title, capabilities } = await fetchCapabilities(service)
     const name = service.name || title
     return { ...service, type, name, capabilities }
   }
