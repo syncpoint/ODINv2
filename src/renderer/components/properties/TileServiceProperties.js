@@ -127,8 +127,8 @@ const TileServiceProperties = props => {
     tileLayerStore.updateService(key, { ...service, url: url.value })
   }
 
-  const handleZoomChange = ({ minZoom, maxZoom }) => {
-    tileLayerStore.updateService(key, { ...service, ...{ capabilities: { minZoom, maxZoom } } })
+  const handleZoomChange = ({ maxZoom }) => {
+    tileLayerStore.updateService(key, { ...service, ...{ capabilities: { maxZoom } } })
   }
 
   const handleEntryChange = async id => tileLayerStore.toggleActiveLayer(key, id)
@@ -157,7 +157,7 @@ const TileServiceProperties = props => {
     : null
 
   const zoomSliders = service.type === 'XYZ'
-    ? <Zoom key={key} onChange={handleZoomChange} minZoom={service.capabilities?.minZoom} maxZoom={service.capabilities?.maxZoom} />
+    ? <Zoom key={key} onChange={handleZoomChange} maxZoom={service.capabilities?.maxZoom} />
     : null
 
 

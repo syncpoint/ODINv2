@@ -21,8 +21,7 @@ const fetchCapabilities = async service => {
   } catch (err) {
     return TileService.adapters.XYZ({
       url: service.url,
-      minZoom: service.capabilities?.minZoom,
-      maxZoom: service.capabilities?.maxZoom
+      maxZoom: service.capabilities?.maxZoom || 24
     })
   }
 }

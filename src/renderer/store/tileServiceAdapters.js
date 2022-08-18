@@ -83,15 +83,17 @@ const wmsAdapter = caps => {
 /**
  *
  */
-const xyzAdapter = caps => ({
-  type: 'XYZ',
-  capabilities: caps,
-  abstract: null,
-  layers: () => [],
-  boundingBox: () => null,
-  layerName: () => null,
-  source: () => new XYZ({ url: caps.url, minZoom: caps.minZoom, maxZoom: caps.maxZoom })
-})
+const xyzAdapter = caps => {
+  return {
+    type: 'XYZ',
+    capabilities: caps,
+    abstract: null,
+    layers: () => [],
+    boundingBox: () => null,
+    layerName: () => null,
+    source: () => new XYZ({ url: caps.url, maxZoom: caps.maxZoom })
+  }
+}
 
 
 /**
