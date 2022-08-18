@@ -48,6 +48,7 @@ export const stickyId = prefix('sticky')
 export const sharedId = prefix('shared')
 export const defaultId = prefix('default')
 export const tagsId = prefix('tags')
+export const styleId = prefix('style')
 export const tileLayerId = prefix('tile-layer')
 
 /** Only a single preset (for now.) */
@@ -104,6 +105,7 @@ export const isPlaceId = isId('place:')
 export const isTileServiceId = isId('tile-service:')
 export const isTilePresetId = isId('tile-preset:')
 export const isLinkId = isId('link+')
+export const isStyleId = isId('style+')
 
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isGroupId(id)

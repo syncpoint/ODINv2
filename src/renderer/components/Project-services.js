@@ -24,7 +24,6 @@ import { bindings } from '../bindings'
 import { SpatialIndex } from '../store/SpatialIndex'
 
 export default async projectUUID => {
-
   const services = {}
   const locator = () => services
   services.locator = locator
@@ -48,6 +47,7 @@ export default async projectUUID => {
   migrationsOptions[MigrationTool.INLINE_TAGS] = false
   migrationsOptions[MigrationTool.INLINE_FLAGS] = false
   migrationsOptions[MigrationTool.DEFAULT_TAG] = false
+  migrationsOptions[MigrationTool.INLINE_STYLES] = false
   const migration = new MigrationTool(db, migrationsOptions)
   await migration.upgrade()
 
