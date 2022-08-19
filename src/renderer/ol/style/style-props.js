@@ -1,6 +1,8 @@
 import * as R from 'ramda'
 
 export default {
+  colorScheme: R.prop('color-scheme'),
+
   circleFillColor: R.prop('circle-fill-color'),
   circleLineColor: R.prop('circle-line-color'),
   circleLineWidth: R.prop('circle-line-width'),
@@ -58,8 +60,7 @@ export default {
 
   symbolAnchor: R.prop('symbol-anchor'),
   symbolCode: R.prop('symbol-code'),
-  symbolColor: R.prop('symbol-color'),
-  symbolColorScheme: R.prop('symbol-color-scheme'),
+  symbolColor: R.prop('symbol-color'), // monoColor
   symbolFillOpacity: R.prop('symbol-fill-opacity'),
   symbolHaloColor: R.prop('symbol-halo-color'),
   symbolHaloWidth: R.prop('symbol-halo-width'),

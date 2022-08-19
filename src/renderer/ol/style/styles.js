@@ -81,7 +81,7 @@ const makeSymbol = props => {
   const size = Props.symbolSize(props) || 60 // TODO: make configurable
   const outlineColor = Props.symbolHaloColor(props)
   const outlineWidth = Props.symbolHaloWidth(props)
-  const colorMode = modes[Props.symbolColorScheme(props)]
+  const colorMode = modes[Props.colorScheme(props)]
   const monoColor = Props.symbolColor(props)
   const infoSize = Props.symbolTextSize(props)
   const infoColor = Props.symbolTextColor(props)

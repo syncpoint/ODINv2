@@ -1,5 +1,5 @@
 import { Modify } from './modify'
-import { writeFeatureCollection } from '../../model/geometry'
+import { writeFeatureCollection } from '../../store/FeatureStore'
 
 /**
  * @param {*} store
@@ -25,6 +25,7 @@ export default options => {
   })
 
   interaction.on('modifyend', event => {
+    // TODO: move to feature store
     const { features } = writeFeatureCollection([event.feature])
 
     const [keys, oldValues] = snapshot.reduce((acc, [key, value]) => {

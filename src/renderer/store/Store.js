@@ -5,7 +5,8 @@ import * as ID from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
-import { readGeometry, transform, geometryType } from '../model/geometry'
+import { transform, geometryType } from '../model/geometry'
+import { readGeometry } from '../store/FeatureStore'
 import { importSymbols } from './symbols'
 import { bbox } from './geometry'
 
@@ -180,7 +181,8 @@ Store.prototype.update = async function (...args) {
       if (Array.isArray(args[0])) {
         // update :: [k] -> (v -> v) -> unit
         const [keys, fn] = args
-        const oldValues = await L.values(this.db, keys)
+        // FIXME: Sssuming empty object as default value might not be such a good idea.
+        const oldValues = await L.values(this.db, keys, {})
         const newValues = oldValues.map(fn)
         return this.update(keys, newValues, oldValues)
       } else {
@@ -376,7 +378,9 @@ Store.prototype.geometry = function (key) {
 
 
 /**
+ * TODO: move to feature store
  * bbox :: Number n => k -> [n, n, n, n]
+ *
  */
 Store.prototype.bbox = async function (key) {
   const geometry = await L.get(this.wkbDB, key)
@@ -416,7 +420,7 @@ Store.prototype.layerBounds = function (acc, ids) {
   }, acc)
 }
 
-Store.prototype.geometryBounds = async function (acc, ids, resolution) {
+const geometryBounds = async function (acc, ids, resolution) {
   const geometries = await this.geometries(ids)
   return geometries
     .map(readGeometry)
@@ -434,9 +438,9 @@ Store.prototype.geometryBounds = async function (acc, ids, resolution) {
     }, acc)
 }
 
-Store.prototype.featureBounds = Store.prototype.geometryBounds
-Store.prototype.markerBounds = Store.prototype.geometryBounds
-Store.prototype.placeBounds = Store.prototype.geometryBounds
+Store.prototype.featureBounds = geometryBounds
+Store.prototype.markerBounds = geometryBounds
+Store.prototype.placeBounds = geometryBounds
 
 
 Store.prototype.geometryBounds = async function (ids, resolution) {

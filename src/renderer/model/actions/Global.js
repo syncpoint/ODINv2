@@ -10,8 +10,19 @@ export default function Global (options) {
   this.sessionStore = options.sessionStore
 }
 
+const colorScheme = context => ['Dark', 'Medium', 'Light'].map(scheme => ({
+  id: `scheme:${scheme}`.toLowerCase(),
+  name: `Color Scheme - ${scheme}`,
+  keywords: ['color', 'scheme', scheme.toLowerCase()],
+  perform: () => context.store.update(['style+default'], style => ({
+    ...style,
+    'color-scheme': scheme
+  }))
+}))
+
 Global.prototype.actions = function () {
   return [
+    ...colorScheme(this),
     {
       id: 'command:create:layer',
       name: 'Create - New Layer',

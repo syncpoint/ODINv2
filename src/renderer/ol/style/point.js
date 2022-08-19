@@ -14,6 +14,6 @@ styles['Point:DEFAULT'] = ({ feature, geometry, properties, sidc }) => {
     geometry,
     'symbol-code': feature.get('sidc'),
     'symbol-modifiers': modifiers(properties),
-    'symbol-color-scheme': 'light'
+    'color-scheme': 'Light'
   }]
 }

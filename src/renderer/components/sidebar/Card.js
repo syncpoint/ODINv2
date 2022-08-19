@@ -1,13 +1,11 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import * as Extent from 'ol/extent'
 import * as mdi from '@mdi/js'
 import Icon from '@mdi/react'
 import { TAG } from './tags'
 import { Title } from './Title'
 import { useServices, useEmitter } from '../hooks'
 import * as ID from '../../ids'
-import { readFeature } from '../../model/geometry'
 import './Card.scss'
 
 /**
@@ -90,14 +88,11 @@ const useDragAndDrop = (id, acceptDrop) => {
  *
  */
 const useController = id => {
-  const { emitter, ipcRenderer, store } = useServices()
+  const { emitter, ipcRenderer, store, featureStore } = useServices()
 
   const center = async id => {
-    const values = await store.values([id])
-    if (values.length !== 1) return
-    const entity = readFeature(values[0])
-    const center = Extent.getCenter(entity?.getGeometry()?.getExtent())
-    emitter.emit('map/goto', { center })
+    const center = featureStore.center(id)
+    center && emitter.emit('map/goto', { center })
   }
 
   const viewport = async id => {

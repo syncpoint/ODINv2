@@ -8,6 +8,9 @@ export default function MigrationTool (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
+
+  ;(async () => {
+  })()
 }
 
 MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers'
@@ -15,6 +18,7 @@ MigrationTool.INLINE_TAGS = 'inlineTags'
 MigrationTool.INLINE_FLAGS = 'inlineFlags'
 MigrationTool.DEFAULT_TAG = 'defaultTag'
 MigrationTool.INLINE_STYLES = 'inlineStyles'
+MigrationTool.DEFAULT_STYLE = 'defaultStyle'
 
 /**
  * async
@@ -25,6 +29,7 @@ MigrationTool.prototype.upgrade = async function () {
   await this.inlineFlags()
   await this.defaultTag()
   await this.inlineStyles()
+  await this.defaultStyle()
 }
 
 /**
@@ -135,4 +140,31 @@ MigrationTool.prototype.inlineStyles = async function () {
   }
 
   if (actual && wanted === false) await upgrade()
+}
+
+MigrationTool.prototype.defaultStyle = async function () {
+  const actual = await L.get(this.schemaDB, MigrationTool.DEFAULT_STYLE, false)
+  const wanted = this.options[MigrationTool.DEFAULT_STYLE]
+
+  const upgrade = async () => {
+    console.log('upgrade/DEFAULT_STYLE')
+    const ops = []
+    const style = {
+      'color-scheme': 'Dark',
+      'line-color': '#3399CC',
+      'line-width': 1.25,
+      'fill-color': '#3399CC',
+      'line-smooth': false,
+      'circle-radius': 5,
+      'circle-line-color': '#3399CC',
+      'circle-line-width': 1.25,
+      'circle-fill-color': 'rgba(255,255,255,0.4)'
+    }
+
+    ops.push(L.putOp('style+default', style))
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.DEFAULT_STYLE, true)
+  }
+
+  if (!actual && wanted === true) await upgrade()
 }

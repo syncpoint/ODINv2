@@ -11,6 +11,7 @@ import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
 import Nominatim from '../store/Nominatim'
+import { FeatureStore } from '../store/FeatureStore'
 import { OSDDriver } from '../model/OSDDriver'
 import { KBarActions } from '../model/actions/KBarActions'
 import TileLayerStore from '../store/TileLayerStore'
@@ -48,6 +49,8 @@ export default async projectUUID => {
   migrationsOptions[MigrationTool.INLINE_FLAGS] = false
   migrationsOptions[MigrationTool.DEFAULT_TAG] = false
   migrationsOptions[MigrationTool.INLINE_STYLES] = false
+  migrationsOptions[MigrationTool.DEFAULT_STYLE] = true
+
   const migration = new MigrationTool(db, migrationsOptions)
   await migration.upgrade()
 
@@ -72,6 +75,7 @@ export default async projectUUID => {
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
+  const featureStore = new FeatureStore(store)
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   // Key bindings.
@@ -104,6 +108,7 @@ export default async projectUUID => {
   services.documentStore = documentStore
   services.searchIndex = searchIndex
   services.tileLayerStore = tileLayerStore
+  services.featureStore = featureStore
   services.spatialIndex = spatialIndex
   services.osdDriver = osdDriver
   services.clipboard = clipboard

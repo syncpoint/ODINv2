@@ -3,7 +3,6 @@ import * as geom from 'ol/geom'
 import { getPointResolution } from 'ol/proj'
 import * as TS from '../ol/ts'
 import { codeUTM, firstCoordinate } from '../epsg'
-import GeoJSON from 'ol/format/GeoJSON'
 
 export const geometryType = arg => {
   // OpenLayers:
@@ -53,18 +52,3 @@ export const setCoordinates = (geometry, coordinates) =>
   geometry instanceof geom.GeometryCollection
     ? geometry.getGeometriesArray().forEach((geometry, index) => setCoordinates(geometry, coordinates[index]))
     : geometry.setCoordinates(coordinates)
-
-const format = new GeoJSON({
-  dataProjection: 'EPSG:3857',
-  featureProjection: 'EPSG:3857'
-})
-
-export const readFeature = source => format.readFeature(source)
-export const readFeatures = source => format.readFeatures(source)
-export const readGeometry = source => format.readGeometry(source)
-export const writeGeometry = geometry => format.writeGeometry(geometry)
-export const writeGeometryObject = geometry => format.writeGeometryObject(geometry)
-
-// writeFeatureCollection :: [ol/Feature] -> GeoJSON/FeatureCollection
-export const writeFeatureCollection = features => format.writeFeaturesObject(features)
-export const writeFeatureObject = feature => format.writeFeatureObject(feature)

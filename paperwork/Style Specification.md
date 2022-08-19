@@ -25,6 +25,8 @@ makeText ::
 
 ## Style Specification
 
+color-scheme :: Dark | Medium | Light
+
 circle-fill-color :: string
 circle-line-color :: string
 circle-line-width :: number
@@ -54,6 +56,7 @@ line-halo-width :: number
 line-join :: bevel | round | miter
 line-miter-limit :: number, default 10
 line-width :: number
+line-smooth :: boolean -> false | true
 
 text-anchor :: 'center' | 'left' | 'right' |
 	'top' | 'top-left' | 'top-right' |
@@ -90,8 +93,7 @@ shape-scale :: [number, number]
 
 symbol-anchor :: string - unsupported
 symbol-code :: string
-symbol-color :: string
-symbol-color-scheme :: 'dark' | 'medium' | 'light'
+symbol-color :: string (monoColor)
 symbol-fill-opacity :: numberq
 symbol-halo-color :: string
 symbol-halo-width :: string
