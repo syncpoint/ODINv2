@@ -25,7 +25,7 @@ makeText ::
 
 ## Style Specification
 
-color-scheme :: Dark | Medium | Light
+color-scheme :: dark | medium | light
 
 circle-fill-color :: string
 circle-line-color :: string

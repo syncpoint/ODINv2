@@ -103,7 +103,7 @@ export const KBar = () => {
 
   React.useEffect(() => {
     const disposable = Disposable.of()
-    disposable.on(emitter, 'create', async () => setSnapshot(await store.tuples(selection.selected())))
+    disposable.on(emitter, 'create', async () => setSnapshot(await store.tuplesJSON(selection.selected())))
     disposable.on(emitter, 'restore', async () => store.update(snapshot))
     disposable.on(emitter, 'discard', () => setSnapshot([]))
     return () => disposable.dispose()

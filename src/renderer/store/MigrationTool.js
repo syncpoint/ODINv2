@@ -10,6 +10,7 @@ export default function MigrationTool (db, options) {
   this.options = options
 
   ;(async () => {
+    // this.schemaDB.del(MigrationTool.DEFAULT_STYLE)
   })()
 }
 
@@ -120,6 +121,10 @@ MigrationTool.prototype.defaultTag = async function () {
   if (actual && wanted === false) await upgrade()
 }
 
+
+/**
+ *
+ */
 MigrationTool.prototype.inlineStyles = async function () {
   const actual = await L.get(this.schemaDB, MigrationTool.INLINE_STYLES, true)
   const wanted = this.options[MigrationTool.INLINE_STYLES]
@@ -142,6 +147,10 @@ MigrationTool.prototype.inlineStyles = async function () {
   if (actual && wanted === false) await upgrade()
 }
 
+
+/**
+ *
+ */
 MigrationTool.prototype.defaultStyle = async function () {
   const actual = await L.get(this.schemaDB, MigrationTool.DEFAULT_STYLE, false)
   const wanted = this.options[MigrationTool.DEFAULT_STYLE]
@@ -150,7 +159,7 @@ MigrationTool.prototype.defaultStyle = async function () {
     console.log('upgrade/DEFAULT_STYLE')
     const ops = []
     const style = {
-      'color-scheme': 'Dark',
+      'color-scheme': 'light',
       'line-color': '#3399CC',
       'line-width': 1.25,
       'fill-color': '#3399CC',

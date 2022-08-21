@@ -27,6 +27,9 @@ const schemes = {
 
 const includes = xs => x => xs.includes(x)
 
+/**
+ * @deprecated: use lineColor
+ */
 export const fill = scheme => R.cond([
   [includes(['A', 'F', 'M', 'D']), R.always(schemes[scheme].blue)],
   [includes(['H', 'J', 'K', 'S']), R.always(schemes[scheme].red)],
@@ -35,7 +38,24 @@ export const fill = scheme => R.cond([
   [R.T, R.always('black')]
 ])
 
+/**
+ * @deprecated: use lineHaloColor
+ */
 export const stroke = R.cond([
   [R.equals('-'), R.always('white')],
   [R.T, R.always('black')]
 ])
+
+export const lineColor = scheme => R.cond([
+  [includes(['A', 'F', 'M', 'D']), R.always(schemes[scheme].blue)],
+  [includes(['H', 'J', 'K', 'S']), R.always(schemes[scheme].red)],
+  [includes(['N', 'L']), R.always(schemes[scheme].green)],
+  [includes(['U', 'P', 'G', 'W']), R.always(schemes[scheme].yellow)],
+  [R.T, R.always('black')]
+])
+
+export const lineHaloColor = R.cond([
+  [R.equals('-'), R.always('white')],
+  [R.T, R.always('black')]
+])
+

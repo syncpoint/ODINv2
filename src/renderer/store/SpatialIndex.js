@@ -4,17 +4,14 @@ import * as L from '../../shared/level'
 import { bbox } from './geometry'
 import * as TS from '../ol/ts'
 
-console.log(TS)
-
-
 export function SpatialIndex (wkbDB) {
   this.wkbDB = wkbDB
   this.tree = new RBush()
   this.geoJSONReader = new TS.GeoJSONReader()
 
-  wkbDB.on('batch', event => console.log('[SpatialIndex/batch]', event))
-  wkbDB.on('put', (key, value) => console.log('[SpatialIndex/put]', key, value))
-  wkbDB.on('del', key => console.log('[SpatialIndex/del]', key))
+  // wkbDB.on('batch', event => console.log('[SpatialIndex/batch]', event))
+  // wkbDB.on('put', (key, value) => console.log('[SpatialIndex/put]', key, value))
+  // wkbDB.on('del', key => console.log('[SpatialIndex/del]', key))
 
   // Import symbols once for each fresh project database.
   window.requestIdleCallback(async () => {

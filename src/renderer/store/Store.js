@@ -124,6 +124,16 @@ Store.prototype.tuples = async function (arg) {
 
 /**
  * @async
+ * tuples :: String -> [[k, v]]
+ * tuples :: [k] -> [[k, v]]
+ */
+Store.prototype.tuplesJSON = async function (arg) {
+  return L.tuples(this.jsonDB, arg)
+}
+
+
+/**
+ * @async
  * values :: String -> [v]
  * values :: [k] -> [v]
  */

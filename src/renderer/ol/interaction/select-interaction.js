@@ -17,7 +17,7 @@ export default options => {
 
   const interaction = new Select({
     hitTolerance,
-    style,
+    style: null,
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
     multi: false, // don't select all features under cursor at once.

@@ -10,10 +10,13 @@ export default function Global (options) {
   this.sessionStore = options.sessionStore
 }
 
-const colorScheme = context => ['Dark', 'Medium', 'Light'].map(scheme => ({
-  id: `scheme:${scheme}`.toLowerCase(),
-  name: `Color Scheme - ${scheme}`,
-  keywords: ['color', 'scheme', scheme.toLowerCase()],
+const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1)
+
+const colorScheme = context => ['dark', 'medium', 'light'].map(scheme => ({
+  id: `scheme:${scheme}`,
+  name: `Color Scheme - ${capitalize(scheme)}`,
+  keywords: ['color', 'scheme', scheme],
+  shortcut: [`$mod+S ${scheme[0].toUpperCase()}`],
   perform: () => context.store.update(['style+default'], style => ({
     ...style,
     'color-scheme': scheme
