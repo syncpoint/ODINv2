@@ -1,4 +1,7 @@
-[
+/* eslint-disable quotes */
+/* eslint-disable quote-props */
+
+export const docs = [
   {
     "id": "feature:26ff072b-99ba-4b55-a3f8-a26cf6ef22ee/80a78e90-5c8d-46fc-a96c-8f26dc950c4c",
     "scope": "feature",
