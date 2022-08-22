@@ -1,9 +1,25 @@
 /* eslint-disable camelcase */
-import { smooth } from '../ol/style/chaikin'
-import { Stroke, Style } from 'ol/style'
 import { rules } from './StyleRules-Rules'
 
-// FIXME: ...
-rules.Polygon = rules.LineString
-// const _ = rules.Polygon
+rules.Polygon = [
+  ...rules.shared,
+  ...rules.generic
+]
 
+/**
+ * simplified, geometry_simplified
+ */
+rules.Polygon.push([next => {
+  const geometry = next.geometry
+
+  // Never simplify current selection.
+  const simplified = next.mode === 'singleselect'
+    ? false
+    : geometry.getCoordinates()[0].length > 50
+
+  const geometry_simplified = simplified
+    ? geometry.simplify(next.resolution)
+    : geometry
+
+  return { simplified, geometry_simplified }
+}, ['resolution', 'mode', 'geometry_key', 'geometry']])

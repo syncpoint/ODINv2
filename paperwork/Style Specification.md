@@ -100,7 +100,7 @@ symbol-halo-width :: string (outlineWidth)
 symbol-line-width :: number (strokeWidth)
 # symbol-modifiers :: {k: v}
 symbol-offset :: [number, number] - unsupported
-symbol-rotate :: number - default 100
-symbol-size :: number
+symbol-rotate :: number
+symbol-size :: number - default: 100 [pixels]
 symbol-text-color :: string (infoColor)
-symbol-text-size :: number
+symbol-text-size :: number - default: 40 [%]
