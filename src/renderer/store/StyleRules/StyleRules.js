@@ -27,7 +27,6 @@ export const reduce = (state, obj) => {
 
   const changed = Object.keys(obj).filter(different)
   if (changed.length === 0) return state
-  console.log(changed)
 
   const next = { ...state, ...obj }
   const depends = rule => rule[1].some(key => changed.includes(key))

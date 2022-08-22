@@ -89,10 +89,12 @@ rules.generic.push([next => {
  */
 rules.generic.push([next => {
   const geometry_smoothened = next.geometry_smoothened
+  if (!geometry_smoothened) return
+
   const { read, write, pointResolution } = transform(geometry_smoothened)
   const geometry_utm = read(geometry_smoothened)
   return { read, write, resolution_point: pointResolution, geometry_utm }
-}, ['geometry_smoothened']])
+}, ['geometry_key', 'geometry_smoothened']])
 
 
 /**

@@ -63,18 +63,20 @@ text-anchor :: 'center' | 'left' | 'right' |
 	'bottom' | 'bottom-left' | 'bottom-right' |
 	number, [0, 1]
 text-clipping :: 'none' | 'line' | 'actual' (default)
-text-color :: string
-text-fill-color :: string
+text-color :: string (text/fill/color)
+text-fill-color :: string (text/backgroundFill/color)
 text-field :: string
 text-font :: string
+text-font-weight :: string
+text-font-variant :: string
+text-font-style :: string
 text-font-familiy :: string
 text-font-size :: number
-text-font-weight :: string
-text-halo-color :: string
-text-halo-width :: number
+text-halo-color :: string (text/stoke/color)
+text-halo-width :: number (text/stoke/width)
 text-justify :: 'start' | 'end' | 'center'
-text-line-color :: string
-text-line-width :: number
+text-line-color :: string (text/backgroundStoke/color)
+text-line-width :: number (text/backgroundStoke/width)
 text-offset :: [X, Y] - pixel offset
 text-padding :: number
 text-rotate :: number

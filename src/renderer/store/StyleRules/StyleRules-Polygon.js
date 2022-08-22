@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda'
 import { Jexl } from 'jexl'
-import { Text, Style } from 'ol/style'
+import { Text, Style, Stroke, Fill } from 'ol/style'
 import { rules } from './StyleRules-Rules'
 import * as TS from '../../ol/ts'
 import { lazy } from '../../ol/style/lazy'
@@ -19,6 +19,7 @@ rules.Polygon = [
  */
 rules.Polygon.push([next => {
   const geometry_defining = next.geometry_defining
+  if (!geometry_defining) return
 
   // Never simplify current selection.
   const simplified = next.mode === 'singleselect'
@@ -81,8 +82,26 @@ rules.Polygon.push([next => {
  */
 rules.Polygon.push([next => {
   const sidc = next.sidc_parameterized
+  const style_effective = next.style_effective
   const labels = LABELS[sidc]
   if (!labels) return
+
+  const font = style_effective['text-font'] || [
+    style_effective['text-font-style'],
+    style_effective['text-font-variant'],
+    style_effective['text-font-weight'],
+    style_effective['text-font-size'],
+    style_effective['text-font-family']
+  ].filter(Boolean).join(' ')
+
+  const haloColor = style_effective['text-halo-color']
+  const haloWidth = style_effective['text-halo-width']
+  const stroke = haloColor && haloWidth
+    ? new Stroke({ color: haloColor, width: haloWidth })
+    : undefined
+
+  const color = style_effective['text-color']
+  const fill = color ? new Fill({ color }) : undefined
 
   const properties = next.properties
   const evalSync = textField => Array.isArray(textField)
@@ -92,7 +111,12 @@ rules.Polygon.push([next => {
   const text_default = labels
     .filter(R.prop('text-field'))
     .map(label => {
-      const text = new Text({ text: evalSync(label['text-field']) })
+      const text = new Text({
+        text: evalSync(label['text-field']),
+        font,
+        stroke,
+        fill
+      })
       return anchors => new Style({
         geometry: anchors[label['text-anchor']](),
         text
@@ -100,7 +124,7 @@ rules.Polygon.push([next => {
     })
 
   return { text_default }
-}, ['sidc_parameterized', 'properties']])
+}, ['sidc_parameterized', 'properties', 'style_effective']])
 
 
 /**
