@@ -1,5 +1,6 @@
 // properties :: {k: v} - feature properties excluding geometry
 // sidc :: String - feature SIDC (from properties)
+// sidc_parameterized :: String -
 // identity :: Char - SIDC identity/affiliation code (F, H, etc.)
 // resolution_center :: Number - resolution @ viewport center
 // resolution_point :: Number -> Number - calculate exact resolution at given point
@@ -12,5 +13,6 @@
 // read :: ol/geom/Geometry -> jsts/geom/Geometry
 // write :: jsts/geom/Geometry -> ol/geom/Geometry
 // geometry_utm :: jsts/geom/Geometry - JSTS/UTM transformed smoothened geometry
+// text_anchors :: {k: fn} - functions to calculate label anchors
 
 export const rules = []

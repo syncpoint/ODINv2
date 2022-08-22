@@ -53,7 +53,7 @@ rules.Point.push([next => {
   const options = next.symbol_options
   const symbol = new ms.Symbol(sidc, { ...options })
   return { symbol }
-}, ['symbol_options']])
+}, ['sidc', 'symbol_options']])
 
 
 /**

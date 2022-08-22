@@ -2,7 +2,7 @@
 import { Stroke, Style } from 'ol/style'
 import { rules } from './StyleRules-Rules'
 import * as Colors from '../../ol/style/color-schemes'
-import { identityCode } from '../../symbology/2525c'
+import { identityCode, parameterized } from '../../symbology/2525c'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 
@@ -16,6 +16,15 @@ rules.shared.push([next => {
   const { sidc } = next.properties
   return { sidc, identity: identityCode(sidc) }
 }, ['properties']])
+
+
+/**
+ * sidc_parameterized
+ */
+rules.shared.push([next => {
+  const sidc_parameterized = parameterized(next.sidc)
+  return { sidc_parameterized }
+}, ['sidc']])
 
 
 /**
@@ -98,10 +107,22 @@ rules.generic.push([next => {
 
 
 /**
- * style
+ * style_stoke :: [ol/style/Style]
  */
 rules.generic.push([next => {
   const geometry_smoothened = next.geometry_smoothened
   const line = next.line_default
-  return { style: line(geometry_smoothened) }
+  return { style_stroke: line(geometry_smoothened) }
 }, ['geometry_smoothened', 'line_default']])
+
+
+/**
+ * style :: [ol/style/Style]
+ */
+rules.generic.push([next => {
+  const stroke = next.style_stroke
+  const text = next.style_text
+  if (!stroke || !text) return
+
+  return { style: [...stroke, ...text] }
+}, ['style_stroke', 'style_text']])
