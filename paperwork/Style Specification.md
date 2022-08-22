@@ -94,13 +94,13 @@ shape-scale :: [number, number]
 symbol-anchor :: string - unsupported
 symbol-code :: string
 symbol-color :: string (monoColor)
-symbol-fill-opacity :: numberq
-symbol-halo-color :: string
-symbol-halo-width :: string
-symbol-line-width :: number
-symbol-modifiers :: {k: v}
+symbol-fill-opacity :: number (fillOpacity)
+symbol-halo-color :: string (outlineColor)
+symbol-halo-width :: string (outlineWidth)
+symbol-line-width :: number (strokeWidth)
+# symbol-modifiers :: {k: v}
 symbol-offset :: [number, number] - unsupported
-symbol-rotate :: number
+symbol-rotate :: number - default 100
 symbol-size :: number
-symbol-text-color :: string
+symbol-text-color :: string (infoColor)
 symbol-text-size :: number

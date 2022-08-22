@@ -159,7 +159,7 @@ MigrationTool.prototype.defaultStyle = async function () {
     console.log('upgrade/DEFAULT_STYLE')
     const ops = []
     const style = {
-      'color-scheme': 'light',
+      'color-scheme': 'medium',
       'line-color': '#3399CC',
       'line-width': 1.25,
       'fill-color': '#3399CC',
@@ -167,7 +167,16 @@ MigrationTool.prototype.defaultStyle = async function () {
       'circle-radius': 5,
       'circle-line-color': '#3399CC',
       'circle-line-width': 1.25,
-      'circle-fill-color': 'rgba(255,255,255,0.4)'
+      'circle-fill-color': 'rgba(255,255,255,0.4)',
+      'symbol-size': 60, // pixels
+      'symbol-fill-opacity': 0.6,
+      'symbol-halo-color': null, // only valid with symbol-halo-width = 0
+      'symbol-halo-width': 0,
+      'symbol-color': '', // default: '', `null` won't work
+      'symbol-line-width': 2, // default: 3
+      'symbol-text-color': 'black',
+      'symbol-text-size': 40, // default: 40% of symbol-size
+      'icon-scale': 0.5
     }
 
     ops.push(L.putOp('style+default', style))

@@ -4,9 +4,9 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
 import Emitter from '../../shared/emitter'
 import { debounce, batch } from '../../shared/debounce'
+import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
-import * as StyleRules from './StyleRules'
-import { reduce } from './StyleRules'
+import { reduce, rules } from './StyleRules'
 
 
 const format = new GeoJSON({
@@ -190,10 +190,16 @@ FeatureStore.prototype.feature = function (key) {
   return this.features[key]
 }
 
+
+/**
+ *
+ */
 FeatureStore.prototype.wrap = function (feature) {
+  const type = geometryType(feature.getGeometry())
+  if (!rules[type]) console.warn('[style] unsupported geometry', type)
   let state = {
     mode: 'default',
-    rules: StyleRules.LineString
+    rules: rules[type] || []
   }
 
   const featureId = feature.getId()

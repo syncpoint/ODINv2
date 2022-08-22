@@ -65,6 +65,8 @@ export default {
   symbolHaloColor: R.prop('symbol-halo-color'),
   symbolHaloWidth: R.prop('symbol-halo-width'),
   symbolLineWidth: R.prop('symbol-line-width'),
+
+  /** @deprecated: what for? */
   symbolModifiers: R.prop('symbol-modifiers'),
   symbolOffset: R.prop('symbol-offset'),
   symbolRotate: R.prop('symbol-rotate'),
