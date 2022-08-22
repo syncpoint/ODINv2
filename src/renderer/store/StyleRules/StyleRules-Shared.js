@@ -1,9 +1,10 @@
 /* eslint-disable camelcase */
 import { Stroke, Style } from 'ol/style'
 import { rules } from './StyleRules-Rules'
-import * as Colors from '../ol/style/color-schemes'
-import { identityCode } from '../symbology/2525c'
-import { smooth } from '../ol/style/chaikin'
+import * as Colors from '../../ol/style/color-schemes'
+import { identityCode } from '../../symbology/2525c'
+import { smooth } from '../../ol/style/chaikin'
+import { transform } from '../../model/geometry'
 
 rules.shared = []
 rules.generic = [] // LineString, Polygon
@@ -45,16 +46,16 @@ rules.shared.push([next => {
 
 
 /**
- * simplified, geometry_smooth
+ * simplified, geometry_smoothened
  */
 rules.generic.push([next => {
   if (!next.style_effective) return /* not quite yet */
-  const geometry = next.geometry_simplified
-  const geometry_smooth = next.line_smooth
-    ? smooth(geometry)
-    : geometry
+  const geometry_simplified = next.geometry_simplified
+  const geometry_smoothened = next.line_smooth
+    ? smooth(geometry_simplified)
+    : geometry_simplified
 
-  return { geometry_smooth }
+  return { geometry_smoothened }
 }, ['line_smooth', 'geometry_key', 'geometry_simplified']])
 
 
@@ -75,10 +76,32 @@ rules.generic.push([next => {
 
 
 /**
+ * read, write, resolution_point, geometry_utm
+ */
+rules.generic.push([next => {
+  const geometry_smoothened = next.geometry_smoothened
+  const { read, write, pointResolution } = transform(geometry_smoothened)
+  const geometry_utm = read(geometry_smoothened)
+  return { read, write, resolution_point: pointResolution, geometry_utm }
+}, ['geometry_smoothened']])
+
+
+/**
+ * resolution -
+ * calculate exact resolution at first point of geometry.
+ */
+rules.generic.push([next => {
+  if (!next.resolution_point) return
+  const resolution = next.resolution_point(next.resolution_center)
+  return { resolution }
+}, ['resolution_center', 'resolution_point']])
+
+
+/**
  * style
  */
 rules.generic.push([next => {
-  const geometry = next.geometry_smooth
+  const geometry_smoothened = next.geometry_smoothened
   const line = next.line_default
-  return { style: line(geometry) }
-}, ['geometry_smooth', 'line_default']])
+  return { style: line(geometry_smoothened) }
+}, ['geometry_smoothened', 'line_default']])

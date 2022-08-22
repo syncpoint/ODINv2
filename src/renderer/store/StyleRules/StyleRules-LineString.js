@@ -10,16 +10,16 @@ rules.LineString = [
  * simplified, geometry_simplified
  */
 rules.LineString.push([next => {
-  const geometry = next.geometry
+  const geometry_defining = next.geometry_defining
 
   // Never simplify current selection.
   const simplified = next.mode === 'singleselect'
     ? false
-    : geometry.getCoordinates().length > 50
+    : geometry_defining.getCoordinates().length > 50
 
   const geometry_simplified = simplified
-    ? geometry.simplify(next.resolution)
-    : geometry
+    ? geometry_defining.simplify(next.resolution)
+    : geometry_defining
 
   return { simplified, geometry_simplified }
-}, ['resolution', 'mode', 'geometry_key', 'geometry']])
+}, ['resolution', 'mode', 'geometry_key', 'geometry_defining']])

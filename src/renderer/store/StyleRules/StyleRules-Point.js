@@ -3,23 +3,19 @@ import * as R from 'ramda'
 import ms from 'milsymbol'
 import { Style, Icon } from 'ol/style'
 import { rules } from './StyleRules-Rules'
-import { MODIFIERS } from '../symbology/2525c'
+import { MODIFIERS } from '../../symbology/2525c'
 
 const modifiers = properties => Object.entries(properties)
   .filter(([key, value]) => MODIFIERS[key] && value)
   .reduce((acc, [key, value]) => R.tap(acc => (acc[MODIFIERS[key]] = value), acc), {})
 
-rules.Point = []
-const _ = rules.Point
-
-_.push(rules.shared.sidc)
-_.push(rules.shared.style_effective)
+rules.Point = [...rules.shared]
 
 
 /**
  * symbol_modifiers
  */
-_.push([next => {
+rules.Point.push([next => {
   return { symbol_modifiers: modifiers(next.properties) }
 }, ['properties']])
 
@@ -27,7 +23,7 @@ _.push([next => {
 /**
  * symbol_options
  */
-_.push([next => {
+rules.Point.push([next => {
   if (!next.style_effective) return /* not quite yet */
 
   const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
@@ -52,7 +48,7 @@ _.push([next => {
 /**
  * symbol
  */
-_.push([next => {
+rules.Point.push([next => {
   const sidc = next.sidc
   const options = next.symbol_options
   const symbol = new ms.Symbol(sidc, { ...options })
@@ -63,7 +59,7 @@ _.push([next => {
 /**
  * icon
  */
-_.push([next => {
+rules.Point.push([next => {
   const symbol = next.symbol
   const { width, height } = symbol.getSize()
   const style_effective = next.style_effective
@@ -84,8 +80,8 @@ _.push([next => {
 /**
  * style
  */
-_.push([next => {
-  const geometry = next.geometry
+rules.Point.push([next => {
   const icon = next.icon
-  return { style: new Style({ geometry, image: icon }) }
-}, ['icon', 'geometry_key', 'geometry']])
+  const geometry_defining = next.geometry_defining
+  return { style: new Style({ geometry: geometry_defining, image: icon }) }
+}, ['icon', 'geometry_key', 'geometry_defining']])

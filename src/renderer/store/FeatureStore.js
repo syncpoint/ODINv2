@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import * as R from 'ramda'
 import util from 'util'
 import GeoJSON from 'ol/format/GeoJSON'
@@ -6,7 +7,7 @@ import Emitter from '../../shared/emitter'
 import { debounce, batch } from '../../shared/debounce'
 import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
-import { reduce, rules } from './StyleRules'
+import { reduce, rules } from './StyleRules/StyleRules'
 
 
 const format = new GeoJSON({
@@ -210,12 +211,12 @@ FeatureStore.prototype.wrap = function (feature) {
   R.when(Boolean, set('style_feature'))(this.styleProps['style+' + featureId])
 
   feature.setStyle((feature, resolution) => {
-    const { geometry, ...properties } = feature.getProperties()
+    const { geometry: geometry_defining, ...properties } = feature.getProperties()
     state = reduce(state, {
-      geometry,
+      geometry_defining,
       properties,
-      resolution,
-      geometry_key: `${geometry.ol_uid}:${geometry.getRevision()}`
+      resolution_center: resolution,
+      geometry_key: `${geometry_defining.ol_uid}:${geometry_defining.getRevision()}`
     })
 
     return state.style
