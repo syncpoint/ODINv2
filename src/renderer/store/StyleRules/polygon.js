@@ -19,7 +19,6 @@ rules.Polygon = [
  */
 rules.Polygon.push([next => {
   const geometry_defining = next.geometry_defining
-  if (!geometry_defining) return
 
   // Never simplify current selection.
   const simplified = next.mode === 'singleselect'
@@ -27,11 +26,11 @@ rules.Polygon.push([next => {
     : geometry_defining.getCoordinates()[0].length > 50
 
   const geometry_simplified = simplified
-    ? geometry_defining.simplify(next.resolution)
+    ? geometry_defining.simplify(next.resolution_center)
     : geometry_defining
 
   return { simplified, geometry_simplified }
-}, ['resolution', 'mode', 'geometry_key', 'geometry_defining']])
+}, ['resolution_center', 'mode', 'geometry_key', 'geometry_defining']])
 
 
 /**
@@ -83,8 +82,7 @@ rules.Polygon.push([next => {
 rules.Polygon.push([next => {
   const sidc = next.sidc_parameterized
   const style_effective = next.style_effective
-  const labels = LABELS[sidc]
-  if (!labels) return
+  const labels = LABELS[sidc] || []
 
   const font = style_effective['text-font'] || [
     style_effective['text-font-style'],
@@ -133,9 +131,6 @@ rules.Polygon.push([next => {
 rules.Polygon.push([next => {
   const text = next.text_default
   const anchors = next.text_anchors
-  const write = next.write
-  if (!text || !anchors || !write) return
-
   const style_text = text.map(fn => fn(anchors))
   return { style_text }
 }, ['text_anchors', 'text_default']])

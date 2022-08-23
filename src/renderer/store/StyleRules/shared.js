@@ -10,21 +10,13 @@ rules.shared = []
 rules.generic = [] // LineString, Polygon
 
 /**
- * sidc, sidc+identity
+ * sidc, sidc_parameterized, sidc+identity
  */
 rules.shared.push([next => {
   const { sidc } = next.properties
-  return { sidc, identity: identityCode(sidc) }
+  const sidc_parameterized = parameterized(sidc)
+  return { sidc, sidc_parameterized, identity: identityCode(sidc) }
 }, ['properties']])
-
-
-/**
- * sidc_parameterized
- */
-rules.shared.push([next => {
-  const sidc_parameterized = parameterized(next.sidc)
-  return { sidc_parameterized }
-}, ['sidc']])
 
 
 /**
@@ -50,7 +42,7 @@ rules.shared.push([next => {
   // We don't want to calculate new geometries on color change.
   const merged = { ...global, ...layer, ...scheme, ...feature }
   const { 'line-smooth': line_smooth, ...style_effective } = merged
-  return { line_smooth, style_effective }
+  return { line_smooth: !!line_smooth, style_effective }
 }, ['identity', 'style_default', 'style_layer', 'style_feature']])
 
 
@@ -58,7 +50,6 @@ rules.shared.push([next => {
  * simplified, geometry_smoothened
  */
 rules.generic.push([next => {
-  if (!next.style_effective) return /* not quite yet */
   const geometry_simplified = next.geometry_simplified
   const geometry_smoothened = next.line_smooth
     ? smooth(geometry_simplified)
@@ -89,8 +80,6 @@ rules.generic.push([next => {
  */
 rules.generic.push([next => {
   const geometry_smoothened = next.geometry_smoothened
-  if (!geometry_smoothened) return
-
   const { read, write, pointResolution } = transform(geometry_smoothened)
   const geometry_utm = read(geometry_smoothened)
   return { read, write, resolution_point: pointResolution, geometry_utm }
@@ -102,7 +91,6 @@ rules.generic.push([next => {
  * calculate exact resolution at first point of geometry.
  */
 rules.generic.push([next => {
-  if (!next.resolution_point) return
   const resolution = next.resolution_point(next.resolution_center)
   return { resolution }
 }, ['resolution_center', 'resolution_point']])
@@ -124,7 +112,5 @@ rules.generic.push([next => {
 rules.generic.push([next => {
   const stroke = next.style_stroke
   const text = next.style_text
-  if (!stroke || !text) return
-
   return { style: [...stroke, ...text] }
 }, ['style_stroke', 'style_text']])
