@@ -2,7 +2,7 @@
 import * as R from 'ramda'
 import ms from 'milsymbol'
 import { Style, Icon } from 'ol/style'
-import { rules } from './StyleRules-Rules'
+import { rules } from './rules'
 import { MODIFIERS } from '../../symbology/2525c'
 
 const modifiers = properties => Object.entries(properties)

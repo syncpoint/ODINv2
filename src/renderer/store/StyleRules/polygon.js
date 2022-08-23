@@ -2,7 +2,7 @@
 import * as R from 'ramda'
 import { Jexl } from 'jexl'
 import { Text, Style, Stroke, Fill } from 'ol/style'
-import { rules } from './StyleRules-Rules'
+import { rules } from './rules'
 import * as TS from '../../ol/ts'
 import { lazy } from '../../ol/style/lazy'
 import G_G_GAZ from '../../ol/style/resources/G_G_GAZ.png'

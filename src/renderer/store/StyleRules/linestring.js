@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { rules } from './StyleRules-Rules'
+import { rules } from './rules'
 
 rules.LineString = [
   ...rules.shared,

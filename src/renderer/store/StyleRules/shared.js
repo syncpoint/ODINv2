@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { Stroke, Style } from 'ol/style'
-import { rules } from './StyleRules-Rules'
+import { rules } from './rules'
 import * as Colors from '../../ol/style/color-schemes'
 import { identityCode, parameterized } from '../../symbology/2525c'
 import { smooth } from '../../ol/style/chaikin'

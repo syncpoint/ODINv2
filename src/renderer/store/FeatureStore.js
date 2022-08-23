@@ -200,7 +200,9 @@ FeatureStore.prototype.wrap = function (feature) {
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
   let state = {
     mode: 'default',
-    rules: rules[type] || []
+    rules: rules[type] || [],
+    style_layer: {},
+    style_feature: {}
   }
 
   const featureId = feature.getId()

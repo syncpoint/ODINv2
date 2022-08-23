@@ -1,10 +1,10 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import './StyleRules-Shared'
-import './StyleRules-Point'
-import './StyleRules-LineString'
-import './StyleRules-Polygon'
-export { rules } from './StyleRules-Rules'
+import './shared'
+import './point'
+import './linestring'
+import './polygon'
+export { rules } from './rules'
 
 const notDeepEqual = (state, obj, key) => !isEqual(state[key], obj[key])
 
