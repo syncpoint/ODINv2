@@ -179,12 +179,12 @@ MigrationTool.prototype.defaultStyle = async function () {
       'icon-scale': 0.5,
       // 'text-font-style': 'normal', // none, normal, italic, oblique
       // 'text-font-variant': 'normal', // none, normal, small-caps
-      'text-font-weight': 'lighter', // none, normal, bold
-      'text-font-size': '14px',
+      'text-font-weight': 'normal', // none, normal, bold
+      'text-font-size': '12px',
       'text-font-family': 'sans-serif', // sans-serif, roboto, monospace
-      'text-color': '#A44',
-      'text-halo-color': 'black',
-      'text-halo-width': 0.5
+      'text-color': '#333'
+      // 'text-halo-color': 'black',
+      // 'text-halo-width': 0.5
     }
 
     ops.push(L.putOp('style+default', style))

@@ -23,15 +23,17 @@ const deps = rule => rule[1]
 /**
  *
  */
-export const reduce = (state, obj, pass = 1) => {
+export const reduce = (state, obj, evaluated = []) => {
   const different = key => comparators[key]
     ? comparators[key](state, obj, key)
     : state[key] !== obj[key]
 
   const evaluate = (rules, next) => {
+    const pending = rules.filter(rule => !evaluated.includes(rule))
     const isFulfilled = rule => deps(rule).every(key => !R.isNil(next[key]))
-    const [fulfilled, outdated] = R.partition(isFulfilled, rules)
+    const [fulfilled, outdated] = R.partition(isFulfilled, pending)
     const merge = (acc, rule) => ({ ...acc, ...fn(rule)(next) })
+    evaluated.push(...fulfilled)
     if (fulfilled.length === 0) return next
     else return evaluate(outdated, fulfilled.reduce(merge, next))
   }
@@ -44,5 +46,5 @@ export const reduce = (state, obj, pass = 1) => {
   const next = { ...state, ...obj }
   const acc = evaluate(outdated, next)
 
-  return R.isEmpty(acc) ? next : reduce(next, acc, ++pass)
+  return R.isEmpty(acc) ? next : reduce(next, acc, evaluated)
 }

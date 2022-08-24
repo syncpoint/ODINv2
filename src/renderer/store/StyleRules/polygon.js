@@ -1,13 +1,9 @@
 /* eslint-disable camelcase */
-import * as R from 'ramda'
-import { Jexl } from 'jexl'
-import { Text, Style, Stroke, Fill } from 'ol/style'
 import { rules } from './rules'
 import * as TS from '../../ol/ts'
 import { lazy } from '../../ol/style/lazy'
 import G_G_GAZ from '../../ol/style/resources/G_G_GAZ.png'
 
-const jexl = new Jexl()
 
 rules.Polygon = [
   ...rules.shared,
@@ -34,7 +30,16 @@ rules.Polygon.push([next => {
 
 
 /**
- * label_anchors
+ * labels
+ */
+rules.Polygon.push([next => {
+  const sidc = next.sidc_parameterized
+  return { labels: LABELS[sidc] || [] }
+}, ['sidc_parameterized']])
+
+
+/**
+ * label_options
  */
 rules.Polygon.push([next => {
   const write = next.write
@@ -58,7 +63,7 @@ rules.Polygon.push([next => {
     return TS.intersection([geometry, axis]).getCoordinates()
   })
 
-  const text_anchors = {
+  const anchors = {
     center: lazy(() => write(TS.point(centroid))),
     bottom: lazy(() => write(TS.point(yIntersection()[0]))),
     top: lazy(() => write(TS.point(yIntersection()[1]))),
@@ -72,78 +77,31 @@ rules.Polygon.push([next => {
     }
   }
 
-  return { text_anchors }
+  const label_options = label => {
+    const anchor = label['text-anchor']
+    const geometry = anchors[anchor]()
+    return {
+      geometry,
+      options: {
+        text: label['text-field'],
+        clipping: label['text-clipping'] // non-standard, reolved/removed later
+      }
+    }
+  }
+
+  return { label_options }
 }, ['write', 'geometry_utm']])
 
-
-/**
- *
- */
-rules.Polygon.push([next => {
-  const sidc = next.sidc_parameterized
-  const style_effective = next.style_effective
-  const labels = LABELS[sidc] || []
-
-  const font = style_effective['text-font'] || [
-    style_effective['text-font-style'],
-    style_effective['text-font-variant'],
-    style_effective['text-font-weight'],
-    style_effective['text-font-size'],
-    style_effective['text-font-family']
-  ].filter(Boolean).join(' ')
-
-  const haloColor = style_effective['text-halo-color']
-  const haloWidth = style_effective['text-halo-width']
-  const stroke = haloColor && haloWidth
-    ? new Stroke({ color: haloColor, width: haloWidth })
-    : undefined
-
-  const color = style_effective['text-color']
-  const fill = color ? new Fill({ color }) : undefined
-
-  const properties = next.properties
-  const evalSync = textField => Array.isArray(textField)
-    ? textField.map(evalSync).filter(Boolean).join('\n')
-    : jexl.evalSync(textField, properties)
-
-  const text_default = labels
-    .filter(R.prop('text-field'))
-    .map(label => {
-      const text = new Text({
-        text: evalSync(label['text-field']),
-        font,
-        stroke,
-        fill
-      })
-      return anchors => new Style({
-        geometry: anchors[label['text-anchor']](),
-        text
-      })
-    })
-
-  return { text_default }
-}, ['sidc_parameterized', 'properties', 'style_effective']])
-
-
-/**
- * style_text :: [ol/style/Style]
- */
-rules.Polygon.push([next => {
-  const text = next.text_default
-  const anchors = next.text_anchors
-  const style_text = text.map(fn => fn(anchors))
-  return { style_text }
-}, ['text_anchors', 'text_default']])
 
 // label definitions ==>
 
 const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
-const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
-const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 5, 'text-clipping': 'line' }]
-const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
-const F = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
-const LR = text => ['left', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
-const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
+const C = (text, options) => [{ 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
+const T = text => [{ 'text-field': text, 'text-anchor': 'top', 'text-padding': 5, 'text-clipping': 'line' }]
+const B = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
+const F = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
+const LR = text => ['left', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
+const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
