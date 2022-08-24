@@ -179,7 +179,12 @@ const useSelection = () => {
     }
 
     // Update component state from database update.
-    const handleBatch = ({ operations }) => dispatch({ type: 'update', operations })
+    const handleBatch = ({ operations }) => {
+      const keys = operations.map(operation => operation.key)
+      const relevant = R.intersection(selection.selected(), keys)
+      if (relevant.length === 0) return
+      dispatch({ type: 'update', operations })
+    }
 
     selection.on('selection', handleSelection)
     store.on('batch', handleBatch)
