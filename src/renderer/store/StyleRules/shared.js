@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda'
-import { Stroke, Style, Fill, Text } from 'ol/style'
+import { Stroke, Style, Fill, Text, Icon } from 'ol/style'
 import { Jexl } from 'jexl'
+import ms from 'milsymbol'
 import { rules } from './rules'
 import * as Colors from '../../ol/style/color-schemes'
 import { identityCode, parameterized } from '../../symbology/2525c'
@@ -9,6 +10,87 @@ import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 
 const jexl = new Jexl()
+
+
+/**
+ *
+ */
+const styleFactory = effective => {
+  const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
+  const colorScheme = effective['color-scheme']
+  const lineHaloColor = effective['line-halo-color']
+  const lineColor = effective['line-color']
+  const textColor = effective['text-color']
+  const textHaloColor = effective['text-halo-color']
+  const textHaloWidth = effective['text-halo-width']
+  const symbolColor = effective['symbol-color']
+  const symbolHaloColor = effective['symbol-halo-color']
+  const symbolHaloWidth = effective['symbol-halo-width']
+  const symbolTextColor = effective['symbol-text-color']
+  const symbolTextSize = effective['symbol-text-size']
+  const symbolText = effective['symbol-text']
+  const symbolFill = effective['symbol-fill']
+  const symbolFillOpacity = effective['symbol-fill-opacity']
+  const symbolFrame = effective['symbol-frame']
+  const symbolIcon = effective['symbol-icon']
+  const symbolLineWidth = effective['symbol-line-width']
+  const symbolSize = effective['symbol-size']
+  const iconScale = effective['icon-scale']
+
+  const font = effective['text-font'] || [
+    effective['text-font-style'],
+    effective['text-font-variant'],
+    effective['text-font-weight'],
+    effective['text-font-size'],
+    effective['text-font-family']
+  ].filter(Boolean).join(' ')
+
+  const textFill = textColor ? new Fill({ color: textColor }) : undefined
+  const textStroke = textHaloColor && textHaloWidth
+    ? new Stroke({ color: textHaloColor, width: textHaloWidth })
+    : undefined
+
+  const stroke = (options = {}) => [
+    new Stroke({ color: lineHaloColor, width: 4, ...options }),
+    new Stroke({ color: lineColor, width: 3, ...options })
+  ]
+
+  const text = (options = {}) =>
+    new Text({ font, stroke: textStroke, fill: textFill, ...options })
+
+  const symbol = (sidc, options = {}) => {
+    const symbol = new ms.Symbol(sidc, {
+      colorMode: modes[colorScheme],
+      monoColor: symbolColor,
+      fill: symbolFill,
+      fillOpacity: R.isNil(symbolFillOpacity) ? 1 : symbolFillOpacity,
+      frame: symbolFrame,
+      icon: symbolIcon,
+      infoFields: symbolText,
+      outlineColor: symbolHaloColor,
+      outlineWidth: symbolHaloWidth,
+      strokeWidth: R.isNil(symbolLineWidth) ? 3 : symbolLineWidth,
+      infoColor: symbolTextColor,
+      infoSize: symbolTextSize,
+      size: symbolSize || 100,
+      ...options
+    })
+
+    const { width, height } = symbol.getSize()
+
+    return new Icon({
+      anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
+      imgSize: [Math.floor(width), Math.floor(height)],
+      src: 'data:image/svg+xml;utf8,' + symbol.asSVG(),
+      anchorXUnits: 'pixels',
+      anchorYUnits: 'pixels',
+      scale: iconScale || 0.3
+    })
+  }
+
+  const style = options => new Style(options)
+  return { stroke, text, symbol, style }
+}
 
 rules.shared = []
 rules.generic = [] // LineString, Polygon
@@ -50,46 +132,8 @@ rules.shared.push([next => {
   // Split line-smooth from rest.
   // We don't want to calculate new geometries on color change.
   const merged = { ...global, ...layer, ...scheme, ...feature }
-  const { 'line-smooth': line_smooth, ...style_effective } = merged
-
-  const stroke = (() => {
-    const haloColor = style_effective['line-halo-color']
-    const color = style_effective['line-color']
-    return (options = {}) => [
-      new Stroke({ color: haloColor, width: 4, ...options }),
-      new Stroke({ color, width: 3, ...options })
-    ]
-  })()
-
-  const text = (() => {
-    const font = style_effective['text-font'] || [
-      style_effective['text-font-style'],
-      style_effective['text-font-variant'],
-      style_effective['text-font-weight'],
-      style_effective['text-font-size'],
-      style_effective['text-font-family']
-    ].filter(Boolean).join(' ')
-
-    const haloColor = style_effective['text-halo-color']
-    const haloWidth = style_effective['text-halo-width']
-    const stroke = haloColor && haloWidth
-      ? new Stroke({ color: haloColor, width: haloWidth })
-      : undefined
-
-    const fillColor = style_effective['text-color']
-    const fill = fillColor ? new Fill({ color: fillColor }) : undefined
-
-    return (options = {}) => new Text({ font, stroke, fill, ...options })
-  })()
-
-  const style = options => new Style(options)
-
-  const style_factory = {
-    stroke,
-    text,
-    style
-  }
-
+  const { 'line-smooth': line_smooth, ...effective } = merged
+  const style_factory = styleFactory(effective)
   return { line_smooth: !!line_smooth, style_factory }
 }, ['identity', 'style_default', 'style_layer', 'style_feature']])
 

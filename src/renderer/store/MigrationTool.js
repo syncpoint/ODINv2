@@ -169,19 +169,39 @@ MigrationTool.prototype.defaultStyle = async function () {
       'circle-line-width': 1.25,
       'circle-fill-color': 'rgba(255,255,255,0.4)',
       'symbol-size': 60, // pixels
+      'symbol-fill': true, // false also changes line color
       'symbol-fill-opacity': 0.6,
-      'symbol-halo-color': null, // only valid with symbol-halo-width = 0
+      'symbol-halo-color': 'black', // only valid with symbol-halo-width = 0
       'symbol-halo-width': 0,
-      'symbol-color': '', // default: '', `null` won't work
-      'symbol-line-width': 2, // default: 3
-      'symbol-text-color': 'black',
-      'symbol-text-size': 40, // default: 40% of symbol-size
+      'symbol-frame': true,
+
+      // frameColor :: mode | string
+      // semms not to be supported at all
+      'symbol-frame-color': 'red',
+
+      // icon :: true (default) | false
+      // 'false' breaks presention of symbols without frame, e.g. Target Reference Point
+      'symbol-icon': true,
+
+      // implicitly set symbol-fill to false; default: '', `null` won't work
+      'symbol-color': '',
+
+      // strokeWidth :: number -- default 3
+      'symbol-line-width': 3,
+
+      // infoFields :: true (default) | false
+      'symbol-text': true,
+      'symbol-text-color': '',
+
+      // infoSize :: number -- default: 40% of symbol-size
+      'symbol-text-size': 40,
+
       'icon-scale': 0.5,
       // 'text-font-style': 'normal', // none, normal, italic, oblique
       // 'text-font-variant': 'normal', // none, normal, small-caps
       'text-font-weight': 'normal', // none, normal, bold
       'text-font-size': '12px',
-      'text-font-family': 'sans-serif', // sans-serif, roboto, monospace
+      'text-font-family': 'sans-serif', // sans-serif, Roboto, monospace
       'text-color': '#333'
       // 'text-halo-color': 'black',
       // 'text-halo-width': 0.5

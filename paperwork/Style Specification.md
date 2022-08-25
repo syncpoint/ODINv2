@@ -1,28 +1,3 @@
-```
-makeStyle ::
-	k = geometry | fill | image | stroke | text,
-  geometry = ol/Feature | ol/geom/Geometry | ol/Feature -> ol/geom/Geometry =>
-	{k: v} -> ol/style/Style
-
-makeFill ::
-	k = color =>
-	{k: v} -> ol/style/Fill
-
-makeImage ::
-	k = opacity | rotation | scale =>
-  {k: v} -> ol/style/Image
-
-makeStroke ::
-	k = color | line{Cap | Join | Dash | DashOffset} | width =>
-  {k: v} -> ol/style/Stroke
-
-makeText ::
-	k = font | offset{X | Y} | overflow | scale | rotation | fill | stroke | text |
-	    background{Fill | Stroke} | padding =>
-  {k: v} -> ol/style/text
-
-```
-
 ## Style Specification
 
 color-scheme :: dark | medium | light
@@ -100,7 +75,6 @@ symbol-fill-opacity :: number (fillOpacity)
 symbol-halo-color :: string (outlineColor)
 symbol-halo-width :: string (outlineWidth)
 symbol-line-width :: number (strokeWidth)
-# symbol-modifiers :: {k: v}
 symbol-offset :: [number, number] - unsupported
 symbol-rotate :: number
 symbol-size :: number - default: 100 [pixels]

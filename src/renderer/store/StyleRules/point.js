@@ -1,7 +1,5 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda'
-import ms from 'milsymbol'
-import { Style, Icon } from 'ol/style'
 import { rules } from './rules'
 import { MODIFIERS } from '../../symbology/2525c'
 
@@ -21,67 +19,24 @@ rules.Point.push([next => {
 
 
 /**
- * symbol_options
+ * image
  */
 rules.Point.push([next => {
-  if (!next.style_effective) return /* not quite yet */
-
-  const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
-  const style_effective = next.style_effective
-  const symbol_options = {
-    ...next.symbol_modifiers,
-    colorMode: modes[style_effective['color-scheme']],
-    monoColor: style_effective['symbol-color'],
-    fillOpacity: style_effective['symbol-fill-opacity'] || 1,
-    outlineColor: style_effective['symbol-halo-color'],
-    outlineWidth: style_effective['symbol-halo-width'],
-    strokeWidth: style_effective['symbol-line-width'] || 3,
-    infoColor: style_effective['symbol-text-color'],
-    infoSize: style_effective['symbol-text-size'],
-    size: style_effective['symbol-size'] || 100
-  }
-
-  return { symbol_options }
-}, ['style_effective', 'symbol_modifiers']])
-
-
-/**
- * symbol
- */
-rules.Point.push([next => {
+  const { symbol } = next.style_factory
   const sidc = next.sidc
-  const options = next.symbol_options
-  const symbol = new ms.Symbol(sidc, { ...options })
-  return { symbol }
-}, ['sidc', 'symbol_options']])
-
-
-/**
- * icon
- */
-rules.Point.push([next => {
-  const symbol = next.symbol
-  const { width, height } = symbol.getSize()
-  const style_effective = next.style_effective
-
-  const icon = new Icon({
-    anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
-    imgSize: [Math.floor(width), Math.floor(height)],
-    src: 'data:image/svg+xml;utf8,' + symbol.asSVG(),
-    anchorXUnits: 'pixels',
-    anchorYUnits: 'pixels',
-    scale: style_effective['icon-scale'] || 0.3
-  })
-
-  return { icon }
-}, ['symbol']])
+  const modifiers = next.symbol_modifiers
+  const image = symbol(sidc, modifiers)
+  return { image }
+}, ['sidc', 'style_factory', 'symbol_modifiers']])
 
 
 /**
  * style
  */
 rules.Point.push([next => {
-  const icon = next.icon
   const geometry_defining = next.geometry_defining
-  return { style: new Style({ geometry: geometry_defining, image: icon }) }
-}, ['icon', 'geometry_key', 'geometry_defining']])
+  const style_factory = next.style_factory
+  const image = next.image
+  const style = [style_factory.style({ geometry: geometry_defining, image })]
+  return { style }
+}, ['image', 'geometry_key', 'geometry_defining']])
