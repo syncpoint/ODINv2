@@ -24,9 +24,8 @@ export default async function (id) {
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-  const layerName = (layer && layer.name) || ''
-  const { t } = properties
-  const name = feature.name || t || ''
+  const { t, t1 } = properties
+  const names = [feature.name, t, t1, layer && layer.name].filter(Boolean).join(' ')
   const geometryType = Geometry.type(descriptor)
 
   return {
@@ -42,6 +41,6 @@ export default async function (id) {
       ...scope,
       ...identity(MILSTD.identityCode(properties.sidc))
     ],
-    text: `${name} ${hierarchy.join(' ')} ${layerName}`.trim()
+    text: `${names} ${hierarchy.join(' ')}`.trim()
   }
 }
