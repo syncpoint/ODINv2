@@ -160,9 +160,13 @@ MigrationTool.prototype.defaultStyle = async function () {
     const ops = []
     const style = {
       'color-scheme': 'medium',
-      'line-color': '#3399CC',
-      'line-width': 1.25,
-      'fill-color': '#3399CC',
+      'line-color': 'black',
+      'line-width': 3,
+      'line-dash-array': [20, 10],
+      'line-halo-width': 1,
+      'line-halo-dash-array': [20, 10],
+      'line-cap': 'butt', // butt | round | square
+      'line-join': 'round', // bevel | round | miter
       'line-smooth': false,
       'circle-radius': 5,
       'circle-line-color': '#3399CC',

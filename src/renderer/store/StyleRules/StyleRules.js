@@ -1,32 +1,32 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
 import './shared'
+import './generic'
 import './point'
-import './linestring'
+import './linestring/rules'
 import './polygon'
 export { rules } from './rules'
 
-const notDeepEqual = (state, obj, key) => !isEqual(state[key], obj[key])
+const notEqual = (state, obj, key) => !isEqual(state[key], obj[key])
 
 const comparators = {
-  style_default: notDeepEqual,
-  style_layer: notDeepEqual,
-  style_feature: notDeepEqual,
-  style_effective: notDeepEqual,
-  symbol_options: notDeepEqual,
-  properties: notDeepEqual
+  globalStyle: notEqual,
+  layerStyle: notEqual,
+  featureStyle: notEqual,
+  properties: notEqual
 }
 
 const fn = rule => rule[0]
 const deps = rule => rule[1]
 
+
 /**
  *
  */
-export const reduce = (state, obj, evaluated = []) => {
+export const reduce = (state, facts, evaluated = []) => {
   const different = key => comparators[key]
-    ? comparators[key](state, obj, key)
-    : state[key] !== obj[key]
+    ? comparators[key](state, facts, key)
+    : state[key] !== facts[key]
 
   const evaluate = (rules, next) => {
     const pending = rules.filter(rule => !evaluated.includes(rule))
@@ -38,12 +38,12 @@ export const reduce = (state, obj, evaluated = []) => {
     else return evaluate(outdated, fulfilled.reduce(merge, next))
   }
 
-  const changed = Object.keys(obj).filter(different)
+  const changed = Object.keys(facts).filter(different)
   if (changed.length === 0) return state
 
   const isOutdated = rule => deps(rule).some(key => changed.includes(key))
   const outdated = state.rules.filter(isOutdated)
-  const next = { ...state, ...obj }
+  const next = { ...state, ...facts }
   const acc = evaluate(outdated, next)
 
   return R.isEmpty(acc) ? next : reduce(next, acc, evaluated)

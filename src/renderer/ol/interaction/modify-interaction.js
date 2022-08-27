@@ -25,7 +25,6 @@ export default options => {
   })
 
   interaction.on('modifyend', event => {
-    // TODO: move to feature store
     const { features } = writeFeatureCollection([event.feature])
 
     const [keys, oldValues] = snapshot.reduce((acc, [key, value]) => {
@@ -34,6 +33,7 @@ export default options => {
       return acc
     }, [[], []])
 
+    // FIXME: sometimes snapshot length might not correspond with number of features
     const newValues = features.map((feature, index) => ({
       ...snapshot[index][1],
       properties: feature.properties,

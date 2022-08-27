@@ -8,6 +8,8 @@ import { debounce, batch } from '../../shared/debounce'
 import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from './StyleRules/StyleRules'
+import * as TS from '../ol/ts'
+import { PI, PI_OVER_2, PI_OVER_3 } from '../../shared/Math'
 
 
 const format = new GeoJSON({
@@ -87,11 +89,11 @@ FeatureStore.prototype.batch = function (operations) {
 
   operations
     .filter(({ key }) => ID.isId('style+default')(key))
-    .forEach(({ value }) => features.forEach(apply({ style_default: value })))
+    .forEach(({ value }) => features.forEach(apply({ globalStyle: value })))
 
   operations
     .filter(({ key }) => ID.isId('style+feature')(key))
-    .forEach(({ key, value }) => apply({ style_feature: value })(this.features[ID.featureId(key)]))
+    .forEach(({ key, value }) => apply({ featureStyle: value })(this.features[ID.featureId(key)]))
 
   // TODO: dispatch layer styles
 
@@ -199,26 +201,30 @@ FeatureStore.prototype.wrap = function (feature) {
   const type = geometryType(feature.getGeometry())
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
   let state = {
+    TS,
+    PI,
+    PI_OVER_2,
+    PI_OVER_3,
     mode: 'default',
     rules: rules[type] || [],
-    style_layer: {},
-    style_feature: {}
+    layerStyle: {},
+    featureStyle: {}
   }
 
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
   const set = key => props => (state[key] = props)
-  R.when(Boolean, set('style_default'))(this.styleProps['style+default'])
-  R.when(Boolean, set('style_layer'))(this.styleProps['style+' + layerId])
-  R.when(Boolean, set('style_feature'))(this.styleProps['style+' + featureId])
+  R.when(Boolean, set('globalStyle'))(this.styleProps['style+default'])
+  R.when(Boolean, set('layerStyle'))(this.styleProps['style+' + layerId])
+  R.when(Boolean, set('featureStyle'))(this.styleProps['style+' + featureId])
 
   feature.setStyle((feature, resolution) => {
-    const { geometry: geometry_defining, ...properties } = feature.getProperties()
+    const { geometry: definingGeometry, ...properties } = feature.getProperties()
     state = reduce(state, {
-      geometry_defining,
+      definingGeometry,
       properties,
-      resolution_center: resolution,
-      geometry_key: `${geometry_defining.ol_uid}:${geometry_defining.getRevision()}`
+      centerResolution: resolution,
+      geometryKey: `${definingGeometry.ol_uid}:${definingGeometry.getRevision()}`
     })
 
     return state.style

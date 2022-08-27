@@ -1,107 +1,12 @@
-/* eslint-disable camelcase */
-import { rules } from './rules'
-import * as TS from '../../ol/ts'
-import { lazy } from '../../ol/style/lazy'
-import G_G_GAZ from '../../ol/style/resources/G_G_GAZ.png'
-
-
-rules.Polygon = [
-  ...rules.shared,
-  ...rules.generic
-]
-
-/**
- * simplified, geometry_simplified
- */
-rules.Polygon.push([next => {
-  const geometry_defining = next.geometry_defining
-
-  // Never simplify current selection.
-  const simplified = next.mode === 'singleselect'
-    ? false
-    : geometry_defining.getCoordinates()[0].length > 50
-
-  const geometry_simplified = simplified
-    ? geometry_defining.simplify(next.resolution_center)
-    : geometry_defining
-
-  return { simplified, geometry_simplified }
-}, ['resolution_center', 'mode', 'geometry_key', 'geometry_defining']])
-
-
-/**
- * labels
- */
-rules.Polygon.push([next => {
-  const sidc = next.sidc_parameterized
-  return { labels: LABELS[sidc] || [] }
-}, ['sidc_parameterized']])
-
-
-/**
- * label_options
- */
-rules.Polygon.push([next => {
-  const write = next.write
-  const geometry = next.geometry_utm
-
-  const ring = geometry.getExteriorRing()
-  const envelope = ring.getEnvelopeInternal()
-  const centroid = TS.centroid(ring)
-  const [minX, maxX] = [envelope.getMinX(), envelope.getMaxX()]
-  const [minY, maxY] = [envelope.getMinY(), envelope.getMaxY()]
-
-  const xIntersection = lazy(() => {
-    const coord = x => TS.coordinate(x, centroid.y)
-    const axis = TS.lineString([minX, maxX].map(coord))
-    return TS.intersection([geometry, axis]).getCoordinates()
-  })
-
-  const yIntersection = lazy(() => {
-    const coord = y => TS.coordinate(centroid.x, y)
-    const axis = TS.lineString([minY, maxY].map(coord))
-    return TS.intersection([geometry, axis]).getCoordinates()
-  })
-
-  const anchors = {
-    center: lazy(() => write(TS.point(centroid))),
-    bottom: lazy(() => write(TS.point(yIntersection()[0]))),
-    top: lazy(() => write(TS.point(yIntersection()[1]))),
-    left: lazy(() => write(TS.point(xIntersection()[0]))),
-    right: lazy(() => write(TS.point(xIntersection()[1]))),
-    fraction: factory => {
-      const lengthIndexedLine = TS.lengthIndexedLine(ring)
-      const length = lengthIndexedLine.getEndIndex()
-      const coord = lengthIndexedLine.extractPoint(factory * length)
-      return write(TS.point(coord))
-    }
-  }
-
-  const label_options = label => {
-    const anchor = label['text-anchor']
-    const geometry = anchors[anchor]()
-    return {
-      geometry,
-      options: {
-        text: label['text-field'],
-        clipping: label['text-clipping'] // non-standard, reolved/removed later
-      }
-    }
-  }
-
-  return { label_options }
-}, ['write', 'geometry_utm']])
-
-
-// label definitions ==>
+import G_G_GAZ from '../../../ol/style/resources/G_G_GAZ.png'
 
 const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
-const C = (text, options) => [{ 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
-const T = text => [{ 'text-field': text, 'text-anchor': 'top', 'text-padding': 5, 'text-clipping': 'line' }]
-const B = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
-const F = text => [{ 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
-const LR = text => ['left', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
-const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
+const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]
+const T = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'top', 'text-padding': 5, 'text-clipping': 'line' }]
+const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
+const F = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
+const LR = text => ['left', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
+const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
 const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
 const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
 const ALL_LINES = title => title
@@ -113,7 +18,8 @@ const G_G_PM = [
   { 'symbol-code': 'GFGPPD----', 'symbol-anchor': 'center', 'symbol-size': 100 }
 ]
 
-const LABELS = {}
+export const LABELS = {}
+export default LABELS
 
 LABELS['G*G*GAG---'] = C(ALL_LINES()) // GENERAL AREA
 LABELS['G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
