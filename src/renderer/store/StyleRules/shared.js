@@ -1,18 +1,38 @@
 /* eslint-disable camelcase */
+import { Jexl } from 'jexl'
 import * as Colors from '../../ol/style/color-schemes'
 import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { styleFactory } from './styleFactory'
 
 const rules = []
+const jexl = new Jexl()
 
 /**
- * sidc, parameterizedSIDC, identity, status
+ * sidc, parameterizedSIDC, evalTextField
  */
 rules.push([next => {
-  const { sidc } = next.properties
+  const { properties } = next
+  const { sidc } = properties
   const parameterizedSIDC = parameterized(sidc)
 
-  return { sidc, parameterizedSIDC }
+  const evalSync = textField => Array.isArray(textField)
+    ? textField.map(evalSync).filter(Boolean).join('\n')
+    : jexl.evalSync(textField, properties)
+
+  const evalTextField = specs => {
+    if (!Array.isArray(specs)) return evalTextField([specs])
+    return specs.reduce((acc, spec) => {
+      if (!spec['text-field']) acc.push(spec)
+      else {
+        const textField = evalSync(spec['text-field'])
+        if (textField) acc.push({ ...spec, 'text-field': textField })
+      }
+
+      return acc
+    }, [])
+  }
+
+  return { sidc, parameterizedSIDC, evalTextField }
 }, ['properties']])
 
 

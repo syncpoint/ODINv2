@@ -3,11 +3,13 @@ import isEqual from 'react-fast-compare'
 import Point from './point'
 import LineString from './linestring'
 import Polygon from './polygon'
+import Corridor from './corridor'
 
 export const rules = {
   Point,
   LineString,
-  Polygon
+  Polygon,
+  'LineString:Point': Corridor
 }
 
 const notEqual = (state, obj, key) => !isEqual(state[key], obj[key])

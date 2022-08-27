@@ -1,9 +1,7 @@
-import { Jexl } from 'jexl'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 
 const rules = [] // LineString, Polygon
-const jexl = new Jexl()
 
 /**
  *
@@ -18,32 +16,6 @@ rules.push([() => {
     style: null
   }
 }, ['geometryKey']])
-
-
-/**
- * evalTextField
- */
-rules.push([next => {
-  const { properties } = next
-  const evalSync = textField => Array.isArray(textField)
-    ? textField.map(evalSync).filter(Boolean).join('\n')
-    : jexl.evalSync(textField, properties)
-
-  const evalTextField = specs => {
-    if (!Array.isArray(specs)) return evalTextField([specs])
-    return specs.reduce((acc, spec) => {
-      if (!spec['text-field']) acc.push(spec)
-      else {
-        const textField = evalSync(spec['text-field'])
-        if (textField) acc.push({ ...spec, 'text-field': textField })
-      }
-
-      return acc
-    }, [])
-  }
-
-  return { evalTextField }
-}, ['properties']])
 
 
 /**
