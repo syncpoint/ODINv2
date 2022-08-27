@@ -90,6 +90,35 @@ const makeShape = props => {
   })
 }
 
+const makeSymbol = props => {
+  const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
+
+  const options = {
+    colorMode: modes[props['color-scheme']],
+    outlineColor: props['symbol-halo-color'],
+    outlineWidth: props['symbol-halo-width'],
+    monoColor: props['symbol-color'],
+    infoSize: props['symbol-text-size'],
+    infoColor: props['symbol-text-color'],
+    strokeWidth: props['symbol-line-width'],
+    fillOpacity: props['symbol-fill-opacity'],
+    size: props['symbol-size'] || 60,
+    ...props['symbol-modifiers']
+  }
+
+  const symbol = new ms.Symbol(props['symbol-code'], { ...options })
+  const { width, height } = symbol.getSize()
+
+  return new olStyle.Icon({
+    anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
+    imgSize: [Math.floor(width), Math.floor(height)],
+    src: 'data:image/svg+xml;utf8,' + symbol.asSVG(),
+    anchorXUnits: 'pixels',
+    anchorYUnits: 'pixels',
+    scale: props['icon-scale'] || 0.5
+  })
+}
+
 const makeIcon = props => {
   return new olStyle.Icon({
     src: props['icon-url'],
@@ -101,7 +130,7 @@ const makeIcon = props => {
 const makeImage = props => {
   if (props['circle-radius']) return makeCircle(props)
   else if (props['shape-radius']) return makeShape(props)
-  // else if (props['symbol-code']) return makeSymbol(props)
+  else if (props['symbol-code']) return makeSymbol(props)
   else if (props['icon-url']) return makeIcon(props)
   else return null
 }
@@ -109,100 +138,91 @@ const makeImage = props => {
 /**
  *
  */
-export const styleFactory = effective => {
-  // const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
-  // const colorScheme = effective['color-scheme']
-  // const lineHaloColor = effective['line-halo-color']
-  // const lineColor = effective['line-color']
-  // const lineWidth = effective['line-width']
-  // const lineHaloWidth = effective['line-halo-width']
-  // const lineCap = effective['line-cap']
-  // const lineJoin = effective['line-join']
-  // const fillColor = effective['fill-color']
-  // const textColor = effective['text-color']
-  // const textHaloColor = effective['text-halo-color']
-  // const textHaloWidth = effective['text-halo-width']
-  // const symbolColor = effective['symbol-color']
-  // const symbolHaloColor = effective['symbol-halo-color']
-  // const symbolHaloWidth = effective['symbol-halo-width']
-  // const symbolTextColor = effective['symbol-text-color']
-  // const symbolTextSize = effective['symbol-text-size']
-  // const symbolText = effective['symbol-text']
-  // const symbolFill = effective['symbol-fill']
-  // const symbolFillOpacity = effective['symbol-fill-opacity']
-  // const symbolFrame = effective['symbol-frame']
-  // const symbolIcon = effective['symbol-icon']
-  // const symbolLineWidth = effective['symbol-line-width']
-  // const symbolSize = effective['symbol-size']
-  // const iconScale = effective['icon-scale']
-
-  const font = effective['text-font'] || [
-    effective['text-font-style'],
-    effective['text-font-variant'],
-    effective['text-font-weight'],
-    effective['text-font-size'],
-    effective['text-font-family']
+export const styleFactory = effectiveStyle => {
+  const font = effectiveStyle['text-font'] || [
+    effectiveStyle['text-font-style'],
+    effectiveStyle['text-font-variant'],
+    effectiveStyle['text-font-weight'],
+    effectiveStyle['text-font-size'],
+    effectiveStyle['text-font-family']
   ].filter(Boolean).join(' ')
 
   const registry = {}
 
+  registry['style:2525c/symbol'] = {
+    'color-scheme': effectiveStyle['color-scheme'],
+    'symbol-color': effectiveStyle['symbol-color'],
+    'symbol-halo-color': effectiveStyle['symbol-halo-color'],
+    'symbol-halo-width': effectiveStyle['symbol-halo-width'],
+    'symbol-text-color': effectiveStyle['symbol-text-color'],
+    'symbol-text-size': effectiveStyle['symbol-text-size'],
+    'symbol-text': effectiveStyle['symbol-text'],
+    'symbol-fill': effectiveStyle['symbol-fill'],
+    'symbol-fill-opacity': effectiveStyle['symbol-fill-opacity'],
+    'symbol-frame': effectiveStyle['symbol-frame'],
+    'symbol-icon': effectiveStyle['symbol-icon'],
+    'symbol-line-width': effectiveStyle['symbol-line-width'],
+    'symbol-size': effectiveStyle['symbol-size'],
+    'icon-scale': effectiveStyle['icon-scale']
+  }
+
   registry['style:2525c/default-stroke'] = {
-    'line-cap': effective['line-cap'],
-    'line-join': effective['line-join'],
-    'line-color': effective['line-color'],
-    'line-width': effective['line-width'],
-    'line-dash-array': effective['line-dash-array'],
-    'line-halo-color': effective['line-halo-color'],
-    'line-halo-width': effective['line-halo-width'],
-    'line-halo-dash-array': effective['line-halo-dash-array']
+    'line-cap': effectiveStyle['line-cap'],
+    'line-join': effectiveStyle['line-join'],
+    'line-color': effectiveStyle['line-color'],
+    'line-width': effectiveStyle['line-width'],
+    'line-dash-array': effectiveStyle['line-dash-array'],
+    'line-halo-color': effectiveStyle['line-halo-color'],
+    'line-halo-width': effectiveStyle['line-halo-width'],
+    'line-halo-dash-array': effectiveStyle['line-halo-dash-array']
 
   }
 
   registry['style:2525c/solid-stroke'] = {
-    'line-cap': effective['line-cap'],
-    'line-join': effective['line-join'],
-    'line-color': effective['line-color'],
-    'line-width': effective['line-width'],
-    'line-halo-color': effective['line-halo-color'],
-    'line-halo-width': effective['line-halo-width']
+    'line-cap': effectiveStyle['line-cap'],
+    'line-join': effectiveStyle['line-join'],
+    'line-color': effectiveStyle['line-color'],
+    'line-width': effectiveStyle['line-width'],
+    'line-halo-color': effectiveStyle['line-halo-color'],
+    'line-halo-width': effectiveStyle['line-halo-width']
   }
 
   registry['style:2525c/dashed-stroke'] = {
-    'line-cap': effective['line-cap'],
-    'line-join': effective['line-join'],
-    'line-color': effective['line-color'],
-    'line-width': effective['line-width'],
+    'line-cap': effectiveStyle['line-cap'],
+    'line-join': effectiveStyle['line-join'],
+    'line-color': effectiveStyle['line-color'],
+    'line-width': effectiveStyle['line-width'],
     'line-dash-array': [8, 8],
-    'line-halo-color': effective['line-halo-color'],
-    'line-halo-width': effective['line-halo-width'],
+    'line-halo-color': effectiveStyle['line-halo-color'],
+    'line-halo-width': effectiveStyle['line-halo-width'],
     'line-halo-dash-array': [8, 8]
   }
 
   registry['style:2525c/solid-fill'] = {
-    'line-cap': effective['line-cap'],
-    'line-join': effective['line-join'],
-    'line-color': effective['line-color'],
-    'line-width': effective['line-width'],
-    'line-halo-color': effective['line-halo-color'],
-    'line-halo-width': effective['line-halo-width'],
-    'fill-color': effective['fill-color']
+    'line-cap': effectiveStyle['line-cap'],
+    'line-join': effectiveStyle['line-join'],
+    'line-color': effectiveStyle['line-color'],
+    'line-width': effectiveStyle['line-width'],
+    'line-halo-color': effectiveStyle['line-halo-color'],
+    'line-halo-width': effectiveStyle['line-halo-width'],
+    'fill-color': effectiveStyle['fill-color']
   }
 
   registry['style:default-text'] = {
     'text-font': font,
-    'text-color': effective['text-color'],
+    'text-color': effectiveStyle['text-color'],
     'text-justify': 'center',
     'text-padding': 5
   }
 
   registry['style:2525c/fence-stroke'] = {
     'line-cap': 'square',
-    'line-color': effective['binary-color'],
+    'line-color': effectiveStyle['binary-color'],
     'line-width': 2
   }
 
   registry['style:2525c/fence-o'] = {
-    'shape-line-color': effective['binary-color'],
+    'shape-line-color': effectiveStyle['binary-color'],
     'shape-line-width': 2,
     'shape-points': 8,
     'shape-radius': 8,
@@ -212,7 +232,7 @@ export const styleFactory = effective => {
   }
 
   registry['style:2525c/fence-x'] = {
-    'shape-line-color': effective['binary-color'],
+    'shape-line-color': effectiveStyle['binary-color'],
     'shape-line-width': 2,
     'shape-points': 4,
     'shape-radius': 8,

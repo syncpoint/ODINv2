@@ -11,32 +11,37 @@ rules.Point = [...rules.shared]
 
 
 /**
- * symbol_modifiers
+ * symbolModifiers
  */
 rules.Point.push([next => {
-  return { symbol_modifiers: modifiers(next.properties) }
+  const { properties } = next
+  return {
+    symbolModifiers: modifiers(properties),
+    symbolSpecification: null
+  }
 }, ['properties']])
 
 
 /**
- * image
+ * symbolSpecification
  */
 rules.Point.push([next => {
-  const { symbol } = next.style_factory
-  const sidc = next.sidc
-  const modifiers = next.symbol_modifiers
-  const image = symbol(sidc, modifiers)
-  return { image }
-}, ['sidc', 'style_factory', 'symbol_modifiers']])
+  const { sidc, symbolModifiers } = next
+  const symbolSpecification = {
+    id: 'style:2525c/symbol',
+    'symbol-code': sidc,
+    'symbol-modifiers': symbolModifiers
+  }
+
+  return { symbolSpecification }
+}, ['sidc', 'symbolModifiers']])
 
 
 /**
  * style
  */
 rules.Point.push([next => {
-  const geometry_defining = next.geometry_defining
-  const style_factory = next.style_factory
-  const image = next.image
-  const style = [style_factory.style({ geometry: geometry_defining, image })]
+  const { symbolSpecification, styleFactory, definingGeometry } = next
+  const style = styleFactory({ geometry: definingGeometry, ...symbolSpecification })
   return { style }
-}, ['image', 'geometry_key', 'geometry_defining']])
+}, ['symbolSpecification', 'styleFactory', 'definingGeometry']])

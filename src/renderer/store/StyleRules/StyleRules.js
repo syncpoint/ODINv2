@@ -29,13 +29,18 @@ export const reduce = (state, facts, evaluated = []) => {
     : state[key] !== facts[key]
 
   const evaluate = (rules, next) => {
+    const merge = (acc, rule) => ({ ...acc, ...fn(rule)(next) })
     const pending = rules.filter(rule => !evaluated.includes(rule))
     const isFulfilled = rule => deps(rule).every(key => !R.isNil(next[key]))
     const [fulfilled, outdated] = R.partition(isFulfilled, pending)
-    const merge = (acc, rule) => ({ ...acc, ...fn(rule)(next) })
-    evaluated.push(...fulfilled)
-    if (fulfilled.length === 0) return next
-    else return evaluate(outdated, fulfilled.reduce(merge, next))
+
+    // Fulfilled rules must be evaluated one by one to ensure
+    // reset facts are considered anew.
+    //
+    const [head, ...tail] = fulfilled
+    if (!head) return next
+    evaluated.push(head)
+    return evaluate([...outdated, ...tail], merge(next, head))
   }
 
   const changed = Object.keys(facts).filter(different)
