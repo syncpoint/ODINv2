@@ -1,15 +1,14 @@
 /* eslint-disable camelcase */
-import { rules } from './rules'
 import * as Colors from '../../ol/style/color-schemes'
 import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { styleFactory } from './styleFactory'
 
-rules.shared = []
+const rules = []
 
 /**
  * sidc, parameterizedSIDC, identity, status
  */
-rules.shared.push([next => {
+rules.push([next => {
   const { sidc } = next.properties
   const parameterizedSIDC = parameterized(sidc)
 
@@ -20,7 +19,7 @@ rules.shared.push([next => {
 /**
  * smoothen, effectiveStyle
  */
-rules.shared.push([next => {
+rules.push([next => {
   const global = next.globalStyle || {}
   const layer = next.layerStyle || {}
   const feature = next.featureStyle || {}
@@ -61,7 +60,9 @@ rules.shared.push([next => {
 /**
  * styleFactory
  */
-rules.shared.push([next => {
+rules.push([next => {
   const { effectiveStyle } = next
   return { styleFactory: styleFactory(effectiveStyle) }
 }, ['effectiveStyle']])
+
+export default rules

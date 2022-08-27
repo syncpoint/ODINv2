@@ -1,4 +1,4 @@
-const STYLES = {}
-export default STYLES
+const styles = {}
+export default styles
 
-STYLES.DEFAULT = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
+styles.DEFAULT = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]

@@ -1,17 +1,14 @@
 import { Jexl } from 'jexl'
-import { rules } from './rules'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 
+const rules = [] // LineString, Polygon
 const jexl = new Jexl()
-
-rules.generic = [] // LineString, Polygon
-
 
 /**
  *
  */
-rules.generic.push([() => {
+rules.push([() => {
   return {
     smoothenedGeometry: null,
     geometry: null,
@@ -26,7 +23,7 @@ rules.generic.push([() => {
 /**
  * evalTextField
  */
-rules.generic.push([next => {
+rules.push([next => {
   const { properties } = next
   const evalSync = textField => Array.isArray(textField)
     ? textField.map(evalSync).filter(Boolean).join('\n')
@@ -52,7 +49,7 @@ rules.generic.push([next => {
 /**
  * smoothenedGeometry
  */
-rules.generic.push([next => {
+rules.push([next => {
   const { simplifiedGeometry, smoothen } = next
   const smoothenedGeometry = smoothen
     ? smooth(simplifiedGeometry)
@@ -70,7 +67,7 @@ rules.generic.push([next => {
 /**
  * read, write, resolution, geometry
  */
-rules.generic.push([next => {
+rules.push([next => {
   const { smoothenedGeometry, centerResolution } = next
   const { read, write, pointResolution } = transform(smoothenedGeometry)
   const geometry = read(smoothenedGeometry)
@@ -82,7 +79,7 @@ rules.generic.push([next => {
 /**
  * calculatedStyles :: [ol/style/Style]
  */
-rules.generic.push([next => {
+rules.push([next => {
   const { styleFactory, styleSpecification, write } = next
   const calculatedStyles = styleSpecification(next)
     .map(({ geometry, ...props }) => ({ geometry: write(geometry), ...props }))
@@ -95,7 +92,7 @@ rules.generic.push([next => {
 /**
  * labelPlacements
  */
-rules.generic.push([next => {
+rules.push([next => {
   const { labelSpecifications, placement } = next
   const labelPlacements = labelSpecifications.flatMap(spec => placement(spec))
   return { labelPlacements }
@@ -105,7 +102,7 @@ rules.generic.push([next => {
 /**
  * labelStyles :: [ol/style/Style]
  */
-rules.generic.push([next => {
+rules.push([next => {
   const { labelPlacements, styleFactory, write } = next
   const labelStyles = labelPlacements
     .map(({ geometry, options }) => ({ geometry: write(geometry), ...options }))
@@ -118,7 +115,7 @@ rules.generic.push([next => {
 /**
  * style :: [ol/style/Style]
  */
-rules.generic.push([next => {
+rules.push([next => {
   const style = [
     ...next.calculatedStyles,
     ...next.labelStyles
@@ -126,3 +123,5 @@ rules.generic.push([next => {
 
   return { style }
 }, ['calculatedStyles', 'labelStyles']])
+
+export default rules

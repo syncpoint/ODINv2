@@ -1,18 +1,19 @@
 /* eslint-disable camelcase */
-import { rules } from '../rules'
-import STYLES from './styles'
-import LABELS from './labels'
+import shared from '../shared'
+import generic from '../generic'
+import styles from './styles'
+import labels from './labels'
 import placement from './placement'
 
-rules.Polygon = [
-  ...rules.shared,
-  ...rules.generic
+const rules = [
+  ...shared,
+  ...generic
 ]
 
 /**
  *
  */
-rules.Polygon.push([() => {
+rules.push([() => {
   return { placement: null }
 }, ['geometryKey']])
 
@@ -20,7 +21,7 @@ rules.Polygon.push([() => {
 /**
  * simplified, geometry_simplified
  */
-rules.Polygon.push([next => {
+rules.push([next => {
   const { definingGeometry, centerResolution, mode } = next
 
   // Never simplify current selection.
@@ -39,10 +40,10 @@ rules.Polygon.push([next => {
 /**
  * labelSpecifications, styleSpecifications
  */
-rules.Polygon.push([next => {
+rules.push([next => {
   const { parameterizedSIDC: sidc, evalTextField } = next
-  const styleSpecification = (STYLES[sidc] || STYLES.DEFAULT)
-  const labelSpecifications = (LABELS[sidc] || []).flatMap(evalTextField)
+  const styleSpecification = (styles[sidc] || styles.DEFAULT)
+  const labelSpecifications = (labels[sidc] || []).flatMap(evalTextField)
   return { labelSpecifications, styleSpecification }
 }, ['parameterizedSIDC', 'evalTextField']])
 
@@ -50,7 +51,9 @@ rules.Polygon.push([next => {
 /**
  * placement
  */
-rules.Polygon.push([next => {
+rules.push([next => {
   const { geometry } = next
   return { placement: placement(geometry) }
 }, ['geometry']])
+
+export default rules

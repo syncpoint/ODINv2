@@ -1,17 +1,18 @@
-import { rules } from '../rules'
+import shared from '../shared'
+import generic from '../generic'
 import styles from './styles'
 import labels from './labels'
 import placement from './placement'
 
-rules.LineString = [
-  ...rules.shared,
-  ...rules.generic
+const rules = [
+  ...shared,
+  ...generic
 ]
 
 /**
  *
  */
-rules.LineString.push([() => {
+rules.push([() => {
   return { placement: null }
 }, ['geometryKey']])
 
@@ -19,7 +20,7 @@ rules.LineString.push([() => {
 /**
  * simplified, simplifiedGeometry
  */
-rules.LineString.push([next => {
+rules.push([next => {
   const { definingGeometry, centerResolution, mode } = next
 
   // Never simplify current selection.
@@ -41,7 +42,7 @@ rules.LineString.push([next => {
 /**
  * labelSpecifications, styleSpecifications
  */
-rules.LineString.push([next => {
+rules.push([next => {
   const { parameterizedSIDC: sidc, evalTextField } = next
   const styleSpecification = (styles[sidc] || styles.DEFAULT)
   const labelSpecifications = (labels[sidc] || []).flatMap(evalTextField)
@@ -52,7 +53,9 @@ rules.LineString.push([next => {
 /**
  * placement
  */
-rules.LineString.push([next => {
+rules.push([next => {
   const { geometry } = next
   return { placement: placement(geometry) }
 }, ['geometry']])
+
+export default rules

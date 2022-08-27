@@ -1,11 +1,14 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
-import './shared'
-import './generic'
-import './point'
-import './linestring/rules'
-import './polygon'
-export { rules } from './rules'
+import Point from './point'
+import LineString from './linestring/rules'
+import Polygon from './polygon/rules'
+
+export const rules = {
+  Point,
+  LineString,
+  Polygon
+}
 
 const notEqual = (state, obj, key) => !isEqual(state[key], obj[key])
 
