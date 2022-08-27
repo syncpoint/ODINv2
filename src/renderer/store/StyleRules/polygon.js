@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-import shared from '../shared'
-import generic from '../generic'
-import styles from './styles'
-import labels from './labels'
-import placement from './placement'
+import shared from './shared'
+import generic from './generic'
+import styles from './polygon-styles'
+import labels from './polygon-labels'
+import placement from './polygon-placement'
 
 const rules = [
   ...shared,
@@ -52,8 +52,7 @@ rules.push([next => {
  * placement
  */
 rules.push([next => {
-  const { geometry } = next
-  return { placement: placement(geometry) }
+  return { placement: placement(next) }
 }, ['geometry']])
 
 export default rules

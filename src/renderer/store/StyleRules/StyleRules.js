@@ -1,8 +1,8 @@
 import * as R from 'ramda'
 import isEqual from 'react-fast-compare'
 import Point from './point'
-import LineString from './linestring/rules'
-import Polygon from './polygon/rules'
+import LineString from './linestring'
+import Polygon from './polygon'
 
 export const rules = {
   Point,

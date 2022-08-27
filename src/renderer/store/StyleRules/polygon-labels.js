@@ -1,4 +1,4 @@
-import G_G_GAZ from '../../../ol/style/resources/G_G_GAZ.png'
+import G_G_GAZ from '../../ol/style/resources/G_G_GAZ.png'
 
 const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'center', 'text-clipping': 'none', ...options }]

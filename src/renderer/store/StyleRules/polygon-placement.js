@@ -1,7 +1,6 @@
-import * as TS from '../../../ol/ts'
-import { lazy } from '../../../ol/style/lazy'
+import { lazy } from '../../ol/style/lazy'
 
-export default geometry => {
+export default ({ TS, geometry }) => {
   const ring = geometry.getExteriorRing()
   const envelope = ring.getEnvelopeInternal()
   const centroid = TS.centroid(ring)

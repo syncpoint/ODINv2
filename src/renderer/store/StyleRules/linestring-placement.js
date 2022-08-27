@@ -1,7 +1,6 @@
 import * as R from 'ramda'
-import * as TS from '../../../ol/ts'
 
-export default geometry => {
+export default ({ TS, geometry }) => {
   const segments = TS.segments(geometry)
   const line = TS.lengthIndexedLine(geometry)
   const endIndex = line.getEndIndex()
