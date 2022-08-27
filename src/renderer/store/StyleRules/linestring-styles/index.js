@@ -1,5 +1,4 @@
 /* eslint-disable no-multi-spaces */
-/* eslint-disable camelcase */
 
 import G_F_LT from './G_F_LT'
 import G_G_GLC from './G_G_GLC'

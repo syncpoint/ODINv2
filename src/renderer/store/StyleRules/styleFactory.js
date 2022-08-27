@@ -1,6 +1,26 @@
+import hash from 'object-hash'
+import LRU_TTL from 'lru-ttl-cache'
 import * as olStyle from 'ol/style'
 import { PI_OVER_2, PI_OVER_4, PI } from '../../../shared/Math'
 import ms from 'milsymbol'
+import * as patterns from '../../ol/style/patterns'
+
+const cache = new LRU_TTL({ max: 1000, ttl: 10 * 60 * 1000 })
+const create = Constructor => options => {
+  const key = hash(options)
+  if (!cache.has(key)) cache.set(key, new Constructor(options))
+  return cache.get(key)
+}
+
+const Styles = {
+  stroke: create(olStyle.Stroke),
+  fill: create(olStyle.Fill),
+  text: options => new olStyle.Text(options),
+  circle: options => new olStyle.Circle(options),
+  regularShape: options => new olStyle.RegularShape(options),
+  icon: options => new olStyle.Icon(options),
+  style: options => new olStyle.Style(options)
+}
 
 const TEXT_ALIGN = {
   start: 'end',
@@ -12,7 +32,7 @@ const TEXT_ALIGN = {
 
 const makeStroke = props => {
   if (!props['line-width']) return null
-  return new olStyle.Stroke({
+  return Styles.stroke({
     color: props['line-color'],
     lineCap: props['line-cap'],
     lineJoin: props['line-join'],
@@ -31,7 +51,7 @@ const makeText = props => {
   const offsetX = textOffset[0]
   const offsetY = textOffset[1]
 
-  return new olStyle.Text({
+  return Styles.text({
     font: props['text-font'],
     text: props['text-field'],
     rotation: rotate ? flipped ? rotate + PI : rotate : null,
@@ -39,13 +59,13 @@ const makeText = props => {
     offsetX: flipped ? -1 * offsetX : offsetX,
     offsetY,
     padding: props['text-padding'] && new Array(4).fill(props['text-padding']),
-    fill: new olStyle.Fill({ color: props['text-color'] }),
-    stroke: props['text-halo-color'] && new olStyle.Stroke({
+    fill: Styles.fill({ color: props['text-color'] }),
+    stroke: props['text-halo-color'] && Styles.stroke({
       color: props['text-halo-color'],
       width: props['text-halo-width']
     }),
-    backgroundFill: props['text-fill-color'] && new olStyle.Fill({ color: props['text-fill-color'] }),
-    backgroundStroke: props['text-line-color'] && new olStyle.Stroke({
+    backgroundFill: props['text-fill-color'] && Styles.fill({ color: props['text-fill-color'] }),
+    backgroundStroke: props['text-line-color'] && Styles.stroke({
       color: props['text-line-color'],
       width: props['text-line-width']
     })
@@ -53,15 +73,15 @@ const makeText = props => {
 }
 
 const makeCircle = props => {
-  const fill = new olStyle.Fill({ color: props['circle-fill-color'] })
+  const fill = Styles.fill({ color: props['circle-fill-color'] })
   const stroke = props['circle-line-color']
-    ? new olStyle.Stroke({
+    ? Styles.stroke({
       color: props['circle-line-color'],
       width: props['circle-line-width']
     })
     : null
 
-  return new olStyle.Circle({
+  return Styles.Circle({
     fill,
     stroke,
     radius: props['circle-radius']
@@ -70,13 +90,13 @@ const makeCircle = props => {
 
 const makeShape = props => {
   const fillColor = props['shape-fill-color']
-  const fill = fillColor ? new olStyle.Fill({ color: fillColor }) : null
-  const stroke = new olStyle.Stroke({
+  const fill = fillColor ? Styles.fill({ color: fillColor }) : null
+  const stroke = Styles.stroke({
     color: props['shape-line-color'],
     width: props['shape-line-width']
   })
 
-  return new olStyle.RegularShape({
+  return Styles.regularShape({
     fill,
     stroke,
     radius: props['shape-radius'],
@@ -109,7 +129,7 @@ const makeSymbol = props => {
   const symbol = new ms.Symbol(props['symbol-code'], { ...options })
   const { width, height } = symbol.getSize()
 
-  return new olStyle.Icon({
+  return Styles.icon({
     anchor: [symbol.getAnchor().x, symbol.getAnchor().y],
     imgSize: [Math.floor(width), Math.floor(height)],
     src: 'data:image/svg+xml;utf8,' + symbol.asSVG(),
@@ -120,7 +140,7 @@ const makeSymbol = props => {
 }
 
 const makeIcon = props => {
-  return new olStyle.Icon({
+  return Styles.icon({
     src: props['icon-url'],
     scale: props['icon-scale'] || 1,
     rotation: props['icon-rotate'] || 0
@@ -175,7 +195,6 @@ export const styleFactory = effectiveStyle => {
     'line-halo-color': effectiveStyle['line-halo-color'],
     'line-halo-width': effectiveStyle['line-halo-width'],
     'line-halo-dash-array': effectiveStyle['line-halo-dash-array']
-
   }
 
   registry['style:2525c/solid-stroke'] = {
@@ -206,6 +225,19 @@ export const styleFactory = effectiveStyle => {
     'line-halo-color': effectiveStyle['line-halo-color'],
     'line-halo-width': effectiveStyle['line-halo-width'],
     'fill-color': effectiveStyle['fill-color']
+  }
+
+  registry['style:2525c/hatch-fill'] = {
+    'line-cap': effectiveStyle['line-cap'],
+    'line-join': effectiveStyle['line-join'],
+    'line-color': effectiveStyle['line-color'],
+    'line-halo-color': effectiveStyle['line-halo-color'],
+    'line-halo-width': 1,
+    'line-width': 2,
+    'fill-pattern': 'hatch',
+    'fill-pattern-angle': 45,
+    'fill-pattern-size': 2,
+    'fill-pattern-spacing': 12
   }
 
   registry['style:default-text'] = {
@@ -243,27 +275,27 @@ export const styleFactory = effectiveStyle => {
 
   const makeFill = props => {
     if (props['fill-color']) {
-      return new olStyle.Fill({ color: props['fill-color'] })
+      return Styles.fill({ color: props['fill-color'] })
     } else if (props['fill-pattern']) {
-      // const color = patterns.fill({
-      //   pattern: Props.fillPattern(props),
-      //   angle: Props.fillPatternAngle(props),
-      //   size: Props.fillPatternSize(props),
-      //   spacing: Props.fillPatternSpacing(props),
-      //   strokeColor: Props.lineHaloColor(props),
-      //   strokeWidth: Props.lineHaloWidth(props) + Props.lineWidth(props),
-      //   strokeFillColor: Props.lineColor(props),
-      //   strokeFillWidth: Props.lineWidth(props)
-      // })
+      const color = patterns.fill({
+        pattern: props['fill-pattern'],
+        angle: props['fill-pattern-angle'],
+        size: props['fill-pattern-size'],
+        spacing: props['fill-pattern-spacing'],
+        strokeColor: props['line-halo-color'],
+        strokeWidth: props['line-halo-width'] + props['line-width'],
+        strokeFillColor: props['line-color'],
+        strokeFillWidth: props['line-width']
+      })
 
-      // return new style.Fill({ color })
+      return new olStyle.Fill({ color })
     } else return null
   }
 
 
   const makeStyle = options => Array.isArray(options)
     ? options.map(makeStyle)
-    : new olStyle.Style(options)
+    : Styles.style(options)
 
   return options => {
     const styleOptions = []
