@@ -35,5 +35,3 @@ export default {
   'G*F*AKBR--': FILL_HATCH, // KILL BOX/BLUE
   'G*F*AKPR--': FILL_HATCH  // KILL BOX/PURPLE
 }
-
-

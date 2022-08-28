@@ -1,29 +1,37 @@
 /* eslint-disable camelcase */
-import shared from './shared'
+import * as shared from './shared'
 import styles from './corridor-styles'
 import { transform } from '../../model/geometry'
 
 const rules = [
-  ...shared
+  shared.sidc,
+  shared.evalTextField,
+  shared.effectiveStyle
 ]
 
 
 /**
- * simplified, geometry_simplified
- */
-rules.push([next => {
-}, ['centerResolution', 'mode', 'geometryKey', 'definingGeometry']])
-
-/**
- * read, write, resolution, geometry
+ * geometry :: jsts/geom/geometry
+ * write :: jsts/geom/geometry -> ol/geom/geometry
+ * resolution :: Number
  */
 rules.push([next => {
   const { definingGeometry, centerResolution } = next
+
+  // Transform (TS/UTM).
+  //
   const { read, write, pointResolution } = transform(definingGeometry)
   const geometry = read(definingGeometry)
   const resolution = pointResolution(centerResolution)
-  return { read, write, resolution, geometry }
-}, ['geometryKey', 'definingGeometry', 'centerResolution']])
+
+  return {
+    geometry,
+    write,
+    resolution,
+    calculatedStyles: null,
+    style: null
+  }
+}, ['mode', 'smoothen', 'geometryKey', 'centerResolution']])
 
 
 /**

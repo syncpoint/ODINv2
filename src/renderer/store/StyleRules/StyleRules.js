@@ -18,7 +18,8 @@ const comparators = {
   globalStyle: notEqual,
   layerStyle: notEqual,
   featureStyle: notEqual,
-  properties: notEqual
+  properties: notEqual,
+  modifiers: notEqual
 }
 
 const fn = rule => rule[0]
@@ -55,6 +56,5 @@ export const reduce = (state, facts, evaluated = []) => {
   const outdated = state.rules.filter(isOutdated)
   const next = { ...state, ...facts }
   const acc = evaluate(outdated, next)
-
   return R.isEmpty(acc) ? next : reduce(next, acc, evaluated)
 }
