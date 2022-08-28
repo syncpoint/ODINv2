@@ -41,7 +41,11 @@ export const reduce = (state, facts, evaluated = []) => {
 
     const tail = rules.filter(rule => rule !== head)
     evaluated.push(head)
-    return evaluate(tail, merge(next, head))
+
+    return R.tryCatch(
+      next => evaluate(tail, merge(next, head)),
+      (err, next) => ({ ...next, err })
+    )(next)
   }
 
   const changed = Object.keys(facts).filter(different)

@@ -10,10 +10,12 @@ import G_M_SP from './G_M_SP'
 
 const DEFAULT = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
 const FILL_HATCH = ({ geometry }) => [{ id: 'style:2525c/hatch-fill', geometry }]
+const ERROR = ({ geometry }) => [{ id: 'style:wasp-stroke', geometry }]
 
 export default {
   DEFAULT,
   FILL_HATCH,
+  ERROR,
   'G*G*GAF---': G_G_GAF,    // FORTIFIED AREA
   'G*G*PY----': G_G_PY,     // DECOY MINED AREA, FENCED
   'G*G*SAE---': G_G_SAE,    // ENCIRCLEMENT

@@ -55,4 +55,18 @@ rules.push([next => {
   return { placement: placement(next) }
 }, ['geometry']])
 
+
+/**
+ * style :: [ol/style/Style]
+ */
+rules.push([next => {
+  const { styleFactory, write } = next
+  const style = styles.ERROR(next)
+    .map(({ geometry, ...options }) => ({ geometry: write(geometry), ...options }))
+    .flatMap(styleFactory)
+
+  return { style }
+}, ['err']])
+
+
 export default rules

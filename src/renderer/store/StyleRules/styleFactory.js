@@ -222,9 +222,9 @@ export const styleFactory = effectiveStyle => {
     'line-cap': effectiveStyle['line-cap'],
     'line-join': effectiveStyle['line-join'],
     'line-color': effectiveStyle['line-color'],
+    'line-width': effectiveStyle['line-width'],
     'line-halo-color': effectiveStyle['line-halo-color'],
-    'line-halo-width': 1,
-    'line-width': 2,
+    'line-halo-width': effectiveStyle['line-halo-width'],
     'fill-pattern': 'hatch',
     'fill-pattern-angle': 45,
     'fill-pattern-size': 2,
@@ -264,6 +264,15 @@ export const styleFactory = effectiveStyle => {
     'shape-scale': [1, 1.4]
   }
 
+  registry['style:wasp-stroke'] = {
+    'line-color': 'yellow',
+    'line-width': effectiveStyle['line-width'],
+    'line-dash-array': [10, 10],
+    'line-halo-color': 'black',
+    'line-halo-width': effectiveStyle['line-halo-width'],
+    'line-halo-dash-array': null
+  }
+
   const makeFill = props => {
     if (props['fill-color']) {
       return Styles.fill({ color: props['fill-color'] })
@@ -297,7 +306,7 @@ export const styleFactory = effectiveStyle => {
         geometry: props.geometry,
         stroke: makeStroke({
           'line-color': props['line-halo-color'],
-          'line-dash-array': props['line-dash-array'],
+          'line-dash-array': props['line-halo-dash-array'],
           'line-width': props['line-width'] + props['line-halo-width'],
           'line-cap': props['line-cap'],
           'line-join': props['line-join']
