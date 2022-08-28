@@ -4,12 +4,14 @@ import Point from './point'
 import LineString from './linestring'
 import Polygon from './polygon'
 import Corridor from './corridor'
+import MultiPoint from './multipoint'
 
 export const rules = {
   Point,
   LineString,
   Polygon,
-  'LineString:Point': Corridor
+  'LineString:Point': Corridor,
+  MultiPoint
 }
 
 const notEqual = (state, obj, key) => !isEqual(state[key], obj[key])
@@ -45,7 +47,10 @@ export const reduce = (state, facts, evaluated = []) => {
 
     return R.tryCatch(
       next => evaluate(tail, merge(next, head)),
-      (err, next) => ({ ...next, err })
+      (err, next) => {
+        console.warn(err)
+        return { ...next, err }
+      }
     )(next)
   }
 

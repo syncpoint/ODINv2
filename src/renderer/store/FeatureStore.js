@@ -9,7 +9,7 @@ import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from './StyleRules/StyleRules'
 import * as TS from '../ol/ts'
-import { PI, PI_OVER_2, PI_OVER_3 } from '../../shared/Math'
+import * as Math from '../../shared/Math'
 
 
 const format = new GeoJSON({
@@ -202,9 +202,7 @@ FeatureStore.prototype.wrap = function (feature) {
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
   let state = {
     TS,
-    PI,
-    PI_OVER_2,
-    PI_OVER_3,
+    ...Math,
     mode: 'default',
     rules: rules[type] || [],
     layerStyle: {},

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import * as shared from './shared'
-import styles from './corridor-styles'
+import styles from './multipoint-styles'
 import { transform } from '../../model/geometry'
 
 const rules = [
@@ -58,16 +58,3 @@ rules.push([next => {
 
   return { style }
 }, ['geometry', 'styleFactory', 'styleSpecification', 'evalTextField']])
-
-
-/**
- * style :: [ol/style/Style]
- */
-rules.push([next => {
-  const { styleFactory, write } = next
-  const style = styles.ERROR(next)
-    .map(({ geometry, ...options }) => ({ geometry: write(geometry), ...options }))
-    .flatMap(styleFactory)
-
-  return { style }
-}, ['err']])
