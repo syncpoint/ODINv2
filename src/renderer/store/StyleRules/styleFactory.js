@@ -1,20 +1,11 @@
-import hash from 'object-hash'
-import LRU_TTL from 'lru-ttl-cache'
 import * as olStyle from 'ol/style'
 import { PI_OVER_2, PI_OVER_4, PI } from '../../../shared/Math'
 import ms from 'milsymbol'
 import * as patterns from '../../ol/style/patterns'
 
-const cache = new LRU_TTL({ max: 1000, ttl: 10 * 60 * 1000 })
-const create = Constructor => options => {
-  const key = hash(options)
-  if (!cache.has(key)) cache.set(key, new Constructor(options))
-  return cache.get(key)
-}
-
 const Styles = {
-  stroke: create(olStyle.Stroke),
-  fill: create(olStyle.Fill),
+  stroke: options => new olStyle.Stroke(options),
+  fill: options => new olStyle.Fill(options),
   text: options => new olStyle.Text(options),
   circle: options => new olStyle.Circle(options),
   regularShape: options => new olStyle.RegularShape(options),
