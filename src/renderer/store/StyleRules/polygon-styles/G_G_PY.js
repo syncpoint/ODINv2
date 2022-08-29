@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 
-export default ({ TS, PI_OVER_2, geometry, sidc }) => {
+export default ({ TS, PI_OVER_2, geometry }) => {
   const ring = geometry.getExteriorRing()
   const line = TS.lengthIndexedLine(ring)
   const envelope = ring.getEnvelopeInternal()
@@ -31,7 +31,6 @@ export default ({ TS, PI_OVER_2, geometry, sidc }) => {
         'text-rotate': TS.rotation(segment)
       }
     })
-
 
   return [
     { id: 'style:2525c/solid-stroke', geometry },

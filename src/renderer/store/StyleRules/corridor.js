@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import * as R from 'ramda'
 import * as shared from './shared'
 import styles from './corridor-styles'
 import { transform } from '../../model/geometry'
@@ -6,7 +7,10 @@ import { transform } from '../../model/geometry'
 const rules = [
   shared.sidc,
   shared.evalTextField,
-  shared.effectiveStyle
+  shared.effectiveStyle,
+  shared.geometry,
+  shared.styles,
+  shared.style
 ]
 
 export default rules
@@ -25,24 +29,20 @@ rules.push([next => {
   const { read, write, pointResolution } = transform(definingGeometry)
   const geometry = read(definingGeometry)
   const resolution = pointResolution(centerResolution)
-
-  return {
-    geometry,
-    write,
-    resolution,
-    calculatedStyles: null,
-    style: null
-  }
+  const placement = R.identity // labels are placed directly
+  return { geometry, write, resolution, placement }
 }, ['mode', 'smoothen', 'geometryKey', 'centerResolution']])
 
 
 /**
- * styleSpecifications
+ * dynamicStyle
+ * staticStyles
  */
 rules.push([next => {
   const { parameterizedSIDC: sidc } = next
-  const styleSpecification = (styles[sidc] || styles.DEFAULT)
-  return { styleSpecification }
+  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
+  const staticStyles = []
+  return { dynamicStyle, staticStyles }
 }, ['parameterizedSIDC']])
 
 
@@ -50,23 +50,9 @@ rules.push([next => {
  * style :: [ol/style/Style]
  */
 rules.push([next => {
-  const { styleFactory, styleSpecification, write, evalTextField } = next
-  const style = styleSpecification(next)
-    .map(({ geometry, ...props }) => ({ geometry: write(geometry), ...props }))
-    .flatMap(evalTextField)
-    .flatMap(styleFactory)
-
-  return { style }
-}, ['geometry', 'styleFactory', 'styleSpecification', 'evalTextField']])
-
-
-/**
- * style :: [ol/style/Style]
- */
-rules.push([next => {
-  const { styleFactory, write } = next
+  const { styleFactory, rewrite } = next
   const style = styles.ERROR(next)
-    .map(({ geometry, ...options }) => ({ geometry: write(geometry), ...options }))
+    .map(rewrite)
     .flatMap(styleFactory)
 
   return { style }

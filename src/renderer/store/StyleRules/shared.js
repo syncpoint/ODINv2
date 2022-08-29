@@ -89,16 +89,14 @@ export const effectiveStyle = [next => {
     smoothen: !!smoothen,
     effectiveStyle,
     styleFactory: styleFactory(effectiveStyle),
-    calculatedStyles: null,
-    labelStyles: null,
-    style: null
+    rewrite: null
   }
 }, ['sidc', 'globalStyle', 'layerStyle', 'featureStyle']]
 
 
 /**
  * geometry :: jsts/geom/geometry
- * write :: jsts/geom/geometry -> ol/geom/geometry
+ * rewrite :: ...
  * resolution :: Number
  */
 export const geometry = [next => {
@@ -126,64 +124,38 @@ export const geometry = [next => {
   const { read, write, pointResolution } = transform(smoothenedGeometry)
   const geometry = read(smoothenedGeometry)
   const resolution = pointResolution(centerResolution)
+  const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
 
   return {
     geometry,
-    write,
-    resolution,
-    calculatedStyles: null,
-    labelStyles: null,
-    style: null
+    rewrite,
+    resolution
   }
 }, ['mode', 'smoothen', 'geometryKey', 'centerResolution']]
 
 
 /**
- * calculatedStyles :: [ol/style/Style]
+ * styles :: ...
  */
-export const calculatedStyles = [next => {
-  const { styleFactory, styleSpecification, write } = next
-  const calculatedStyles = styleSpecification(next)
-    .map(({ geometry, ...props }) => ({ geometry: write(geometry), ...props }))
-    .flatMap(styleFactory)
-
-  return { calculatedStyles }
-}, ['write', 'styleFactory', 'styleSpecification']]
-
-
-/**
- * labelPlacements
- */
-export const labelPlacements = [next => {
-  const { labelSpecifications, placement, evalTextField } = next
-  const labelPlacements = labelSpecifications
+export const styles = [next => {
+  const { dynamicStyle, staticStyles, rewrite, evalTextField, placement } = next
+  const styles = [
+    ...dynamicStyle(next),
+    ...staticStyles
+  ]
     .flatMap(evalTextField)
-    .flatMap(props => placement(props))
-  return { labelPlacements }
-}, ['placement', 'labelSpecifications', 'evalTextField']]
+    .flatMap(placement)
+    .map(rewrite)
 
-
-/**
- * labelStyles :: [ol/style/Style]
- */
-export const labelStyles = [next => {
-  const { labelPlacements, styleFactory, write } = next
-  const labelStyles = labelPlacements
-    .map(({ geometry, ...props }) => ({ geometry: write(geometry), ...props }))
-    .flatMap(styleFactory)
-
-  return { labelStyles }
-}, ['labelPlacements', 'styleFactory']]
+  return { styles }
+}, ['rewrite', 'dynamicStyle', 'staticStyles', 'evalTextField', 'placement']]
 
 
 /**
  * style :: [ol/style/Style]
  */
 export const style = [next => {
-  const style = [
-    ...next.calculatedStyles,
-    ...next.labelStyles
-  ]
-
+  const { styles, styleFactory } = next
+  const style = styles.flatMap(styleFactory)
   return { style }
-}, ['calculatedStyles', 'labelStyles']]
+}, ['styles', 'styleFactory']]

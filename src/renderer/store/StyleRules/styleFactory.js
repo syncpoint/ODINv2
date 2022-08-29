@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import * as olStyle from 'ol/style'
 import { PI_OVER_2, PI_OVER_4, PI } from '../../../shared/Math'
 import ms from 'milsymbol'
@@ -104,7 +105,12 @@ const makeShape = props => {
 const makeSymbol = props => {
   const modes = { dark: 'Dark', medium: 'Medium', light: 'Light' }
 
-  const options = {
+  const fromEntries = entries => Object.fromEntries(entries)
+  const entries = obj => Object.entries(obj)
+  const rejectNil = R.reject(([, v]) => R.isNil(v))
+  const filter = R.compose(fromEntries, rejectNil, entries)
+
+  const options = filter({
     colorMode: modes[props['color-scheme']],
     outlineColor: props['symbol-halo-color'],
     outlineWidth: props['symbol-halo-width'],
@@ -115,7 +121,7 @@ const makeSymbol = props => {
     fillOpacity: props['symbol-fill-opacity'],
     size: props['symbol-size'] || 60,
     ...props['symbol-modifiers']
-  }
+  })
 
   const symbol = new ms.Symbol(props['symbol-code'], { ...options })
   const { width, height } = symbol.getSize()

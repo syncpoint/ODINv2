@@ -47,10 +47,7 @@ export const reduce = (state, facts, evaluated = []) => {
 
     return R.tryCatch(
       next => evaluate(tail, merge(next, head)),
-      (err, next) => {
-        console.warn(err)
-        return { ...next, err }
-      }
+      (err, next) => ({ ...next, err })
     )(next)
   }
 

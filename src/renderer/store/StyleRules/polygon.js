@@ -9,9 +9,7 @@ const rules = [
   shared.evalTextField,
   shared.effectiveStyle,
   shared.geometry,
-  shared.labelPlacements,
-  shared.calculatedStyles,
-  shared.labelStyles,
+  shared.styles,
   shared.style
 ]
 
@@ -19,14 +17,14 @@ export default rules
 
 
 /**
- * styleSpecification
- * labelSpecifications
+ * dynamicStyle
+ * staticStyles
  */
 rules.push([next => {
   const { parameterizedSIDC: sidc } = next
-  const styleSpecification = (styles[sidc] || styles.DEFAULT)
-  const labelSpecifications = (labels[sidc] || [])
-  return { styleSpecification, labelSpecifications }
+  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
+  const staticStyles = (labels[sidc] || [])
+  return { dynamicStyle, staticStyles }
 }, ['parameterizedSIDC']])
 
 
@@ -100,6 +98,7 @@ const ALL_LINES = title => title
 
 const G_G_PM = [
   ...TLBR('"M"'),
+  // FIXME: noshow! don't know why.
   { 'symbol-code': 'GFGPPD----', 'symbol-anchor': 'center', 'symbol-size': 100 }
 ]
 

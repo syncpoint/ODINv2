@@ -10,8 +10,7 @@ const rules = [
   shared.sidc,
   shared.evalTextField,
   shared.effectiveStyle,
-  shared.labelPlacements,
-  shared.labelStyles,
+  shared.styles,
   shared.style
 ]
 
@@ -20,7 +19,7 @@ export default rules
 
 /**
  * geometry :: jsts/geom/geometry
- * write :: jsts/geom/geometry -> ol/geom/geometry
+ * rewrite :: ...
  * resolution :: Number
  */
 rules.push([next => {
@@ -31,26 +30,20 @@ rules.push([next => {
   const { read, write, pointResolution } = transform(definingGeometry)
   const geometry = read(definingGeometry)
   const resolution = pointResolution(centerResolution)
-
-  return {
-    geometry,
-    write,
-    resolution,
-    calculatedStyles: null,
-    style: null
-  }
+  const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
+  return { geometry, rewrite, resolution }
 }, ['mode', 'smoothen', 'geometryKey', 'centerResolution']])
 
 
 /**
- * styleSpecifications
- * labelSpecifications
+ * dynamicStyle
+ * staticStyles
  */
 rules.push([next => {
   const { parameterizedSIDC: sidc } = next
-  const styleSpecification = (styles[sidc] || styles.DEFAULT)
-  const labelSpecifications = (labels[sidc] || [])
-  return { styleSpecification, labelSpecifications }
+  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
+  const staticStyles = (labels[sidc] || [])
+  return { dynamicStyle, staticStyles }
 }, ['parameterizedSIDC']])
 
 
@@ -68,21 +61,6 @@ rules.push([next => {
   const buffer = TS.pointBuffer(TS.point(C))(segment.getLength())
   return { placement: placement({ TS, geometry: buffer }) }
 }, ['geometry']])
-
-
-/**
- * calculatedStyles :: [ol/style/Style]
- */
-rules.push([next => {
-  const { styleFactory, styleSpecification, write, evalTextField } = next
-  const calculatedStyles = styleSpecification(next)
-    .map(({ geometry, ...props }) => ({ geometry: write(geometry), ...props }))
-    .flatMap(evalTextField)
-    .flatMap(styleFactory)
-
-  return { calculatedStyles }
-}, ['write', 'styleFactory', 'styleSpecification', 'evalTextField']])
-
 
 
 // => label specifications for circular features with polygon placement
