@@ -40,7 +40,7 @@ rules.push([next => {
 
 // ==> label specifications and placement
 
-const placement = ({ TS, geometry }) => {
+export const placement = ({ TS, geometry }) => {
   const ring = geometry.getExteriorRing()
   const envelope = ring.getEnvelopeInternal()
   const centroid = TS.centroid(ring)

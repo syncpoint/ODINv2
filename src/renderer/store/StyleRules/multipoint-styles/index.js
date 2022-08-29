@@ -17,10 +17,13 @@ const circle = id => ({ TS, geometry }) => {
   return [{ id, geometry: buffer }]
 }
 
+const CIRCLE = circle('style:2525c/default-stroke')
+const FILLED_CIRCLE = circle('style:2525c/hatch-fill')
+
 export default {
   DEFAULT: ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }],
-  CIRCLE: circle('style:2525c/default-stroke'),
-  FILLED_CIRCLE: circle('style:2525c/hatch-fill'),
+  CIRCLE,
+  FILLED_CIRCLE,
   'G*F*AXC---': G_F_AXC,        // SENSOR RANGE FAN
   'G*G*DLP---': G_G_DLP,        // PRINCIPLE DIRECTION OF FIRE
   'G*G*OAS---': G_G_OAS,        // SUPPORT BY FIRE POSITION
@@ -32,7 +35,20 @@ export default {
   'G*T*US----': fanLike('"S"'), // TASKS / SCREEN
   'G*T*UG----': fanLike('"G"'), // TASKS / GUARD
   'G*T*UC----': fanLike('"C"'), // TASKS / COVER
-  'G*G*GAS---': fanLike(null)   // SEARCH/RECONNAISSANCE AREA
+  'G*G*GAS---': fanLike(null),   // SEARCH/RECONNAISSANCE AREA
 
+  'G*F*ATC---': CIRCLE, // CIRCULAR TARGET
+  'G*F*ACSC--': CIRCLE, // FIRE SUPPORT AREA (FSA)
+  'G*F*ACAC--': CIRCLE, // AIRSPACE COORDINATION AREA (ACA)
+  'G*F*ACFC--': CIRCLE, // FREE FIRE AREA (FFA)
+  'G*F*ACNC--': FILLED_CIRCLE, // NO-FIRE AREA (NFA)
+  'G*F*ACRC--': CIRCLE, // RESTRICTIVE FIRE AREA (RFA)
+  'G*F*ACPC--': CIRCLE, // POSITION AREA FOR ARTILLERY (PAA)
+  'G*F*ACEC--': CIRCLE, // SENSOR ZONE
+  'G*F*ACDC--': CIRCLE, // DEAD SPACE AREA (DA)
+  'G*F*ACZC--': CIRCLE, // ZONE OF RESPONSIBILITY (ZOR)
+  'G*F*ACBC--': CIRCLE, // TARGET BUILD-UP AREA (TBA)
+  'G*F*ACVC--': CIRCLE, // TARGET VALUE AREA (TVAR)
+  'G*F*AKBC--': FILLED_CIRCLE, // KILL BOX/BLUE
+  'G*F*AKPC--': FILLED_CIRCLE // KILL BOX/PURPLE
 }
-
