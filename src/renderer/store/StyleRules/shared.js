@@ -4,6 +4,8 @@ import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 import { styleFactory } from './styleFactory'
+import { boundingBox } from './clipping'
+import makeEffectiveStyle from './effectiveStyle'
 
 const jexl = new Jexl()
 const rules = []
@@ -50,9 +52,8 @@ export const evalTextField = [next => {
 
 
 /**
- * effectiveStyle :: {k, v}
+ * effectiveStyle :: ...
  * smoothen :: boolean
- * styleFactory :: [props] -> [ol/style/Style]
  */
 export const effectiveStyle = [next => {
   const global = next.globalStyle || {}
@@ -83,13 +84,12 @@ export const effectiveStyle = [next => {
   // Split `smoothen` from rest.
   // We don't want to calculate new geometries on color change.
   const merged = { ...global, ...layer, ...scheme, ...feature }
-  const { 'line-smooth': smoothen, ...effectiveStyle } = merged
+  const { 'line-smooth': smoothen, ...props } = merged
 
   return {
     smoothen: !!smoothen,
-    effectiveStyle,
-    styleFactory: styleFactory(effectiveStyle),
-    rewrite: null
+    effectiveStyle: makeEffectiveStyle(next, props),
+    geometry: null
   }
 }, ['sidc', 'globalStyle', 'layerStyle', 'featureStyle']]
 
@@ -138,24 +138,39 @@ export const geometry = [next => {
  * styles :: ...
  */
 export const styles = [next => {
-  const { dynamicStyle, staticStyles, rewrite, evalTextField, placement } = next
+  const { dynamicStyle, staticStyles, evalTextField, placement } = next
   const styles = [
     ...dynamicStyle(next),
     ...staticStyles
   ]
     .flatMap(evalTextField)
     .flatMap(placement)
-    .map(rewrite)
 
   return { styles }
-}, ['rewrite', 'dynamicStyle', 'staticStyles', 'evalTextField', 'placement']]
+}, ['dynamicStyle', 'staticStyles', 'evalTextField', 'placement']]
 
 
 /**
  * style :: [ol/style/Style]
  */
 export const style = [next => {
-  const { styles, styleFactory } = next
-  const style = styles.flatMap(styleFactory)
+  const { TS, styles, effectiveStyle, rewrite } = next
+  if (styles.length === 0) return { style: [] }
+  const effective = styles.map(effectiveStyle)
+  const bboxes = effective.map(boundingBox(next)).filter(Boolean)
+  const clipLine = effective.some(props => props['text-clipping'] === 'line')
+  effective[0].geometry = clipLine
+    ? TS.lineString(effective[0].geometry.getCoordinates())
+    : effective[0].geometry
+
+  effective[0].geometry = TS.difference([effective[0].geometry, ...bboxes])
+
+  const style = [
+    ...effective,
+    ...bboxes.map(geometry => ({ geometry, 'line-color': 'red', 'line-width': 0.5 }))
+  ]
+    .map(rewrite)
+    .flatMap(styleFactory)
+
   return { style }
-}, ['styles', 'styleFactory']]
+}, ['styles', 'effectiveStyle']]

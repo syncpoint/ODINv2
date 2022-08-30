@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as olStyle from 'ol/style'
-import { PI_OVER_2, PI_OVER_4, PI } from '../../../shared/Math'
+import { PI_OVER_2, PI } from '../../../shared/Math'
 import ms from 'milsymbol'
 import * as patterns from '../../ol/style/patterns'
 
@@ -31,6 +31,25 @@ const makeStroke = props => {
     lineDash: props['line-dash-array'],
     width: props['line-width']
   })
+}
+
+const makeFill = props => {
+  if (props['fill-color']) {
+    return Styles.fill({ color: props['fill-color'] })
+  } else if (props['fill-pattern']) {
+    const color = patterns.fill({
+      pattern: props['fill-pattern'],
+      angle: props['fill-pattern-angle'],
+      size: props['fill-pattern-size'],
+      spacing: props['fill-pattern-spacing'],
+      strokeColor: props['line-halo-color'],
+      strokeWidth: props['line-halo-width'] + props['line-width'],
+      strokeFillColor: props['line-color'],
+      strokeFillWidth: props['line-width']
+    })
+
+    return new olStyle.Fill({ color })
+  } else return null
 }
 
 const makeText = props => {
@@ -152,182 +171,22 @@ const makeImage = props => {
   else return null
 }
 
+const makeStyle = props => Array.isArray(props)
+  ? props.map(makeStyle)
+  : Styles.style(props)
+
 /**
  *
  */
-export const styleFactory = effectiveStyle => {
-  const font = effectiveStyle['text-font'] || [
-    effectiveStyle['text-font-style'],
-    effectiveStyle['text-font-variant'],
-    effectiveStyle['text-font-weight'],
-    effectiveStyle['text-font-size'],
-    effectiveStyle['text-font-family']
-  ].filter(Boolean).join(' ')
+export const styleFactory = props => {
+  const styleOptions = []
+  styleOptions.push({
+    geometry: props.geometry,
+    fill: makeFill(props),
+    image: makeImage(props),
+    stroke: makeStroke(props),
+    text: makeText(props)
+  })
 
-  const registry = {}
-
-  registry['style:2525c/symbol'] = {
-    'color-scheme': effectiveStyle['color-scheme'],
-    'symbol-color': effectiveStyle['symbol-color'],
-    'symbol-halo-color': effectiveStyle['symbol-halo-color'],
-    'symbol-halo-width': effectiveStyle['symbol-halo-width'],
-    'symbol-text-color': effectiveStyle['symbol-text-color'],
-    'symbol-text-size': effectiveStyle['symbol-text-size'],
-    'symbol-text': effectiveStyle['symbol-text'],
-    'symbol-fill': effectiveStyle['symbol-fill'],
-    'symbol-fill-opacity': effectiveStyle['symbol-fill-opacity'],
-    'symbol-frame': effectiveStyle['symbol-frame'],
-    'symbol-icon': effectiveStyle['symbol-icon'],
-    'symbol-line-width': effectiveStyle['symbol-line-width'],
-    'symbol-size': effectiveStyle['symbol-size'],
-    'icon-scale': effectiveStyle['icon-scale']
-  }
-
-  registry['style:2525c/default-stroke'] = {
-    'line-cap': effectiveStyle['line-cap'],
-    'line-join': effectiveStyle['line-join'],
-    'line-color': effectiveStyle['line-color'],
-    'line-width': effectiveStyle['line-width'],
-    'line-dash-array': effectiveStyle['line-dash-array'],
-    'line-halo-color': effectiveStyle['line-halo-color'],
-    'line-halo-width': effectiveStyle['line-halo-width'],
-    'line-halo-dash-array': effectiveStyle['line-halo-dash-array']
-  }
-
-  registry['style:2525c/solid-stroke'] = {
-    'line-cap': effectiveStyle['line-cap'],
-    'line-join': effectiveStyle['line-join'],
-    'line-color': effectiveStyle['line-color'],
-    'line-width': effectiveStyle['line-width'],
-    'line-halo-color': effectiveStyle['line-halo-color'],
-    'line-halo-width': effectiveStyle['line-halo-width']
-  }
-
-  registry['style:2525c/dashed-stroke'] = {
-    'line-cap': effectiveStyle['line-cap'],
-    'line-join': effectiveStyle['line-join'],
-    'line-color': effectiveStyle['line-color'],
-    'line-width': effectiveStyle['line-width'],
-    'line-dash-array': [8, 8],
-    'line-halo-color': effectiveStyle['line-halo-color'],
-    'line-halo-width': effectiveStyle['line-halo-width'],
-    'line-halo-dash-array': [8, 8]
-  }
-
-  registry['style:2525c/solid-fill'] = {
-    'line-cap': effectiveStyle['line-cap'],
-    'line-join': effectiveStyle['line-join'],
-    'line-color': effectiveStyle['line-color'],
-    'line-width': effectiveStyle['line-width'],
-    'line-halo-color': effectiveStyle['line-halo-color'],
-    'line-halo-width': effectiveStyle['line-halo-width'],
-    'fill-color': effectiveStyle['fill-color']
-  }
-
-  registry['style:2525c/hatch-fill'] = {
-    'line-cap': effectiveStyle['line-cap'],
-    'line-join': effectiveStyle['line-join'],
-    'line-color': effectiveStyle['line-color'],
-    'line-width': effectiveStyle['line-width'],
-    'line-halo-color': effectiveStyle['line-halo-color'],
-    'line-halo-width': effectiveStyle['line-halo-width'],
-    'fill-pattern': 'hatch',
-    'fill-pattern-angle': 45,
-    'fill-pattern-size': 2,
-    'fill-pattern-spacing': 12
-  }
-
-  registry['style:default-text'] = {
-    'text-font': font,
-    'text-color': effectiveStyle['text-color'],
-    'text-justify': 'center',
-    'text-padding': 5
-  }
-
-  registry['style:2525c/fence-stroke'] = {
-    'line-cap': 'square',
-    'line-color': effectiveStyle['binary-color'],
-    'line-width': 2
-  }
-
-  registry['style:2525c/fence-o'] = {
-    'shape-line-color': effectiveStyle['binary-color'],
-    'shape-line-width': 2,
-    'shape-points': 8,
-    'shape-radius': 8,
-    'shape-radius-2': 8,
-    'shape-angle': PI_OVER_4,
-    'shape-scale': [0.8, 1.4]
-  }
-
-  registry['style:2525c/fence-x'] = {
-    'shape-line-color': effectiveStyle['binary-color'],
-    'shape-line-width': 2,
-    'shape-points': 4,
-    'shape-radius': 8,
-    'shape-radius-2': 0,
-    'shape-angle': PI_OVER_4,
-    'shape-scale': [1, 1.4]
-  }
-
-  registry['style:wasp-stroke'] = {
-    'line-color': 'yellow',
-    'line-width': effectiveStyle['line-width'],
-    'line-dash-array': [10, 10],
-    'line-halo-color': 'black',
-    'line-halo-width': effectiveStyle['line-halo-width'],
-    'line-halo-dash-array': null
-  }
-
-  const makeFill = props => {
-    if (props['fill-color']) {
-      return Styles.fill({ color: props['fill-color'] })
-    } else if (props['fill-pattern']) {
-      const color = patterns.fill({
-        pattern: props['fill-pattern'],
-        angle: props['fill-pattern-angle'],
-        size: props['fill-pattern-size'],
-        spacing: props['fill-pattern-spacing'],
-        strokeColor: props['line-halo-color'],
-        strokeWidth: props['line-halo-width'] + props['line-width'],
-        strokeFillColor: props['line-color'],
-        strokeFillWidth: props['line-width']
-      })
-
-      return new olStyle.Fill({ color })
-    } else return null
-  }
-
-
-  const makeStyle = options => Array.isArray(options)
-    ? options.map(makeStyle)
-    : Styles.style(options)
-
-  return options => {
-    const styleOptions = []
-    const props = { ...(registry[options.id] || {}), ...options }
-
-    if (props['line-halo-width']) {
-      styleOptions.push({
-        geometry: props.geometry,
-        stroke: makeStroke({
-          'line-color': props['line-halo-color'],
-          'line-dash-array': props['line-halo-dash-array'],
-          'line-width': props['line-width'] + props['line-halo-width'],
-          'line-cap': props['line-cap'],
-          'line-join': props['line-join']
-        })
-      })
-    }
-
-    styleOptions.push({
-      geometry: props.geometry,
-      fill: makeFill(props),
-      image: makeImage(props),
-      stroke: makeStroke(props),
-      text: makeText(props)
-    })
-
-    return makeStyle(styleOptions)
-  }
+  return makeStyle(styleOptions)
 }
