@@ -36,6 +36,14 @@ rules.push([next => {
 }, ['geometry']])
 
 
+/**
+ * style :: [ol/style/Style]
+ */
+rules.push([next => {
+  return { styles: styles.ERROR(next) }
+}, ['err']])
+
+
 // ==> label specifications and placement
 
 export const placement = ({ TS, geometry }) => {

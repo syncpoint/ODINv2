@@ -217,7 +217,6 @@ FeatureStore.prototype.wrap = function (feature) {
   R.when(Boolean, set('featureStyle'))(this.styleProps['style+' + featureId])
 
   feature.setStyle((feature, resolution) => {
-    console.time('style')
     const { geometry: definingGeometry, ...properties } = feature.getProperties()
     state = reduce(state, {
       definingGeometry,
@@ -226,7 +225,6 @@ FeatureStore.prototype.wrap = function (feature) {
       geometryKey: `${definingGeometry.ol_uid}:${definingGeometry.getRevision()}`
     })
 
-    console.timeEnd('style')
     return state.style
   })
 

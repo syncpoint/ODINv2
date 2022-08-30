@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import * as R from 'ramda'
 import * as shared from './shared'
 import styles from './corridor-styles'
 import { transform } from '../../model/geometry'
@@ -8,7 +7,6 @@ const rules = [
   shared.sidc,
   shared.evalTextField,
   shared.effectiveStyle,
-  shared.geometry,
   shared.styles,
   shared.style
 ]
@@ -29,8 +27,8 @@ rules.push([next => {
   const { read, write, pointResolution } = transform(definingGeometry)
   const geometry = read(definingGeometry)
   const resolution = pointResolution(centerResolution)
-  const placement = R.identity // labels are placed directly
-  return { geometry, write, resolution, placement }
+  const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
+  return { geometry, rewrite, resolution }
 }, ['mode', 'smoothen', 'geometryKey', 'centerResolution']])
 
 
@@ -47,13 +45,16 @@ rules.push([next => {
 
 
 /**
+ * placement
+ */
+rules.push([() => {
+  return { placement: x => x }
+}, ['geometry']])
+
+
+/**
  * style :: [ol/style/Style]
  */
 rules.push([next => {
-  const { styleFactory, rewrite } = next
-  const style = styles.ERROR(next)
-    .map(rewrite)
-    .flatMap(styleFactory)
-
-  return { style }
+  return { styles: styles.ERROR(next) }
 }, ['err']])

@@ -180,6 +180,20 @@ const makeStyle = props => Array.isArray(props)
  */
 export const styleFactory = props => {
   const styleOptions = []
+
+  if (props['line-halo-width']) {
+    styleOptions.push({
+      geometry: props.geometry,
+      stroke: makeStroke({
+        'line-color': props['line-halo-color'],
+        'line-dash-array': props['line-halo-dash-array'],
+        'line-width': props['line-width'] + props['line-halo-width'],
+        'line-cap': props['line-cap'],
+        'line-join': props['line-join']
+      })
+    })
+  }
+
   styleOptions.push({
     geometry: props.geometry,
     fill: makeFill(props),

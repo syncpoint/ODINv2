@@ -1,0 +1,24 @@
+digraph structs {
+  node [shape=record];
+  SIDC [label="{properties|{<sidc> sidc|<parameterizedSIDC> parameterizedSIDC|<modifiers> modifiers}}"];
+  EVAL_TEXT_FIELD [label="{<modifiers> modifiers|{<evalTextField> evalTextField}}"];
+  EFFECTIVE_STYLE [label="{{<sidc> sidc|globalStyle|layerStyle|featureStyle}|{<smoothen> smoothen|<effectiveStyle> effectiveStyle}}"];
+  GEOMETRY [label="{{mode|<smoothen> smoothen|geometryKey|centerResolution}|{<geometry> geometry|rewrite|resolution}}"];
+  STYLES [label="{{<dynamicStyle> dynamicStyle|<staticStyles> staticStyles|<evalTextField> evalTextField|<placement> placement}|{<styles> styles}}"];
+  STYLE [label="{{<styles> styles|<effectiveStyle> effectiveStyle|<geometry> geometry}|{style}}"];
+  XYZ [color=blue, label="{{<parameterizedSIDC> parameterizedSIDC}|{<dynamicStyle> dynamicStyle|<staticStyles> staticStyles}}"];
+  PLACEMENT [color=blue, label="{{<geometry> geometry}|{<placement> placement}}"];
+
+  SIDC:modifiers -> EVAL_TEXT_FIELD:modifiers;
+  SIDC:sidc -> EFFECTIVE_STYLE:sidc;
+  EFFECTIVE_STYLE:smoothen -> GEOMETRY:smoothen;
+  SIDC:parameterizedSIDC -> XYZ:parameterizedSIDC;
+  GEOMETRY:geometry -> PLACEMENT:geometry:n;
+  XYZ:dynamicStyle -> STYLES:dynamicStyle;
+  XYZ:staticStyles -> STYLES:staticStyles;
+  EVAL_TEXT_FIELD:evalTextField -> STYLES:evalTextField;
+  PLACEMENT:placement:s -> STYLES:placement;
+  STYLES:styles -> STYLE:styles;
+  EFFECTIVE_STYLE:effectiveStyle -> STYLE:effectiveStyle;
+  GEOMETRY:geometry -> STYLE:geometry:n;
+}
