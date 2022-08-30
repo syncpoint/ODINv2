@@ -156,19 +156,20 @@ export const styles = [next => {
 export const style = [next => {
   const { TS, styles, effectiveStyle, rewrite } = next
   if (styles.length === 0) return { style: [] }
-  const effective = styles.map(effectiveStyle)
-  const bboxes = effective.map(boundingBox(next)).filter(Boolean)
-  const clipLine = effective.some(props => props['text-clipping'] === 'line')
-  effective[0].geometry = clipLine
-    ? TS.lineString(effective[0].geometry.getCoordinates())
-    : effective[0].geometry
+  const effectiveStyles = styles.map(effectiveStyle)
 
-  effective[0].geometry = TS.difference([effective[0].geometry, ...bboxes])
+  const bboxes = effectiveStyles.map(boundingBox(next)).filter(Boolean)
+  const clipLine = effectiveStyles.some(props => props['text-clipping'] === 'line')
+  const lineString = geometry => TS.lineString(geometry.getCoordinates())
+  const clip = geometry => TS.difference([geometry, ...bboxes])
+  const geometry = clipLine
+    ? lineString(effectiveStyles[0].geometry)
+    : effectiveStyles[0].geometry
 
-  const style = [
-    ...effective,
-    ...bboxes.map(geometry => ({ geometry, 'line-color': 'red', 'line-width': 0.5 }))
-  ]
+  // Replace primary geometry with clipped geometry:
+  effectiveStyles[0].geometry = clip(geometry)
+
+  const style = effectiveStyles
     .map(rewrite)
     .flatMap(styleFactory)
 
