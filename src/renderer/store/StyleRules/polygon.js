@@ -4,44 +4,44 @@ import styles from './polygon-styles'
 import { lazy } from '../../ol/style/lazy'
 import G_G_GAZ from '../../ol/style/resources/G_G_GAZ.png'
 
-const rules = [
-  shared.sidc,
-  shared.evalTextField,
-  shared.effectiveStyle,
-  shared.geometry,
-  shared.styles,
-  shared.style
-]
-
-export default rules
-
-
 /**
  * dynamicStyle
  * staticStyles
  */
-rules.push([next => {
+const collectStyles = [next => {
   const { parameterizedSIDC: sidc } = next
   const dynamicStyle = (styles[sidc] || styles.DEFAULT)
   const staticStyles = (labels[sidc] || [])
   return { dynamicStyle, staticStyles }
-}, ['parameterizedSIDC']])
+}, ['parameterizedSIDC']]
 
 
 /**
  * placement
  */
-rules.push([next => {
+const labelPlacement = [next => {
   return { placement: placement(next) }
-}, ['geometry']])
+}, ['geometry']]
 
 
 /**
  * style :: [ol/style/Style]
  */
-rules.push([next => {
+const error = [next => {
   return { styles: styles.ERROR(next) }
-}, ['err']])
+}, ['err']]
+
+export default [
+  shared.sidc,
+  shared.evalSync,
+  collectStyles,
+  shared.effectiveStyle,
+  shared.geometry,
+  labelPlacement,
+  shared.styles,
+  error,
+  shared.style
+]
 
 
 // ==> label specifications and placement
@@ -171,7 +171,7 @@ labels['G*F*ATB---'] = C(ALL_LINES('BOMB')) // BOMB AREA
 labels['G*F*ACSI--'] = C(ALL_LINES('FSA')) // FIRE SUPPORT AREA (FSA)
 labels['G*F*ACAI--'] = C(ALL_LINES('ACA')) // AIRSPACE COORDINATION AREA (ACA)
 labels['G*F*ACFI--'] = C(ALL_LINES('FFA')) // FREE FIRE AREA (FFA)
-labels['G*F*ACNI--'] = C(ALL_LINES('NFA')) // NO-FIRE AREA (NFA)
+labels['G*F*ACNI--'] = C(ALL_LINES('NFA'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // NO-FIRE AREA (NFA)
 labels['G*F*ACRI--'] = C(ALL_LINES('RFA')) // RESTRICTIVE FIRE AREA (RFA)
 labels['G*F*ACEI--'] = C(ALL_LINES('SENSOR ZONE')) // SENSOR ZONE
 labels['G*F*ACDI--'] = C(ALL_LINES('DA')) // DEAD SPACE AREA (DA)

@@ -1,13 +1,11 @@
-import { Jexl } from 'jexl'
 import * as Colors from '../../ol/style/color-schemes'
 import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 import { styleFactory } from './styleFactory'
-import { boundingBox } from './clipping'
+import * as Labels from './labels'
 import makeEffectiveStyle from './effectiveStyle'
 
-const jexl = new Jexl()
 const rules = []
 export default rules
 
@@ -25,29 +23,9 @@ export const sidc = [next => {
 }, ['properties']]
 
 
-/**
- * evalTextField
- */
-export const evalTextField = [next => {
+export const evalSync = [next => {
   const { modifiers } = next
-  const evalSync = textField => Array.isArray(textField)
-    ? textField.map(evalSync).filter(Boolean).join('\n')
-    : jexl.evalSync(textField, modifiers)
-
-  const evalTextField = specs => {
-    if (!Array.isArray(specs)) return evalTextField([specs])
-    return specs.reduce((acc, spec) => {
-      if (!spec['text-field']) acc.push(spec)
-      else {
-        const textField = evalSync(spec['text-field'])
-        if (textField) acc.push({ ...spec, 'text-field': textField })
-      }
-
-      return acc
-    }, [])
-  }
-
-  return { evalTextField }
+  return { evalSync: Labels.evalSync(modifiers) }
 }, ['modifiers']]
 
 
@@ -59,7 +37,6 @@ export const effectiveStyle = [next => {
   const global = next.globalStyle || {}
   const layer = next.layerStyle || {}
   const feature = next.featureStyle || {}
-
   const { sidc } = next
   const status = statusCode(sidc)
   const identity = identityCode(sidc)
@@ -88,8 +65,7 @@ export const effectiveStyle = [next => {
 
   return {
     smoothen: !!smoothen,
-    effectiveStyle: makeEffectiveStyle(next, props),
-    geometry: null
+    effectiveStyle: makeEffectiveStyle(next, props)
   }
 }, ['sidc', 'globalStyle', 'layerStyle', 'featureStyle']]
 
@@ -138,16 +114,16 @@ export const geometry = [next => {
  * styles :: ...
  */
 export const styles = [next => {
-  const { dynamicStyle, staticStyles, evalTextField, placement } = next
+  const { dynamicStyle, staticStyles, evalSync, placement } = next
   const styles = [
     ...dynamicStyle(next),
     ...staticStyles
   ]
-    .flatMap(evalTextField)
+    .flatMap(evalSync)
     .flatMap(placement)
 
   return { styles }
-}, ['dynamicStyle', 'staticStyles', 'evalTextField', 'placement']]
+}, ['dynamicStyle', 'staticStyles', 'evalSync', 'placement']]
 
 
 /**
@@ -158,7 +134,7 @@ export const style = [next => {
   if (styles.length === 0) return { style: [] }
   const effectiveStyles = styles.map(effectiveStyle)
 
-  const bboxes = effectiveStyles.map(boundingBox(next)).filter(Boolean)
+  const bboxes = effectiveStyles.map(Labels.boundingBox(next)).filter(Boolean)
   const clipLine = effectiveStyles.some(props => props['text-clipping'] === 'line')
   const lineString = geometry => TS.lineString(geometry.getCoordinates())
   const clip = geometry => TS.difference([geometry, ...bboxes])

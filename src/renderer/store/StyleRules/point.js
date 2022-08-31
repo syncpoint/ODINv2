@@ -1,31 +1,34 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda'
 import * as shared from './shared'
+import { styleFactory } from './styleFactory'
 import { MODIFIERS } from '../../symbology/2525c'
-
-const rules = [
-  shared.sidc,
-  shared.effectiveStyle
-]
-
-export default rules
 
 const symbolModifiers = properties => Object.entries(properties)
   .filter(([key, value]) => MODIFIERS[key] && value)
   .reduce((acc, [key, value]) => R.tap(acc => (acc[MODIFIERS[key]] = value), acc), {})
 
-
 /**
  * style
  */
-rules.push([next => {
-  const { styleFactory, definingGeometry, sidc, modifiers } = next
+const style = [next => {
+  const { definingGeometry, sidc, modifiers, effectiveStyle } = next
 
-  const props = {
+  const style = [{
     id: 'style:2525c/symbol',
+    geometry: definingGeometry,
     'symbol-code': sidc,
     'symbol-modifiers': symbolModifiers(modifiers)
-  }
+  }]
+    .map(effectiveStyle)
+    .flatMap(styleFactory)
 
-  return { style: styleFactory({ geometry: definingGeometry, ...props }) }
-}, ['sidc', 'modifiers', 'styleFactory', 'geometryKey']])
+  return { style }
+}, ['sidc', 'modifiers', 'geometryKey', 'effectiveStyle']]
+
+
+export default [
+  shared.sidc,
+  shared.effectiveStyle,
+  style
+]

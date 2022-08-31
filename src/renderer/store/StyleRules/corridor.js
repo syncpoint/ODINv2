@@ -3,23 +3,19 @@ import * as shared from './shared'
 import styles from './corridor-styles'
 import { transform } from '../../model/geometry'
 
-const rules = [
-  shared.sidc,
-  shared.evalTextField,
-  shared.effectiveStyle,
-  shared.styles,
-  shared.style
-]
-
-export default rules
-
+const collectStyles = [next => {
+  const { parameterizedSIDC: sidc } = next
+  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
+  const staticStyles = []
+  return { dynamicStyle, staticStyles }
+}, ['parameterizedSIDC']]
 
 /**
  * geometry :: jsts/geom/geometry
  * write :: jsts/geom/geometry -> ol/geom/geometry
  * resolution :: Number
  */
-rules.push([next => {
+const geometry = [next => {
   const { definingGeometry, centerResolution } = next
 
   // Transform (TS/UTM).
@@ -29,32 +25,29 @@ rules.push([next => {
   const resolution = pointResolution(centerResolution)
   const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
   return { geometry, rewrite, resolution }
-}, ['mode', 'smoothen', 'geometryKey', 'centerResolution']])
+}, ['mode', 'smoothen', 'geometryKey', 'centerResolution']]
 
 
-/**
- * dynamicStyle
- * staticStyles
- */
-rules.push([next => {
-  const { parameterizedSIDC: sidc } = next
-  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
-  const staticStyles = []
-  return { dynamicStyle, staticStyles }
-}, ['parameterizedSIDC']])
-
-
-/**
- * placement
- */
-rules.push([() => {
+const labelPlacement = [() => {
   return { placement: x => x }
-}, ['geometry']])
+}, ['geometry']]
 
 
 /**
  * style :: [ol/style/Style]
  */
-rules.push([next => {
+const error = [next => {
   return { styles: styles.ERROR(next) }
-}, ['err']])
+}, ['err']]
+
+export default [
+  shared.sidc,
+  shared.evalSync,
+  collectStyles,
+  shared.effectiveStyle,
+  geometry,
+  labelPlacement,
+  shared.styles,
+  error,
+  shared.style
+]

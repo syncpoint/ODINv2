@@ -6,15 +6,16 @@ import styles from './multipoint-styles'
 import { transform } from '../../model/geometry'
 import { placement } from './polygon'
 
-const rules = [
-  shared.sidc,
-  shared.evalTextField,
-  shared.effectiveStyle,
-  shared.styles,
-  shared.style
-]
-
-export default rules
+/**
+ * dynamicStyle
+ * staticStyles
+ */
+const collectStyles = [next => {
+  const { parameterizedSIDC: sidc } = next
+  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
+  const staticStyles = (labels[sidc] || [])
+  return { dynamicStyle, staticStyles }
+}, ['parameterizedSIDC']]
 
 
 /**
@@ -22,7 +23,7 @@ export default rules
  * rewrite :: ...
  * resolution :: Number
  */
-rules.push([next => {
+const geometry = [next => {
   const { definingGeometry, centerResolution } = next
 
   // Transform (TS/UTM).
@@ -32,25 +33,13 @@ rules.push([next => {
   const resolution = pointResolution(centerResolution)
   const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
   return { geometry, rewrite, resolution }
-}, ['mode', 'smoothen', 'geometryKey', 'centerResolution']])
-
-
-/**
- * dynamicStyle
- * staticStyles
- */
-rules.push([next => {
-  const { parameterizedSIDC: sidc } = next
-  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
-  const staticStyles = (labels[sidc] || [])
-  return { dynamicStyle, staticStyles }
-}, ['parameterizedSIDC']])
+}, ['mode', 'smoothen', 'geometryKey', 'centerResolution']]
 
 
 /**
  * placement
  */
-rules.push([next => {
+const labelPlacement = [next => {
   // Explicit labels are exclusively for circular features.
   // We use polygon placement to place these labels based on
   // the point buffer around the features center.
@@ -60,7 +49,20 @@ rules.push([next => {
   const segment = TS.segment([C, A])
   const buffer = TS.pointBuffer(TS.point(C))(segment.getLength())
   return { placement: placement({ TS, geometry: buffer }) }
-}, ['geometry']])
+}, ['geometry']]
+
+
+export default [
+  shared.sidc,
+  shared.evalSync,
+  collectStyles,
+  shared.effectiveStyle,
+  geometry,
+  labelPlacement,
+  shared.styles,
+  shared.style
+]
+
 
 
 // => label specifications for circular features with polygon placement

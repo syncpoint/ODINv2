@@ -20,27 +20,16 @@ Style.prototype.smoothStyle = function (tuples) {
 
   // TODO: check precondition (lineString, polygon)
 
-  const updatedStyle = enabled => feature => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      style: {
-        ...feature.properties.style,
-        smooth: enabled
-      }
-    }
-  })
-
-  const keys = features.map(([key]) => key)
-  const oldValues = features.map(([_, value]) => value)
+  const keys = features.map(([key]) => ID.styleId(key))
 
   const action = enabled => {
-    const newValues = oldValues.map(updatedStyle(enabled))
     return createAction({
       id: `style.smooth.${enabled}`,
       name: 'Style - Smooth: ' + (enabled ? 'Yes' : 'No'),
-      perform: () => this.store.update(keys, newValues, oldValues),
-      dryRun: () => this.store.update(keys, newValues)
+      perform: () => this.store.update(keys, style => ({
+        ...style,
+        'line-smooth': enabled
+      }))
     })
   }
 

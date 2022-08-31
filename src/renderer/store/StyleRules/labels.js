@@ -1,7 +1,7 @@
 import * as R from 'ramda'
+import { Jexl } from 'jexl'
 const canvas = document.createElement('canvas')
 const context = canvas.getContext('2d')
-
 
 /**
  *
@@ -87,3 +87,27 @@ export const boundingBox = R.curry((context, style) => {
   else if (style['icon-image']) return iconBoundingBox(context, style)
   else return null
 })
+
+const jexl = new Jexl()
+
+/**
+ *
+ */
+export const evalSync = modifiers => {
+  const evalSync = textField => Array.isArray(textField)
+    ? textField.map(evalSync).filter(Boolean).join('\n')
+    : jexl.evalSync(textField, modifiers)
+
+  return props => {
+    props = Array.isArray(props) ? props : [props]
+    return props.reduce((acc, spec) => {
+      if (!spec['text-field']) acc.push(spec)
+      else {
+        const textField = evalSync(spec['text-field'])
+        if (textField) acc.push({ ...spec, 'text-field': textField })
+      }
+
+      return acc
+    }, [])
+  }
+}
