@@ -103,6 +103,7 @@ export const geometry = [next => {
   const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
 
   return {
+    simplified,
     geometry,
     rewrite,
     resolution
@@ -127,12 +128,33 @@ export const styles = [next => {
 
 
 /**
+ *
+ */
+export const handleStyle = [next => {
+  const { TS, simplified, mode, geometry, geometryType } = next
+
+  const noHandles =
+    mode === 'default' ||
+    geometryType === 'Point' ||
+    simplified
+
+  if (noHandles) return { handleStyle: [] }
+
+  const handleStyle = mode === 'singleselect'
+    ? [{ id: 'style:circle-handle', geometry: TS.multiPoint(TS.points(geometry)) }]
+    : [{ id: 'style:rectangle-handle', geometry: TS.points(geometry)[0] }]
+
+  return { handleStyle }
+}, ['simplified', 'mode', 'geometry']]
+
+
+/**
  * style :: [ol/style/Style]
  */
 export const style = [next => {
-  const { TS, styles, effectiveStyle, rewrite } = next
+  const { TS, styles, handleStyle, effectiveStyle, rewrite } = next
   if (styles.length === 0) return { style: [] }
-  const effectiveStyles = styles.map(effectiveStyle)
+  const effectiveStyles = [...styles, ...handleStyle].map(effectiveStyle)
 
   const bboxes = effectiveStyles.map(Labels.boundingBox(next)).filter(Boolean)
   const clipLine = effectiveStyles.some(props => props['text-clipping'] === 'line')
@@ -150,4 +172,4 @@ export const style = [next => {
     .flatMap(styleFactory)
 
   return { style }
-}, ['styles', 'effectiveStyle']]
+}, ['styles', 'effectiveStyle', 'handleStyle']]

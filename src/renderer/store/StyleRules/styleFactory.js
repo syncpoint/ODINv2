@@ -92,7 +92,7 @@ const makeCircle = props => {
     })
     : null
 
-  return Styles.Circle({
+  return Styles.circle({
     fill,
     stroke,
     radius: props['circle-radius']

@@ -1,7 +1,5 @@
 digraph structs {
   ranksep=1;
-  /* node [shape=box]; */
-
   {
     node [shape=plaintext, fontsize=16];
     Input -> I -> II -> III -> IV -> V -> VI;
@@ -9,68 +7,99 @@ digraph structs {
 
   { rank = same;
     Input;
-    properties; globalStyle; layerStyle; featureStyle; mode;
-    geometryKey; centerResolution;
+    node [shape=record];
+    properties [color=red];
   };
 
   { rank = same;
     I;
     node [shape=record];
-    PROPERTIES [label="{{<sidc> sidc|<parameterizedSIDC> parameterized\nSIDC|<modifiers> modifiers}}"];
+    INPUT_A [color=red,label="{{
+      <globalStyle> globalStyle|
+      <layerStyle> layerStyle|
+      <featureStyle> featureStyle
+    }}"];
+
+    PROPERTIES [label="{{
+      <sidc> sidc|
+      <parameterizedSIDC> parameterized\nSIDC|
+      <modifiers> modifiers
+    }}"];
   };
 
   { rank = same;
     II;
     node [shape=record];
-    EFFECTIVE [label="{{<smoothen> smoothen|<effectiveStyle> effectiveStyle}}"];
+    mode [color=red];
+    INPUT_B [color=red,label="{{
+      <key> key|
+      <centerResolution> centerResolution
+    }}"];
 
-    node [shape=box];
+    EFFECTIVE [label="{{
+      <effectiveStyle> effectiveStyle|
+      <smoothen> smoothen
+    }}"];
+
     evalSync;
 
     node [shape=record];
-    STYLES [label="{{<dynamicStyle> dynamicStyle|<staticStyles> staticStyles}}"];
+    STYLES [color=blue,label="{{
+      <dynamicStyle> dynamicStyle|
+      <staticStyles> staticStyles
+    }}"];
   };
 
   { rank = same;
     III;
     node [shape=record];
-    GEOMETRY [label="{{<simplified> simplified|<resolution> resolution|<geometry> geometry|<rewrite> rewrite}}"];
+    GEOMETRY [label="{{
+      <simplified> simplified|
+      <resolution> resolution|
+      <rewrite> rewrite|
+      <geometry> geometry
+    }}"
+    ];
   };
 
   { rank = same;
     IV;
     node [shape=box];
-    placement;
+    placement [color=blue];
   };
 
   { rank = same;
     V;
     node [shape=box];
-    styles;
+    styles; handleStyles;
   };
 
   { rank = same;
     VI;
     node [shape=box];
-    style;
+    style [color=green];
   };
 
   properties -> PROPERTIES;
-  PROPERTIES:sidc:s -> EFFECTIVE:effectiveStyle:n;
-  globalStyle -> EFFECTIVE;
-  layerStyle -> EFFECTIVE;
-  featureStyle -> EFFECTIVE;
+  PROPERTIES:sidc:s -> EFFECTIVE:ne;
+  INPUT_A:globalStyle -> EFFECTIVE:n;
+  INPUT_A:layerStyle -> EFFECTIVE:n;
+  INPUT_A:featureStyle -> EFFECTIVE:n;
   PROPERTIES:parameterizedSIDC -> STYLES:n;
-  PROPERTIES:modifiers -> evalSync;
-  mode -> GEOMETRY;
-  EFFECTIVE:smoothen:s -> GEOMETRY;
-  geometryKey -> GEOMETRY;
-  centerResolution -> GEOMETRY;
+  PROPERTIES:modifiers -> evalSync:n;
+  mode:s -> GEOMETRY:n;
+  EFFECTIVE:smoothen:s -> GEOMETRY:n;
+  INPUT_B:key -> GEOMETRY:n;
+  INPUT_B:centerResolution -> GEOMETRY:n;
   GEOMETRY:geometry:s -> placement:n;
+  STYLES:dynamicStyle -> styles;
+  STYLES:staticStyles -> styles;
+  mode -> handleStyles;
+  GEOMETRY:simplified -> handleStyles;
   placement -> styles;
   evalSync:s -> styles;
-  STYLES -> styles;
   GEOMETRY:rewrite:s -> style [style=dashed];
   styles -> style;
   EFFECTIVE:effectiveStyle:s -> style;
+  handleStyles -> style;
 }

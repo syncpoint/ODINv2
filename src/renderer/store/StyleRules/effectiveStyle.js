@@ -123,5 +123,21 @@ export default ({ PI_OVER_4 }, props) => {
     'line-halo-dash-array': null
   }
 
+  registry['style:circle-handle'] = {
+    'circle-fill-color': 'rgba(255,0,0,0.6)',
+    'circle-line-color': 'white',
+    'circle-line-width': 3,
+    'circle-radius': 7
+  }
+
+  registry['style:rectangle-handle'] = {
+    'shape-fill-color': 'white',
+    'shape-line-color': 'black',
+    'shape-line-width': 1,
+    'shape-radius': 6,
+    'shape-points': 4,
+    'shape-angle': PI_OVER_4
+  }
+
   return ({ id, ...props }) => ({ ...(registry[id] || {}), ...props })
 }

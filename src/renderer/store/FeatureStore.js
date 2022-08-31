@@ -222,7 +222,8 @@ FeatureStore.prototype.wrap = function (feature) {
       definingGeometry,
       properties,
       centerResolution: resolution,
-      geometryKey: `${definingGeometry.ol_uid}:${definingGeometry.getRevision()}`
+      geometryKey: `${definingGeometry.ol_uid}:${definingGeometry.getRevision()}`,
+      geometryType: type
     })
 
     return state.style
