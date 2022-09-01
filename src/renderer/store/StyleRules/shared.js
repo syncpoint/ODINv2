@@ -1,4 +1,4 @@
-import * as Colors from '../../ol/style/color-schemes'
+import * as Colors from './color-schemes'
 import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
