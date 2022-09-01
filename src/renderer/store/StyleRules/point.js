@@ -12,19 +12,25 @@ const symbolModifiers = properties => Object.entries(properties)
  * style
  */
 const style = [next => {
-  const { definingGeometry, sidc, modifiers, effectiveStyle } = next
+  const { mode, definingGeometry, sidc, modifiers, effectiveStyle } = next
+
+  // symbol-text-color
+  const selected = mode === 'singleselect'
+    ? { 'symbol-halo-color': 'white', 'symbol-halo-width': 6, 'symbol-fill-opacity': 1 }
+    : {}
 
   const style = [{
     id: 'style:2525c/symbol',
     geometry: definingGeometry,
     'symbol-code': sidc,
-    'symbol-modifiers': symbolModifiers(modifiers)
+    'symbol-modifiers': symbolModifiers(modifiers),
+    ...selected
   }]
     .map(effectiveStyle)
     .flatMap(styleFactory)
 
   return { style }
-}, ['sidc', 'modifiers', 'geometryKey', 'effectiveStyle']]
+}, ['mode', 'sidc', 'modifiers', 'geometryKey', 'effectiveStyle']]
 
 
 export default [

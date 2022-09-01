@@ -29,6 +29,7 @@ export default [
   shared.effectiveStyle,
   shared.geometry,
   labelPlacement,
+  shared.selectedStyles,
   shared.styles,
   shared.style
 ]

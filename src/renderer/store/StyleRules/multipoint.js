@@ -30,9 +30,10 @@ const geometry = [next => {
   //
   const { read, write, pointResolution } = transform(definingGeometry)
   const geometry = read(definingGeometry)
+  const simplifiedGeometry = geometry
   const resolution = pointResolution(centerResolution)
   const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
-  return { geometry, rewrite, resolution }
+  return { geometry, simplifiedGeometry, rewrite, resolution }
 }, ['mode', 'smoothen', 'geometryKey', 'centerResolution']]
 
 
@@ -59,6 +60,7 @@ export default [
   shared.effectiveStyle,
   geometry,
   labelPlacement,
+  shared.selectedStyles,
   shared.styles,
   shared.style
 ]

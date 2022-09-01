@@ -38,7 +38,7 @@ export default [
   shared.effectiveStyle,
   shared.geometry,
   labelPlacement,
-  shared.handleStyle,
+  shared.selectedStyles,
   shared.styles,
   error,
   shared.style

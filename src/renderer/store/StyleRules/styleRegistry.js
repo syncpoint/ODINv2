@@ -139,5 +139,12 @@ export default ({ PI_OVER_4 }, props) => {
     'shape-angle': PI_OVER_4
   }
 
+  registry['style:guide-stroke'] = {
+    'line-color': 'red',
+    'line-dash-array': [20, 8, 2, 8],
+    'line-width': 1.5
+  }
+
+
   return ({ id, ...props }) => ({ ...(registry[id] || {}), ...props })
 }

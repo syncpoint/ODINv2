@@ -30,7 +30,6 @@ digraph structs {
   { rank = same;
     II;
     node [shape=record];
-    mode [color=red];
     INPUT_B [color=red,label="{{
       <key> key|
       <centerResolution> centerResolution
@@ -54,9 +53,7 @@ digraph structs {
     III;
     node [shape=record];
     GEOMETRY [label="{{
-      <simplified> simplified|
-      <resolution> resolution|
-      <rewrite> rewrite|
+      <simplifiedGeometry> simplifiedGeometry|
       <geometry> geometry
     }}"
     ];
@@ -65,13 +62,14 @@ digraph structs {
   { rank = same;
     IV;
     node [shape=box];
+    mode [color=red];
     placement [color=blue];
   };
 
   { rank = same;
     V;
     node [shape=box];
-    styles; handleStyles;
+    styles; selectedStyles;
   };
 
   { rank = same;
@@ -87,19 +85,17 @@ digraph structs {
   INPUT_A:featureStyle -> EFFECTIVE:n;
   PROPERTIES:parameterizedSIDC -> STYLES:n;
   PROPERTIES:modifiers -> evalSync:n;
-  mode:s -> GEOMETRY:n;
   EFFECTIVE:smoothen:s -> GEOMETRY:n;
   INPUT_B:key -> GEOMETRY:n;
   INPUT_B:centerResolution -> GEOMETRY:n;
   GEOMETRY:geometry:s -> placement:n;
   STYLES:dynamicStyle -> styles;
   STYLES:staticStyles -> styles;
-  mode -> handleStyles;
-  GEOMETRY:simplified -> handleStyles;
+  mode -> selectedStyles;
+  GEOMETRY:simplifiedGeometry -> selectedStyles:n;
   placement -> styles;
   evalSync:s -> styles;
-  GEOMETRY:rewrite:s -> style [style=dashed];
   styles -> style;
   EFFECTIVE:effectiveStyle:s -> style;
-  handleStyles -> style;
+  selectedStyles -> style;
 }

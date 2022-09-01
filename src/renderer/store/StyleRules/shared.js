@@ -4,7 +4,7 @@ import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 import { styleFactory } from './styleFactory'
 import * as Labels from './labels'
-import makeEffectiveStyle from './effectiveStyle'
+import styleRegistry from './styleRegistry'
 
 const rules = []
 export default rules
@@ -65,7 +65,7 @@ export const effectiveStyle = [next => {
 
   return {
     smoothen: !!smoothen,
-    effectiveStyle: makeEffectiveStyle(next, props)
+    effectiveStyle: styleRegistry(next, props)
   }
 }, ['sidc', 'globalStyle', 'layerStyle', 'featureStyle']]
 
@@ -76,15 +76,15 @@ export const effectiveStyle = [next => {
  * resolution :: Number
  */
 export const geometry = [next => {
-  const { mode, smoothen, definingGeometry, centerResolution } = next
+  const { smoothen, definingGeometry, centerResolution, geometryType } = next
 
   // Simplify.
   // Never simplify current selection.
-  const overweight = geometry =>
-    (geometry.getType() === 'Polygon' && geometry.getCoordinates()[0].length > 50) ||
-    (geometry.getType() === 'LineString' && geometry.getCoordinates().length > 50)
+  const coordinates = definingGeometry.getCoordinates()
+  const simplified =
+    (geometryType === 'Polygon' && coordinates[0].length > 50) ||
+    (geometryType === 'LineString' && coordinates.length > 50)
 
-  const simplified = mode !== 'singleselect' && overweight(definingGeometry)
   const simplifiedGeometry = simplified
     ? definingGeometry.simplify(centerResolution)
     : definingGeometry
@@ -105,6 +105,7 @@ export const geometry = [next => {
   return {
     simplified,
     geometry,
+    simplifiedGeometry: read(simplifiedGeometry),
     rewrite,
     resolution
   }
@@ -130,31 +131,37 @@ export const styles = [next => {
 /**
  *
  */
-export const handleStyle = [next => {
-  const { TS, simplified, mode, geometry, geometryType } = next
+export const selectedStyles = [next => {
+  const { TS, mode, simplifiedGeometry, geometryType } = next
+  const { simplified, smoothen } = next
+  console.log(simplified, smoothen)
+  const selectedStyles = []
 
-  const noHandles =
-    mode === 'default' ||
-    geometryType === 'Point' ||
-    simplified
+  const guideline = mode === 'singleselect'
+    ? { id: 'style:guide-stroke', geometry: simplifiedGeometry }
+    : null
 
-  if (noHandles) return { handleStyle: [] }
+  const points = () => TS.points(simplifiedGeometry)
+  const handles = geometryType !== 'point' && mode !== 'default'
+    ? mode === 'singleselect'
+      ? { id: 'style:circle-handle', geometry: TS.multiPoint(points()) }
+      : { id: 'style:rectangle-handle', geometry: points()[0] }
+    : null
 
-  const handleStyle = mode === 'singleselect'
-    ? [{ id: 'style:circle-handle', geometry: TS.multiPoint(TS.points(geometry)) }]
-    : [{ id: 'style:rectangle-handle', geometry: TS.points(geometry)[0] }]
+  guideline && selectedStyles.push(guideline)
+  handles && selectedStyles.push(handles)
 
-  return { handleStyle }
-}, ['simplified', 'mode', 'geometry']]
+  return { selectedStyles }
+}, ['mode', 'simplifiedGeometry']]
 
 
 /**
  * style :: [ol/style/Style]
  */
 export const style = [next => {
-  const { TS, styles, handleStyle, effectiveStyle, rewrite } = next
+  const { TS, styles, selectedStyles, effectiveStyle, rewrite } = next
   if (styles.length === 0) return { style: [] }
-  const effectiveStyles = [...styles, ...handleStyle].map(effectiveStyle)
+  const effectiveStyles = [...styles, ...selectedStyles].map(effectiveStyle)
 
   const bboxes = effectiveStyles.map(Labels.boundingBox(next)).filter(Boolean)
   const clipLine = effectiveStyles.some(props => props['text-clipping'] === 'line')
@@ -172,4 +179,4 @@ export const style = [next => {
     .flatMap(styleFactory)
 
   return { style }
-}, ['styles', 'effectiveStyle', 'handleStyle']]
+}, ['styles', 'effectiveStyle', 'selectedStyles']]
