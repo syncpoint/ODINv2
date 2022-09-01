@@ -8,6 +8,7 @@ import { debounce, batch } from '../../shared/debounce'
 import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from './StyleRules/StyleRules'
+import crosshair from './StyleRules/crosshair'
 import * as TS from '../ol/ts'
 import * as Math from '../../shared/Math'
 
@@ -36,6 +37,7 @@ export const writeFeatureObject = feature => format.writeFeatureObject(feature)
  */
 export function FeatureStore (store, selection) {
   this.store = store
+  this.selection = selection
   this.features = {}
   this.styleProps = {}
 
@@ -198,6 +200,18 @@ FeatureStore.prototype.feature = function (key) {
  *
  */
 FeatureStore.prototype.wrap = function (feature) {
+  const id = feature.getId()
+  if (ID.isFeatureId(id)) return this.wrapFeature(feature)
+  else if (ID.isMarkerId(id)) return this.wrapMarker(feature)
+  else return feature
+}
+
+
+/**
+ *
+ */
+FeatureStore.prototype.wrapFeature = function (feature) {
+  console.log('wrap', feature.getId())
   const type = geometryType(feature.getGeometry())
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
   let state = {
@@ -233,6 +247,23 @@ FeatureStore.prototype.wrap = function (feature) {
     state = reduce(state, obj)
     if (forceUpdate) feature.changed()
   }
+
+  return feature
+}
+
+
+/**
+ *
+ */
+FeatureStore.prototype.wrapMarker = function (feature) {
+  const defaultStyle = crosshair('black')
+  const selectedStyle = crosshair('red')
+
+  feature.setStyle(feature => {
+    return this.selection.isSelected(feature.getId())
+      ? selectedStyle
+      : defaultStyle
+  })
 
   return feature
 }
