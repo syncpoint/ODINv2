@@ -15,6 +15,8 @@ import registerGraticules from './graticules'
 import './Map.css'
 import './ScaleLine.css'
 
+import measure from '../../ol/interaction/measure'
+
 /**
  *
  */
@@ -59,6 +61,8 @@ export const Map = () => {
     // Force map resize on container resize:
     const observer = new ResizeObserver(() => map.updateSize())
     observer.observe(ref.current)
+
+    measure({ services, map })
   }
 
   /* eslint-disable react-hooks/exhaustive-deps */
