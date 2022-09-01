@@ -3,6 +3,7 @@ import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { smooth } from '../../ol/style/chaikin'
 import { transform } from '../../model/geometry'
 import { styleFactory } from './styleFactory'
+import echelon from './echelon'
 import * as Labels from './labels'
 import styleRegistry from './styleRegistry'
 
@@ -159,7 +160,9 @@ export const selectedStyles = [next => {
 export const style = [next => {
   const { TS, styles, selectedStyles, effectiveStyle, rewrite } = next
   if (styles.length === 0) return { style: [] }
-  const effectiveStyles = [...styles, ...selectedStyles].map(effectiveStyle)
+  const effectiveStyles = [...styles, ...selectedStyles]
+    .map(echelon(next))
+    .map(effectiveStyle)
 
   const bboxes = effectiveStyles.map(Labels.boundingBox(next)).filter(Boolean)
   const clipLine = effectiveStyles.some(props => props['text-clipping'] === 'line')

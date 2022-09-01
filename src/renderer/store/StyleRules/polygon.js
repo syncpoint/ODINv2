@@ -2,7 +2,8 @@
 import * as shared from './shared'
 import styles from './polygon-styles'
 import { lazy } from '../../ol/style/lazy'
-import G_G_GAZ from '../../ol/style/resources/G_G_GAZ.png'
+import G_G_GAZ from './resources/G_G_GAZ.png'
+
 
 /**
  * dynamicStyle
