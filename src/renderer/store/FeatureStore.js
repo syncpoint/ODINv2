@@ -7,7 +7,7 @@ import Emitter from '../../shared/emitter'
 import { debounce, batch } from '../../shared/debounce'
 import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
-import { reduce, rules } from './StyleRules/StyleRules'
+import { reduce, rules } from './StyleRules/rules'
 import crosshair from './StyleRules/crosshair'
 import * as TS from '../ol/ts'
 import * as Math from '../../shared/Math'
@@ -211,7 +211,6 @@ FeatureStore.prototype.wrap = function (feature) {
  *
  */
 FeatureStore.prototype.wrapFeature = function (feature) {
-  console.log('wrap', feature.getId())
   const type = geometryType(feature.getGeometry())
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
   let state = {

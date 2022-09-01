@@ -1,9 +1,21 @@
+import { Fill, Stroke, Circle, Style } from 'ol/style'
 import { Vector as VectorLayer } from 'ol/layer'
+
+const highlightStyle = (() => {
+  const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
+  const stroke = new Stroke({ color: 'black', width: 1, lineDash: [10, 5] })
+  return [
+    new Style({
+      image: new Circle({ fill, stroke, radius: 50 }),
+      fill,
+      stroke
+    })
+  ]
+})()
 
 
 const highlightLayer = (sources, styles) => {
   const { highlightSource } = sources
-  const { highlightStyle } = styles
   return new VectorLayer({
     source: highlightSource,
     style: highlightStyle,
@@ -14,10 +26,8 @@ const highlightLayer = (sources, styles) => {
 
 export default (sources, styles) => {
   const { deselectedSource, selectedSource, markerSource } = sources
-  const { defaultStyle: style } = styles
   const declutter = false
   const vectorLayer = source => new VectorLayer({
-    style,
     source,
     declutter,
     selectable: true // non-standard: considered by select interaction
