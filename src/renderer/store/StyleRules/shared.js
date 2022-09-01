@@ -133,8 +133,6 @@ export const styles = [next => {
  */
 export const selectedStyles = [next => {
   const { TS, mode, simplifiedGeometry, geometryType } = next
-  const { simplified, smoothen } = next
-  console.log(simplified, smoothen)
   const selectedStyles = []
 
   const guideline = mode === 'singleselect'
