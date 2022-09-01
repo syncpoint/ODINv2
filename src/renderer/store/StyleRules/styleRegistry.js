@@ -1,3 +1,11 @@
+const COLOR_WHITE = 'white'
+const COLOR_BLACK = 'black'
+const COLOR_YELLOW = 'yellow'
+const COLOR_RED_60 = 'rgba(255,0,0,0.6)'
+const DASH_ARRAY_10_10 = [10, 10]
+const DASH_ARRAY_14_6 = [14, 6]
+const DASH_ARRAY_20_8_2_8 = [20, 8, 2, 8]
+
 export default ({ PI_OVER_4 }, props) => {
 
   const font = props['text-font'] || [
@@ -52,10 +60,10 @@ export default ({ PI_OVER_4 }, props) => {
     'line-join': props['line-join'],
     'line-color': props['line-color'],
     'line-width': props['line-width'],
-    'line-dash-array': [8, 8],
+    'line-dash-array': DASH_ARRAY_14_6,
     'line-halo-color': props['line-halo-color'],
     'line-halo-width': props['line-halo-width'],
-    'line-halo-dash-array': [8, 8]
+    'line-halo-dash-array': DASH_ARRAY_14_6
   }
 
   registry['style:2525c/solid-fill'] = {
@@ -116,23 +124,23 @@ export default ({ PI_OVER_4 }, props) => {
   }
 
   registry['style:wasp-stroke'] = {
-    'line-color': 'yellow',
+    'line-color': COLOR_YELLOW,
     'line-width': props['line-width'],
-    'line-dash-array': [10, 10],
-    'line-halo-color': 'black',
+    'line-dash-array': DASH_ARRAY_10_10,
+    'line-halo-color': COLOR_BLACK,
     'line-halo-width': props['line-halo-width'],
     'line-halo-dash-array': null
   }
 
   registry['style:circle-handle'] = {
-    'circle-fill-color': 'rgba(255,0,0,0.6)',
+    'circle-fill-color': COLOR_RED_60,
     'circle-line-color': 'white',
     'circle-line-width': 3,
     'circle-radius': 7
   }
 
   registry['style:rectangle-handle'] = {
-    'shape-fill-color': 'white',
+    'shape-fill-color': COLOR_WHITE,
     'shape-line-color': 'black',
     'shape-line-width': 1,
     'shape-radius': 6,
@@ -142,7 +150,7 @@ export default ({ PI_OVER_4 }, props) => {
 
   registry['style:guide-stroke'] = {
     'line-color': 'red',
-    'line-dash-array': [20, 8, 2, 8],
+    'line-dash-array': DASH_ARRAY_20_8_2_8,
     'line-width': 1.5
   }
 

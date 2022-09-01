@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import * as olStyle from 'ol/style'
 import { PI_OVER_2, PI } from '../../../shared/Math'
 import ms from 'milsymbol'
-import * as patterns from '../../ol/style/patterns'
+import * as patterns from './patterns'
 
 const Styles = {
   stroke: options => new olStyle.Stroke(options),

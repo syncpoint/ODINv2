@@ -34,14 +34,18 @@ import G_T_T from './G_T_T'
 import G_T_X from './G_T_X'
 import G_T_Y from './G_T_Y'
 
+const DEFAULT = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
+
+const ERROR = ({ TS, geometry }) => {
+  const [lineString, point] = TS.geometries(geometry)
+  const width = TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
+  const buffer = TS.lineBuffer(lineString)(width)
+  return [{ id: 'style:wasp-stroke', geometry: buffer }]
+}
+
 export default {
-  DEFAULT: ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }],
-  ERROR: ({ TS, geometry }) => {
-    const [lineString, point] = TS.geometries(geometry)
-    const width = TS.segment([TS.startPoint(lineString), point].map(TS.coordinate)).getLength()
-    const buffer = TS.lineBuffer(lineString)(width)
-    return [{ id: 'style:wasp-stroke', geometry: buffer }]
-  },
+  DEFAULT,
+  ERROR,
   'G*G*ALC---': namedCorridor('AC'),    // AIR CORRIDOR
   'G*G*ALM---': namedCorridor('MRR'),   // MINIMUM RISK ROUTE (MRR)
   'G*G*ALS---': namedCorridor('SAAFR'), // STANDARD-USE ARMY AIRCRAFT FLIGHT ROUTE (SAAFR)

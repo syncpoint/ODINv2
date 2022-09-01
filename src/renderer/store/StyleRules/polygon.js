@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import * as shared from './shared'
 import styles from './polygon-styles'
-import { lazy } from '../../ol/style/lazy'
 import G_G_GAZ from './resources/G_G_GAZ.png'
 
 
@@ -47,6 +46,18 @@ export default [
 
 
 // ==> label specifications and placement
+
+const lazy = function (fn) {
+  let evaluated = false
+  let value
+
+  return function () {
+    if (evaluated) return value
+    value = fn.apply(this, arguments)
+    evaluated = true
+    return value
+  }
+}
 
 export const placement = ({ TS, geometry }) => {
   const ring = geometry.getExteriorRing()
