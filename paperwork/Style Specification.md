@@ -55,6 +55,9 @@ text-line-width :: number (text/backgroundStoke/width)
 text-offset :: [X, Y] - pixel offset
 text-padding :: number
 text-rotate :: number
+text-rotation-anchor :: auto | fix
+
+// text-keep-upright
 
 shape-angle :: number
 shape-fill-color :: string

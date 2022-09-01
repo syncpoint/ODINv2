@@ -85,7 +85,8 @@ export default ({ PI_OVER_4 }, props) => {
     'text-font': font,
     'text-color': props['text-color'],
     'text-justify': 'center',
-    'text-padding': 5
+    'text-padding': 5,
+    'text-rotation-anchor': 'auto'
   }
 
   registry['style:2525c/fence-stroke'] = {

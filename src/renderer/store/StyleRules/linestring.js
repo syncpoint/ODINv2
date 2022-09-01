@@ -127,8 +127,8 @@ const PL_3 = [SSW, SSE].map(props => ({ 'text-field': ['w', 'w1'], ...props }))
 const PL = (T1, T2) => T1 ? [PL_1('t1'), PL_2(T1, T2), PL_3] : [PL_1('t'), PL_3]
 const MFP_1 = { id: 'style:default-text', 'text-field': '"MFP"', 'text-anchor': 'center', 'text-padding': 5 }
 const MFP = [MFP_1]
-const BND_1 = { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE] }
-const BND_2 = { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW] }
+const BND_1 = { id: 'style:default-text', 'text-field': 't', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, ABOVE], 'text-rotation-anchor': 'fix' }
+const BND_2 = { id: 'style:default-text', 'text-field': 't1', 'text-anchor': 0.5, 'text-clipping': 'none', 'text-offset': [0, BELOW], 'text-rotation-anchor': 'fix' }
 const BND_3 = { 'icon-image': 'echelon', 'icon-anchor': 0.5, 'icon-padding': 10 }
 const BND = [BND_1, BND_2, BND_3]
 

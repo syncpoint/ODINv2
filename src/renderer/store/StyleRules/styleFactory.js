@@ -56,18 +56,19 @@ const makeText = props => {
   if (!props['text-field']) return null
 
   const rotate = props['text-rotate']
+  const rotationAnchor = props['text-rotation-anchor']
   const flipped = rotate ? rotate < -PI_OVER_2 || rotate > PI_OVER_2 : false
   const textAlign = props['text-justify'] || null
   const textOffset = props['text-offset'] || [0, 0]
-  const offsetX = textOffset[0]
-  const offsetY = textOffset[1]
+  const offsetX = flipped ? -1 * textOffset[0] : textOffset[0]
+  const offsetY = flipped && rotationAnchor === 'fix' ? -1 * textOffset[1] : textOffset[1]
 
   return Styles.text({
     font: props['text-font'],
     text: props['text-field'],
     rotation: rotate ? flipped ? rotate + PI : rotate : null,
     textAlign: textAlign ? flipped ? TEXT_ALIGN[textAlign] : textAlign : null,
-    offsetX: flipped ? -1 * offsetX : offsetX,
+    offsetX,
     offsetY,
     padding: props['text-padding'] && new Array(4).fill(props['text-padding']),
     fill: Styles.fill({ color: props['text-color'] }),
