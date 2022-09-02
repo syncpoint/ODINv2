@@ -56,11 +56,7 @@ export const Toolbar = () => {
     commandRegistry.command('PIN'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
     commandRegistry.separator(),
-    commandRegistry.command('MEASURE_BEARING_LENGTH'),
-    commandRegistry.separator(),
-    commandRegistry.command('LAYERS_SHARE'),
-    commandRegistry.command('LAYERS_JOIN'),
-    commandRegistry.command('LAYERS_LEAVE')
+    commandRegistry.command('MEASURE_BEARING_LENGTH')
   ]
 
   const addCommands = [

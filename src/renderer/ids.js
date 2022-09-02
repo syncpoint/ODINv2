@@ -30,6 +30,10 @@ export const bookmarkId = R.cond([
   [R.isNil, () => `bookmark:${uuid()}`]
 ])
 
+export const measurementId = R.cond([
+  [R.isNil, () => `measurement:${uuid()}`]
+])
+
 export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000000000'
 export const tileServiceId = R.cond([
   [R.isNil, () => `tile-service:${uuid()}`],

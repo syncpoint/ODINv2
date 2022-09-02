@@ -80,6 +80,29 @@ CreateBookmark.prototype.execute = async function () {
 }
 
 
+const CreateLineMeasurement = function (services) {
+  this.store = services.store
+}
+
+CreateLineMeasurement.prototype.execute = async function () {
+  const key = ID.measurementId()
+  const value = {
+    name: 'Längenmessung',
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: [
+        [1745619.6249644305, 6073561.340117655],
+        [1745916.1371714617, 6177158.290068827],
+        [1781616.498255446, 6280224.427886209],
+        [1811918.566614821, 6320235.88894578]]
+    }
+  }
+
+  this.store.insert([[key, value]])
+}
+
+
 /**
  *
  */
