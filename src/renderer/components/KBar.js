@@ -92,6 +92,11 @@ const positionerStyle = {
   zIndex: 20
 }
 
+const createSnapshot = async (store, selected) => {
+  const keys = await store.collectKeys(selected, ['style'])
+  return store.tuplesJSON(keys)
+}
+
 /**
  *
  */
@@ -103,7 +108,7 @@ export const KBar = () => {
 
   React.useEffect(() => {
     const disposable = Disposable.of()
-    disposable.on(emitter, 'create', async () => setSnapshot(await store.tuplesJSON(selection.selected())))
+    disposable.on(emitter, 'create', async () => setSnapshot(await createSnapshot(store, selection.selected())))
     disposable.on(emitter, 'restore', async () => store.update(snapshot))
     disposable.on(emitter, 'discard', () => setSnapshot([]))
     return () => disposable.dispose()

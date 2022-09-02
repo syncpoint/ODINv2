@@ -35,8 +35,8 @@ Identity.prototype.identity = function (tuples) {
   const keys = features.map(([key]) => key)
   const oldValues = features.map(([_, value]) => value)
 
-  const command = identity => {
-    const updateIdentity = feature => ({
+  const action = identity => {
+    const update = feature => ({
       ...feature,
       properties: {
         ...feature.properties,
@@ -44,7 +44,7 @@ Identity.prototype.identity = function (tuples) {
       }
     })
 
-    const newValues = oldValues.map(updateIdentity)
+    const newValues = oldValues.map(update)
 
     return createAction({
       id: `identity:${identity.code}`,
@@ -54,6 +54,6 @@ Identity.prototype.identity = function (tuples) {
     })
   }
 
-  return STANDARD_IDENTITIES.map(command)
+  return STANDARD_IDENTITIES.map(action)
 }
 
