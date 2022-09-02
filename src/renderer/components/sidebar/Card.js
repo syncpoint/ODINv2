@@ -188,6 +188,12 @@ export const Card = React.forwardRef((props, ref) => {
     ? mdi.mdiPin
     : mdi.mdiPinOutline
 
+  const renameButton = capabilities.includes('RENAME')
+    ? <IconButton onClick={() => emitter.emit('edit/begin', { id })}>
+        <Icon className='e3de-icon' path={mdi.mdiPencil}/>
+      </IconButton>
+    : null
+
   return (
     <div className='e3de-card-container' ref={ref}>
       <div
@@ -205,9 +211,7 @@ export const Card = React.forwardRef((props, ref) => {
             editing={editing}
             highlight={highlight}
           />
-          <IconButton onClick={() => emitter.emit('edit', { id })}>
-            <Icon className='e3de-icon' path={mdi.mdiPencil}/>
-          </IconButton>
+          { renameButton }
           <IconButton onClick={() => emitter.emit(pinned ? 'unpin' : 'pin', { id })}>
             <Icon className='e3de-icon' path={pinPath}/>
           </IconButton>

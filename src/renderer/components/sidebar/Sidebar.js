@@ -18,24 +18,29 @@ import './Sidebar.scss'
  *
  */
 const handlers = {
-  'edit:keydown/Enter': state => {
-    const editing = state.editing ? false : R.last(state.selected)
-    return { ...state, editing }
+  'edit/begin': (state, { id }) => {
+    if (state.editing) return state
+    else if (!id && state.selected.length === 0) return state
+    else {
+      const editing = id || R.last(state.selected)
+      return { ...state, editing }
+    }
   },
-  'edit:keydown/Escape': state => {
-    if (state.editing) return { ...state, editing: false }
-    else if (state.selected.length) return { ...state, selected: [] }
-    else return state
-  },
-  'edit:keydown/F2': state => {
-    if (state.editing || state.selected.length === 0) return state
-    else return { ...state, editing: R.last(state.selected) }
-  },
-  'edit:keydown/Tab': state => {
+
+  'edit/rollback': state => {
     if (state.editing) return { ...state, editing: false }
     else return state
   },
-  edit: (state, { id }) => ({ ...state, editing: id })
+
+  'edit/commit': state => {
+    if (state.editing) return { ...state, editing: false }
+    else return state
+  },
+
+  deselect: state => {
+    if (state.selected.length) return { ...state, selected: [] }
+    else return state
+  }
 }
 
 
@@ -113,8 +118,17 @@ const useModel = () => {
       }])
     }
 
+    const edit = async event => {
+      if (event.action === 'commit') store.rename(event.id, event.value.trim())
+      if (event.action === 'commit' || event.action === 'rollback') {
+        document.getElementsByClassName('e3de-sidebar')[0].focus()
+      }
+
+      dispatch({ type: event.path, id: event.id })
+    }
+
     const disposable = Disposable.of()
-    disposable.on(emitter, 'edit', ({ id }) => dispatch({ type: 'edit', id }))
+    disposable.on(emitter, 'edit/:action', edit)
     disposable.on(emitter, 'pin', ({ id }) => pin(id))
     disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
     disposable.on(emitter, 'link', ({ id }) => link(id))
@@ -193,10 +207,10 @@ const useModel = () => {
     ], preventDefault)(event)
 
     const { key, shiftKey, metaKey, ctrlKey } = event
-    dispatch([
-      { type: `keydown/${key}`, shiftKey, metaKey, ctrlKey }, // list model
-      { type: `edit:keydown/${key}`, shiftKey, metaKey, ctrlKey } // title inline editing
-    ])
+    if (key === 'Enter') dispatch({ type: 'edit/begin' })
+    else if (key === 'F2') dispatch({ type: 'edit/begin' })
+    else if (key === 'Escape') dispatch({ type: 'deselect' })
+    else dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
   }, [])
 
   const onClick = React.useCallback(id => event => {
