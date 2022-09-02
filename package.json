@@ -64,7 +64,6 @@
     "kbar": "^0.1.0-beta.36",
     "leveldown": "^6.1.1",
     "levelup": "^5.0.1",
-    "lru-ttl-cache": "^2.4.4",
     "luxon": "^3.0.1",
     "milsymbol": "^2.0.0",
     "minisearch": "^5.0.0",
