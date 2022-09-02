@@ -293,7 +293,7 @@ describe('multiselect', function () {
         entries,
         selected: ['x'],
         focusIndex: 0,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -306,7 +306,7 @@ describe('multiselect', function () {
         entries,
         selected: ['x'],
         focusIndex: 0,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -319,7 +319,7 @@ describe('multiselect', function () {
         entries,
         selected: ['x'],
         focusIndex: 0,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -332,7 +332,7 @@ describe('multiselect', function () {
         entries,
         selected: [],
         focusIndex: -1,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -345,7 +345,7 @@ describe('multiselect', function () {
         entries,
         selected: ['y', 'x'],
         focusIndex: 0,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -362,7 +362,7 @@ describe('multiselect', function () {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
         selected: ['x', 'y', 'z'],
         focusIndex: 2,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -375,7 +375,7 @@ describe('multiselect', function () {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
         selected: ['z', 'y', 'x'],
         focusIndex: 0,
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -388,7 +388,7 @@ describe('multiselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
         selected: ['x', 'y'], // FIXME: selection is empty
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)
@@ -401,7 +401,7 @@ describe('multiselect', function () {
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
         selected: ['z', 'y'], // FIXME: selection is empty
-        scroll: 'auto'
+        scroll: 'none'
       }
 
       assert.deepStrictEqual(actual, expected)

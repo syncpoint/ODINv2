@@ -102,7 +102,7 @@ export const multiselect = {
 
     const focusIndex = Entries.focusIndex(state.entries, selected)
 
-    return { ...state, selected, focusIndex, scroll: 'auto' }
+    return { ...state, selected, focusIndex, scroll: 'none' }
   },
 
   /**
