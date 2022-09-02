@@ -139,7 +139,7 @@ const IconButton = props => {
  *
  */
 export const Card = React.forwardRef((props, ref) => {
-  const { id, capabilities, url, title, highlight, description, tags, selected, editing, ...rest } = props
+  const { id, capabilities, svg, title, highlight, description, tags, selected, editing, ...rest } = props
   const acceptDrop = capabilities && capabilities.includes('DROP')
   const emitter = useEmitter('sidebar')
   const { dropAllowed, ...dragAndDrop } = useDragAndDrop(id, acceptDrop)
@@ -168,10 +168,11 @@ export const Card = React.forwardRef((props, ref) => {
   children.description = description &&
     <span className='e3de-description'>{description}</span>
 
-  children.avatar = props.svg &&
-    <div className='avatar' dangerouslySetInnerHTML={{ __html: props.svg }}/>
+  children.avatar = svg &&
+    <div className='avatar' dangerouslySetInnerHTML={{ __html: svg }}/>
 
-  children.body = (url || description) &&
+
+  children.body = (svg || description) &&
     <>
       <hr></hr>
       <div className='body e3de-row'>

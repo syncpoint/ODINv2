@@ -66,11 +66,11 @@ const generateCircles = (parent, iconFillColor) => {
           cx: circle.cx, // Center x
           cy: circle.cy, // Center y
           r: circle.r, // Radius
-          fill: circle.fill, // Fill color  or set to false if none
-          fillopacity: circle.fillopacity, // Fill opacity {Optional}
-          stroke: circle.stroke, // Stroke color  or set to false if none
+          fill: circle.fill || false, // Fill color or set to false if none
+          fillopacity: circle.fillopacity || 1.0, // Fill opacity {Optional}
+          stroke: circle.stroke || iconFillColor, // Stroke color  or set to false if none
           strokedasharray: circle.strokedasharray, // {Optional}
-          strokewidth: circle.strokewidth // Width of the stroke {Optional}
+          strokewidth: circle.strokewidth || 3 // Width of the stroke {Optional}
         }
         if (content.fill) {
           content.fill = replaceColor(content.fill, iconFillColor)
