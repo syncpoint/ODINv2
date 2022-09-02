@@ -9,7 +9,7 @@ export function SpatialIndex (wkbDB) {
   this.tree = new RBush()
   this.geoJSONReader = new TS.GeoJSONReader()
 
-  // wkbDB.on('batch', event => console.log('[SpatialIndex/batch]', event))
+  wkbDB.on('batch', this.update.bind(this))
   // wkbDB.on('put', (key, value) => console.log('[SpatialIndex/put]', key, value))
   // wkbDB.on('del', key => console.log('[SpatialIndex/del]', key))
 
@@ -43,4 +43,22 @@ SpatialIndex.prototype.item = function ([key, value]) {
 
 SpatialIndex.prototype.read = function (geometry) {
   return this.geoJSONReader.read(geometry)
+}
+
+SpatialIndex.prototype.update = function (batch) {
+  const all = this.tree.all().reduce((acc, item) => {
+    acc[item.key] = item
+    return acc
+  }, {})
+
+  batch
+    .map(({ key }) => all[key])
+    .filter(Boolean)
+    .forEach(item => this.tree.remove(item))
+
+  batch
+    .filter(({ type }) => type === 'put')
+    .filter(({ value }) => value.type === 'Point')
+    .map(({ key, value }) => this.item([key, value]))
+    .forEach(item => this.tree.insert(item))
 }

@@ -100,7 +100,7 @@ const useModel = () => {
       setHistory([...search.history, {
         scope: `@feature &geometry:${JSON.stringify(geometry)}`,
         key: id,
-        label: entry.title
+        label: entry.title || 'N/A'
       }])
     }
 
