@@ -5,14 +5,17 @@ import * as ID from '../ids'
 import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
-import { readGeometry, transform, geometryType } from '../model/geometry'
+import { transform, geometryType } from '../model/geometry'
+import { readGeometry } from '../store/FeatureStore'
 import { importSymbols } from './symbols'
+import { bbox } from './geometry'
 
 /**
  * Persistence for layers, features and associated information.
  *
  * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
+ * collect :: k -> [(k -> k)] -> [v]
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
  * delete :: String -> unit
@@ -24,6 +27,8 @@ import { importSymbols } from './symbols'
  * geometries :: [k] -> [GeoJSON/Geometry]
  * geometries :: 'layer:...' -> [GeoJSON/Geometry]
  * geometries :: k -> [GeoJSON/Geometry]
+ * geometry :: k -> GeoJSON/Geometry
+ * bbox :: Number n => k -> [n, n, n, n]
  * import :: (operations, {k: v}) -> unit
  * insert :: [[k, v]] -> unit
  * insertGeoJSON :: GeoJSON/FeatureCollection -> unit
@@ -77,6 +82,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
   const linkIds = id => L.readKeys(this.jsonDB, L.prefix(`link+${id}`))
   const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(ID.tagsId(id)))
   const defaultIds = id => L.readKeys(this.jsonDB, L.prefix(ID.defaultId(id)))
+  const styleIds = id => L.readKeys(this.jsonDB, L.prefix(ID.styleId(id)))
   const tileLayerIds = id => L.readKeys(this.jsonDB, L.prefix(`tile-layer:${id.split(':')[1]}`))
   const hasLinks = id => consider('link') && (ID.isLayerId(id) || ID.isFeatureId(id))
   const hasFeatures = ID.isLayerId
@@ -84,6 +90,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
   const maybeHidden = id => consider('hidden') && (ID.isLayerId(id) || ID.isFeatureId(id))
   const maybeTagged = id => consider('tags') && ID.isTaggableId(id)
   const maybeDefault = id => consider('default') && ID.isLayerId(id)
+  const hasStyle = id => consider('style') && (ID.isLayerId(id) || ID.isFeatureId(id))
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -97,6 +104,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
       if (maybeHidden(id)) ys.push(...await hiddenIds(id))
       if (maybeTagged(id)) ys.push(...await tagsIds(id))
       if (maybeDefault(id)) ys.push(...await defaultIds(id))
+      if (hasStyle(id)) ys.push(...await styleIds(id))
 
       await collect(xs, ys)
       return xs
@@ -114,6 +122,16 @@ Store.prototype.collectKeys = async function (ids, include = []) {
  */
 Store.prototype.tuples = async function (arg) {
   return L.tuples(this.db, arg)
+}
+
+
+/**
+ * @async
+ * tuples :: String -> [[k, v]]
+ * tuples :: [k] -> [[k, v]]
+ */
+Store.prototype.tuplesJSON = async function (arg) {
+  return L.tuples(this.jsonDB, arg)
 }
 
 
@@ -159,14 +177,25 @@ Store.prototype.value = async function (key) {
  * update :: [k] -> (v -> v) -> unit
  * update :: [k] -> [v] -> [v] -> unit
  * update :: [k] -> [v] -> unit
+ * update :: [[k, v]] -> unit
  */
 Store.prototype.update = async function (...args) {
-  if (args.length === 2) {
+  if (args.length === 1) {
+    const tuples = args[0]
+    const [keys, newValues] = tuples.reduce((acc, [k, v]) => {
+      acc[0].push(k)
+      acc[1].push(v)
+      return acc
+    }, [[], []])
+
+    this.update(keys, newValues)
+  } else if (args.length === 2) {
     if (typeof args[1] === 'function') {
       if (Array.isArray(args[0])) {
         // update :: [k] -> (v -> v) -> unit
         const [keys, fn] = args
-        const oldValues = await L.values(this.db, keys)
+        // FIXME: Sssuming empty object as default value might not be such a good idea.
+        const oldValues = await L.values(this.db, keys, {})
         const newValues = oldValues.map(fn)
         return this.update(keys, newValues, oldValues)
       } else {
@@ -329,6 +358,7 @@ Store.prototype.unlock = async function (ids, active) {
   this.batch(this.jsonDB, operations)
 }
 
+
 /**
  * @async
  * geometries :: [k] -> [GeoJSON/Geometry]
@@ -340,6 +370,36 @@ Store.prototype.geometries = function (arg) {
   else if (ID.isLayerId(arg)) return L.values(this.wkbDB, `feature:${arg.split(':')[1]}`)
   else return L.values(this.wkbDB, [arg])
 }
+
+
+/**
+ * collect :: k -> [(k -> k)] -> [v]
+ */
+Store.prototype.collect = function (id, fns) {
+  const keys = fns.map(fn => fn(id))
+  return this.jsonDB.getMany(keys)
+}
+
+
+/**
+ * @async
+ * geometry :: k -> GeoJSON/Geometry
+ */
+Store.prototype.geometry = function (key) {
+  return L.get(this.wkbDB, key)
+}
+
+
+/**
+ * TODO: move to feature store
+ * bbox :: Number n => k -> [n, n, n, n]
+ *
+ */
+Store.prototype.bbox = async function (key) {
+  const geometry = await L.get(this.wkbDB, key)
+  return bbox(geometry)
+}
+
 
 const featureBounds = {
   Polygon: R.identity,
@@ -373,7 +433,7 @@ Store.prototype.layerBounds = function (acc, ids) {
   }, acc)
 }
 
-Store.prototype.geometryBounds = async function (acc, ids, resolution) {
+const geometryBounds = async function (acc, ids, resolution) {
   const geometries = await this.geometries(ids)
   return geometries
     .map(readGeometry)
@@ -391,9 +451,9 @@ Store.prototype.geometryBounds = async function (acc, ids, resolution) {
     }, acc)
 }
 
-Store.prototype.featureBounds = Store.prototype.geometryBounds
-Store.prototype.markerBounds = Store.prototype.geometryBounds
-Store.prototype.placeBounds = Store.prototype.geometryBounds
+Store.prototype.featureBounds = geometryBounds
+Store.prototype.markerBounds = geometryBounds
+Store.prototype.placeBounds = geometryBounds
 
 
 Store.prototype.geometryBounds = async function (ids, resolution) {

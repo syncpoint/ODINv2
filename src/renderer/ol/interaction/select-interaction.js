@@ -10,14 +10,13 @@ const conjunction = (...ps) => v => ps.reduce((acc, p) => acc && p(v), true)
  */
 export default options => {
   const { hitTolerance } = options
-  const { services, styles, sources } = options
+  const { services, sources } = options
   const { selection } = services
-  const { defaultStyle: style } = styles
   const { selectedSource } = sources
 
   const interaction = new Select({
     hitTolerance,
-    style,
+    style: null,
     condition: conjunction(click, noAltKey),
     toggleCondition: platformModifierKeyOnly, // macOS: command
     multi: false, // don't select all features under cursor at once.

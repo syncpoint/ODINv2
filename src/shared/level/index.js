@@ -34,7 +34,7 @@ export const jsonDB = db => leveldb({ up: db, encoding: 'json', prefix: 'tuples'
  * WKB-encoded 'geometries' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const wbkDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometries' })
+export const wkbDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometries' })
 
 
 /**
@@ -106,9 +106,16 @@ export const readValues = (db, options) => read(Streams.VALUE(db, options), R.id
 /**
  * mget :: fn -> (levelup, [k]) -> [fn(k, v)]
  */
-export const mget = decode => async (db, keys) => {
+export const mget = (decode, defaultValue) => async (db, keys) => {
   const values = await db.getMany(keys)
+  const applyDefaultValue = value => value !== undefined
+    ? value
+    : defaultValue !== null
+      ? defaultValue
+      : undefined
+
   return R.zip(keys, values)
+    .map(([key, value]) => [key, applyDefaultValue(value)])
     .filter(([_, value]) => value !== undefined)
     .map(([key, value]) => decode(key, value))
 }
@@ -126,7 +133,7 @@ export const mgetKeys = mget((key, _) => key)
 /**
  * mgetKeys :: (levelup, [k]) -> [v]
  */
-export const mgetValues = mget((_, value) => value)
+export const mgetValues = defaultValue => mget((_, value) => value, defaultValue)
 
 /**
  * mgetEntities :: (levelup, [k]) -> [{id: k, ...v}]
@@ -157,8 +164,8 @@ export const keys = (db, arg) => Array.isArray(arg)
  * values :: levelup -> [k] -> [v]
  * values :: levelup -> String -> [v]
  */
-export const values = (db, arg) => Array.isArray(arg)
-  ? mgetValues(db, arg)
+export const values = (db, arg, defaultValue) => Array.isArray(arg)
+  ? mgetValues(defaultValue)(db, arg)
   : readValues(db, prefix(arg))
 
 /**

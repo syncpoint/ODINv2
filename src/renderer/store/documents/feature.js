@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import * as ID from '../../ids'
 import * as MILSTD from '../../symbology/2525c'
+import * as Geometry from '../geometry'
 
 const identity = R.cond([
   [R.equals('F'), R.always(['OWN'])],
@@ -9,11 +10,13 @@ const identity = R.cond([
   [R.T, R.always([])]
 ])
 
-
 /**
  *
  */
-export default function (id, feature, cache) {
+export default async function (id) {
+  const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.tagsId]
+  const [feature, layer, hidden, locked, tags] = await this.store.collect(id, keys)
+  const links = await this.store.keys(ID.prefix('link')(id))
   const properties = feature.properties || {}
 
   const descriptor = MILSTD.descriptor(properties.sidc)
@@ -21,29 +24,23 @@ export default function (id, feature, cache) {
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
 
-  const layer = cache(ID.layerId(id))
-  const layerName = (layer && layer.name) || ''
-  const { t } = properties
-  const name = feature.name || t || ''
-  const links = feature.links || []
-
-  const hidden = cache(ID.hiddenId(id))
-  const locked = cache(ID.lockedId(id))
-
-  const tags = [
-    hidden ? 'hidden' : 'visible',
-    locked ? 'locked' : 'unlocked',
-    ...(links.length ? ['link'] : []),
-    ...(cache(ID.tagsId(id)) || []),
-    ...dimensions,
-    ...scope,
-    ...identity(MILSTD.identityCode(properties.sidc))
-  ]
+  const { t, t1 } = properties
+  const names = [feature.name, t, t1, layer && layer.name].filter(Boolean).join(' ')
+  const geometryType = Geometry.type(descriptor)
 
   return {
     id,
     scope: 'feature',
-    tags,
-    text: `${name} ${hierarchy.join(' ')} ${layerName}`.trim()
+    tags: [
+      hidden ? 'hidden' : 'visible',
+      locked ? 'locked' : 'unlocked',
+      ...(links.length ? ['link'] : []),
+      geometryType.toLowerCase(),
+      ...(tags || []),
+      ...dimensions,
+      ...scope,
+      ...identity(MILSTD.identityCode(properties.sidc))
+    ],
+    text: `${names} ${hierarchy.join(' ')}`.trim()
   }
 }

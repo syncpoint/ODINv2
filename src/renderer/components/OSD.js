@@ -23,10 +23,10 @@ export const OSD = () => {
   }, [emitter])
 
   return <div className="osd" id="osd">
-    <div className='osd__cell' style={styles.A}></div>
+    <div className='osd__cell' style={styles.A}>{ state.A1 }</div>
     <div className='osd__cell' style={styles.B}></div>
     <div className='osd__cell' style={styles.C}>{ state.C1 }</div>
-    <div className='osd__cell' style={styles.A}></div>
+    <div className='osd__cell' style={styles.A}>{ state.A2 }</div>
     <div className='osd__cell' style={styles.B}></div>
     <div className='osd__cell' style={styles.C}>{ state.C2 }</div>
     <div className='osd__cell' style={styles.A}></div>

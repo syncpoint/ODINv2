@@ -148,8 +148,10 @@ export const className = sidc => {
   else if (descriptor.scope === 'ACTIVITY') return 'ACTIVITY'
   // No geometry type defaults to POINT:
   else if (!descriptor.geometry) return 'POINT'
-  else if (descriptor.geometry.type !== 'Point') return 'GRAPHICS'
-  else return 'POINT'
+  else if (descriptor.geometry.type !== 'Point') {
+    if (descriptor.parameterized === 'G*G*GLB---') return 'BOUNDARIES'
+    else return 'GRAPHICS'
+  } else return 'POINT'
 }
 
 export const specialization = sidc => {

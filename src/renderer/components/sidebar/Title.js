@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import { useServices } from '../hooks'
+import { useEmitter } from '../hooks'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
 
@@ -9,7 +9,7 @@ import { cmdOrCtrl } from '../../platform'
  *
  */
 export const Title = props => {
-  const { store } = useServices()
+  const emitter = useEmitter('sidebar')
   const [value, setValue] = React.useState(props.value)
   const ref = React.useRef()
   const placeholder = value
@@ -21,24 +21,12 @@ export const Title = props => {
 
   React.useEffect(() => { setValue(props.value) }, [props.value])
 
-  // Pre-emptively focus sidebar to keep getting key events.
-  // Note: This also keeps focus on sidebar when tab is pressed while editing.
-  const focusSidebar = () => {
-    document.getElementsByClassName('e3de-sidebar')[0].focus()
-  }
-
-  const rename = name => {
-    focusSidebar()
-    if (props.value !== name) store.rename(props.editing, name.trim())
-  }
-
-  const reset = () => {
-    focusSidebar()
-    setValue(props.value)
+  const commit = () => {
+    if (props.value === value) emitter.emit('edit/rollback')
+    else emitter.emit('edit/commit', { id: props.editing, value })
   }
 
   const handleChange = ({ target }) => setValue(target.value)
-  const handleBlur = () => { if (value) rename(value) }
 
   const handleKeyDown = event => {
     matcher([
@@ -47,12 +35,13 @@ export const Title = props => {
       ({ key }) => key === 'ArrowUp',
       ({ key }) => key === 'Home',
       ({ key }) => key === 'End',
+      ({ key }) => key === 'Escape',
+      ({ key }) => key === 'Enter',
       event => event.key === 'a' && cmdOrCtrl(event)
     ], stopPropagation)(event)
 
-    if (event.key === 'Escape') return reset()
-    else if (event.key === 'Enter') return rename(value)
-    else if (event.key === 'Tab') return rename(value)
+    if (event.key === 'Escape') emitter.emit('edit/rollback')
+    else if (event.key === 'Enter') emitter.emit('edit/commit', { id: props.editing, value })
   }
 
   const input = () => <input
@@ -62,7 +51,7 @@ export const Title = props => {
     value={value || ''}
     placeholder={placeholder}
     onChange={handleChange}
-    onBlur={handleBlur}
+    onBlur={commit}
     onKeyDown={handleKeyDown}
   />
 
@@ -74,10 +63,14 @@ export const Title = props => {
     ? { color: '#c0c0c0' }
     : {}
 
+  const className = props.highlight
+    ? 'e3de-card__title e3de-card__title--highlight'
+    : 'e3de-card__title'
+
   const span = () =>
     <span
       style={spanStyle}
-      className='e3de-card__title'
+      className={className}
       placeholder={placeholder}
     >
       {spanValue}

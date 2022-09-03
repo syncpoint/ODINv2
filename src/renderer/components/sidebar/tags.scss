@@ -1,17 +1,13 @@
-$color-primary-accent: #e03c31;
-$color-primary-accent: #e9746c;
-$color-secondary-accent: #1fc3ce;
-$color-secondary-accent: #168b93;
-$color-tag-hover: #8d8d8d;
-$color-tag-hover: #b0b0b0;
-$color-tag-hover: #dcdcdc;
+@import 'presets';
 
 .e3de-tag {
-  font-size: 0.65em;
+  font-size: 0.75em;
   padding: 1px 3px;
-  border-radius: 4px;
+  border-radius: 2px;
   white-space: nowrap;
-  display: inline-block;
+  display: flex;
+  gap: 3px;
+
   text-transform: uppercase;
 
   // Variantes: view, scope, system, user, plus.
@@ -51,6 +47,7 @@ $color-tag-hover: #dcdcdc;
       background-color: $color-tag-hover;
       border-color: $color-tag-hover;
       color: black;
+      cursor: pointer;
     }
   }
 
@@ -86,14 +83,21 @@ $color-tag-hover: #dcdcdc;
 }
 
 .e3de-tag-icon {
-  display: inline-block;
-  color: inherit;
-  line-height: 0;
-  vertical-align: -.265em;
-  margin-right: 3px;
+  height: 16px;
+  color: grey;
 }
 
 .e3de-tag-close-icon {
   cursor: pointer;
-  margin-left: 3px;
+}
+
+.e3de-icon-tag {
+  width: 22px;
+  height: 22px;
+
+  &:hover {
+    background-color: $color-tag-hover;
+    border-color: $color-tag-hover;
+    cursor: pointer;
+  }
 }

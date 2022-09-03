@@ -3,10 +3,10 @@ import React from 'react'
 import Icon from '@mdi/react'
 
 /**
- *
+ * Icon inside a tag.
  */
 export const TagIcon = props => {
-  const { path, removable, color } = props
+  const { path, removable } = props
 
   const handleClick = event => {
     event.stopPropagation()
@@ -18,8 +18,6 @@ export const TagIcon = props => {
     : 'e3de-tag-icon'
 
   return (
-    <span className={className} onClick={handleClick}>
-      <Icon path={path} size='12px' color={color}/>
-    </span>
+    <Icon path={path} className={className} onClick={handleClick}/>
   )
 }

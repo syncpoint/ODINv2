@@ -1,14 +1,14 @@
 import assert from 'assert'
 import * as R from 'ramda'
 import { PartitionDOWN } from './PartitionDOWN'
-import { leveldb, jsonDB, wbkDB } from '.'
+import { leveldb, jsonDB, wkbDB } from '.'
 
 describe('PartitionDOWN', function () {
 
   const createdb = () => {
     const db = leveldb({})
     const propertiesLevel = jsonDB(db)
-    const geometriesLevel = wbkDB(db)
+    const geometriesLevel = wkbDB(db)
     const down = new PartitionDOWN(propertiesLevel, geometriesLevel)
     return leveldb({ down })
   }

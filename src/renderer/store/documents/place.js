@@ -1,16 +1,17 @@
 import * as R from 'ramda'
 import * as ID from '../../ids'
 
-export default function (id, place, cache) {
-  const tags = [
-    ...place.tags,
-    ...(cache(ID.tagsId(id)) || [])
-  ].filter(R.identity)
+export default async function (id) {
+  const keys = [R.identity, ID.tagsId]
+  const [place, tags] = await this.store.collect(id, keys)
 
   return {
     id,
     scope: 'place',
     text: place.display_name,
-    tags
+    tags: [
+      ...place.tags,
+      ...(tags || [])
+    ].filter(R.identity)
   }
 }

@@ -1,5 +1,5 @@
 import * as L from '../../shared/level'
-import { hiddenId, lockedId, sharedId, tagsId, associatedId, defaultId } from '../ids'
+import * as ID from '../ids'
 
 /**
  * Upgrade/downgrade databases as necessary.
@@ -8,12 +8,18 @@ export default function MigrationTool (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
+
+  ;(async () => {
+    // this.schemaDB.del(MigrationTool.DEFAULT_STYLE)
+  })()
 }
 
 MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers'
 MigrationTool.INLINE_TAGS = 'inlineTags'
 MigrationTool.INLINE_FLAGS = 'inlineFlags'
 MigrationTool.DEFAULT_TAG = 'defaultTag'
+MigrationTool.INLINE_STYLES = 'inlineStyles'
+MigrationTool.DEFAULT_STYLE = 'defaultStyle'
 
 /**
  * async
@@ -23,6 +29,8 @@ MigrationTool.prototype.upgrade = async function () {
   await this.inlineTags()
   await this.inlineFlags()
   await this.defaultTag()
+  await this.inlineStyles()
+  await this.defaultStyle()
 }
 
 /**
@@ -55,7 +63,7 @@ MigrationTool.prototype.inlineTags = async function () {
       .filter(([_, value]) => value.tags)
       .reduce((acc, [key, { tags, ...value }]) => {
         acc.push(L.putOp(key, value))
-        acc.push(L.putOp(tagsId(key), tags))
+        acc.push(L.putOp(ID.tagsId(key), tags))
         return acc
       }, [])
 
@@ -76,9 +84,9 @@ MigrationTool.prototype.inlineFlags = async function () {
       .filter(([_, value]) => value.hidden || value.locked || value.shared)
       .reduce((acc, [key, { hidden, locked, shared, ...value }]) => {
         acc.push(L.putOp(key, value))
-        if (hidden) acc.push(L.putOp(hiddenId(key), true))
-        if (locked) acc.push(L.putOp(lockedId(key), true))
-        if (shared) acc.push(L.putOp(sharedId(key), true))
+        if (hidden) acc.push(L.putOp(ID.hiddenId(key), true))
+        if (locked) acc.push(L.putOp(ID.lockedId(key), true))
+        if (shared) acc.push(L.putOp(ID.sharedId(key), true))
         return acc
       }, [])
 
@@ -99,11 +107,11 @@ MigrationTool.prototype.defaultTag = async function () {
     if (!tags) return
 
     const [key, value] = tags
-    const id = associatedId(key)
+    const id = ID.associatedId(key)
 
     const ops = [
       L.putOp(key, value.filter(tag => tag !== 'default')),
-      L.putOp(defaultId(id), true)
+      L.putOp(ID.defaultId(id), true)
     ]
 
     await this.jsonDB.batch(ops)
@@ -111,4 +119,102 @@ MigrationTool.prototype.defaultTag = async function () {
   }
 
   if (actual && wanted === false) await upgrade()
+}
+
+
+/**
+ *
+ */
+MigrationTool.prototype.inlineStyles = async function () {
+  const actual = await L.get(this.schemaDB, MigrationTool.INLINE_STYLES, true)
+  const wanted = this.options[MigrationTool.INLINE_STYLES]
+
+  const upgrade = async () => {
+    const tuples = await L.tuples(this.jsonDB, 'feature:')
+    const ops = tuples
+      .filter(([, value]) => value.properties?.style)
+      .reduce((acc, [key, value]) => {
+        const { style, ...properties } = value.properties
+        acc.push(L.putOp(key, { ...value, properties }))
+        acc.push(L.putOp(ID.styleId(key), style))
+        return acc
+      }, [])
+
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.INLINE_STYLES, false)
+  }
+
+  if (actual && wanted === false) await upgrade()
+}
+
+
+/**
+ *
+ */
+MigrationTool.prototype.defaultStyle = async function () {
+  const actual = await L.get(this.schemaDB, MigrationTool.DEFAULT_STYLE, false)
+  const wanted = this.options[MigrationTool.DEFAULT_STYLE]
+
+  const upgrade = async () => {
+    console.log('upgrade/DEFAULT_STYLE')
+    const ops = []
+    const style = {
+      'color-scheme': 'medium',
+      'line-color': 'black',
+      'line-width': 3,
+      'line-dash-array': [20, 10],
+      'line-halo-width': 1,
+      'line-halo-dash-array': [20, 10],
+      'line-cap': 'butt', // butt | round | square
+      'line-join': 'round', // bevel | round | miter
+      'line-smooth': false,
+      'circle-radius': 5,
+      'circle-line-color': '#3399CC',
+      'circle-line-width': 1.25,
+      'circle-fill-color': 'rgba(255,255,255,0.4)',
+      'symbol-size': 60, // pixels
+      'symbol-fill': true, // false also changes line color
+      'symbol-fill-opacity': 0.6,
+      'symbol-halo-color': 'black', // only valid with symbol-halo-width = 0
+      'symbol-halo-width': 0,
+      'symbol-frame': true,
+
+      // frameColor :: mode | string
+      // semms not to be supported at all
+      'symbol-frame-color': 'red',
+
+      // icon :: true (default) | false
+      // 'false' breaks presention of symbols without frame, e.g. Target Reference Point
+      'symbol-icon': true,
+
+      // implicitly set symbol-fill to false; default: '', `null` won't work
+      'symbol-color': '',
+
+      // strokeWidth :: number -- default 3
+      'symbol-line-width': 3,
+
+      // infoFields :: true (default) | false
+      'symbol-text': true,
+      'symbol-text-color': '',
+
+      // infoSize :: number -- default: 40% of symbol-size
+      'symbol-text-size': 40,
+
+      'icon-scale': 0.5,
+      // 'text-font-style': 'normal', // none, normal, italic, oblique
+      // 'text-font-variant': 'normal', // none, normal, small-caps
+      'text-font-weight': 'normal', // none, normal, bold
+      'text-font-size': '12px',
+      'text-font-family': 'sans-serif', // sans-serif, Roboto, monospace
+      'text-color': '#333'
+      // 'text-halo-color': 'black',
+      // 'text-halo-width': 0.5
+    }
+
+    ops.push(L.putOp('style+default', style))
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.DEFAULT_STYLE, true)
+  }
+
+  if (!actual && wanted === true) await upgrade()
 }

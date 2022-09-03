@@ -1,19 +1,40 @@
+/* eslint-disable camelcase */
 import * as R from 'ramda'
-import { styles } from './styles'
+import * as shared from './shared'
+import { styleFactory } from './styleFactory'
 import { MODIFIERS } from '../../symbology/2525c'
 
-const modifiers = properties => Object.entries(properties)
+const symbolModifiers = properties => Object.entries(properties)
   .filter(([key, value]) => MODIFIERS[key] && value)
   .reduce((acc, [key, value]) => R.tap(acc => (acc[MODIFIERS[key]] = value), acc), {})
 
-styles['Point:DEFAULT'] = ({ feature, geometry, properties, sidc }) => {
-  if (!sidc) return [{ id: 'style:default', geometry }]
+/**
+ * style
+ */
+const style = [next => {
+  const { mode, definingGeometry, sidc, modifiers, effectiveStyle } = next
 
-  return [{
+  // symbol-text-color
+  const selected = mode === 'singleselect'
+    ? { 'symbol-halo-color': 'white', 'symbol-halo-width': 6, 'symbol-fill-opacity': 1 }
+    : {}
+
+  const style = [{
     id: 'style:2525c/symbol',
-    geometry,
-    'symbol-code': feature.get('sidc'),
-    'symbol-modifiers': modifiers(properties),
-    'symbol-color-scheme': 'light'
+    geometry: definingGeometry,
+    'symbol-code': sidc,
+    'symbol-modifiers': symbolModifiers(modifiers),
+    ...selected
   }]
-}
+    .map(effectiveStyle)
+    .flatMap(styleFactory)
+
+  return { style }
+}, ['mode', 'sidc', 'modifiers', 'geometryKey', 'effectiveStyle']]
+
+
+export default [
+  shared.sidc,
+  shared.effectiveStyle,
+  style
+]

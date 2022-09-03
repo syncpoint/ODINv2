@@ -1,16 +1,18 @@
+import * as R from 'ramda'
 import * as ID from '../../ids'
 
-export default function (id, symbol, cache) {
-  const tags = [
-    ...symbol.dimensions,
-    symbol.scope,
-    ...(cache(ID.tagsId(id)) || [])
-  ]
+export default async function (id) {
+  const keys = [R.identity, ID.tagsId]
+  const [symbol, tags] = await this.store.collect(id, keys)
 
   return ({
     id,
     scope: 'symbol',
     text: symbol.hierarchy.join(' '),
-    tags
+    tags: [
+      ...symbol.dimensions,
+      symbol.scope,
+      ...(tags || [])
+    ]
   })
 }

@@ -1,13 +1,11 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import * as Extent from 'ol/extent'
 import * as mdi from '@mdi/js'
 import Icon from '@mdi/react'
 import { TAG } from './tags'
 import { Title } from './Title'
 import { useServices, useEmitter } from '../hooks'
 import * as ID from '../../ids'
-import { readFeature } from '../../model/geometry'
 import './Card.scss'
 
 /**
@@ -90,14 +88,11 @@ const useDragAndDrop = (id, acceptDrop) => {
  *
  */
 const useController = id => {
-  const { emitter, ipcRenderer, store } = useServices()
+  const { emitter, ipcRenderer, store, featureStore } = useServices()
 
   const center = async id => {
-    const values = await store.values([id])
-    if (values.length !== 1) return
-    const entity = readFeature(values[0])
-    const center = Extent.getCenter(entity?.getGeometry()?.getExtent())
-    emitter.emit('map/goto', { center })
+    const center = featureStore.center(id)
+    center && emitter.emit('map/goto', { center })
   }
 
   const viewport = async id => {
@@ -144,7 +139,7 @@ const IconButton = props => {
  *
  */
 export const Card = React.forwardRef((props, ref) => {
-  const { id, capabilities, url, title, highlight, description, tags, selected, editing, ...rest } = props
+  const { id, capabilities, svg, title, highlight, description, tags, selected, editing, ...rest } = props
   const acceptDrop = capabilities && capabilities.includes('DROP')
   const emitter = useEmitter('sidebar')
   const { dropAllowed, ...dragAndDrop } = useDragAndDrop(id, acceptDrop)
@@ -152,12 +147,8 @@ export const Card = React.forwardRef((props, ref) => {
 
   const pinned = tags.split(' ').findIndex(s => s.match(/USER:pin:NONE/gi)) !== -1
   const style = dropAllowed === true
-    ? { borderStyle: 'dashed', borderColor: '#40a9ff' }
+    ? { border: '0.2rem dashed #40a9ff', padding: '0.38rem' }
     : {}
-
-  const headerClassName = highlight
-    ? 'header header--highlight e3de-row'
-    : 'header e3de-row'
 
   const tag = spec => {
     const [variant, label, action, path] = spec.split(':')
@@ -177,12 +168,11 @@ export const Card = React.forwardRef((props, ref) => {
   children.description = description &&
     <span className='e3de-description'>{description}</span>
 
-  children.avatar = url &&
-    <div className='avatar'>
-      <img className='image' src={url}/>
-    </div>
+  children.avatar = svg &&
+    <div className='avatar' dangerouslySetInnerHTML={{ __html: svg }}/>
 
-  children.body = (url || description) &&
+
+  children.body = (svg || description) &&
     <>
       <hr></hr>
       <div className='body e3de-row'>
@@ -198,6 +188,12 @@ export const Card = React.forwardRef((props, ref) => {
     ? mdi.mdiPin
     : mdi.mdiPinOutline
 
+  const renameButton = capabilities.includes('RENAME')
+    ? <IconButton onClick={() => emitter.emit('edit/begin', { id })}>
+        <Icon className='e3de-icon' path={mdi.mdiPencil}/>
+      </IconButton>
+    : null
+
   return (
     <div className='e3de-card-container' ref={ref}>
       <div
@@ -208,15 +204,14 @@ export const Card = React.forwardRef((props, ref) => {
         {...controller}
         {...dragAndDrop}
       >
-        <div className={headerClassName}>
+        <div className='header e3de-row'>
           <Title
             id={id}
             value={title}
             editing={editing}
+            highlight={highlight}
           />
-          <IconButton onClick={() => emitter.emit('edit', { id })}>
-            <Icon className='e3de-icon' path={mdi.mdiPencil}/>
-          </IconButton>
+          { renameButton }
           <IconButton onClick={() => emitter.emit(pinned ? 'unpin' : 'pin', { id })}>
             <Icon className='e3de-icon' path={pinPath}/>
           </IconButton>
