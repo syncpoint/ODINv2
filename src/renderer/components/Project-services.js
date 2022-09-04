@@ -43,18 +43,6 @@ export default async projectUUID => {
   const location = path.join(databases, projectUUID)
   const db = L.leveldb({ location })
 
-  const migrationsOptions = {}
-  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
-  migrationsOptions[MigrationTool.INLINE_TAGS] = false
-  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
-  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
-  migrationsOptions[MigrationTool.INLINE_STYLES] = false
-  migrationsOptions[MigrationTool.DEFAULT_STYLE] = true
-
-  const migration = new MigrationTool(db, migrationsOptions)
-  await migration.upgrade()
-
-
   const jsonDB = L.jsonDB(db)
   const wkbDB = L.wkbDB(db)
   const preferencesDB = L.preferencesDB(db)
@@ -124,6 +112,28 @@ export default async projectUUID => {
   })
 
   services.commandRegistry = new CommandRegistry(services)
+
+  const migrationsOptions = {}
+  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
+  migrationsOptions[MigrationTool.INLINE_TAGS] = false
+  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
+  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
+  migrationsOptions[MigrationTool.INLINE_STYLES] = false
+  migrationsOptions[MigrationTool.DEFAULT_STYLE] = true
+  const migration = new MigrationTool(db, migrationsOptions)
+
+  // Orderly bootstrapping:
+  //
+  window.requestIdleCallback(async () => {
+    console.time('bootstrap')
+    await migration.bootstrap()
+    await store.bootstrap()
+    await searchIndex.bootstrap()
+    await featureStore.bootstrap()
+    await spatialIndex.bootstrap()
+    console.timeEnd('bootstrap')
+  }, { timeout: 2000 })
+
 
   return services
 }

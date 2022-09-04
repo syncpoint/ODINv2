@@ -15,13 +15,26 @@ export function SpatialIndex (wkbDB) {
 
   // Import symbols once for each fresh project database.
   window.requestIdleCallback(async () => {
-    const items = (await L.tuples(this.wkbDB, 'feature:'))
-      .filter(([_, value]) => value.type === 'Point')
-      .map(this.item.bind(this))
-    this.tree.load(items)
   }, { timeout: 2000 })
 }
 
+
+/**
+ *
+ */
+SpatialIndex.prototype.bootstrap = async function () {
+  const isPoint = ([_, value]) => value.type === 'Point'
+  const items = (await L.tuples(this.wkbDB, 'feature:'))
+    .filter(isPoint)
+    .map(this.item.bind(this))
+
+  this.tree.load(items)
+}
+
+
+/**
+ *
+ */
 SpatialIndex.prototype.search = function (geometry) {
   const [minX, minY, maxX, maxY] = bbox(geometry)
   const matches = this.tree.search({ minX, minY, maxX, maxY })

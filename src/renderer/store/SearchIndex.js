@@ -47,6 +47,7 @@ export default function SearchIndex (
 ) {
   Emitter.call(this)
 
+  this.jsonDB = jsonDB
   this.documentStore = documentStore
   this.optionStore = optionStore
   this.emitter = emitter
@@ -57,26 +58,30 @@ export default function SearchIndex (
   this.ready = false
   this.cachedDocuments = {}
 
-  window.requestIdleCallback(async () => {
-    const keys = await L.readKeys(jsonDB)
-    this.index = createIndex()
-
-    const pending = keys.map((key) => this.document(key))
-    const documents = (await Promise.all(pending)).filter(Boolean)
-
-    // Documents must be stored as is for later removal from index.
-    documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
-    this.index.addAll(documents)
-
-    this.ready = true
-    this.emit('ready')
-  }, { timeout: 2000 })
-
   jsonDB.on('del', key => this.updateIndex([{ type: 'del', key }]))
   jsonDB.on('batch', event => this.updateIndex(event))
 }
 
 util.inherits(SearchIndex, Emitter)
+
+
+/**
+ *
+ */
+SearchIndex.prototype.bootstrap = async function () {
+  const keys = await L.readKeys(this.jsonDB)
+  this.index = createIndex()
+
+  const pending = keys.map((key) => this.document(key))
+  const documents = (await Promise.all(pending)).filter(Boolean)
+
+  // Documents must be stored as is for later removal from index.
+  documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
+  this.index.addAll(documents)
+
+  this.ready = true
+  this.emit('ready')
+}
 
 
 /**

@@ -58,17 +58,21 @@ export function FeatureStore (store, selection) {
       if (this.features[key]) this.features[key].apply({ mode })
     })
   })
-
-  // On startup: load all features:
-  window.requestIdleCallback(async () => {
-    this.styleProps = Object.fromEntries(await store.tuples('style+'))
-    await this.loadFeatures('feature:')
-    await this.loadFeatures('marker:')
-  }, { timeout: 2000 })
 }
 
 util.inherits(FeatureStore, Emitter)
 
+
+/**
+ *
+ */
+FeatureStore.prototype.bootstrap = async function () {
+  // On startup: load all features:
+  //
+  this.styleProps = Object.fromEntries(await this.store.tuples('style+'))
+  await this.loadFeatures('feature:')
+  await this.loadFeatures('marker:')
+}
 
 /**
  *

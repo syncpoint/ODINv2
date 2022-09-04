@@ -21,10 +21,11 @@ MigrationTool.DEFAULT_TAG = 'defaultTag'
 MigrationTool.INLINE_STYLES = 'inlineStyles'
 MigrationTool.DEFAULT_STYLE = 'defaultStyle'
 
+
 /**
  * async
  */
-MigrationTool.prototype.upgrade = async function () {
+MigrationTool.prototype.bootstrap = async function () {
   await this.redundantIdentifiers()
   await this.inlineTags()
   await this.inlineFlags()
@@ -156,7 +157,6 @@ MigrationTool.prototype.defaultStyle = async function () {
   const wanted = this.options[MigrationTool.DEFAULT_STYLE]
 
   const upgrade = async () => {
-    console.log('upgrade/DEFAULT_STYLE')
     const ops = []
     const style = {
       'color-scheme': 'medium',

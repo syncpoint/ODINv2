@@ -7,8 +7,8 @@ import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
 import { transform, geometryType } from '../model/geometry'
 import { readGeometry } from '../store/FeatureStore'
-import { importSymbols } from './symbols'
 import { bbox } from './geometry'
+import { index } from '../symbology/2525c'
 
 /**
  * Persistence for layers, features and associated information.
@@ -61,15 +61,25 @@ export default function Store (jsonDB, wkbDB, undo, selection) {
   ;(async () => {
     // potential clean-up
   })()
-
-  // Import symbols once for each fresh project database.
-  window.requestIdleCallback(async () => {
-    const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
-    if (!alreadyImported) await importSymbols(this.jsonDB)
-  }, { timeout: 2000 })
 }
 
 util.inherits(Store, Emitter)
+
+
+/**
+ *
+ */
+Store.prototype.bootstrap = async function () {
+  // Import symbols once for each fresh project database.
+  //
+  const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
+  const ops = () => Object.values(index).map(value => L.putOp(id(value), value))
+  const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
+  return alreadyImported
+    ? Promise.resolve()
+    : this.jsonDB.batch(ops())
+}
+
 
 /**
  * @async
