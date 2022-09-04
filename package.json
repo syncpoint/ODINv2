@@ -65,7 +65,7 @@
     "leveldown": "^6.1.1",
     "levelup": "^5.0.1",
     "luxon": "^3.0.3",
-    "milsymbol": "^2.0.0",
+    "milsymbol": "github:syncpoint/milsymbol",
     "minisearch": "^5.0.0",
     "most-subject": "^6.0.0",
     "mousetrap": "^1.6.5",
