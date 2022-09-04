@@ -61,7 +61,7 @@ export const effectiveStyle = [next => {
 
   // Split `smoothen` from rest.
   // We don't want to calculate new geometries on color change.
-  const merged = { ...global, ...layer, ...scheme, ...feature }
+  const merged = { ...global, ...scheme, ...layer, ...feature }
   const { 'line-smooth': smoothen, ...props } = merged
 
   return {

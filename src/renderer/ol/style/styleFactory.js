@@ -132,13 +132,15 @@ const makeSymbol = props => {
 
   const options = filter({
     colorMode: modes[props['color-scheme']],
+    monoColor: props['symbol-color'],
     outlineColor: props['symbol-halo-color'],
     outlineWidth: props['symbol-halo-width'],
-    monoColor: props['symbol-color'],
     infoSize: props['symbol-text-size'],
     infoColor: props['symbol-text-color'],
     strokeWidth: props['symbol-line-width'],
+    fill: props['symbol-fill'],
     fillOpacity: props['symbol-fill-opacity'],
+    frame: props['symbol-frame'],
     size: props['symbol-size'] || 60,
     ...props['symbol-modifiers']
   })

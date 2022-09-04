@@ -258,6 +258,7 @@ FeatureStore.prototype.wrapMarker = function (feature) {
   const defaultStyle = crosshair('black')
   const selectedStyle = crosshair('red')
 
+  feature.apply = () => {}
   feature.setStyle(feature => {
     return this.selection.isSelected(feature.getId())
       ? selectedStyle

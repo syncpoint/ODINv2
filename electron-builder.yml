@@ -9,4 +9,6 @@ win:
     - target: nsis
       arch:
         - x64
-electronVersion: 19.0.4
+mac:
+   target: default
+electronVersion: 20.1.1

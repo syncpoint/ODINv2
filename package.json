@@ -14,7 +14,8 @@
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --recursive",
     "lint": "eslint src/",
     "jsdoc:main": "jsdoc src/main -r -d jsdoc/main",
-    "build:win": "electron-builder --win --publish never"
+    "build:win": "electron-builder --win --publish never",
+    "build:mac": "electron-builder --mac --publish never"
   },
   "author": {
     "name": "Syncpoint GmbH",

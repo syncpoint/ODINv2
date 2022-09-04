@@ -92,8 +92,12 @@ export default ({ PI_OVER_4 }, props) => {
   registry['style:default-text'] = {
     'text-font': font,
     'text-color': props['text-color'],
+    'text-fill-color': props['text-fill-color'],
+    'text-line-color': props['text-line-color'],
+    'text-line-width': props['text-line-width'],
+    'text-halo-color': props['text-halo-color'],
+    'text-halo-width': props['text-halo-width'],
     'text-justify': 'center',
-    'text-padding': 5,
     'text-rotation-anchor': 'auto'
   }
 
