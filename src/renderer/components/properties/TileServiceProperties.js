@@ -12,6 +12,7 @@ import Fuse from 'fuse.js'
 import TextField from './TextField'
 import FlexColumnGap from './FlexColumnGap'
 import Name from './Name'
+import Zoom from './Zoom'
 import { useList, useServices } from '../hooks'
 import * as TileService from '../../store/tileServiceAdapters'
 import './TileServiceProperties.css'
@@ -126,6 +127,10 @@ const TileServiceProperties = props => {
     tileLayerStore.updateService(key, { ...service, url: url.value })
   }
 
+  const handleZoomChange = ({ maxZoom }) => {
+    tileLayerStore.updateService(key, { ...service, ...{ capabilities: { maxZoom } } })
+  }
+
   const handleEntryChange = async id => tileLayerStore.toggleActiveLayer(key, id)
   const handleEntryClick = id => dispatch({ type: 'select', id })
   const handleFilterChange = ({ target }) => setFilter(target.value)
@@ -151,6 +156,11 @@ const TileServiceProperties = props => {
     ? <TextField label='Filter' value={filter} onChange={handleFilterChange}/>
     : null
 
+  const zoomSliders = service.type === 'XYZ'
+    ? <Zoom key={key} onChange={handleZoomChange} maxZoom={service.capabilities?.maxZoom} />
+    : null
+
+
   return (
     <FlexColumnGap>
       <Name {...props}/>
@@ -158,6 +168,7 @@ const TileServiceProperties = props => {
       { filterField }
       { layerList }
       <div className='map-preview' id='map-preview'></div>
+      { zoomSliders }
     </FlexColumnGap>
   )
 
