@@ -9,6 +9,7 @@ export default async function (id) {
     id,
     title: link.name,
     description: container.name,
+    capabilities: 'RENAME|TAG',
     tags: [
       'SCOPE:LINK:NONE',
       ...((tags || [])).map(label => `USER:${label}:NONE`),
