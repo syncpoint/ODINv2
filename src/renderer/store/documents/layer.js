@@ -6,8 +6,6 @@ export default async function (id) {
   const [layer, hidden, locked, tags, defaultFlag] = await this.store.collect(id, keys)
   const links = await this.store.keys(ID.prefix('link')(id))
 
-  // TODO: resolve links
-
   return {
     id,
     scope: 'layer',
