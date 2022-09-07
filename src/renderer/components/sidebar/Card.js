@@ -91,7 +91,7 @@ const useController = id => {
   const { emitter, ipcRenderer, store, featureStore } = useServices()
 
   const center = async id => {
-    const center = featureStore.center(id)
+    const center = await featureStore.center(id)
     center && emitter.emit('map/goto', { center })
   }
 

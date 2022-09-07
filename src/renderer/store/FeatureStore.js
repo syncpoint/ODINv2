@@ -186,8 +186,11 @@ FeatureStore.prototype.addFeatures = function (features) {
 /**
  *
  */
-FeatureStore.prototype.center = function (key) {
-  const extent = this.feature(key)?.getGeometry()?.getExtent()
+FeatureStore.prototype.center = async function (key) {
+  const values = await this.store.values([key])
+  if (values.length !== 1) return
+  const feature = readFeature(values[0])
+  const extent = feature.getGeometry()?.getExtent()
   return Extent.getCenter(extent)
 }
 
