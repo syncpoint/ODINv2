@@ -16,9 +16,10 @@ const identity = R.cond([
 export default async function (id) {
   const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.tagsId]
   const [feature, layer, hidden, locked, tags] = await this.store.collect(id, keys)
+  if (!feature) return
+
   const links = await this.store.keys(ID.prefix('link')(id))
   const properties = feature.properties || {}
-
   const descriptor = MILSTD.descriptor(properties.sidc)
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : []
   const dimensions = descriptor ? descriptor.dimensions : []

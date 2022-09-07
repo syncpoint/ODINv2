@@ -4,6 +4,8 @@ import * as ID from '../../ids'
 export default async function (id) {
   const keys = [R.identity, ID.hiddenId, ID.lockedId, ID.tagsId, ID.defaultId]
   const [layer, hidden, locked, tags, defaultFlag] = await this.store.collect(id, keys)
+  if (!layer) return
+
   const links = await this.store.keys(ID.prefix('link')(id))
 
   return {
