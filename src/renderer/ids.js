@@ -117,12 +117,14 @@ export const isLockedFeatureId = isId('locked+feature:')
 export const isHiddenFeatureId = isId('hidden+feature:')
 export const isTagsId = isId('tags+')
 export const isLayerTagsId = isId('tags+layer:')
+export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 
 export const isAssociatedId = id =>
   isHiddenId(id) ||
   isLockedId(id) ||
   isDefaultId(id) ||
-  isTagsId(id)
+  isTagsId(id) ||
+  isStyleId(id)
 
 export const FEATURE_ID = 'feature:[0-9a-f-]{36}/[0-9a-f-]{36}'
 export const LAYER_ID = 'layer:[0-9a-f-]{36}'

@@ -10,6 +10,7 @@
 
 .toolbar__items-container {
   display: flex;
+  flex-direction: row;
   align-items: center;
   font-size: 0.9rem;
   color: #68696B;
@@ -17,21 +18,8 @@
   padding-right: 0.5rem;
 }
 
-.toolbar__left-items {
-  flex: 0 0 21rem;
-  color: black;
-}
-
-.toolbar__center-items {
-  flex: 1 1 auto;
-  flex-direction: row;
-  justify-content: left;
-}
-
-.toolbar__right-items {
-  flex: 0 0  21rem;
-  flex-direction: row-reverse;
-  color: black;
+.toolbar__items--right {
+  margin-left: auto;
 }
 
 .toolbar__button {
@@ -54,6 +42,10 @@
 .toolbar__button:disabled {
   pointer-events: none;
   color: lightgray;
+}
+
+.toolbar__button--checked {
+  background-color: #d0d0d0;
 }
 
 .toolbar__divider {

@@ -39,6 +39,8 @@ import { index } from '../symbology/2525c'
  * setDefaultLayer :: k -> unit
  * tuples :: String -> [[k, v]]
  * tuples :: [k] -> [[k, v]]
+ * tuplesJSON :: String -> [[k, v]]
+ * tuplesJSON :: [k] -> [[k, v]]
  * unsetDefaultLayer :: k -> unit
  * update :: { k: v } -> (v -> v) -> unit
  * update :: [k] -> (v -> v) -> unit
@@ -137,8 +139,8 @@ Store.prototype.tuples = async function (arg) {
 
 /**
  * @async
- * tuples :: String -> [[k, v]]
- * tuples :: [k] -> [[k, v]]
+ * tuplesJSON :: String -> [[k, v]]
+ * tuplesJSON :: [k] -> [[k, v]]
  */
 Store.prototype.tuplesJSON = async function (arg) {
   return L.tuples(this.jsonDB, arg)
@@ -204,7 +206,7 @@ Store.prototype.update = async function (...args) {
       if (Array.isArray(args[0])) {
         // update :: [k] -> (v -> v) -> unit
         const [keys, fn] = args
-        // FIXME: Sssuming empty object as default value might not be such a good idea.
+        // FIXME: Assuming empty object as default value might not be such a good idea.
         const oldValues = await L.values(this.db, keys, {})
         const newValues = oldValues.map(fn)
         return this.update(keys, newValues, oldValues)

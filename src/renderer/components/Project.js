@@ -1,6 +1,7 @@
 import React from 'react'
 import { Map } from './map/Map'
 import { Properties } from './properties/Properties'
+import { Styles } from './properties/Styles'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './Toolbar'
 import { KBar } from './KBar'
@@ -15,9 +16,15 @@ import './Project.css'
 export const Project = () => {
   const [sidebarShowing] = useMemento('ui.sidebar.showing', true)
   const [toolbarShowing] = useMemento('ui.toolbar.showing', true)
+  const [properties] = useMemento('ui.properties', '')
 
   const sidebar = sidebarShowing ? <Sidebar/> : null
   const toolbar = toolbarShowing ? <Toolbar/> : null
+  const propertiesPanel = properties === 'properties'
+    ? <Properties/>
+    : properties === 'styles'
+      ? <Styles/>
+      : null
 
   return (
     <div className="site-container">
@@ -27,7 +34,7 @@ export const Project = () => {
         <div className="map-overlay">
           { sidebar }
           <OSD/>
-          <Properties/>
+          { propertiesPanel }
         </div>
         <KBar/>
       </div>

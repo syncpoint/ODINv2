@@ -101,7 +101,16 @@ FeatureStore.prototype.batch = function (operations) {
     .filter(({ key }) => ID.isId('style+feature')(key))
     .forEach(({ key, value }) => apply({ featureStyle: value })(this.features[ID.featureId(key)]))
 
-  // TODO: dispatch layer styles
+  operations
+    .filter(({ type }) => type === 'put')
+    .filter(({ key }) => ID.isId('style+layer')(key))
+    .forEach(({ key, value }) => {
+      const layerId = ID.layerId(key)
+      Object
+        .keys(this.features)
+        .filter(key => ID.layerId(key) === layerId)
+        .forEach(key => apply({ layerStyle: value })(this.features[key]))
+    })
 
   const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id)
   const candidates = operations.filter(({ key }) => isCandidateId(key))
