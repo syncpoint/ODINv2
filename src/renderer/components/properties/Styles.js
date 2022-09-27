@@ -20,8 +20,6 @@ const useSelection = () => {
 
   React.useEffect(() => {
 
-    // Get selected tuples along with locked state and
-    // reset component state.
     const handleSelection = async () => {
       const defaultStyle = await store.value('style+default')
       // D := dictionary, associative array
@@ -79,7 +77,6 @@ export const Styles = () => {
   const panel = stylesPanels[propertiesClass(styles)] || null
   if (!panel) return null
 
-  console.log(styles)
   return (
     <div className='feature-properties'>
       { panel({ ...styles }) }

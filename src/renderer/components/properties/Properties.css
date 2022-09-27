@@ -2,8 +2,8 @@
   flex: 0 0 22rem;
   font-size: 0.95rem;
 
-  display: flex;
-  flex-direction: column;
+  /* display: flex;
+  flex-direction: column; */
   padding: 32px 16px;
   overflow: auto;
   background-color: white;

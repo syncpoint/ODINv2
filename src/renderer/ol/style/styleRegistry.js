@@ -24,6 +24,8 @@ export default ({ PI_OVER_4 }, props) => {
     'symbol-halo-color': props['symbol-halo-color'],
     'symbol-halo-width': props['symbol-halo-width'],
     'symbol-text-color': props['symbol-text-color'],
+    'symbol-text-halo-color': props['symbol-text-halo-color'],
+    'symbol-text-halo-width': props['symbol-text-halo-width'],
     'symbol-text-size': props['symbol-text-size'],
     'symbol-text': props['symbol-text'],
     'symbol-fill': props['symbol-fill'],
@@ -157,7 +159,6 @@ export default ({ PI_OVER_4 }, props) => {
     'line-dash-array': DASH_ARRAY_20_8_2_8,
     'line-width': 1.5
   }
-
 
   return ({ id, ...props }) => ({ ...(registry[id] || {}), ...props })
 }

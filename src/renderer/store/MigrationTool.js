@@ -1,6 +1,7 @@
 import * as L from '../../shared/level'
 import * as ID from '../ids'
 
+
 /**
  * Upgrade/downgrade databases as necessary.
  */
@@ -10,7 +11,7 @@ export default function MigrationTool (db, options) {
   this.options = options
 
   ;(async () => {
-    // this.schemaDB.del(MigrationTool.DEFAULT_STYLE)
+    this.schemaDB.del(MigrationTool.DEFAULT_STYLE)
   })()
 }
 
@@ -160,63 +161,10 @@ MigrationTool.prototype.defaultStyle = async function () {
     const ops = []
     const style = {
       'color-scheme': 'medium',
-      // 'line-color': 'rgb(200,0,200)',
       'line-width': 3,
       'line-halo-width': 1,
-      // 'line-dash-array': [20, 10],
-      // 'line-halo-dash-array': [20, 10],
-      'line-cap': 'butt', // butt | round | square
-      'line-join': 'round', // bevel | round | miter
-      'line-smooth': false,
-
-      // TODO: remove 'circle-*'
-      'circle-radius': 5,
-      'circle-line-color': '#3399CC',
-      'circle-line-width': 1.25,
-      'circle-fill-color': 'rgba(255,255,255,0.4)',
-
-      'symbol-size': 60, // pixels
-      'symbol-fill': true, // false also changes line color
-      'symbol-fill-opacity': 0.6,
-      'symbol-halo-color': 'black', // only valid with symbol-halo-width = 0
-      'symbol-halo-width': 0,
-      'symbol-frame': true,
-
-      // frameColor :: mode | string
-      // semms not to be supported at all
-      // 'symbol-frame-color': 'red',
-
-      // icon :: true (default) | false
-      // 'false' breaks presention of symbols without frame, e.g. Target Reference Point
-      'symbol-icon': true,
-
-      // implicitly set symbol-fill to false; default: '', `null` won't work
-      // 'symbol-color': 'rgb(200,0,200)',
-
-      // strokeWidth :: number -- default 3
-      'symbol-line-width': 4,
-
-      // infoFields :: true (default) | false
-      'symbol-text': true,
-      'symbol-text-color': 'black',
-
-      // infoSize :: number -- default: 40% of symbol-size
-      'symbol-text-size': 40,
-
-      'icon-scale': 0.5,
-      // 'text-font-style': 'normal', // none, normal, italic, oblique
-      // 'text-font-variant': 'normal', // none, normal, small-caps
-      'text-font-weight': 'normal', // none, normal, bold
       'text-font-size': '12px',
-      'text-font-family': 'sans-serif', // sans-serif, Roboto, monospace
-      'text-font-style': 'normal',
-      'text-color': '#333',
-      // 'text-halo-color': 'black',
-      'text-halo-width': 0,
-      // 'text-fill-color': 'rgba(255,255,255,0.6)',
-      // 'text-line-color': 'black',
-      'text-line-width': 1,
-      // 'text-padding': 4,
+      'text-font-family': 'sans-serif'
     }
 
     ops.push(L.putOp('style+default', style))

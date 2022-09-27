@@ -135,8 +135,11 @@ const makeSymbol = props => {
     monoColor: props['symbol-color'],
     outlineColor: props['symbol-halo-color'],
     outlineWidth: props['symbol-halo-width'],
+    infoFields: props['symbol-text'],
     infoSize: props['symbol-text-size'],
     infoColor: props['symbol-text-color'],
+    infoOutlineColor: props['symbol-text-halo-color'],
+    infoOutlineWidth: props['symbol-text-halo-width'],
     strokeWidth: props['symbol-line-width'],
     fill: props['symbol-fill'],
     fillOpacity: props['symbol-fill-opacity'],
@@ -190,7 +193,7 @@ export const styleFactory = props => {
       stroke: makeStroke({
         'line-color': props['line-halo-color'],
         'line-dash-array': props['line-halo-dash-array'],
-        'line-width': props['line-width'] + props['line-halo-width'],
+        'line-width': props['line-width'] + 2 * props['line-halo-width'],
         'line-cap': props['line-cap'],
         'line-join': props['line-join']
       })

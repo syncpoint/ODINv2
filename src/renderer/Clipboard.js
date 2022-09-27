@@ -33,15 +33,10 @@ export const readEntries = async () => {
 }
 
 
-const dispatch = action => {
-  return event => {
-    if (event.target.nodeName === 'INPUT') {
-      return true // let browser handle default action
-    }
-    action()
-  }
-}
-
+const dispatch = action => ({ target }) =>
+  ['INPUT', 'TEXTAREA'].includes(target.nodeName)
+    ? true // let browser handle default action
+    : action()
 
 /**
  *
