@@ -27,7 +27,8 @@ const LayerStyles = props => {
     'text-halo-color': 'white',
     'text-halo-width': 2,
     'symbol-text-color': 'black',
-    'symbol-text-halo-color': 'white'
+    'symbol-text-halo-color': 'white',
+    'symbol-text-halo-width': 3
   }
 
   const setLineColor = color => update({
