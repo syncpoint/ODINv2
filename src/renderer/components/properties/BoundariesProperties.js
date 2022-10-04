@@ -10,6 +10,7 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
 import GridCols2 from './GridCols2'
+import Echelon from './Echelon'
 
 export default props => {
   return (
@@ -17,6 +18,7 @@ export default props => {
       <Name {...props}/>
       <ColSpan2><UniqueDesignationLeft {...props}/></ColSpan2>
       <ColSpan2><UniqueDesignationRight {...props}/></ColSpan2>
+      <ColSpan2><Echelon {...props}/></ColSpan2>
       <HostilityStatus {...props}/>
       <EffectiveDateTime {...props}/>
       <StaffComments {...props}/>
