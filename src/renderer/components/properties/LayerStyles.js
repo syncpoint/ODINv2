@@ -1,145 +1,62 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import * as Colors from 'css-color-converter'
+import Color from 'color'
 import { useServices } from '../hooks'
+import { Palette } from '../colors/Palette'
 import './Styles.scss'
 
-const descriptors = [
-  { label: 'Color Scheme', type: 'scheme', binding: 'color-scheme' },
-  { label: 'Line Width', type: 'number', binding: 'line-width' },
-  { label: 'Line Color', type: 'color', binding: 'line-color' },
-  { label: 'Line Halo Width', type: 'number', binding: 'line-halo-width' },
-  { label: 'Line Halo Color', type: 'color', binding: 'line-halo-color' },
-  { label: 'Line Smoothen', type: 'boolean', binding: 'line-smooth' },
-  { label: 'Symbol Line Width', type: 'number', binding: 'symbol-line-width' },
-  { label: 'Symbol Color', type: 'color', binding: 'symbol-color', format: 'rgb' },
-  { label: 'Symbol Halo Color', type: 'color', binding: 'symbol-halo-color', format: 'rgb' },
-  { label: 'Symbol Halo Wdith', type: 'number', binding: 'symbol-halo-width' },
-  { label: 'Symbol Text Color', type: 'color', binding: 'symbol-text-color', format: 'rgb' },
-  { label: 'Symbol Text Halo Color', type: 'color', binding: 'symbol-text-halo-color', format: 'rgb' },
-  { label: 'Symbol Text Halo Wdith', type: 'number', binding: 'symbol-text-halo-width' }
-]
+const lineColors = [undefined, 'white', 'black', 'red', 'brown', 'gold', 'green', 'blue', 'purple']
+  .map(c => c ? Color(c) : undefined)
+  .map(c => c ? c.hex() : undefined)
+
+const outlineColors = [undefined, 'white', 'black']
+  .map(c => c ? Color(c) : undefined)
+  .map(c => c ? c.hex() : undefined)
+
 
 const LayerStyles = props => {
+  const [key, value] = props.style
+  console.log('<LayerStyles/>', key, value)
   const { store } = useServices()
+  const lineColor = value['line-color']
+  const outlineColor = value['line-halo-color']
 
-  const keys = Object.keys(props)
-  const oldValues = Object.values(props)
+  const update = newValue => store.update([key], [newValue], [value])
 
-  const input = property => {
-
-    if (property.type === 'scheme') {
-      const handleChange = event => {
-        const { target } = event
-        const newValues = oldValues.map(value => ({ ...value, [property.binding]: target.value }))
-        store.update(keys, newValues, oldValues)
-      }
-
-      return (
-        <select
-          value={oldValues[0][property.binding]}
-          onChange={handleChange}
-        >
-          <option value='light'>Light</option>
-          <option value='medium'>Medium</option>
-          <option value='dark'>Dark</option>
-        </select>
-      )
-    } else if (property.type === 'number') {
-      const handleChange = event => {
-        const { target } = event
-        const newValues = oldValues.map(value => ({ ...value, [property.binding]: Number.parseFloat(target.value) || 1 }))
-        store.update(keys, newValues, oldValues)
-      }
-
-      return (
-        <>
-          <button style={{ width: '1rem' }}>-</button>&nbsp;
-          <input
-            type='text'
-            className='a0d5-text-input'
-            value={Number.parseFloat(oldValues[0][property.binding])}
-            onChange={handleChange}
-            />&nbsp;
-          <button style={{ width: '1rem' }}>+</button>
-        </>
-      )
-    } else if (property.type === 'color') {
-      const handleChange = event => {
-        const { target } = event
-        const colorValue = property.format === 'rgb'
-          ? Colors.fromString(target.value).toRgbString()
-          : target.value
-
-        const newValues = oldValues.map(value => ({ ...value, [property.binding]: colorValue }))
-        store.update(keys, newValues, oldValues)
-      }
-      const value = Colors.fromString(oldValues[0][property.binding] || '#000000').toHexString()
-      return (
-        <input
-          type='color'
-          value={value}
-          onChange={handleChange}
-        />
-      )
-    } else if (property.type === 'boolean') {
-      const handleChange = event => {
-        const { target } = event
-        const newValues = oldValues.map(value => ({ ...value, [property.binding]: target.checked }))
-        store.update(keys, newValues, oldValues)
-      }
-
-      // FIXME: Why is `checked` unknown?
-      /* eslint-disable react/no-unknown-property */
-      return (
-        <input
-          type='checkbox'
-          className='a0d5-toggle'
-          checked={oldValues[0][property.binding]}
-          onChange={handleChange}
-        />
-      )
-      /* eslint-enable react/no-unknown-property */
-    }
+  const defaultValue = {
+    'text-color': 'black',
+    'text-halo-color': 'white',
+    'text-halo-width': 2,
+    'symbol-text-color': 'black',
+    'symbol-text-halo-color': 'white'
   }
 
-  const rows = descriptors.map(property => {
-    const enabledProperty = `enabled-${property.binding}`
-    const checked = !!oldValues[0][enabledProperty]
+  const setLineColor = color => update({
+    ...value,
+    ...defaultValue,
+    'line-color': color,
+    'symbol-color': color ? Color(color).rgb().string() : undefined
+  })
 
-    const handleChange = event => {
-      const { target } = event
-      const newValues = oldValues.map(value => ({ ...value, [enabledProperty]: target.checked }))
-      store.update(keys, newValues, oldValues)
-    }
-
-    /* eslint-disable react/no-unknown-property */
-    return (
-      <div className='a0d5-row' key={property.binding}>
-        <input
-          type='checkbox'
-          className='a0d5-switch'
-          id={property.binding}
-          checked={checked}
-          onChange={handleChange}
-        />
-        <label
-          className='a0d5-row__label'
-          htmlFor={property.binding}
-        >
-          {property.label}
-        </label>
-        <div className='a0d5-row__input'>
-          { input(property) }
-        </div>
-      </div>
-    )
-    /* eslint-enable react/no-unknown-property */
+  const setOutlineColor = color => update({
+    ...value,
+    ...defaultValue,
+    'line-halo-color': color,
+    'line-halo-width': color ? 1 : 0,
+    'symbol-halo-color': color ? Color(color).rgb().string() : undefined,
+    'symbol-halo-width': color ? 3 : 0
   })
 
   return (
-    <div>
-      { rows }
+    <div className='a0d5-panel'>
+      <div>
+        <label>Line Color</label>
+        <Palette color={lineColor} colors={lineColors} onChange={setLineColor}/>
+      </div>
+      <div>
+        <label>Outline Color</label>
+        <Palette color={outlineColor} colors={outlineColors} onChange={setOutlineColor}/>
+      </div>
     </div>
   )
 }

@@ -10,32 +10,26 @@ const stylesPanels = {
   'style+layer': props => <LayerStyles {...props}/>
 }
 
-
 /**
  *
  */
 const useSelection = () => {
   const { selection, store } = useServices()
-  const [styles, setStyles] = React.useState({})
+  const [style, setStyle] = React.useState([]) // [k, v]
 
   React.useEffect(() => {
 
     const handleSelection = async () => {
-      const defaultStyle = await store.value('style+default')
-      // D := dictionary, associative array
-      const D = async kv => (await kv).reduce((acc, [key, value]) => { acc[key] = value; return acc }, {})
-      const keys = selection.selected().filter(ID.isStylableId).map(ID.styleId)
+      // // D := dictionary, associative array
+      // const D = async kv => (await kv).reduce((acc, [key, value]) => { acc[key] = value; return acc }, {})
 
       // Only support singleselect for the time being:
-      if (keys.length !== 1) return setStyles({})
+      const keys = selection.selected().filter(ID.isStylableId).map(ID.styleId)
+      if (keys.length !== 1) return setStyle([])
 
-      const lookup = await D(store.tuplesJSON(keys))
-      const styles = keys.reduce((acc, key) => {
-        acc[key] = lookup[key] || defaultStyle
-        return acc
-      }, {})
-
-      setStyles(styles)
+      const key = keys[0]
+      const value = await store.value(key, {})
+      setStyle([key, value])
     }
 
     // Update component state from database update.
@@ -45,9 +39,11 @@ const useSelection = () => {
         .filter(({ type }) => type === 'put')
         .filter(({ key }) => keys.includes(key))
 
-      const fn = (acc, { key, value }) => ({ ...acc, [key]: value })
-      if (relevant.length !== 1) setStyles({})
-      else setStyles(styles => relevant.reduce(fn, styles))
+      if (relevant.length !== 1) setStyle([])
+      else {
+        const { key, value } = relevant[0]
+        setStyle([key, value])
+      }
     }
 
     selection.on('selection', handleSelection)
@@ -60,26 +56,22 @@ const useSelection = () => {
     }
   }, [selection, store])
 
-  return styles
+  return style
 }
 
-const propertiesClass = styles => {
-  const keys = Object.keys(styles)
-  if (keys.length !== 1) return null
-  else return ID.scope(keys[0])
-}
 
 /**
  *
  */
 export const Styles = () => {
-  const styles = useSelection()
-  const panel = stylesPanels[propertiesClass(styles)] || null
+  const style = useSelection() // [k, v]
+  const scope = ([key]) => key ? ID.scope(key) : null
+  const panel = stylesPanels[scope(style)] || null
   if (!panel) return null
 
   return (
     <div className='feature-properties'>
-      { panel({ ...styles }) }
+      { panel({ style }) }
     </div>
   )
 }

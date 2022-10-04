@@ -35,18 +35,8 @@ export const evalSync = [next => {
  * smoothen :: boolean
  */
 export const effectiveStyle = [next => {
-  const filter = (props = {}) => {
-    const keys = Object.keys(props).filter(key => key.startsWith('enabled-'))
-    return keys.reduce((acc, key) => {
-      const property = key.substring(8)
-      if (props[key]) acc[property] = props[property]
-      return acc
-    }, {})
-  }
-
   const global = next.globalStyle || {}
-  const layer = filter(next.layerStyle)
-  // const layer = next.layerStyle || {}
+  const layer = next.layerStyle
   const feature = next.featureStyle || {}
   const { sidc } = next
   const status = statusCode(sidc)
@@ -68,6 +58,9 @@ export const effectiveStyle = [next => {
     'line-halo-color': Colors.lineHaloColor(identity),
     'line-halo-dash-array': status === 'A' ? [20, 10] : null
   }
+
+  if (!layer['line-color']) delete layer['line-color']
+  if (!layer['line-halo-color']) delete layer['line-halo-color']
 
   // Split `smoothen` from rest.
   // We don't want to calculate new geometries on color change.

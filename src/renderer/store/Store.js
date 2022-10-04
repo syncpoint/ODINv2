@@ -178,9 +178,10 @@ Store.prototype.dictionary = async function (...args) {
 /**
  * @async
  * value :: k -> v
+ * value :: k -> v -> v
  */
-Store.prototype.value = async function (key) {
-  return this.db.get(key)
+Store.prototype.value = async function (key, value) {
+  return L.get(this.db, key, value)
 }
 
 

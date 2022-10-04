@@ -1,0 +1,42 @@
+.b7a2-swatch-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+}
+
+.b7a2-swatch {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 2px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 2px inset;
+}
+
+.b7a2-swatch--undefined {
+  background: linear-gradient(
+    to top left,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) calc(50% - 1px),
+    red 50%,
+    rgba(0,0,0,0) calc(50% + 1px),
+    rgba(0,0,0,0) 100%
+  );
+  background-color: white;
+}
+
+.b7a2-break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+.b7a2-swatch__indicator {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 0.6rem solid transparent;
+  border-bottom: 0.6rem solid transparent;
+  border-top: 0.6rem solid black;
+}
