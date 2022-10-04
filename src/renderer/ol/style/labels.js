@@ -61,6 +61,8 @@ const textBoundingBox = ({ TS, PI_OVER_2, resolution }, props) => {
  */
 const iconBoundingBox = ({ TS, resolution }, props) => {
   const scale = props['icon-scale']
+  if (!scale) return null
+
   const width = props['icon-width'] * scale / 4
   const height = props['icon-height'] * scale / 4
   const rotate = props['icon-rotate'] || 0
