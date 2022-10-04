@@ -105,11 +105,14 @@ FeatureStore.prototype.batch = function (operations) {
     .filter(({ type }) => type === 'put')
     .filter(({ key }) => ID.isId('style+layer')(key))
     .forEach(({ key, value }) => {
+      this.styleProps[key] = value
       const layerId = ID.layerId(key)
       Object
         .keys(this.features)
         .filter(key => ID.layerId(key) === layerId)
-        .forEach(key => apply({ layerStyle: value })(this.features[key]))
+        .forEach(key => {
+          apply({ layerStyle: value })(this.features[key])
+        })
     })
 
   const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id)
@@ -229,6 +232,7 @@ FeatureStore.prototype.wrap = function (feature) {
 FeatureStore.prototype.wrapFeature = function (feature) {
   const type = geometryType(feature.getGeometry())
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
+
   let state = {
     TS,
     ...Math,

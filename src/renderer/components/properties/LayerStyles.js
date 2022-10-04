@@ -16,7 +16,6 @@ const outlineColors = [undefined, 'white', 'black']
 
 const LayerStyles = props => {
   const [key, value] = props.style
-  console.log('<LayerStyles/>', key, value)
   const { store } = useServices()
   const lineColor = value['line-color']
   const outlineColor = value['line-halo-color']
