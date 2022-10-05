@@ -115,7 +115,7 @@ const LayerStyles = props => {
         >
           <option value='1'>S</option>
           <option value='2'>M</option>
-          <option value='3'>X</option>
+          <option value='3'>L</option>
           <option value='4'>XL</option>
         </Range>
       </div>
@@ -130,7 +130,7 @@ const LayerStyles = props => {
         >
           <option value='1'>S</option>
           <option value='2'>M</option>
-          <option value='3'>X</option>
+          <option value='3'>L</option>
           <option value='4'>XL</option>
         </Range>
       </div>

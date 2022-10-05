@@ -23,11 +23,24 @@ const colorScheme = context => ['dark', 'medium', 'light'].map(scheme => ({
   }))
 }))
 
+const lineWidth = context => [
+  ['thin', 1, 'Style - Line Width - Thin (S)'],
+  ['medium', 2, 'Style - Line Width - Medium (M)'],
+  ['thick', 3, 'Style - Line Width - Thick (L)'],
+  ['thickest', 4, 'Style - Line Width - Thickest (XL)']
+].map(spec => ({
+  id: `'style:line-width.${spec[0]}'`,
+  name: spec[2],
+  keywords: ['style', 'line', 'width', spec[0]],
+  perform: () => context.store.update(['style+default'], value => ({ ...value, 'line-width': spec[1] }))
+}))
+
 Global.prototype.actions = function () {
   return [
     ...colorScheme(this),
+    ...lineWidth(this),
     {
-      id: 'command:create:layer',
+      id: 'create:layer',
       name: 'Create - New Layer',
       keywords: ['create', 'new', 'layer'],
       shortcut: ['$mod+N L'],
@@ -38,7 +51,7 @@ Global.prototype.actions = function () {
       }
     },
     {
-      id: 'command:create:tile-service',
+      id: 'create:tile-service',
       name: 'Create - New Tile Service',
       keywords: ['create', 'new', 'tile', 'service'],
       shortcut: ['$mod+N T'],
@@ -49,7 +62,7 @@ Global.prototype.actions = function () {
       }
     },
     {
-      id: 'command:create:marker',
+      id: 'create:marker',
       name: 'Create - New Marker',
       keywords: ['create', 'new', 'marker'],
       shortcut: ['$mod+N M'],
@@ -70,7 +83,7 @@ Global.prototype.actions = function () {
       }
     },
     {
-      id: 'command:create:bookmark',
+      id: 'create:bookmark',
       name: 'Create - New Bookmark',
       keywords: ['create', 'new', 'bookmark'],
       shortcut: ['$mod+N B'],

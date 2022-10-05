@@ -9,10 +9,6 @@ export default function MigrationTool (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
-
-  ;(async () => {
-    this.schemaDB.del(MigrationTool.DEFAULT_STYLE)
-  })()
 }
 
 MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers'
@@ -161,8 +157,8 @@ MigrationTool.prototype.defaultStyle = async function () {
     const ops = []
     const style = {
       'color-scheme': 'medium',
-      'line-width': 4,
-      'line-halo-width': 6,
+      'line-width': 2,
+      'line-halo-width': 1,
       'text-font-size': '12px',
       'text-font-family': 'sans-serif',
       'text-color': 'black',
