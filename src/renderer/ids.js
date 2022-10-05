@@ -107,6 +107,8 @@ export const isTileServiceId = isId('tile-service:')
 export const isTilePresetId = isId('tile-preset:')
 export const isLinkId = isId('link+')
 export const isStyleId = isId('style+')
+export const isLayerStyleId = isId('style+layer:')
+export const isFeatureStyleId = isId('style+feature:')
 
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isGroupId(id)

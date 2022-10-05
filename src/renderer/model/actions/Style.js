@@ -12,31 +12,34 @@ export default function Style (options) {
 
 Style.prototype.actions = function (tuples) {
   return [
-    this.smoothStyle(tuples)
+    this.smoothStyle(tuples),
+    this.resetLayerStyles(tuples)
   ]
 }
 
 Style.prototype.smoothStyle = function (tuples) {
+  const features = tuples.filter(([key, value]) => {
+    if (!ID.isFeatureId(key)) return false
+
+    const geom = geometry(value.properties.sidc)
+
+    if (!geom) return false
+    else if (geom.type === 'Polygon') return true
+    else if (geom.type === 'LineString' && !geom.maxPoints) return true
+    return false
+  })
+
   // Dry-running on feature type may inadvertently change
   // feature properties until we hit smooth action.
   // We want to make sure feature properties are always
   // reset to their initial state.
 
-  const lookup = tuples.reduce((acc, [key, value]) => {
+  const lookup = features.reduce((acc, [key, value]) => {
     acc[key] = value
     return acc
   }, {})
 
-  const isCandidate = ([, value]) => {
-    const geom = geometry(value.properties.sidc)
-    if (geom.type === 'Polygon') return true
-    else if (geom.type === 'LineString' && !geom.maxPoints) return true
-    return false
-  }
-
   const entries = tuples
-    .filter(([key]) => ID.isFeatureId(key))
-    .filter(isCandidate)
     .flatMap(([key, value]) => {
       return [
         [key, value],
@@ -64,4 +67,22 @@ Style.prototype.smoothStyle = function (tuples) {
   }
 
   return [action(true), action(false)]
+}
+
+
+/**
+ *
+ */
+Style.prototype.resetLayerStyles = function (tuples) {
+  const keys = tuples
+    .filter(([key]) => ID.isLayerStyleId(key))
+    .map(([key]) => key)
+
+  return keys.length
+    ? [createAction({
+        id: 'style.layer.reset',
+        name: 'Style - Reset Selected',
+        perform: () => this.store.delete(keys)
+      })]
+    : []
 }

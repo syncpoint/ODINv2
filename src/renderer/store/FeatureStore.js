@@ -98,21 +98,35 @@ FeatureStore.prototype.batch = function (operations) {
     .forEach(({ value }) => features.forEach(apply({ globalStyle: value })))
 
   operations
-    .filter(({ key }) => ID.isId('style+feature')(key))
+    .filter(({ key }) => ID.isFeatureStyleId(key))
     .forEach(({ key, value }) => apply({ featureStyle: value })(this.features[ID.featureId(key)]))
 
+  // Apply new/updated layer styles:
+  //
   operations
     .filter(({ type }) => type === 'put')
-    .filter(({ key }) => ID.isId('style+layer')(key))
+    .filter(({ key }) => ID.isLayerStyleId(key))
     .forEach(({ key, value }) => {
       this.styleProps[key] = value
       const layerId = ID.layerId(key)
       Object
         .keys(this.features)
         .filter(key => ID.layerId(key) === layerId)
-        .forEach(key => {
-          apply({ layerStyle: value })(this.features[key])
-        })
+        .forEach(key => apply({ layerStyle: value })(this.features[key]))
+    })
+
+  // Remove deleted layer styles:
+  //
+  operations
+    .filter(({ type }) => type === 'del')
+    .filter(({ key }) => ID.isLayerStyleId(key))
+    .forEach(({ key }) => {
+      delete this.styleProps[key]
+      const layerId = ID.layerId(key)
+      Object
+        .keys(this.features)
+        .filter(key => ID.layerId(key) === layerId)
+        .forEach(key => apply({ layerStyle: {} })(this.features[key]))
     })
 
   const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id)
