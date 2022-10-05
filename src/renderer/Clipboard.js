@@ -52,7 +52,7 @@ export function Clipboard (selection, store) {
 
 Clipboard.doCopy = async (store, selected) => {
   const ids = selected.filter(canCopy)
-  const keys = await store.collectKeys(ids, ['tags', 'link'])
+  const keys = await store.collectKeys(ids, ['tags', 'link', 'style'])
   const tuples = await store.tuples(keys)
   writeEntries(tuples)
   return keys
@@ -118,6 +118,7 @@ Clipboard.prototype.paste = async function () {
     [ID.isTagsId, key => replace(key)(ID.tagsId(keymap[ID.associatedId(key)]))],
     [ID.isMarkerId, key => replace(key)(ID.markerId())],
     [ID.isTileServiceId, key => replace(key)(ID.tileServiceId())],
+    [ID.isStyleId, key => replace(key)(ID.styleId(keymap[ID.associatedId(key)]))],
     [R.T, key => key]
   ])
 

@@ -73,8 +73,6 @@ util.inherits(Store, Emitter)
  */
 Store.prototype.bootstrap = async function () {
 
-  console.log(await this.values('style+layer:'))
-
   // Import symbols once for each fresh project database.
   //
   const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
