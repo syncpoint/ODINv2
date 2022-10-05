@@ -161,10 +161,16 @@ MigrationTool.prototype.defaultStyle = async function () {
     const ops = []
     const style = {
       'color-scheme': 'medium',
-      'line-width': 3,
-      'line-halo-width': 1,
+      'line-width': 4,
+      'line-halo-width': 6,
       'text-font-size': '12px',
-      'text-font-family': 'sans-serif'
+      'text-font-family': 'sans-serif',
+      'text-color': 'black',
+      'text-halo-color': 'white',
+      'text-halo-width': 2,
+      'symbol-text-color': 'black',
+      'symbol-text-halo-color': 'white',
+      'symbol-text-halo-width': 5
     }
 
     ops.push(L.putOp('style+default', style))
