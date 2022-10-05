@@ -11,4 +11,4 @@ win:
         - x64
 mac:
    target: default
-electronVersion: 20.1.1
+electronVersion: 20.3.0
