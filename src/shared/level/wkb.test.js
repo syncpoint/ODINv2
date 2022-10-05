@@ -1,10 +1,10 @@
 import assert from 'assert'
-import { leveldb, wbkDB } from '.'
+import { leveldb, wkbDB } from '.'
 
 describe('WKB encoding', function () {
   it('encodes/decodes GeoJSON geometry as WKB', async function () {
     const db = leveldb({ encoding: 'json' })
-    const geometries = wbkDB(db)
+    const geometries = wkbDB(db)
     const expected = {
       type: 'LineString',
       coordinates: [

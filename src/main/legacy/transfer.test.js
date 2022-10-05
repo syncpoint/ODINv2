@@ -20,7 +20,7 @@ describe('legacy', async function () {
     // Read back data and compare.
     const actual = await Object.values(databases).reduce(async (acc, db) => {
       const jsonDB = L.jsonDB(db)
-      const wbkDB = L.wbkDB(db)
+      const wbkDB = L.wkbDB(db)
       const entries = await acc
       entries.push(await L.tuples(jsonDB, 'layer:'))
       entries.push(await L.tuples(jsonDB, 'feature:'))

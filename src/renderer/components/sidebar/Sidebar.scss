@@ -1,7 +1,7 @@
 @import 'presets';
 
 .e3de-sidebar {
-  flex: 0 0 21rem;
+  width: 21rem;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -16,8 +16,8 @@
     rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 
   .scope-container {
-    padding: 0.5rem;
     @include card-border;
+    padding: 0.5rem;
   }
 }
 

@@ -9,8 +9,8 @@ import EquipmentProperties from './EquipmentProperties'
 import InstallationProperties from './InstallationProperties'
 import ActivityProperties from './ActivityProperties'
 import GraphicsProperties from './GraphicsProperties'
+import BoundariesProperties from './BoundariesProperties'
 import PointProperties from './PointProperties'
-// import LayerProperties from './LayerProperties'
 import MarkerProperties from './MarkerProperties'
 import TileServiceProperties from './TileServiceProperties'
 import TilePresetProperties from './TilePresetProperties'
@@ -22,8 +22,8 @@ const propertiesPanels = {
   'feature:INSTALLATION': props => <InstallationProperties {...props}/>,
   'feature:ACTIVITY': props => <ActivityProperties {...props}/>,
   'feature:GRAPHICS': props => <GraphicsProperties {...props}/>,
+  'feature:BOUNDARIES': props => <BoundariesProperties {...props}/>,
   'feature:POINT': props => <PointProperties {...props}/>,
-  // layer: props => <LayerProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
   'tile-preset': props => <TilePresetProperties {...props}/>
@@ -179,7 +179,12 @@ const useSelection = () => {
     }
 
     // Update component state from database update.
-    const handleBatch = ({ operations }) => dispatch({ type: 'update', operations })
+    const handleBatch = ({ operations }) => {
+      const keys = operations.map(operation => operation.key)
+      const relevant = R.intersection(selection.selected(), keys)
+      if (relevant.length === 0) return
+      dispatch({ type: 'update', operations })
+    }
 
     selection.on('selection', handleSelection)
     store.on('batch', handleBatch)

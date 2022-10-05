@@ -1,6 +1,9 @@
 import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js'
 import OL3Parser from 'jsts/org/locationtech/jts/io/OL3Parser.js'
+import GeoJSONReader from 'jsts/org/locationtech/jts/io/GeoJSONReader.js'
 import * as geom from 'ol/geom.js'
+
+export { GeoJSONReader }
 
 const K = v => fn => { fn(v); return v }
 const geometryFactory = new GeometryFactory()

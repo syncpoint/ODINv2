@@ -27,7 +27,7 @@ const schemes = {
 
 const includes = xs => x => xs.includes(x)
 
-export const fill = scheme => R.cond([
+export const lineColor = scheme => R.cond([
   [includes(['A', 'F', 'M', 'D']), R.always(schemes[scheme].blue)],
   [includes(['H', 'J', 'K', 'S']), R.always(schemes[scheme].red)],
   [includes(['N', 'L']), R.always(schemes[scheme].green)],
@@ -35,7 +35,8 @@ export const fill = scheme => R.cond([
   [R.T, R.always('black')]
 ])
 
-export const stroke = R.cond([
+export const lineHaloColor = R.cond([
   [R.equals('-'), R.always('white')],
   [R.T, R.always('black')]
 ])
+

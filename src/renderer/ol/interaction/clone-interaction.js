@@ -1,7 +1,7 @@
 import uuid from 'uuid-random'
 import { Translate } from 'ol/interaction'
 import { MAC } from 'ol/has'
-import { writeGeometryObject } from '../../model/geometry'
+import { writeGeometryObject } from '../../store/FeatureStore'
 import * as ids from '../../ids'
 
 

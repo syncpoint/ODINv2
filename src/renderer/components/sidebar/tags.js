@@ -2,10 +2,11 @@
 import * as R from 'ramda'
 import React from 'react'
 import * as mdi from '@mdi/js'
-import { useServices } from '../hooks'
+import { useServices, useEmitter } from '../hooks'
 import { TagIcon } from './TagIcon'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
+import { IconTag } from './IconTag'
 import './tags.scss'
 
 /**
@@ -13,30 +14,35 @@ import './tags.scss'
  */
 const useController = () => {
   const { emitter, selection, store } = useServices()
+  const localEmitter = useEmitter('sidebar')
+
 
   // Handle scope tag (identify/highlight).
   //
   const handleMouseDown = (id, event, spec) => {
     const ids = R.uniq([id, ...selection.selected()])
-    if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/on', { ids })
-    else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/on', { ids })
-    else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/on', { ids })
-    else if (spec.match(/SCOPE:PLACE/)) emitter.emit('highlight/on', { ids })
+    if (spec.match(/SCOPE:FEATURE/i)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:LAYER/i)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:MARKER/i)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:PLACE/i)) emitter.emit('highlight/on', { ids })
   }
 
   const handleMouseUp = (id, event, spec) => {
-    if (spec.match(/SCOPE:FEATURE/)) emitter.emit('highlight/off')
-    else if (spec.match(/SCOPE:LAYER/)) emitter.emit('highlight/off')
-    else if (spec.match(/SCOPE:MARKER/)) emitter.emit('highlight/off')
-    else if (spec.match(/SCOPE:PLACE/)) emitter.emit('highlight/off')
+    if (spec.match(/SCOPE:FEATURE/i)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:LAYER/i)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:MARKER/i)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:PLACE/i)) emitter.emit('highlight/off')
   }
 
   const handleClick = (id, event, spec) => {
     const ids = R.uniq([id, ...selection.selected()])
-    if (spec.match(/SYSTEM:HIDDEN/)) store.show(ids)
-    else if (spec.match(/SYSTEM:VISIBLE/)) store.hide(ids)
-    else if (spec.match(/SYSTEM:LOCKED/)) store.unlock(ids)
-    else if (spec.match(/SYSTEM:UNLOCKED/)) store.lock(ids)
+    if (spec.match(/SYSTEM:HIDDEN/i)) store.show(ids)
+    else if (spec.match(/SYSTEM:VISIBLE/i)) store.hide(ids)
+    else if (spec.match(/SYSTEM:LOCKED/i)) store.unlock(ids)
+    else if (spec.match(/SYSTEM:UNLOCKED/i)) store.lock(ids)
+    else if (spec.match(/SYSTEM:LINK/i)) localEmitter.emit('link', { id })
+    else if (spec.match(/SYSTEM:POLYGON/i)) localEmitter.emit('polygon', { id })
+    else if (spec.match(/SYSTEM:LAYER:OPEN/i)) localEmitter.emit('layer/open', { id })
   }
 
   const addTag = (id, value) => store.addTag(id, value.toLowerCase())
@@ -91,15 +97,18 @@ export const SystemTag = props => {
   const active = props.action !== 'NONE' ? '--active' : ''
   const className = `e3de-tag e3de-tag--system e3de-tag${active}`
 
-  return (
-    <span
-      className={className}
-      onMouseDown={stopPropagation}
-      onClick={handleClick}
-    >
-      {props.label.replace(/[_]/g, ' ')}
-    </span>
-  )
+  return props.path
+    ? <IconTag
+        path={mdi[props.path]}
+        onClick={handleClick}
+      />
+    : <span
+        className={className}
+        onMouseDown={stopPropagation}
+        onClick={handleClick}
+      >
+        {props.label}
+      </span>
 }
 
 
@@ -118,7 +127,6 @@ export const UserTag = props => {
       <TagIcon
         path={mdi.mdiClose}
         removable={true}
-        color='grey'
         onClick={handleRemove}
       />
     </span>
@@ -179,7 +187,7 @@ export const PlusTag = props => {
       className='e3de-tag e3de-tag--plus'
       onClick={handleClick}
     >
-      <TagIcon path={mdi.mdiPlus} size='12px'/>
+      <TagIcon path={mdi.mdiPlus}/>
       {'add tag'}
     </span>
 

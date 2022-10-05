@@ -1,6 +1,4 @@
 import { Fill, Stroke, Circle, Style } from 'ol/style'
-import { isMarkerId } from '../../ids'
-import { featureStyle, markerStyle } from '../../ol/style'
 
 const highlightStyle = (() => {
   const fill = new Fill({ color: 'rgba(255,50,50,0.4)' })
@@ -14,18 +12,6 @@ const highlightStyle = (() => {
   ]
 })()
 
-const defaultStyle = (services, sources) => {
-  const { selection } = services
-  const { featureSource } = sources
-  const fs = featureStyle(selection, featureSource)
-  const ms = markerStyle(selection)
-
-  return (feature, resolution) => isMarkerId(feature.getId())
-    ? ms(feature, resolution)
-    : fs(feature, resolution)
-}
-
 export default (services, sources) => ({
-  highlightStyle,
-  defaultStyle: defaultStyle(services, sources)
+  highlightStyle
 })

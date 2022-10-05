@@ -1,20 +1,13 @@
-import { Circle as CircleStyle, RegularShape, Stroke, Style } from 'ol/style'
+import { Stroke, Circle, RegularShape, Style } from 'ol/style'
 
-const crosshair = (selected = false, radius = 30) => {
-  const stroke = new Stroke({ color: (selected ? 'red' : 'black'), width: 2 })
+export default (color, radius = 30) => {
+  const stroke = new Stroke({ color, width: 2 })
+  const bigCircle = new Circle({ stroke, radius: 30 })
+  const smallCircle = new Circle({ stroke, radius: radius / 15 })
+
   return [
-    ...[new Style({
-      image: new CircleStyle({
-        stroke,
-        radius
-      })
-    })],
-    ...[new Style({
-      image: new CircleStyle({
-        stroke,
-        radius: 2
-      })
-    })],
+    new Style({ image: bigCircle }),
+    new Style({ image: smallCircle }),
     ...[0, 1, 2, 3].map(direction => new Style({
       image: new RegularShape({
         stroke,
@@ -25,5 +18,3 @@ const crosshair = (selected = false, radius = 30) => {
       })
     }))]
 }
-
-export default crosshair

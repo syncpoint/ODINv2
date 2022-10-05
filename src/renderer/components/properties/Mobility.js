@@ -54,13 +54,8 @@ export default props => {
         <option value={'MU'}>Over the Snow</option>
         <option value={'MV'}>Sled</option>
         <option value={'MW'}>Pack Animals</option>
-
-        {/*
-          Possibly wrong in milsymbol (Barge: MX, Amphibious: MY)
-          see https://github.com/spatialillusions/milsymbol/issues/224
-        */}
-        <option value={'MY'}>Barge</option>
-        <option value={'MZ'}>Amphibious</option>
+        <option value={'MX'}>Barge</option>
+        <option value={'MY'}>Amphibious</option>
       </Select>
     </Section>
   )

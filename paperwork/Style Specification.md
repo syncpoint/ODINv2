@@ -1,29 +1,6 @@
-```
-makeStyle ::
-	k = geometry | fill | image | stroke | text,
-  geometry = ol/Feature | ol/geom/Geometry | ol/Feature -> ol/geom/Geometry =>
-	{k: v} -> ol/style/Style
-
-makeFill ::
-	k = color =>
-	{k: v} -> ol/style/Fill
-
-makeImage ::
-	k = opacity | rotation | scale =>
-  {k: v} -> ol/style/Image
-
-makeStroke ::
-	k = color | line{Cap | Join | Dash | DashOffset} | width =>
-  {k: v} -> ol/style/Stroke
-
-makeText ::
-	k = font | offset{X | Y} | overflow | scale | rotation | fill | stroke | text |
-	    background{Fill | Stroke} | padding =>
-  {k: v} -> ol/style/text
-
-```
-
 ## Style Specification
+
+color-scheme :: dark | medium | light
 
 circle-fill-color :: string
 circle-line-color :: string
@@ -54,27 +31,33 @@ line-halo-width :: number
 line-join :: bevel | round | miter
 line-miter-limit :: number, default 10
 line-width :: number
+line-smooth :: boolean -> false | true
 
 text-anchor :: 'center' | 'left' | 'right' |
 	'top' | 'top-left' | 'top-right' |
 	'bottom' | 'bottom-left' | 'bottom-right' |
 	number, [0, 1]
 text-clipping :: 'none' | 'line' | 'actual' (default)
-text-color :: string
-text-fill-color :: string
+text-color :: string (text/fill/color)
+text-fill-color :: string (text/backgroundFill/color)
 text-field :: string
 text-font :: string
+text-font-weight :: string
+text-font-variant :: string
+text-font-style :: string
 text-font-familiy :: string
 text-font-size :: number
-text-font-weight :: string
-text-halo-color :: string
-text-halo-width :: number
+text-halo-color :: string (text/stoke/color)
+text-halo-width :: number (text/stoke/width)
 text-justify :: 'start' | 'end' | 'center'
-text-line-color :: string
-text-line-width :: number
+text-line-color :: string (text/backgroundStoke/color)
+text-line-width :: number (text/backgroundStoke/width)
 text-offset :: [X, Y] - pixel offset
 text-padding :: number
 text-rotate :: number
+text-rotation-anchor :: auto | fix
+
+// text-keep-upright
 
 shape-angle :: number
 shape-fill-color :: string
@@ -90,15 +73,13 @@ shape-scale :: [number, number]
 
 symbol-anchor :: string - unsupported
 symbol-code :: string
-symbol-color :: string
-symbol-color-scheme :: 'dark' | 'medium' | 'light'
-symbol-fill-opacity :: numberq
-symbol-halo-color :: string
-symbol-halo-width :: string
-symbol-line-width :: number
-symbol-modifiers :: {k: v}
+symbol-color :: string (monoColor)
+symbol-fill-opacity :: number (fillOpacity)
+symbol-halo-color :: string (outlineColor)
+symbol-halo-width :: string (outlineWidth)
+symbol-line-width :: number (strokeWidth)
 symbol-offset :: [number, number] - unsupported
 symbol-rotate :: number
-symbol-size :: number
-symbol-text-color :: string
-symbol-text-size :: number
+symbol-size :: number - default: 100 [pixels]
+symbol-text-color :: string (infoColor)
+symbol-text-size :: number - default: 40 [%]

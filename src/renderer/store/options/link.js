@@ -1,16 +1,18 @@
+import * as R from 'ramda'
 import * as ID from '../../ids'
 
-export default function (id, cache) {
-  const link = cache(id)
-  const container = cache(ID.containerId(id))
+export default async function (id) {
+  const keys = [R.identity, ID.tagsId, ID.containerId]
+  const [link, tags, container] = await this.store.collect(id, keys)
 
   return {
     id,
     title: link.name,
     description: container.name,
+    capabilities: 'RENAME|TAG',
     tags: [
       'SCOPE:LINK:NONE',
-      ...((cache(ID.tagsId(id)) || [])).map(label => `USER:${label}:NONE`),
+      ...((tags || [])).map(label => `USER:${label}:NONE`),
       'PLUS'
     ].join(' ')
   }

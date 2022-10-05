@@ -1,5 +1,5 @@
 import { Modify } from './modify'
-import { writeFeatureCollection } from '../../model/geometry'
+import { writeFeatureCollection } from '../../store/FeatureStore'
 
 /**
  * @param {*} store
@@ -33,6 +33,7 @@ export default options => {
       return acc
     }, [[], []])
 
+    // FIXME: sometimes snapshot length might not correspond with number of features
     const newValues = features.map((feature, index) => ({
       ...snapshot[index][1],
       properties: feature.properties,

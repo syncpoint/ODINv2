@@ -1,54 +1,24 @@
 import assert from 'assert'
 import { createIndex, parseQuery } from './MiniSearch'
-import feature from './documents/feature'
-import layer from './data/layer.json'
-import fixture from './data/fixture.json'
-import _3OSC from './data/3OSC.json'
+import * as _default from './data/MiniSearch.default'
+import * as _3OSC from './data/MiniSearch.3OSC'
 
 describe('MiniSearch', function () {
   describe('default', function () {
 
-    let features
-    let fixtureReverse
-    let index
+    const reverseLookup = Object.keys(_default.fixture)
+      .reduce((acc, key) => {
+        acc[_default.fixture[key]] = key
+        return acc
+      }, {})
 
-    before(function () {
-      features = layer.map(feature => ({
-        id: feature.id,
-        text: feature.name || feature.properties.t,
-        ...feature
-      }))
-
-      fixtureReverse = Object.keys(fixture)
-        .reduce((acc, key) => {
-          acc[fixture[key]] = key
-          return acc
-        }, {})
-
-
-      index = (() => {
-        const index = createIndex()
-        const cache = id => {
-          const scope = id.split(':')[0]
-          switch (scope) {
-            case 'layer': return {}
-            case 'hidden+feature': return false
-            case 'locked+feature': return false
-            case 'tags+feature': return []
-          }
-        }
-
-        const entries = features.map(({ id, ...value }) => [id, value])
-        const docs = entries.map(([key, value]) => feature(key, value, cache))
-        index.addAll(docs)
-        return index
-      })()
-    })
+    const index = createIndex()
+    index.addAll(_default.docs)
 
     const verify = (terms, expected) => () => {
       const [query] = parseQuery(terms)
       const actual = index.search(query)
-        .map(({ id }) => fixtureReverse[id])
+        .map(({ id }) => reverseLookup[id])
         .sort()
         .join('')
 
@@ -76,18 +46,13 @@ describe('MiniSearch', function () {
     it("19. - '#ukn'", verify('#ukn', 'L'))
   })
 
-  const prepareIndex = docs => {
-    const index = createIndex()
-    index.addAll(docs)
-    return index
-  }
-
   describe('issues', function () {
     it("MIP Scenario - '@feature #unit 3osc'", function () {
-      const index = prepareIndex(_3OSC)
+      const index = createIndex()
+      index.addAll(_3OSC.docs)
       const [query] = parseQuery('@feature #unit 3osc')
       const actual = index.search(query)
-      assert.strictEqual(actual.length, _3OSC.length - 1) // minus one installation
+      assert.strictEqual(actual.length, _3OSC.docs.length - 1) // minus one installation
     })
   })
 })

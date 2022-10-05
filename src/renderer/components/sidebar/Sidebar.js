@@ -7,7 +7,6 @@ import { useServices, useMemento, useEmitter } from '../hooks'
 import { multiselect } from '../../model/selection/multiselect'
 import { defaultSearch, defaultState } from './state'
 import { matcher, preventDefault } from '../events'
-import { cmdOrCtrl } from '../../platform'
 import { ScopeSwitcher } from './ScopeSwitcher'
 import { MemoizedCard } from './Card'
 import { LazyList } from './LazyList'
@@ -19,24 +18,29 @@ import './Sidebar.scss'
  *
  */
 const handlers = {
-  'edit:keydown/Enter': state => {
-    const editing = state.editing ? false : R.last(state.selected)
-    return { ...state, editing }
+  'edit/begin': (state, { id }) => {
+    if (state.editing) return state
+    else if (!id && state.selected.length === 0) return state
+    else {
+      const editing = id || R.last(state.selected)
+      return { ...state, editing }
+    }
   },
-  'edit:keydown/Escape': state => {
-    if (state.editing) return { ...state, editing: false }
-    else if (state.selected.length) return { ...state, selected: [] }
-    else return state
-  },
-  'edit:keydown/F2': state => {
-    if (state.editing || state.selected.length === 0) return state
-    else return { ...state, editing: R.last(state.selected) }
-  },
-  'edit:keydown/Tab': state => {
+
+  'edit/rollback': state => {
     if (state.editing) return { ...state, editing: false }
     else return state
   },
-  edit: (state, { id }) => ({ ...state, editing: id })
+
+  'edit/commit': state => {
+    if (state.editing) return { ...state, editing: false }
+    else return state
+  },
+
+  deselect: state => {
+    if (state.selected.length) return { ...state, selected: [] }
+    else return state
+  }
 }
 
 
@@ -85,12 +89,54 @@ const useModel = () => {
     const { store } = services
     const pin = id => store.addTag(id, 'pin')
     const unpin = id => store.removeTag(id, 'pin')
+
+    const link = id => {
+      const entry = R.find(R.propEq('id', id), state.entries)
+      setHistory([...search.history, {
+        key: id,
+        label: entry.title,
+        scope: `@link !link+${id}`
+      }])
+    }
+
+    const polygon = async id => {
+      const entry = R.find(R.propEq('id', id), state.entries)
+      const geometry = await store.geometry(id)
+      setHistory([...search.history, {
+        scope: `@feature &geometry:${JSON.stringify(geometry)}`,
+        key: id,
+        label: entry.title || 'N/A'
+      }])
+    }
+
+    const layerOpen = id => {
+      const entry = R.find(R.propEq('id', id), state.entries)
+      setHistory([...search.history, {
+        scope: `@feature !feature:${ID.layerUUID(id)}`,
+        key: id,
+        label: entry.title
+      }])
+    }
+
+    const edit = async event => {
+      if (event.action === 'commit') store.rename(event.id, event.value.trim())
+      if (event.action === 'commit' || event.action === 'rollback') {
+        document.getElementsByClassName('e3de-sidebar')[0].focus()
+      }
+
+      dispatch({ type: event.path, id: event.id })
+    }
+
     const disposable = Disposable.of()
-    disposable.on(emitter, 'edit', ({ id }) => dispatch({ type: 'edit', id }))
+    disposable.on(emitter, 'edit/:action', edit)
     disposable.on(emitter, 'pin', ({ id }) => pin(id))
     disposable.on(emitter, 'unpin', ({ id }) => unpin(id))
+    disposable.on(emitter, 'link', ({ id }) => link(id))
+    disposable.on(emitter, 'polygon', ({ id }) => polygon(id))
+    disposable.on(emitter, 'layer/open', ({ id }) => layerOpen(id))
+
     return () => disposable.dispose()
-  }, [emitter, services])
+  }, [emitter, services, state.entries, search.history, setHistory])
 
   // Fetch entries when history and/or filter changed.
   //
@@ -154,44 +200,18 @@ const useModel = () => {
   // <== Effects.
   // ==> Event Handlers.
 
-  const onKeyDown = React.useCallback(event => {
+  const onKeyDown = React.useCallback(async event => {
     matcher([
       ({ key }) => key === 'ArrowDown',
       ({ key }) => key === 'ArrowUp'
     ], preventDefault)(event)
 
     const { key, shiftKey, metaKey, ctrlKey } = event
-    dispatch([
-      { type: `keydown/${key}`, shiftKey, metaKey, ctrlKey }, // list model
-      { type: `edit:keydown/${key}`, shiftKey, metaKey, ctrlKey } // title inline editing
-    ])
-
-    if (!cmdOrCtrl(event)) return
-
-    // Parent/child navigation.
-    //
-    if (event.key === 'ArrowUp' && search.history.length > 1) {
-      setHistory(R.dropLast(1, search.history))
-    } else if (event.key === 'ArrowDown' && state.focusIndex !== -1) {
-      const focusId = R.last(state.selected)
-      const label = state.entries[state.focusIndex].title || 'N/A'
-
-      if (ID.isLayerId(focusId)) {
-        const layerId = focusId.split(':')[1]
-        setHistory([...search.history, {
-          scope: `@feature @link !feature:${layerId} !link+layer:${layerId}`,
-          key: focusId,
-          label
-        }])
-      } else if (ID.isFeatureId(focusId)) {
-        setHistory([...search.history, {
-          scope: `@link !link+feature:${focusId.split(':')[1]}`,
-          key: focusId,
-          label
-        }])
-      }
-    }
-  }, [state, search.history, setHistory])
+    if (key === 'Enter') dispatch({ type: 'edit/begin' })
+    else if (key === 'F2') dispatch({ type: 'edit/begin' })
+    else if (key === 'Escape') dispatch({ type: 'deselect' })
+    else dispatch({ type: `keydown/${key}`, shiftKey, metaKey, ctrlKey })
+  }, [])
 
   const onClick = React.useCallback(id => event => {
     const { selection } = services

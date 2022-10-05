@@ -34,23 +34,30 @@ export const measurementId = R.cond([
   [R.isNil, () => `measurement:${uuid()}`]
 ])
 
-export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000000000'
+export const linkId = id => `link+${id}/${uuid()}`
+
 export const tileServiceId = R.cond([
   [R.isNil, () => `tile-service:${uuid()}`],
   [R.startsWith('tile-layer:'), x => `tile-service:${x.split(':')[1].split('/')[0]}`]
 ])
 
-export const lockedId = (id = '') => `locked+${id}`
-export const hiddenId = (id = '') => `hidden+${id}`
-export const stickyId = (id = '') => `sticky+${id}`
-export const sharedId = (id = '') => `shared+${id}`
-export const defaultId = (id = '') => `default+${id}`
-export const tagsId = (id = '') => `tags+${id}`
-export const defaultTileLayerId = 'tile-layer:00000000-0000-0000-0000-000000000000'
-export const tileLayerId = (id = '') => `tile-layer:${id}`
-export const linkId = id => `link+${id}/${uuid()}`
+/**
+ * layer:{uuid} -> link+layer:{uuid}
+ * feature:{uuid}/(uuid) -> link+feature:{uuid}/uuid
+ */
+export const prefix = prefix => id => `${prefix}+${id || ''}`
+export const lockedId = prefix('locked')
+export const hiddenId = prefix('hidden')
+export const stickyId = prefix('sticky')
+export const sharedId = prefix('shared')
+export const defaultId = prefix('default')
+export const tagsId = prefix('tags')
+export const styleId = prefix('style')
+export const tileLayerId = prefix('tile-layer')
 
 /** Only a single preset (for now.) */
+export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000000000'
+export const defaultTileLayerId = 'tile-layer:00000000-0000-0000-0000-000000000000'
 export const defaultTilePresetId = 'tile-preset:00000000-0000-0000-0000-000000000000'
 export const tilePresetId = () => defaultTilePresetId
 
@@ -102,6 +109,7 @@ export const isPlaceId = isId('place:')
 export const isTileServiceId = isId('tile-service:')
 export const isTilePresetId = isId('tile-preset:')
 export const isLinkId = isId('link+')
+export const isStyleId = isId('style+')
 
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isGroupId(id)

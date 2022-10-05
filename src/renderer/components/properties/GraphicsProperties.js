@@ -19,6 +19,7 @@ import GridCols2 from './GridCols2'
 import CorridorWidth from './CorridorWidth'
 import * as MILSTD from '../../symbology/2525c'
 import * as GEOM from '../../model/geometry'
+import { readGeometry } from '../../store/FeatureStore'
 
 export default props => {
   const specializations = Object.values(props.features).reduce((acc, value) => {
@@ -29,7 +30,7 @@ export default props => {
   }, [])
 
   const features = Object.entries(props.features).reduce((acc, [key, value]) => {
-    const olGeometry = GEOM.readGeometry(value.geometry)
+    const olGeometry = readGeometry(value.geometry)
     const transform = GEOM.transform(olGeometry)
     acc[key] = ({ ...value, ...transform })
     return acc

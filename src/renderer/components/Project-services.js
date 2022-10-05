@@ -11,7 +11,9 @@ import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
 import OptionStore from '../store/OptionStore'
 import Nominatim from '../store/Nominatim'
-import { PaletteCommands, OSDDriver } from '../model'
+import { FeatureStore } from '../store/FeatureStore'
+import { OSDDriver } from '../model/OSDDriver'
+import { KBarActions } from '../model/actions/KBarActions'
 import TileLayerStore from '../store/TileLayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
@@ -20,9 +22,9 @@ import { Undo } from '../Undo'
 import { Selection } from '../Selection'
 import { Clipboard } from '../Clipboard'
 import { bindings } from '../bindings'
+import { SpatialIndex } from '../store/SpatialIndex'
 
 export default async projectUUID => {
-
   const services = {}
   const locator = () => services
   services.locator = locator
@@ -41,38 +43,31 @@ export default async projectUUID => {
   const location = path.join(databases, projectUUID)
   const db = L.leveldb({ location })
 
-  const migrationsOptions = {}
-  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
-  migrationsOptions[MigrationTool.INLINE_TAGS] = false
-  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
-  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
-  const migration = new MigrationTool(db, migrationsOptions)
-  await migration.upgrade()
-
-
   const jsonDB = L.jsonDB(db)
-  const wbkDB = L.wbkDB(db)
+  const wkbDB = L.wkbDB(db)
   const preferencesDB = L.preferencesDB(db)
   const sessionDB = L.sessionDB(db)
 
-  const store = new Store(jsonDB, wbkDB, undo, selection)
+  const store = new Store(jsonDB, wkbDB, undo, selection)
 
   // PUSH/PULL interface, replicates to main process
   const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
   const sessionStore = new SessionStore(sessionDB)
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
+  const spatialIndex = new SpatialIndex(wkbDB)
 
-  const documentStore = new DocumentStore()
+  const documentStore = new DocumentStore(store)
   const osdDriver = new OSDDriver(projectUUID, emitter, preferencesStore, projectStore, store)
   const clipboard = new Clipboard(selection, store)
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
-  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore)
+  const featureStore = new FeatureStore(store, selection)
+  const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   // Key bindings.
-  bindings(emitter, clipboard)
+  bindings(clipboard)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
@@ -101,19 +96,44 @@ export default async projectUUID => {
   services.documentStore = documentStore
   services.searchIndex = searchIndex
   services.tileLayerStore = tileLayerStore
+  services.featureStore = featureStore
+  services.spatialIndex = spatialIndex
   services.osdDriver = osdDriver
   services.clipboard = clipboard
   services.coordinatesFormat = coordinatesFormat
   services.optionStore = optionStore
   services.searchIndex = searchIndex
 
-  services.paletteCommands = new PaletteCommands({
+  services.kbarActions = new KBarActions({
     store,
     emitter,
-    selection
+    selection,
+    sessionStore
   })
 
   services.commandRegistry = new CommandRegistry(services)
+
+  const migrationsOptions = {}
+  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
+  migrationsOptions[MigrationTool.INLINE_TAGS] = false
+  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
+  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
+  migrationsOptions[MigrationTool.INLINE_STYLES] = false
+  migrationsOptions[MigrationTool.DEFAULT_STYLE] = true
+  const migration = new MigrationTool(db, migrationsOptions)
+
+  // Orderly bootstrapping:
+  //
+  window.requestIdleCallback(async () => {
+    console.time('bootstrap')
+    await migration.bootstrap()
+    await store.bootstrap()
+    await searchIndex.bootstrap()
+    await featureStore.bootstrap()
+    await spatialIndex.bootstrap()
+    console.timeEnd('bootstrap')
+  }, { timeout: 2000 })
+
 
   return services
 }
