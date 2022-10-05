@@ -72,14 +72,34 @@ util.inherits(Store, Emitter)
  *
  */
 Store.prototype.bootstrap = async function () {
+
   // Import symbols once for each fresh project database.
   //
   const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
   const ops = () => Object.values(index).map(value => L.putOp(id(value), value))
   const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
-  return alreadyImported
+  await alreadyImported
     ? Promise.resolve()
     : this.jsonDB.batch(ops())
+
+  // Store default style properties once for each fresh project database.
+  //
+  const defaultStyleExists = await L.existsKey(this.jsonDB, L.prefix(ID.defaultStyleId))
+  await defaultStyleExists
+    ? Promise.resolve()
+    : this.jsonDB.put(ID.defaultStyleId, {
+      'color-scheme': 'medium',
+      'line-width': 2,
+      'line-halo-width': 1,
+      'text-font-size': '12px',
+      'text-font-family': 'sans-serif',
+      'text-color': 'black',
+      'text-halo-color': 'white',
+      'text-halo-width': 2,
+      'symbol-text-color': 'black',
+      'symbol-text-halo-color': 'white',
+      'symbol-text-halo-width': 5
+    })
 }
 
 

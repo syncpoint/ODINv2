@@ -119,7 +119,6 @@ export default async projectUUID => {
   migrationsOptions[MigrationTool.INLINE_FLAGS] = false
   migrationsOptions[MigrationTool.DEFAULT_TAG] = false
   migrationsOptions[MigrationTool.INLINE_STYLES] = false
-  migrationsOptions[MigrationTool.DEFAULT_STYLE] = true
   const migration = new MigrationTool(db, migrationsOptions)
 
   // Orderly bootstrapping:

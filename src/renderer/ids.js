@@ -56,6 +56,7 @@ export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000
 export const defaultTileLayerId = 'tile-layer:00000000-0000-0000-0000-000000000000'
 export const defaultTilePresetId = 'tile-preset:00000000-0000-0000-0000-000000000000'
 export const tilePresetId = () => defaultTilePresetId
+export const defaultStyleId = 'style+default:'
 
 /**
  * '+'-notation container id.

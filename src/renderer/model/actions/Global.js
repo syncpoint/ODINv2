@@ -17,7 +17,7 @@ const colorScheme = context => ['dark', 'medium', 'light'].map(scheme => ({
   name: `Color Scheme - ${capitalize(scheme)}`,
   keywords: ['color', 'scheme', scheme],
   shortcut: [`$mod+S ${scheme[0].toUpperCase()}`],
-  perform: () => context.store.update(['style+default'], style => ({
+  perform: () => context.store.update([ID.defaultStyleId], style => ({
     ...style,
     'color-scheme': scheme
   }))
@@ -32,7 +32,7 @@ const lineWidth = context => [
   id: `'style:line-width.${spec[0]}'`,
   name: spec[2],
   keywords: ['style', 'line', 'width', spec[0]],
-  perform: () => context.store.update(['style+default'], value => ({ ...value, 'line-width': spec[1] }))
+  perform: () => context.store.update([ID.defaultStyleId], value => ({ ...value, 'line-width': spec[1] }))
 }))
 
 Global.prototype.actions = function () {

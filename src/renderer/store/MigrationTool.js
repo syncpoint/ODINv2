@@ -16,7 +16,6 @@ MigrationTool.INLINE_TAGS = 'inlineTags'
 MigrationTool.INLINE_FLAGS = 'inlineFlags'
 MigrationTool.DEFAULT_TAG = 'defaultTag'
 MigrationTool.INLINE_STYLES = 'inlineStyles'
-MigrationTool.DEFAULT_STYLE = 'defaultStyle'
 
 
 /**
@@ -28,7 +27,6 @@ MigrationTool.prototype.bootstrap = async function () {
   await this.inlineFlags()
   await this.defaultTag()
   await this.inlineStyles()
-  await this.defaultStyle()
 }
 
 /**
@@ -143,36 +141,4 @@ MigrationTool.prototype.inlineStyles = async function () {
   }
 
   if (actual && wanted === false) await upgrade()
-}
-
-
-/**
- *
- */
-MigrationTool.prototype.defaultStyle = async function () {
-  const actual = await L.get(this.schemaDB, MigrationTool.DEFAULT_STYLE, false)
-  const wanted = this.options[MigrationTool.DEFAULT_STYLE]
-
-  const upgrade = async () => {
-    const ops = []
-    const style = {
-      'color-scheme': 'medium',
-      'line-width': 2,
-      'line-halo-width': 1,
-      'text-font-size': '12px',
-      'text-font-family': 'sans-serif',
-      'text-color': 'black',
-      'text-halo-color': 'white',
-      'text-halo-width': 2,
-      'symbol-text-color': 'black',
-      'symbol-text-halo-color': 'white',
-      'symbol-text-halo-width': 5
-    }
-
-    ops.push(L.putOp('style+default', style))
-    await this.jsonDB.batch(ops)
-    await this.schemaDB.put(MigrationTool.DEFAULT_STYLE, true)
-  }
-
-  if (!actual && wanted === true) await upgrade()
 }

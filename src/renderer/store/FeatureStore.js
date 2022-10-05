@@ -94,7 +94,7 @@ FeatureStore.prototype.batch = function (operations) {
   const apply = obj => feature => feature.apply(obj, true)
 
   operations
-    .filter(({ key }) => ID.isId('style+default')(key))
+    .filter(({ key }) => key === ID.defaultStyleId)
     .forEach(({ value }) => features.forEach(apply({ globalStyle: value })))
 
   operations
@@ -246,7 +246,7 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
   const set = key => props => (state[key] = props)
-  R.when(Boolean, set('globalStyle'))(this.styleProps['style+default'])
+  R.when(Boolean, set('globalStyle'))(this.styleProps[ID.defaultStyleId])
   R.when(Boolean, set('layerStyle'))(this.styleProps['style+' + layerId])
   R.when(Boolean, set('featureStyle'))(this.styleProps['style+' + featureId])
 
