@@ -168,6 +168,7 @@ FeatureStore.prototype.handleUpdates = function (updates) {
       ? { geometry: readGeometry(value) }
       : trim(readFeature(value).getProperties())
 
+    // FIXME: properties with null value won't override initial properties.
     const feature = this.features[key]
     feature.setProperties({ ...feature.getProperties(), ...properties })
   })
