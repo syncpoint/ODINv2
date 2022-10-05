@@ -73,6 +73,8 @@ util.inherits(Store, Emitter)
  */
 Store.prototype.bootstrap = async function () {
 
+  console.log(await this.values('style+layer:'))
+
   // Import symbols once for each fresh project database.
   //
   const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
@@ -337,7 +339,7 @@ Store.prototype.delete = async function (arg) {
     .filter(ID.isDeletableId) // symbols for example cannot be deleted.
     .filter(key => !locks[ID.lockedId(key)])
 
-  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default'])
+  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default', 'style'])
   const tuples = await L.tuples(this.db, keys)
   const command = this.deleteCommand(this.db, tuples)
   this.undo.apply(command)
