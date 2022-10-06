@@ -4,7 +4,7 @@ export default services => {
   const { store, featureStore, emitter, sessionStore, selection } = services
   const featureSource = Sources.union(
     Sources.featureSource(store, featureStore, 'feature:'),
-    Sources.featureSource(store, featureStore, 'marker:'),
+    // Sources.featureSource(store, featureStore, 'marker:'),
     Sources.featureSource(store, featureStore, 'measurement:')
   )
 

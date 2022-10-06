@@ -9,11 +9,9 @@ import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from '../ol/style/rules'
 import crosshair from '../ol/style/crosshair'
-import { stylist as measurementStyler, baseStyle } from '../ol/interaction/measure/style'
+import { stylist as measurementStyler } from '../ol/interaction/measure/style'
 import * as TS from '../ol/ts'
 import * as Math from '../../shared/Math'
-import { Style } from 'ol/style'
-
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -81,7 +79,6 @@ FeatureStore.prototype.bootstrap = async function () {
  *
  */
 FeatureStore.prototype.loadFeatures = async function (scope) {
-  console.log(`loading Features for SCOPE ${scope}`)
   const tuples = await this.store.tuples(scope)
   const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
   const [valid, invalid] = R.partition(R.prop('type'), geoJSON)
@@ -287,10 +284,7 @@ FeatureStore.prototype.wrapMarker = function (feature) {
  */
 FeatureStore.prototype.wrapMeasurement = function (feature) {
   feature.apply = () => {}
-  /* const styleFunction = measurementStyler(this.selection.isSelected(feature.getId()))(feature)
-
-  feature.setStyle(styleFunction) */
-  feature.setStyle(baseStyle(this.selection.isSelected(feature.getId())))
+  feature.setStyle(measurementStyler(this.selection.isSelected(feature.getId())))
 
   return feature
 }
