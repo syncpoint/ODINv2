@@ -77,7 +77,7 @@ const LayerStyles = props => {
 
   return (
     <div className='a0d5-panel'>
-      <div>
+      <div className='a0d5-card'>
         <label>Color Scheme</label>
         <Range
           min='0'
@@ -91,96 +91,100 @@ const LayerStyles = props => {
           <option value='2'>Light</option>
         </Range>
       </div>
-      <div>
-        <label>Line Color</label>
-        <Palette color={lineColor} colors={lineColors} onChange={setLineColor}/>
+      <div className='a0d5-card'>
+        <div>
+          <label>Line Color</label>
+          <Palette color={lineColor} colors={lineColors} onChange={setLineColor}/>
+        </div>
+        <div>
+          <label>Line Width</label>
+          <Range
+            min='1'
+            max='4'
+            step='1'
+            value={lineWidth}
+            onChange={setLineWidth}
+          >
+            <option value='1'>S</option>
+            <option value='2'>M</option>
+            <option value='3'>L</option>
+            <option value='4'>XL</option>
+          </Range>
+        </div>
+        <div>
+          <label>Outline Color</label>
+          <Palette color={outlineColor} colors={outlineColors} onChange={setOutlineColor}/>
+        </div>
+        <div>
+          <label>Outline Width</label>
+          <Range
+            min='1'
+            max='4'
+            step='1'
+            value={lineHaloWidth}
+            onChange={setLineHaloWidth}
+          >
+            <option value='1'>S</option>
+            <option value='2'>M</option>
+            <option value='3'>L</option>
+            <option value='4'>XL</option>
+          </Range>
+        </div>
       </div>
-      <div>
-        <label>Outline Color</label>
-        <Palette color={outlineColor} colors={outlineColors} onChange={setOutlineColor}/>
-      </div>
-      <div>
-        <label>Line Width</label>
-        <Range
-          min='1'
-          max='4'
-          step='1'
-          value={lineWidth}
-          onChange={setLineWidth}
-        >
-          <option value='1'>S</option>
-          <option value='2'>M</option>
-          <option value='3'>L</option>
-          <option value='4'>XL</option>
-        </Range>
-      </div>
-      <div>
-        <label>Outline Width</label>
-        <Range
-          min='1'
-          max='4'
-          step='1'
-          value={lineHaloWidth}
-          onChange={setLineHaloWidth}
-        >
-          <option value='1'>S</option>
-          <option value='2'>M</option>
-          <option value='3'>L</option>
-          <option value='4'>XL</option>
-        </Range>
-      </div>
-      <div>
-        <label>Symbol Size</label>
-        <Range
-          min='40'
-          max='80'
-          step='10'
-          value={symbolSize}
-          onChange={setSymbolSize}
-        >
-          <option value='40'>XS</option>
-          <option value='50'>S</option>
-          <option value='60'>M</option>
-          <option value='70'>L</option>
-          <option value='80'>XL</option>
-        </Range>
-      </div>
-      <div>
-        <label>Symbol Line Width</label>
-        <Range
-          min='3'
-          max='9'
-          step='2'
-          value={symbolLineWidth}
-          onChange={setSymbolLineWidth}
-        >
-          <option value='3'>S</option>
-          <option value='5'>M</option>
-          <option value='7'>L</option>
-          <option value='9'>XL</option>
-        </Range>
-      </div>
-      <div>
-        <label>Symbol Fill Opacity</label>
-        <Range
-          min='0'
-          max='1'
-          step='0.1'
-          value={symbolFillOpacity}
-          onChange={setSymbolFillOpacity}
-        >
-          <option value='0'>Transparent</option>
-          <option value='0.1'/>
-          <option value='0.2'/>
-          <option value='0.3'/>
-          <option value='0.4'/>
-          <option value='0.5'/>
-          <option value='0.6'/>
-          <option value='0.7'/>
-          <option value='0.8'/>
-          <option value='0.9'/>
-          <option value='1'>Opaque</option>
-        </Range>
+      <div className='a0d5-card'>
+        <div>
+          <label>Symbol Size</label>
+          <Range
+            min='40'
+            max='80'
+            step='10'
+            value={symbolSize}
+            onChange={setSymbolSize}
+          >
+            <option value='40'>XS</option>
+            <option value='50'>S</option>
+            <option value='60'>M</option>
+            <option value='70'>L</option>
+            <option value='80'>XL</option>
+          </Range>
+        </div>
+        <div>
+          <label>Symbol Line Width</label>
+          <Range
+            min='3'
+            max='9'
+            step='2'
+            value={symbolLineWidth}
+            onChange={setSymbolLineWidth}
+          >
+            <option value='3'>S</option>
+            <option value='5'>M</option>
+            <option value='7'>L</option>
+            <option value='9'>XL</option>
+          </Range>
+        </div>
+        <div>
+          <label>Symbol Fill Opacity</label>
+          <Range
+            min='0'
+            max='1'
+            step='0.1'
+            value={symbolFillOpacity}
+            onChange={setSymbolFillOpacity}
+          >
+            <option value='0'>Transparent</option>
+            <option value='0.1'/>
+            <option value='0.2'/>
+            <option value='0.3'/>
+            <option value='0.4'/>
+            <option value='0.5'/>
+            <option value='0.6'/>
+            <option value='0.7'/>
+            <option value='0.8'/>
+            <option value='0.9'/>
+            <option value='1'>Opaque</option>
+          </Range>
+        </div>
       </div>
     </div>
   )

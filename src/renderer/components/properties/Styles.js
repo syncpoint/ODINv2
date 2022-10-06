@@ -70,7 +70,7 @@ export const Styles = () => {
   if (!panel) return null
 
   return (
-    <div className='feature-properties'>
+    <div className='style-properties'>
       { panel({ style }) }
     </div>
   )
