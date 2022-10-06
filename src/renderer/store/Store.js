@@ -204,7 +204,7 @@ Store.prototype.update = async function (...args) {
       if (Array.isArray(args[0])) {
         // update :: [k] -> (v -> v) -> unit
         const [keys, fn] = args
-        // FIXME: Sssuming empty object as default value might not be such a good idea.
+        // FIXME: Assuming empty object as default value might not be such a good idea.
         const oldValues = await L.values(this.db, keys, {})
         const newValues = oldValues.map(fn)
         return this.update(keys, newValues, oldValues)

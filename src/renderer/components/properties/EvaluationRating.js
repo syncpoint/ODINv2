@@ -43,20 +43,13 @@ const credibilities = [
 ]
 
 const get = feature => feature.properties.j ? feature.properties.j : null
-const set = value => feature => {
-  if (value !== '') {
-    return {
-      ...feature,
-      properties: {
-        ...feature.properties,
-        j: value
-      }
-    }
-  } else {
-    const { j, ...properties } = feature.properties
-    return { ...feature, properties }
+const set = value => feature => ({
+  ...feature,
+  properties: {
+    ...feature.properties,
+    j: value
   }
-}
+})
 
 export default props => {
   const { store } = useServices()
