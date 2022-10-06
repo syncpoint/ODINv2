@@ -2,16 +2,17 @@ import { Draw, Modify, Select } from 'ol/interaction'
 import Collection from 'ol/Collection'
 import Feature from 'ol/Feature'
 import LineString from 'ol/geom/LineString'
-
 import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import Circle from 'ol/geom/Circle'
 
 import GeometryType from './GeometryType'
-import uuid from 'uuid-random'
 
 import { stylist, baseStyle, stylefunctionForGeometryType } from './style'
 import { getLastSegmentCoordinates } from './tools'
+
+import { measurementId } from '../../../ids'
+import { writeFeatureObject } from '../../../store/FeatureStore'
 
 export default ({ map, services }) => {
 
@@ -22,8 +23,8 @@ export default ({ map, services }) => {
 
   const source = new VectorSource()
   const vector = new VectorLayer({
-    source,
-    style: stylist()
+    source/* ,
+    style: stylist() */
   })
 
   /*  ** SELECT ** */
@@ -80,23 +81,28 @@ export default ({ map, services }) => {
 
     drawInteraction.on('drawend', event => {
 
-      /*  schema:id is required in order to make deleting a feature work */
-      event.feature.setId(`measure:${uuid()}`)
       event.feature.setStyle(null)
 
       map.removeInteraction(drawInteraction)
       currentDrawInteraction = null
 
-      /*  event my be fired by ending the draw interaction with
+      const measurement = writeFeatureObject(event.feature)
+      measurement.name = 'MEZZUNG'
+
+      services.store.insert([[measurementId(), measurement]])
+
+      /*  event may be fired by ending the draw interaction with
           geometry LINE_STRING or POLYGON
       */
-      if (geometryType !== GeometryType.LINE_STRING) return
+      if (geometryType === GeometryType.LINE_STRING) {
+        /*  when drawing ends get rid of the circle fature */
+        source.removeFeature(circleFeature)
+        circleFeature.dispose()
 
-      /*  when drawing ends get rid of the circle fature */
-      source.removeFeature(circleFeature)
-      circleFeature.dispose()
+        event.feature.un('change', handleLineStringChanged)
+      }
 
-      event.feature.un('change', handleLineStringChanged)
+      setImmediate(() => source.removeFeature(event.feature))
     })
 
     return drawInteraction

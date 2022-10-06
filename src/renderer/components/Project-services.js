@@ -132,8 +132,13 @@ export default async projectUUID => {
     await featureStore.bootstrap()
     await spatialIndex.bootstrap()
     console.timeEnd('bootstrap')
+
   }, { timeout: 2000 })
 
+
+  selection.on('selection', ({ selected, deselected }) => {
+    console.dir(selected)
+  })
 
   return services
 }

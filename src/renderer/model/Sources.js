@@ -235,9 +235,9 @@ export const highlightTracker = (emitter, store, sessionStore) => {
     const geometries = await store.geometryBounds(ids, viewport.resolution)
     const features = geometries.map(geometry => new Feature(geometry))
     source.addFeatures(features)
-
+    console.dir(features)
     // Temporarily show hidden feature.
-    const isHidable = id => ID.isFeatureId(id) || ID.isMarkerId(id)
+    const isHidable = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasurementId(id)
 
     const keys = await store.collectKeys(ids)
     const featureIds = keys.filter(isHidable)

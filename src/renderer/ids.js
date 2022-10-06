@@ -102,6 +102,7 @@ export const isId = prefix => id => id && id.startsWith(prefix)
 export const isLayerId = isId('layer:')
 export const isFeatureId = isId('feature:')
 export const isMarkerId = isId('marker:')
+export const isMeasurementId = isId('measurement:')
 export const isBookmarkId = isId('bookmark:')
 export const isGroupId = isId('group:') // TODO: group -> view
 export const isSymbolId = isId('symbol:')

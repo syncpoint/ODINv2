@@ -9,8 +9,10 @@ import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from '../ol/style/rules'
 import crosshair from '../ol/style/crosshair'
+import { stylist as measurementStyler, baseStyle } from '../ol/interaction/measure/style'
 import * as TS from '../ol/ts'
 import * as Math from '../../shared/Math'
+import { Style } from 'ol/style'
 
 
 const format = new GeoJSON({
@@ -72,12 +74,14 @@ FeatureStore.prototype.bootstrap = async function () {
   this.styleProps = Object.fromEntries(await this.store.tuples('style+'))
   await this.loadFeatures('feature:')
   await this.loadFeatures('marker:')
+  await this.loadFeatures('measurement:')
 }
 
 /**
  *
  */
 FeatureStore.prototype.loadFeatures = async function (scope) {
+  console.log(`loading Features for SCOPE ${scope}`)
   const tuples = await this.store.tuples(scope)
   const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
   const [valid, invalid] = R.partition(R.prop('type'), geoJSON)
@@ -103,7 +107,7 @@ FeatureStore.prototype.batch = function (operations) {
 
   // TODO: dispatch layer styles
 
-  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id)
+  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasurementId(id)
   const candidates = operations.filter(({ key }) => isCandidateId(key))
   const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
   const [updates, additions] = R.partition(({ key }) => this.features[key], other)
@@ -210,6 +214,7 @@ FeatureStore.prototype.wrap = function (feature) {
   const id = feature.getId()
   if (ID.isFeatureId(id)) return this.wrapFeature(feature)
   else if (ID.isMarkerId(id)) return this.wrapMarker(feature)
+  else if (ID.isMeasurementId(id)) return this.wrapMeasurement(feature)
   else return feature
 }
 
@@ -271,6 +276,20 @@ FeatureStore.prototype.wrapMarker = function (feature) {
       ? selectedStyle
       : defaultStyle
   })
+
+  return feature
+}
+
+
+/**
+ *
+ */
+FeatureStore.prototype.wrapMeasurement = function (feature) {
+  feature.apply = () => {}
+  /* const styleFunction = measurementStyler(this.selection.isSelected(feature.getId()))(feature)
+
+  feature.setStyle(styleFunction) */
+  feature.setStyle(baseStyle(this.selection.isSelected(feature.getId())))
 
   return feature
 }

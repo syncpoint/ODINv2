@@ -84,7 +84,6 @@ const polygonStyle = feature => {
 
 /* style function for LINE_STRING */
 const linestringStyle = feature => {
-
   const styles = []
   const geometry = feature.getGeometry()
 
