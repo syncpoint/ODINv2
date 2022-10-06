@@ -231,7 +231,7 @@ export const highlightTracker = (emitter, store, sessionStore) => {
   }
 
   emitter.on('highlight/on', async ({ ids }) => {
-    const viewport = sessionStore.get('viewport')
+    const viewport = await sessionStore.get('viewport')
     const geometries = await store.geometryBounds(ids, viewport.resolution)
     const features = geometries.map(geometry => new Feature(geometry))
     source.addFeatures(features)
