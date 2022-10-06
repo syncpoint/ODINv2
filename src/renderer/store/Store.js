@@ -84,6 +84,10 @@ Store.prototype.bootstrap = async function () {
 
   // Store default style properties once for each fresh project database.
   //
+  const textColor = 'black'
+  const textHaloColor = 'white'
+  const textHaloWidth = 3
+
   const defaultStyleExists = await L.existsKey(this.jsonDB, L.prefix(ID.defaultStyleId))
   await defaultStyleExists
     ? Promise.resolve()
@@ -93,12 +97,12 @@ Store.prototype.bootstrap = async function () {
       'line-halo-width': 1,
       'text-font-size': '12px',
       'text-font-family': 'sans-serif',
-      'text-color': 'black',
-      'text-halo-color': 'white',
-      'text-halo-width': 2,
-      'symbol-text-color': 'black',
-      'symbol-text-halo-color': 'white',
-      'symbol-text-halo-width': 5
+      'text-color': textColor,
+      'text-halo-color': textHaloColor,
+      'text-halo-width': textHaloWidth,
+      'symbol-text-color': textColor,
+      'symbol-text-halo-color': textHaloColor,
+      'symbol-text-halo-width': textHaloWidth * 1.5
     })
 }
 

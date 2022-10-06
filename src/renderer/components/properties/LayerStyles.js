@@ -25,19 +25,11 @@ const LayerStyles = props => {
   const symbolFillOpacity = value['symbol-fill-opacity'] !== undefined
     ? value['symbol-fill-opacity']
     : 1
+  const symbolLineWidth = value['symbol-line-width'] || 3
   const lineWidth = value['line-width'] || 2
   const lineHaloWidth = value['line-halo-width'] || 1
 
   const update = newValue => store.update([key], [newValue], [value])
-
-  const defaultValue = {
-    'text-color': 'black',
-    'text-halo-color': 'white',
-    'text-halo-width': 2,
-    'symbol-text-color': 'black',
-    'symbol-text-halo-color': 'white',
-    'symbol-text-halo-width': 3
-  }
 
   const setColorScheme = ({ target }) => update({
     ...value,
@@ -46,14 +38,12 @@ const LayerStyles = props => {
 
   const setLineColor = color => update({
     ...value,
-    ...defaultValue,
     'line-color': color,
     'symbol-color': color ? Color(color).rgb().string() : undefined
   })
 
   const setOutlineColor = color => update({
     ...value,
-    ...defaultValue,
     'line-halo-color': color,
     'line-halo-width': color ? 1 : 0,
     'symbol-halo-color': color ? Color(color).rgb().string() : undefined,
@@ -68,6 +58,11 @@ const LayerStyles = props => {
   const setSymbolFillOpacity = ({ target }) => update({
     ...value,
     'symbol-fill-opacity': parseFloat(target.value)
+  })
+
+  const setSymbolLineWidth = ({ target }) => update({
+    ...value,
+    'symbol-line-width': parseInt(target.value)
   })
 
   const setLineWidth = ({ target }) => update({
@@ -148,6 +143,21 @@ const LayerStyles = props => {
           <option value='60'>M</option>
           <option value='70'>L</option>
           <option value='80'>XL</option>
+        </Range>
+      </div>
+      <div>
+        <label>Symbol Line Width</label>
+        <Range
+          min='3'
+          max='9'
+          step='2'
+          value={symbolLineWidth}
+          onChange={setSymbolLineWidth}
+        >
+          <option value='3'>S</option>
+          <option value='5'>M</option>
+          <option value='7'>L</option>
+          <option value='9'>XL</option>
         </Range>
       </div>
       <div>

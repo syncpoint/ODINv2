@@ -72,7 +72,7 @@ const makeText = props => {
     offsetY,
     padding: props['text-padding'] && new Array(4).fill(props['text-padding']),
     fill: Styles.fill({ color: props['text-color'] }),
-    stroke: props['text-halo-color'] && Styles.stroke({
+    stroke: props['text-halo-color'] && props['text-halo-width'] !== 0 && Styles.stroke({
       color: props['text-halo-color'],
       width: props['text-halo-width']
     }),
