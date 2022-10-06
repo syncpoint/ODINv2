@@ -135,10 +135,5 @@ export default async projectUUID => {
 
   }, { timeout: 2000 })
 
-
-  selection.on('selection', ({ selected, deselected }) => {
-    console.dir(selected)
-  })
-
   return services
 }
