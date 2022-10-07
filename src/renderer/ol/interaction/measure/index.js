@@ -10,7 +10,7 @@ import GeometryType from './GeometryType'
 
 import { stylist, baseStyle, stylefunctionForGeometryType } from './style'
 import { getLastSegmentCoordinates } from './tools'
-
+import { militaryFormat } from '../../../../shared/datetime'
 import { measurementId } from '../../../ids'
 import { writeFeatureObject } from '../../../store/FeatureStore'
 
@@ -87,9 +87,6 @@ export default ({ map, services }) => {
       currentDrawInteraction = null
 
       const measurement = writeFeatureObject(event.feature)
-      measurement.name = 'MEZZUNG'
-
-      services.store.insert([[measurementId(), measurement]])
 
       /*  event may be fired by ending the draw interaction with
           geometry LINE_STRING or POLYGON
@@ -100,8 +97,13 @@ export default ({ map, services }) => {
         circleFeature.dispose()
 
         event.feature.un('change', handleLineStringChanged)
+
+        measurement.name = `Distance - ${militaryFormat.now()}`
+      } else {
+        measurement.name = `Area - ${militaryFormat.now()}`
       }
 
+      services.store.insert([[measurementId(), measurement]])
       setImmediate(() => source.removeFeature(event.feature))
     })
 
@@ -124,17 +126,10 @@ export default ({ map, services }) => {
     map.addInteraction(currentDrawInteraction)
   }
 
-  services.emitter.on('MAP_MEASURE_LENGTH', () => {
+  services.emitter.on('MEASURE_LENGTH', () => {
     addDrawInteraction(GeometryType.LINE_STRING)
   })
-
-  services.emitter.on('command/delete', () => {
-    console.log('should delete ...')
-    selectedFeatures.getArray().forEach(feature => source.removeFeature(feature))
-    selectedFeatures.clear()
-  })
-  /*
-  evented.on('MAP_MEASURE_AREA', () => {
+  services.emitter.on('MEASURE_AREA', () => {
     addDrawInteraction(GeometryType.POLYGON)
-  }) */
+  })
 }

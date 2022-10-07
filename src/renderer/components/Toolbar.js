@@ -48,8 +48,7 @@ export const Toolbar = () => {
     commandRegistry.command('LAYER_SET_DEFAULT'),
     commandRegistry.command('PIN'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
-    commandRegistry.separator(),
-    commandRegistry.command('MEASURE_BEARING_LENGTH')
+    commandRegistry.separator()
   ]
 
   const addCommands = [
@@ -57,6 +56,11 @@ export const Toolbar = () => {
     commandRegistry.command('MARKER_CREATE'),
     commandRegistry.command('BOOKMARK_CREATE'),
     commandRegistry.command('TILE_SERVICE_CREATE')
+  ]
+
+  const measureCommands = [
+    commandRegistry.command('MEASURE_BEARING_LENGTH'),
+    commandRegistry.command('MEASURE_AREA')
   ]
 
   return (
@@ -70,6 +74,7 @@ export const Toolbar = () => {
               : <CommandButton key={key} command={command}/>
           })
         }
+        <DropdownMenu path='mdiAndroidStudio' options={measureCommands} />
       </div>
     </header>
   )
