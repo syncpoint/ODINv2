@@ -8,7 +8,7 @@ export default async function (id) {
   return {
     id,
     scope: 'measurement',
-    text: measurement.name || '',
+    text: measurement?.name || '',
     tags: tags || []
   }
 }
