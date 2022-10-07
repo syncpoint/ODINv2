@@ -59,7 +59,7 @@ export const Toolbar = () => {
   ]
 
   const measureCommands = [
-    commandRegistry.command('MEASURE_BEARING_LENGTH'),
+    commandRegistry.command('MEASURE_BEARING_DISTANCE'),
     commandRegistry.command('MEASURE_AREA')
   ]
 

@@ -1,5 +1,4 @@
-import { Draw, Modify, Select } from 'ol/interaction'
-import Collection from 'ol/Collection'
+import { Draw } from 'ol/interaction'
 import Feature from 'ol/Feature'
 import LineString from 'ol/geom/LineString'
 import { Vector as VectorSource } from 'ol/source'
@@ -8,7 +7,7 @@ import Circle from 'ol/geom/Circle'
 
 import GeometryType from './GeometryType'
 
-import { stylist, baseStyle, stylefunctionForGeometryType } from './style'
+import { baseStyle, stylefunctionForGeometryType } from './style'
 import { getLastSegmentCoordinates } from './tools'
 import { militaryFormat } from '../../../../shared/datetime'
 import { measurementId } from '../../../ids'
@@ -16,32 +15,10 @@ import { writeFeatureObject } from '../../../store/FeatureStore'
 
 export default ({ map, services }) => {
 
-  /*  initialize OL container that will hold our
-      measurement features
-  */
-  const selectedFeatures = new Collection()
-
   const source = new VectorSource()
   const vector = new VectorLayer({
     source/* ,
     style: stylist() */
-  })
-
-  /*  ** SELECT ** */
-  const selectionInteraction = new Select({
-    hitTolerance: 3,
-    layers: [vector],
-    features: selectedFeatures,
-    style: stylist(true),
-    filter: feature => (
-      feature.getGeometry().getType() === GeometryType.LINE_STRING ||
-      feature.getGeometry().getType() === GeometryType.POLYGON
-    )
-  })
-
-  /*  ** MODIFY ** */
-  const modifyInteraction = new Modify({
-    features: selectedFeatures
   })
 
   /*  circle feature is is used for giving the user a visual feedback for the last segement of
@@ -112,8 +89,6 @@ export default ({ map, services }) => {
 
   // vector layer contains all measurement features
   map.addLayer(vector)
-  map.addInteraction(modifyInteraction)
-  map.addInteraction(selectionInteraction)
 
   const addDrawInteraction = geometryType => {
     /* make this idempotent */
@@ -126,7 +101,7 @@ export default ({ map, services }) => {
     map.addInteraction(currentDrawInteraction)
   }
 
-  services.emitter.on('MEASURE_LENGTH', () => {
+  services.emitter.on('MEASURE_BEARING_DISTANCE', () => {
     addDrawInteraction(GeometryType.LINE_STRING)
   })
   services.emitter.on('MEASURE_AREA', () => {
