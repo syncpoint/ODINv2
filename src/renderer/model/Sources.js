@@ -108,14 +108,15 @@ export const intersect = (a, b) => {
 }
 
 /**
- * union :: ol/source/Vector S => S -> S -> S
+ * union :: ol/source/Vector S => [S] -> S
  */
-export const union = (a, b) => {
+export const union = (...sources) => {
   const union = new VectorSource({ features: new Collection() })
-  a.on('addfeature', ({ feature }) => union.addFeature(feature))
-  a.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
-  b.on('addfeature', ({ feature }) => union.addFeature(feature))
-  b.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
+  sources.forEach(source => {
+    source.on('addfeature', ({ feature }) => union.addFeature(feature))
+    source.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
+  })
+
   return union
 }
 
