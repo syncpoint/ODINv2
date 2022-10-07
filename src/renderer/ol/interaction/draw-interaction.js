@@ -1,6 +1,6 @@
 import * as R from 'ramda'
-import Mousetrap from 'mousetrap'
 import Draw from 'ol/interaction/Draw'
+import uuid from 'uuid-random'
 import * as MILSTD from '../../symbology/2525c'
 import { writeFeatureObject } from '../../store/FeatureStore'
 import * as TS from '../ts'
@@ -22,6 +22,8 @@ const GeometryType = {
 export default options => {
   const { services, map } = options
   const { emitter, store } = services
+
+  const ORIGINATOR_ID = uuid()
 
   let pendingDraw = null
   let handlers = {}
@@ -54,11 +56,14 @@ export default options => {
     cancel()
   }
 
-  Mousetrap.bind('esc', cancel)
+  emitter.on('command/draw/cancel', ({ originatorId }) => {
+    if (originatorId !== ORIGINATOR_ID) { cancel() }
+  })
+
   emitter.on('command/entry/draw', ({ id }) => {
     // Cancel current draw unconditionally:
     cancel()
-
+    emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
     const sidc = id.split(':')[1]
     const descriptor = MILSTD.descriptor(sidc)
     if (!descriptor) return

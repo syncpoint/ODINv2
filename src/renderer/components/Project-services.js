@@ -67,7 +67,7 @@ export default async projectUUID => {
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   // Key bindings.
-  bindings(clipboard)
+  bindings(clipboard, emitter)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
