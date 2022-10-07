@@ -21,7 +21,7 @@ export const formatAngle = angle => {
 export const formatArea = area => {
   const unit = area > 100000 ? 'km²' : 'm²'
   const factor = area > 100000 ? 1000000 : 1
-  return `${oneDigitFormatter.format(area / factor)}${unit}`
+  return `${oneDigitFormatter.format(area / factor)} ${unit}`
 }
 
 export const length = geometry => {
