@@ -68,7 +68,7 @@ export default ({ map, services }) => {
     })
 
     drawInteraction.on('drawstart', event => {
-      event.feature.setStyle(stylefunctionForGeometryType(geometryType, true))
+      event.feature.setStyle(stylefunctionForGeometryType(geometryType, () => true))
       if (geometryType !== GeometryType.LINE_STRING) return
 
       /* circle helper is only supported when measuring distances */

@@ -283,8 +283,10 @@ FeatureStore.prototype.wrapMarker = function (feature) {
  *
  */
 FeatureStore.prototype.wrapMeasurement = function (feature) {
+  const isSelected = feature => this.selection.isSelected(feature.getId())
+
   feature.apply = () => {}
-  feature.setStyle(measurementStyler(this.selection.isSelected(feature.getId())))
+  feature.setStyle(measurementStyler(isSelected))
 
   return feature
 }

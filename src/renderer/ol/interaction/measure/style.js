@@ -155,22 +155,26 @@ const linestringStyle = feature => {
   return styles
 }
 
-export const stylist = (isSelected = false) => (feature) => {
+/***
+ *
+ * isSelected: function (feature) => Boolean
+ */
+export const stylist = (isSelected) => (feature) => {
   const geometry = feature.getGeometry()
   return stylefunctionForGeometryType(geometry.getType(), isSelected)(feature)
 }
 
 /* returns a style function for the given geometry type and selection state */
-export const stylefunctionForGeometryType = (geometryType, isSelected = false) => {
-  const styles = baseStyle(isSelected)
+export const stylefunctionForGeometryType = (geometryType, isSelected) => {
+  // const styles =
 
   if (geometryType === GeometryType.POLYGON) {
-    return feature => [...styles, ...polygonStyle(feature)]
+    return feature => [...(baseStyle(isSelected(feature))), ...polygonStyle(feature)]
   } else if (geometryType === GeometryType.LINE_STRING) {
-    return feature => [...styles, ...linestringStyle(feature)]
+    return feature => [...(baseStyle(isSelected(feature))), ...linestringStyle(feature)]
   }
 
   return () => {
-    baseStyle()
+    baseStyle(() => false)
   }
 }
