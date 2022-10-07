@@ -25,7 +25,7 @@ const useController = () => {
     else if (spec.match(/SCOPE:LAYER/i)) emitter.emit('highlight/on', { ids })
     else if (spec.match(/SCOPE:MARKER/i)) emitter.emit('highlight/on', { ids })
     else if (spec.match(/SCOPE:PLACE/i)) emitter.emit('highlight/on', { ids })
-    else if (spec.match(/SCOPE:MEASUREMENT/i)) emitter.emit('highlight/on', { ids })
+    else if (spec.match(/SCOPE:MEASURE/i)) emitter.emit('highlight/on', { ids })
   }
 
   const handleMouseUp = (id, event, spec) => {
@@ -33,7 +33,7 @@ const useController = () => {
     else if (spec.match(/SCOPE:LAYER/i)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:MARKER/i)) emitter.emit('highlight/off')
     else if (spec.match(/SCOPE:PLACE/i)) emitter.emit('highlight/off')
-    else if (spec.match(/SCOPE:MEASUREMENT/i)) emitter.emit('highlight/off')
+    else if (spec.match(/SCOPE:MEASURE/i)) emitter.emit('highlight/off')
   }
 
   const handleClick = (id, event, spec) => {

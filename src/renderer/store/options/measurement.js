@@ -27,7 +27,7 @@ export default async function (id) {
     title: measurement.name,
     description,
     tags: [
-      'SCOPE:MEASUREMENT:NONE',
+      'SCOPE:MEASURE:NONE',
       hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
       locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
       ...((tags || [])).map(label => `USER:${label}:NONE`),
