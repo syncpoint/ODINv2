@@ -2,7 +2,7 @@ import uuid from 'uuid-random'
 import { Translate } from 'ol/interaction'
 import { MAC } from 'ol/has'
 import { writeGeometryObject } from '../../store/FeatureStore'
-import * as ids from '../../ids'
+import * as ID from '../../ids'
 
 
 /**
@@ -52,7 +52,7 @@ export default options => {
     // Clone features with new identities.
 
     clones = snapshot.map(feature => {
-      const layerUUID = ids.layerUUID(feature.getId())
+      const layerUUID = ID.layerUUID(feature.getId())
       const clone = feature.clone()
       const id = `feature:${layerUUID}/${uuid()}`
       clone.setId(id)

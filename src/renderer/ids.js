@@ -1,39 +1,116 @@
 import * as R from 'ramda'
 import uuid from 'uuid-random'
 
-export const layerId = R.cond([
-  [R.isNil, () => `layer:${uuid()}`],
-  // must be a string then...
-  [R.startsWith('feature:'), x => `layer:${x.split(':')[1].split('/')[0]}`],
-  [R.startsWith('layer:'), R.identity],
-  [R.includes('+layer:'), x => x.split('+')[1]],
-  [R.T, x => layerId(x.id)]
-])
+export const isUUID = uuid.test
+
+export const PLUS = '+'
+export const COLON = ':'
+export const SLASH = '/'
+
+export const PROJECT = 'project'
+export const LAYER = 'layer'
+export const FEATURE = 'feature'
+export const MARKER = 'marker'
+export const BOOKMARK = 'bookmark'
+export const VIEW = 'view'
+export const SYMBOL = 'symbol'
+export const PLACE = 'place'
+export const TILE_SERVICE = 'tile-service'
+export const TILE_PRESET = 'tile-preset'
+export const TILE_LAYER = 'tile-layer'
+export const LINK = 'link'
+export const STYLE = 'style'
+export const LOCKED = 'locked'
+export const HIDDEN = 'hidden'
+export const DEFAULT = 'default'
+export const TAGS = 'tags'
+export const STICKY = 'sticky'
+export const SHARED = 'shared'
+
+export const PROJECT_SCOPE = PROJECT + COLON
+export const LAYER_SCOPE = LAYER + COLON
+export const FEATURE_SCOPE = FEATURE + COLON
+export const MARKER_SCOPE = MARKER + COLON
+export const BOOKMARK_SCOPE = BOOKMARK + COLON
+export const VIEW_SCOPE = VIEW + COLON
+export const SYMBOL_SCOPE = SYMBOL + COLON
+export const PLACE_SCOPE = PLACE + COLON
+export const TILE_SERVICE_SCOPE = TILE_SERVICE
+export const TILE_PRESET_SCOPE = TILE_PRESET
+
+export const LINK_PREFIX = 'link' + PLUS
+export const STYLE_PREFIX = 'style' + PLUS
+export const LOCKED_PREFIX = 'locked' + PLUS
+export const HIDDEN_PREFIX = 'hidden' + PLUS
+export const DEFAULT_PREFIX = 'default' + PLUS
+export const TAGS_PREFIX = 'tags' + PLUS
+
+
+export const scope = s => s.split(COLON)[0]
+export const ids = s => s.split(COLON)[1]
+export const nthId = R.curry((n, s) => ids(s).split(SLASH)[n])
+
+// TODO: generalize to more than one scope
+export const dropScope = s => s.split(PLUS)[1]
+export const makeScope = (scope, prefix) => R.isNil(prefix)
+  ? scope + COLON
+  : prefix + PLUS + scope + COLON
+
+export const makeId = (scope, ...uuids) => scope + COLON + uuids.join(SLASH)
+
+export const isId = prefix => id => id && id.startsWith(prefix)
+export const isProjectId = isId(PROJECT_SCOPE)
+export const isLayerId = isId(LAYER_SCOPE)
+export const isFeatureId = isId(FEATURE_SCOPE)
+export const isMarkerId = isId(MARKER_SCOPE)
+export const isBookmarkId = isId(BOOKMARK_SCOPE)
+export const isViewId = isId(VIEW_SCOPE)
+export const isSymbolId = isId(SYMBOL)
+export const isPlaceId = isId(PLACE_SCOPE)
+export const isTileServiceId = isId(TILE_SERVICE_SCOPE)
+export const isTilePresetId = isId(TILE_PRESET_SCOPE)
+export const isLinkId = isId(LINK_PREFIX)
+export const isStyleId = isId(STYLE_PREFIX)
+export const isLockedId = isId(LOCKED_PREFIX)
+export const isHiddenId = isId(HIDDEN_PREFIX)
+export const isDefaultId = isId(DEFAULT_PREFIX)
+export const isTagsId = isId(TAGS_PREFIX)
+
+export const isDeletableId = id => !isSymbolId(id)
+export const isTaggableId = id => !isViewId(id)
+export const isAssociatedId = id =>
+  isHiddenId(id) ||
+  isLockedId(id) ||
+  isDefaultId(id) ||
+  isTagsId(id)
 
 export const layerUUID = R.cond([
-  [R.startsWith('feature:'), x => x.split(':')[1].split('/')[0]],
-  [R.startsWith('layer:'), x => x.split(':')[1]],
-  [R.T, () => uuid()]
+  [isFeatureId, nthId(0)],
+  [isLayerId, nthId(0)]
 ])
 
+/**
+ * featureId :: '...+feature:' => FeatureId
+ * featureId :: LayerId => FeatureId
+ */
 export const featureId = R.cond([
-  [x => typeof x === 'object', R.prop('id')],
-  [R.includes('+feature:'), x => x.split('+')[1]],
-  [R.T, layerId => `feature:${layerId.split(':')[1]}/${uuid()}`]
+  [R.includes(makeScope(FEATURE, '')), dropScope],
+  [R.T, layerId => makeId(FEATURE, ids(layerId), uuid())]
 ])
 
-export const markerId = R.cond([
-  [R.isNil, () => `marker:${uuid()}`]
+export const layerId = R.cond([
+  [R.isNil, () => makeId(LAYER, uuid())],
+  [isFeatureId, x => makeId(LAYER, nthId(0, x))],
+  [isLayerId, R.identity],
+  [R.includes(makeScope(LAYER, '')), dropScope]
 ])
 
-export const bookmarkId = R.cond([
-  [R.isNil, () => `bookmark:${uuid()}`]
-])
-
-export const linkId = id => `link+${id}/${uuid()}`
+export const markerId = () => makeId(MARKER, uuid())
+export const bookmarkId = () => makeId(BOOKMARK, uuid())
+export const linkId = id => LINK + PLUS + id + SLASH + uuid()
 
 export const tileServiceId = R.cond([
-  [R.isNil, () => `tile-service:${uuid()}`],
+  [R.isNil, () => makeId(TILE_SERVICE, uuid())],
   [R.startsWith('tile-layer:'), x => `tile-service:${x.split(':')[1].split('/')[0]}`]
 ])
 
@@ -42,14 +119,14 @@ export const tileServiceId = R.cond([
  * feature:{uuid}/(uuid) -> link+feature:{uuid}/uuid
  */
 export const prefix = prefix => id => `${prefix}+${id || ''}`
-export const lockedId = prefix('locked')
-export const hiddenId = prefix('hidden')
-export const stickyId = prefix('sticky')
-export const sharedId = prefix('shared')
-export const defaultId = prefix('default')
-export const tagsId = prefix('tags')
-export const styleId = prefix('style')
-export const tileLayerId = prefix('tile-layer')
+export const lockedId = prefix(LOCKED)
+export const hiddenId = prefix(HIDDEN)
+export const stickyId = prefix(STICKY)
+export const sharedId = prefix(SHARED)
+export const defaultId = prefix(DEFAULT)
+export const tagsId = prefix(TAGS)
+export const styleId = prefix(STYLE)
+export const tileLayerId = prefix(TILE_LAYER)
 
 /** Only a single preset (for now.) */
 export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000000000'
@@ -70,6 +147,14 @@ export const containerId = id => {
 }
 
 /**
+ * tile-layer:{uuid}/{id} => {id}
+ */
+export const containedId = id => {
+  const index = id.lastIndexOf('/')
+  return id.substring(index + 1)
+}
+
+/**
  * '+'-notation associated id.
  *
  * tags+layer:{uuid} => layer:{uuid}
@@ -83,55 +168,6 @@ export const associatedId = id => {
     ? id /* identity */
     : id.substring(indexStart + 1)
 }
-
-/**
- * tile-layer:{uuid}/{id} => {id}
- */
-export const containedId = id => {
-  const index = id.lastIndexOf('/')
-  return id.substring(index + 1)
-}
-
-export const scope = id => id.split(':')[0]
-
-export const isId = prefix => id => id && id.startsWith(prefix)
-export const isLayerId = isId('layer:')
-export const isFeatureId = isId('feature:')
-export const isMarkerId = isId('marker:')
-export const isBookmarkId = isId('bookmark:')
-export const isGroupId = isId('group:') // TODO: group -> view
-export const isSymbolId = isId('symbol:')
-export const isPlaceId = isId('place:')
-export const isTileServiceId = isId('tile-service:')
-export const isTilePresetId = isId('tile-preset:')
-export const isLinkId = isId('link+')
-export const isStyleId = isId('style+')
-
-export const isDeletableId = id => !isSymbolId(id)
-export const isTaggableId = id => !isGroupId(id)
-export const isProjectId = isId('project:')
-export const isLockedId = isId('locked+')
-export const isHiddenId = isId('hidden+')
-export const isDefaultId = isId('default+')
-export const isLockedFeatureId = isId('locked+feature:')
-export const isHiddenFeatureId = isId('hidden+feature:')
-export const isTagsId = isId('tags+')
-export const isLayerTagsId = isId('tags+layer:')
-
-export const isAssociatedId = id =>
-  isHiddenId(id) ||
-  isLockedId(id) ||
-  isDefaultId(id) ||
-  isTagsId(id)
-
-export const FEATURE_ID = 'feature:[0-9a-f-]{36}/[0-9a-f-]{36}'
-export const LAYER_ID = 'layer:[0-9a-f-]{36}'
-export const PLACE_ID = 'place:[0-9a-f-]{36}'
-export const GROUP_ID = 'group:[0-9a-f-]{36}'
-export const SYMBOL_ID = 'symbol:[A-Z-*]{10}'
-export const LINK_ID = 'link:[0-9a-f-]{36}'
-export const PROJECT_ID = 'project:[0-9a-f-]{36}'
-export const FIELD_ID = 'field:[0-9a-f-]{36}'
 
 export const ord = R.cond([
   [isLayerId, R.always(0)],
