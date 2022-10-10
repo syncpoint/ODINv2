@@ -21,10 +21,10 @@ const compare = fn => (a, b) => {
 export const sort = entries => entries.sort((a, b) => {
 
   // Sort group to the top:
-  const GA = ID.isGroupId(a.id)
-  const GB = ID.isGroupId(b.id)
-  if (GA && !GB) return -1
-  if (!GA && GB) return 1
+  const VA = ID.isViewId(a.id)
+  const VB = ID.isViewId(b.id)
+  if (VA && !VB) return -1
+  if (!VA && VB) return 1
 
   return compare(R.prop('title'))(a, b) ||
     compare(R.prop('sort'))(a, b) || // optional sort criterion (e.g. places/distance)
