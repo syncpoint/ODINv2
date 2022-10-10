@@ -5,6 +5,8 @@ import GeometryType from './GeometryType'
 
 import { angle, radiansAngle, length, getLastSegmentCoordinates, area } from './tools'
 
+const FONT = '12px sans-serif'
+
 export const baseStyle = isSelected => [
   new Style({
     stroke: new Stroke({
@@ -44,7 +46,7 @@ const polygonStyle = feature => {
       geometry: segment,
       text: new TextStyle({
         text: `${length(segment)}\n\n`,
-        font: '16px sans-serif',
+        font: FONT,
         fill: new Fill({
           color: 'black'
         }),
@@ -64,7 +66,7 @@ const polygonStyle = feature => {
       geometry: geometry.getInteriorPoint(),
       text: new TextStyle({
         text: `${area(geometry)}\n${length(geometry)}`,
-        font: '16px sans-serif',
+        font: FONT,
         fill: new Fill({
           color: 'black'
         }),
@@ -93,7 +95,7 @@ const linestringStyle = feature => {
       geometry: segment,
       text: new TextStyle({
         text: `${length(segment)}\n\n${angle(segment)}`,
-        font: '16px sans-serif',
+        font: FONT,
         fill: new Fill({
           color: 'black'
         }),
@@ -134,7 +136,7 @@ const linestringStyle = feature => {
       }),
       text: new TextStyle({
         text: length(geometry),
-        font: '16px sans-serif',
+        font: FONT,
         fill: new Fill({
           color: 'black'
         }),
