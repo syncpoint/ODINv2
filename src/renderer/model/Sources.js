@@ -108,14 +108,15 @@ export const intersect = (a, b) => {
 }
 
 /**
- * union :: ol/source/Vector S => S -> S -> S
+ * union :: ol/source/Vector S => [S] -> S
  */
-export const union = (a, b) => {
+export const union = (...sources) => {
   const union = new VectorSource({ features: new Collection() })
-  a.on('addfeature', ({ feature }) => union.addFeature(feature))
-  a.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
-  b.on('addfeature', ({ feature }) => union.addFeature(feature))
-  b.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
+  sources.forEach(source => {
+    source.on('addfeature', ({ feature }) => union.addFeature(feature))
+    source.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
+  })
+
   return union
 }
 
@@ -235,9 +236,8 @@ export const highlightTracker = (emitter, store, sessionStore) => {
     const geometries = await store.geometryBounds(ids, viewport.resolution)
     const features = geometries.map(geometry => new Feature(geometry))
     source.addFeatures(features)
-
     // Temporarily show hidden feature.
-    const isHidable = id => ID.isFeatureId(id) || ID.isMarkerId(id)
+    const isHidable = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasurementId(id)
 
     const keys = await store.collectKeys(ids)
     const featureIds = keys.filter(isHidable)

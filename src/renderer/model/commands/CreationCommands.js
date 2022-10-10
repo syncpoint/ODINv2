@@ -79,7 +79,6 @@ CreateBookmark.prototype.execute = async function () {
   this.selection.focus(key)
 }
 
-
 /**
  *
  */

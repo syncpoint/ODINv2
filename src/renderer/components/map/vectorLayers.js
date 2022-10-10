@@ -25,18 +25,17 @@ const highlightLayer = (sources, styles) => {
 
 
 export default (sources, styles) => {
-  const { deselectedSource, selectedSource, markerSource } = sources
+  const { deselectedSource, selectedSource } = sources
   const declutter = false
   const vectorLayer = source => new VectorLayer({
     source,
     declutter,
-    selectable: true // non-standard: considered by select interaction
+    selectable: true // non-standard: considered by select interaction,
   })
 
   return {
     featureLayer: vectorLayer(deselectedSource),
     highlightLayer: highlightLayer(sources, styles),
-    selectedLayer: vectorLayer(selectedSource),
-    markerLayer: vectorLayer(markerSource)
+    selectedLayer: vectorLayer(selectedSource)
   }
 }

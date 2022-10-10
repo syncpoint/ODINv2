@@ -26,6 +26,7 @@ export const DEFAULT = 'default'
 export const TAGS = 'tags'
 export const STICKY = 'sticky'
 export const SHARED = 'shared'
+export const MEASUREMENT = 'measurement'
 
 export const PROJECT_SCOPE = PROJECT + COLON
 export const LAYER_SCOPE = LAYER + COLON
@@ -35,8 +36,9 @@ export const BOOKMARK_SCOPE = BOOKMARK + COLON
 export const VIEW_SCOPE = VIEW + COLON
 export const SYMBOL_SCOPE = SYMBOL + COLON
 export const PLACE_SCOPE = PLACE + COLON
-export const TILE_SERVICE_SCOPE = TILE_SERVICE
-export const TILE_PRESET_SCOPE = TILE_PRESET
+export const TILE_SERVICE_SCOPE = TILE_SERVICE + COLON
+export const TILE_PRESET_SCOPE = TILE_PRESET + COLON
+export const MEASUREMENT_SCOPE = MEASUREMENT + COLON
 
 export const LINK_PREFIX = 'link' + PLUS
 export const STYLE_PREFIX = 'style' + PLUS
@@ -44,7 +46,6 @@ export const LOCKED_PREFIX = 'locked' + PLUS
 export const HIDDEN_PREFIX = 'hidden' + PLUS
 export const DEFAULT_PREFIX = 'default' + PLUS
 export const TAGS_PREFIX = 'tags' + PLUS
-
 
 export const scope = s => s.split(COLON)[0]
 export const ids = s => s.split(COLON)[1]
@@ -85,12 +86,13 @@ export const isTileServiceId = isId(TILE_SERVICE_SCOPE)
 export const isTilePresetId = isId(TILE_PRESET_SCOPE)
 export const isLinkId = isId(LINK_PREFIX)
 export const isStyleId = isId(STYLE_PREFIX)
-export const isLayerStyleId = isId(styleId('layer:'))
-export const isFeatureStyleId = isId(styleId('feature:'))
+export const isLayerStyleId = isId(styleId(LAYER_SCOPE))
+export const isFeatureStyleId = isId(styleId(FEATURE_SCOPE))
 export const isLockedId = isId(LOCKED_PREFIX)
 export const isHiddenId = isId(HIDDEN_PREFIX)
 export const isDefaultId = isId(DEFAULT_PREFIX)
 export const isTagsId = isId(TAGS_PREFIX)
+export const isMeasurementId = isId(MEASUREMENT_SCOPE)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
@@ -124,6 +126,7 @@ export const layerId = R.cond([
 
 export const markerId = () => makeId(MARKER, uuid())
 export const bookmarkId = () => makeId(BOOKMARK, uuid())
+export const measurementId = () => makeId(MEASUREMENT, uuid())
 export const linkId = id => LINK + PLUS + id + SLASH + uuid()
 
 export const tileServiceId = R.cond([

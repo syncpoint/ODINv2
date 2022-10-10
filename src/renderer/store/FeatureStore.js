@@ -9,9 +9,9 @@ import { geometryType } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from '../ol/style/rules'
 import crosshair from '../ol/style/crosshair'
+import { stylist as measurementStyler } from '../ol/interaction/measure/style'
 import * as TS from '../ol/ts'
 import * as Math from '../../shared/Math'
-
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -72,6 +72,7 @@ FeatureStore.prototype.bootstrap = async function () {
   this.styleProps = Object.fromEntries(await this.store.tuples('style+'))
   await this.loadFeatures('feature:')
   await this.loadFeatures('marker:')
+  await this.loadFeatures('measurement:')
 }
 
 /**
@@ -129,7 +130,7 @@ FeatureStore.prototype.batch = function (operations) {
         .forEach(key => apply({ layerStyle: {} })(this.features[key]))
     })
 
-  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id)
+  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasurementId(id)
   const candidates = operations.filter(({ key }) => isCandidateId(key))
   const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
   const [updates, additions] = R.partition(({ key }) => this.features[key], other)
@@ -237,6 +238,7 @@ FeatureStore.prototype.wrap = function (feature) {
   const id = feature.getId()
   if (ID.isFeatureId(id)) return this.wrapFeature(feature)
   else if (ID.isMarkerId(id)) return this.wrapMarker(feature)
+  else if (ID.isMeasurementId(id)) return this.wrapMeasurement(feature)
   else return feature
 }
 
@@ -299,6 +301,19 @@ FeatureStore.prototype.wrapMarker = function (feature) {
       ? selectedStyle
       : defaultStyle
   })
+
+  return feature
+}
+
+
+/**
+ *
+ */
+FeatureStore.prototype.wrapMeasurement = function (feature) {
+  const isSelected = feature => this.selection.isSelected(feature.getId())
+
+  feature.apply = () => {}
+  feature.setStyle(measurementStyler(isSelected))
 
   return feature
 }

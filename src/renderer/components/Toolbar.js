@@ -73,7 +73,8 @@ export const Toolbar = () => {
     commandRegistry.separator(),
     commandRegistry.command('LAYER_SET_DEFAULT'),
     commandRegistry.command('PIN'),
-    commandRegistry.command('SELECT_TILE_LAYERS')
+    commandRegistry.command('SELECT_TILE_LAYERS'),
+    commandRegistry.separator()
   ]
 
   const addCommands = [
@@ -88,6 +89,11 @@ export const Toolbar = () => {
     else setProperties(type)
   }
 
+  const measureCommands = [
+    commandRegistry.command('MEASURE_BEARING_DISTANCE'),
+    commandRegistry.command('MEASURE_AREA')
+  ]
+
   return (
     <header className='toolbar'>
       <div className='toolbar__items-container'>
@@ -99,6 +105,7 @@ export const Toolbar = () => {
               : <CommandButton key={key} command={command}/>
           })
         }
+        <DropdownMenu path='mdiAndroidStudio' options={measureCommands} />
       </div>
       <div className='toolbar__items-container toolbar__items--right'>
         <SimpleButton

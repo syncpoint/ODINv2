@@ -483,6 +483,7 @@ const geometryBounds = async function (acc, ids, resolution) {
         return acc
       } catch (err) {
         // Can happen, especially for geometries from OSM.
+        console.error(err)
         return acc
       }
     }, acc)
@@ -491,11 +492,11 @@ const geometryBounds = async function (acc, ids, resolution) {
 Store.prototype.featureBounds = geometryBounds
 Store.prototype.markerBounds = geometryBounds
 Store.prototype.placeBounds = geometryBounds
+Store.prototype.measurementBounds = geometryBounds
 
 
 Store.prototype.geometryBounds = async function (ids, resolution) {
   const scopes = Object.entries(R.groupBy(id => ID.scope(id), ids))
-
   return scopes.reduce(async (acc, [scope, keys]) => {
     const handler = this[`${scope}Bounds`]
     if (!handler) return acc

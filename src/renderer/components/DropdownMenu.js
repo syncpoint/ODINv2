@@ -2,17 +2,20 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
 import Icon from '@mdi/react'
+import uuid from 'uuid-random'
 import './DropdownMenu.css'
 
 export const DropdownMenu = props => {
 
+  const [id] = React.useState(uuid())
+
   const handleClick = () => {
-    document.getElementById('newDropdown').classList.toggle('show')
+    document.getElementById(id).classList.toggle('show')
   }
 
   const handleBlur = () => {
     // Let brief background flashing show on option selection (if any).
-    const hide = () => document.getElementById('newDropdown').classList.remove('show')
+    const hide = () => document.getElementById(id).classList.remove('show')
     setTimeout(hide, 200)
   }
 
@@ -33,7 +36,7 @@ export const DropdownMenu = props => {
         <Icon path={mdi[props.path]} size='20px' color='#68696B'/>
         <Icon path={mdi.mdiChevronDown} size='16px' color='#68696B'/>
       </button>
-      <div id="newDropdown" className="dropdown__content">
+      <div id={id} className="dropdown__content">
         { props.options.map(option) }
       </div>
     </div>
