@@ -72,7 +72,7 @@ FeatureStore.prototype.bootstrap = async function () {
   this.styleProps = Object.fromEntries(await this.store.tuples('style+'))
   await this.loadFeatures(ID.FEATURE_SCOPE)
   await this.loadFeatures(ID.MARKER_SCOPE)
-  await this.loadFeatures(ID.MEASUREMENT_SCOPE)
+  await this.loadFeatures(ID.MEASURE_SCOPE)
 }
 
 /**
@@ -130,7 +130,7 @@ FeatureStore.prototype.batch = function (operations) {
         .forEach(key => apply({ layerStyle: {} })(this.features[key]))
     })
 
-  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasurementId(id)
+  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
   const candidates = operations.filter(({ key }) => isCandidateId(key))
   const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
   const [updates, additions] = R.partition(({ key }) => this.features[key], other)
@@ -238,7 +238,7 @@ FeatureStore.prototype.wrap = function (feature) {
   const id = feature.getId()
   if (ID.isFeatureId(id)) return this.wrapFeature(feature)
   else if (ID.isMarkerId(id)) return this.wrapMarker(feature)
-  else if (ID.isMeasurementId(id)) return this.wrapMeasurement(feature)
+  else if (ID.isMeasureId(id)) return this.wrapMeasurement(feature)
   else return feature
 }
 

@@ -7,7 +7,7 @@ export default async function (id) {
 
   return {
     id,
-    scope: 'marker',
+    scope: ID.MARKER,
     text: marker.name || '',
     tags: tags || []
   }

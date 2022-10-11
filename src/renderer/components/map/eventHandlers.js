@@ -81,7 +81,7 @@ const mapHandlers = (services, map) => {
 
   // Deselect everything except features and markers.
   map.on('click', () => {
-    const exclude = [ID.isFeatureId, ID.isMarkerId, ID.isMeasurementId]
+    const exclude = [ID.isFeatureId, ID.isMarkerId, ID.isMeasureId]
     const deselect = selection.selected(x => !exclude.some(p => p(x)))
     if (deselect.length) selection.deselect(deselect)
   })

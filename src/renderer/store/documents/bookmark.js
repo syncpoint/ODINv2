@@ -7,7 +7,7 @@ export default async function (id) {
 
   return {
     id,
-    scope: 'bookmark',
+    scope: ID.BOOKMARK,
     text: bookmark.name || '',
     tags: tags || []
   }

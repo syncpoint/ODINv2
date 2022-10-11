@@ -26,7 +26,7 @@ export const DEFAULT = 'default'
 export const TAGS = 'tags'
 export const STICKY = 'sticky'
 export const SHARED = 'shared'
-export const MEASUREMENT = 'measurement'
+export const MEASURE = 'measure'
 
 export const PROJECT_SCOPE = PROJECT + COLON
 export const LAYER_SCOPE = LAYER + COLON
@@ -39,7 +39,7 @@ export const PLACE_SCOPE = PLACE + COLON
 export const TILE_SERVICE_SCOPE = TILE_SERVICE + COLON
 export const TILE_PRESET_SCOPE = TILE_PRESET + COLON
 export const TILE_LAYER_SCOPE = TILE_LAYER + COLON
-export const MEASUREMENT_SCOPE = MEASUREMENT + COLON
+export const MEASURE_SCOPE = MEASURE + COLON
 
 export const LINK_PREFIX = 'link' + PLUS
 export const STYLE_PREFIX = 'style' + PLUS
@@ -93,7 +93,7 @@ export const isLockedId = isId(LOCKED_PREFIX)
 export const isHiddenId = isId(HIDDEN_PREFIX)
 export const isDefaultId = isId(DEFAULT_PREFIX)
 export const isTagsId = isId(TAGS_PREFIX)
-export const isMeasurementId = isId(MEASUREMENT_SCOPE)
+export const isMeasureId = isId(MEASURE_SCOPE)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
@@ -150,7 +150,7 @@ export const tileLayerId = (tileServiceId, layerId) =>
 
 export const markerId = () => makeId(MARKER, uuid())
 export const bookmarkId = () => makeId(BOOKMARK, uuid())
-export const measurementId = () => makeId(MEASUREMENT, uuid())
+export const measureId = () => makeId(MEASURE, uuid())
 export const linkId = id => LINK + PLUS + id + SLASH + uuid()
 
 

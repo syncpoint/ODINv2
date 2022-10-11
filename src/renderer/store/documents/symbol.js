@@ -7,7 +7,7 @@ export default async function (id) {
 
   return ({
     id,
-    scope: 'symbol',
+    scope: ID.SYMBOL,
     text: symbol.hierarchy.join(' '),
     tags: [
       ...symbol.dimensions,

@@ -7,7 +7,7 @@ export default async function (id) {
 
   const document = {
     id,
-    scope: 'tile-service',
+    scope: ID.TILE_SERVICE,
     text: service.name,
     tags: [...(tags || []), service.type]
   }

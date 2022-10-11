@@ -6,7 +6,7 @@ import marker from './options/marker'
 import tileService from './options/tile-service'
 import bookmark from './options/bookmark'
 import place from './options/place'
-import measurement from './options/measurement'
+import measure from './options/measure'
 
 export default function OptionStore (coordinatesFormat, store, sessionStore) {
   this.coordinatesFormat = coordinatesFormat
@@ -24,4 +24,4 @@ OptionStore.prototype.marker = marker
 OptionStore.prototype['tile-service'] = tileService
 OptionStore.prototype.bookmark = bookmark
 OptionStore.prototype.place = place
-OptionStore.prototype.measurement = measurement
+OptionStore.prototype.measure = measure

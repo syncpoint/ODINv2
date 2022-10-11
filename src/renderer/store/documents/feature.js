@@ -31,7 +31,7 @@ export default async function (id) {
 
   return {
     id,
-    scope: 'feature',
+    scope: ID.FEATURE,
     tags: [
       hidden ? 'hidden' : 'visible',
       locked ? 'locked' : 'unlocked',

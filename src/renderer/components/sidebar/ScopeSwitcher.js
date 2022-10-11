@@ -73,9 +73,8 @@ export const ScopeSwitcher = props => {
     [`@${ID.BOOKMARK}`]: 'bookmark',
     [`@${ID.PLACE}`]: 'place',
     [`@${ID.TILE_SERVICE}`]: 'tile-service',
-    [`@${ID.MEASUREMENT}`]: 'measure'
+    [`@${ID.MEASURE}`]: 'measure'
   }
-
 
   const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
     <ScopeSwitch

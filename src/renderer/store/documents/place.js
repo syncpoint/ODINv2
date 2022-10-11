@@ -7,7 +7,7 @@ export default async function (id) {
 
   return {
     id,
-    scope: 'place',
+    scope: ID.PLACE,
     text: place.display_name,
     tags: [
       ...place.tags,

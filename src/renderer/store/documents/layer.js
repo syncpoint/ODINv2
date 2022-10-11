@@ -10,7 +10,7 @@ export default async function (id) {
 
   return {
     id,
-    scope: 'layer',
+    scope: ID.LAYER,
     text: layer.name,
     tags: [
       hidden ? 'hidden' : 'visible',

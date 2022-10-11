@@ -79,7 +79,7 @@ export default ({ map, services }) => {
         measurement.name = `Area - ${militaryFormat.now()}`
       }
 
-      services.store.insert([[ID.measurementId(), measurement]])
+      services.store.insert([[ID.measureId(), measurement]])
       setImmediate(() => source.removeFeature(feature))
     })
 

@@ -7,7 +7,7 @@ export default async function (id) {
 
   return {
     id,
-    scope: 'link',
+    scope: ID.LINK,
     text: link.name,
     tags: tags || []
   }

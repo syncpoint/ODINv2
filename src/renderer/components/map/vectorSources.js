@@ -6,7 +6,7 @@ export default services => {
   const featureSource = Sources.union(
     Sources.featureSource(store, featureStore, ID.FEATURE_SCOPE),
     Sources.featureSource(store, featureStore, ID.MARKER_SCOPE),
-    Sources.featureSource(store, featureStore, ID.MEASUREMENT_SCOPE)
+    Sources.featureSource(store, featureStore, ID.MEASURE_SCOPE)
   )
 
   const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)
