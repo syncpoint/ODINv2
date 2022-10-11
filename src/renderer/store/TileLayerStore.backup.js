@@ -26,6 +26,16 @@ const fetchCapabilities = async service => {
   }
 }
 
+const defaultService = { name: 'OSM', type: 'OSM', url: '' }
+
+const osmLayer = {
+  id: ID.defaultTileLayerId,
+  name: 'OSM',
+  opacity: 1.0,
+  visible: true
+}
+
+const defaultPreset = [osmLayer]
 
 /**
  * Store frontend. Encapsulate rather complex tile layer and
@@ -33,6 +43,22 @@ const fetchCapabilities = async service => {
  */
 export default function TileLayerStore (store) {
   this.store = store
+  this.ready = false
+
+  store.on('batch', ({ operations }) => {
+
+    // No need to shoot ourselves in the foot (during initialization):
+    // Creating default service and preset would trigger updates
+    // of incomplete state.
+    //
+    if (!this.ready) return
+
+    const updatePreset = operations.some(({ key }) => ID.isTileServiceId(key))
+    if (updatePreset) this.updatePreset()
+
+    const presets = operations.filter(({ type, key }) => type === 'put' && ID.isTilePresetId(key))
+    if (presets.length === 1) this.updateLayers(presets[0].value)
+  })
 }
 
 TileLayerStore.tileLayer = function (services) {
@@ -44,50 +70,12 @@ TileLayerStore.tileLayer = function (services) {
   }
 }
 
-
-/**
- *
- */
-TileLayerStore.prototype.bootstrap = async function () {
-
-  // Currently there is exactly one (default) tile preset.
-  // For new projects we create this preset with OSM as only
-  // tile service and layer. After that, preset is allowed to
-  // have zero active layers, i.e. deleting last tile service/layer
-  // is permitted.
-
-  const [preset] = await this.store.values(ID.TILE_PRESET_SCOPE)
-
-  if (!preset) {
-    const entries = {
-      [ID.defaultTileServiceId]: { name: 'OSM', type: 'OSM', url: '' },
-      [ID.defaultTilePresetId]: [{
-        id: ID.defaultTileLayerId,
-        name: 'OSM',
-        opacity: 1.0,
-        visible: true
-      }]
-    }
-
-    await this.store.update(Object.keys(entries), Object.values(entries))
-  }
-
-  this.store.on('batch', ({ operations }) => {
-    const updatePreset = operations.some(({ key }) => ID.isTileServiceId(key))
-    if (updatePreset) this.updatePreset()
-
-    const presets = operations.filter(({ type, key }) => type === 'put' && ID.isTilePresetId(key))
-    if (presets.length === 1) this.updateLayers(presets[0].value)
-  })
-}
-
-
 /**
  *
  */
 TileLayerStore.prototype.tileLayers = async function () {
-  const [preset] = await this.store.values(ID.TILE_PRESET_SCOPE)
-  const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
+  const preset = await this.preset()
+  const services = Object.fromEntries(await this.store.tuples('tile-service:'))
   const layers = preset.map(TileLayerStore.tileLayer(services))
 
   // Lazy init group for tile layers.
@@ -155,15 +143,36 @@ TileLayerStore.prototype.toggleActiveLayer = async function (key, id) {
 /**
  *
  */
+TileLayerStore.prototype.preset = async function () {
+  const [service] = await this.store.values(ID.defaultTileServiceId)
+  if (!service) await this.store.update([ID.defaultTileServiceId], [defaultService])
+
+  const createPreset = async () => {
+    await this.store.update([ID.tilePresetId()], [defaultPreset])
+    return defaultPreset
+  }
+
+  const values = await this.store.values(ID.tilePresetId())
+  const preset = values.length
+    ? values[0]
+    : createPreset()
+
+  // Switch to ready state on next tick.
+  setTimeout(() => (this.ready = true))
+
+  return preset
+}
+
+
+/**
+ *
+ */
 TileLayerStore.prototype.updateOpacity = function (preset, id, opacity) {
   const [key, layers] = preset
   const index = layers.findIndex(entry => entry.id === id)
   const newValue = [...layers]
   newValue[index] = { ...layers[index], opacity }
-
-  // Store commands with same id are collapsed into one single command:
-  const commandId = '650f480a-6184-4e8a-aef8-2d6abc2c0171'
-  this.store.updateCollapsible([key], [newValue], [layers], commandId)
+  this.store.updateCollapsible([key], [newValue], [layers], '650f480a-6184-4e8a-aef8-2d6abc2c0171')
 }
 
 
@@ -236,7 +245,7 @@ TileLayerStore.prototype.updatePreset = async function () {
 TileLayerStore.prototype.updateLayers = async function (preset) {
   const currentLayers = this.layerCollection.getArray()
   const findLayer = id => currentLayers.find(layer => layer.get('id') === id)
-  const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
+  const services = Object.fromEntries(await this.store.tuples('tile-service:'))
 
   const updateLayer = (layer, properties, index) => {
     layer.setOpacity(properties.opacity)

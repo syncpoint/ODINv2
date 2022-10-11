@@ -15,6 +15,7 @@ import { index } from '../symbology/2525c'
  *
  * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
+ * bootstrap :: () -> unit
  * collect :: k -> [(k -> k)] -> [v]
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
@@ -69,7 +70,7 @@ util.inherits(Store, Emitter)
 
 
 /**
- *
+ * bootstrap :: () -> unit
  */
 Store.prototype.bootstrap = async function () {
 
@@ -247,7 +248,7 @@ Store.prototype.update = async function (...args) {
       // update :: [k] -> [v] -> unit
       // No undo, direct update.
       const [keys, values] = args
-      this.batch(this.db, R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
+      return this.batch(this.db, R.zip(keys, values).map(([key, value]) => L.putOp(key, value)))
     }
   } else if (args.length === 3) {
     // update :: [k] -> [v] -> [v] -> unit

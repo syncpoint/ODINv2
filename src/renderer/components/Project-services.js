@@ -123,16 +123,17 @@ export default async projectUUID => {
 
   // Orderly bootstrapping:
   //
-  window.requestIdleCallback(async () => {
-    console.time('bootstrap')
-    await migration.bootstrap()
-    await store.bootstrap()
-    await searchIndex.bootstrap()
-    await featureStore.bootstrap()
-    await spatialIndex.bootstrap()
-    console.timeEnd('bootstrap')
-
-  }, { timeout: 2000 })
-
-  return services
+  return new Promise(resolve => {
+    window.requestIdleCallback(async () => {
+      console.time('bootstrap')
+      await migration.bootstrap()
+      await store.bootstrap()
+      await tileLayerStore.bootstrap()
+      await searchIndex.bootstrap()
+      await featureStore.bootstrap()
+      await spatialIndex.bootstrap()
+      console.timeEnd('bootstrap')
+      resolve(services)
+    }, { timeout: 2000 })
+  })
 }

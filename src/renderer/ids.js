@@ -155,7 +155,7 @@ export const linkId = id => LINK + PLUS + id + SLASH + uuid()
 
 
 /** Only a single preset (for now.) */
-export const defaultTileServiceId = `${TILE_SERVICE}00000000-0000-0000-0000-000000000000`
+export const defaultTileServiceId = `${TILE_SERVICE_SCOPE}00000000-0000-0000-0000-000000000000`
 export const defaultTileLayerId = `${TILE_LAYER_SCOPE}00000000-0000-0000-0000-000000000000`
 export const defaultTilePresetId = `${TILE_PRESET_SCOPE}00000000-0000-0000-0000-000000000000`
 export const tilePresetId = () => defaultTilePresetId
