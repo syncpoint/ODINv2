@@ -205,18 +205,18 @@ TileLayerStore.prototype.updateOrder = function (preset, from, to) {
 TileLayerStore.prototype.updatePreset = async function () {
   const [currentPreset] = await this.store.values(ID.tilePresetId())
   const currentLayers = currentPreset.map(({ id }) => id)
-  const services = await this.store.tuples('tile-service:')
+  const services = await this.store.tuples(ID.TILE_SERVICE_SCOPE)
   const findService = id => services.find(([key]) => key === id)
   const adapter = ([key, { type, capabilities }]) => [key, TileService.adapters[type](capabilities)]
   const adapters = Object.fromEntries(services.map(adapter))
 
-  const activeLayers = services.flatMap(([key, service]) =>
+  const activeLayerIds = services.flatMap(([key, service]) =>
     ['OSM', 'XYZ'].includes(service.type)
-      ? `tile-layer:${key.split(':')[1]}`
-      : (service.active || []).map(id => `tile-layer:${key.split(':')[1]}/${id}`)
+      ? ID.tileLayerId(key)
+      : (service.active || []).map(id => ID.tileLayerId(key, id))
   )
 
-  const removals = currentLayers.filter(x => !activeLayers.includes(x))
+  const removals = currentLayers.filter(x => !activeLayerIds.includes(x))
 
   const layerName = id => {
     const [key, service] = findService(ID.tileServiceId(id))
@@ -226,7 +226,7 @@ TileLayerStore.prototype.updatePreset = async function () {
   }
 
   const layer = id => ({ id, opacity: 1.0, visible: false })
-  const additions = activeLayers.filter(x => !currentLayers.includes(x)).map(layer)
+  const additions = activeLayerIds.filter(x => !currentLayers.includes(x)).map(layer)
 
   // Propagate name changes from service to preset (only for OSM, XYZ.)
   //

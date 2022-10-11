@@ -38,6 +38,7 @@ export const SYMBOL_SCOPE = SYMBOL + COLON
 export const PLACE_SCOPE = PLACE + COLON
 export const TILE_SERVICE_SCOPE = TILE_SERVICE + COLON
 export const TILE_PRESET_SCOPE = TILE_PRESET + COLON
+export const TILE_LAYER_SCOPE = TILE_LAYER + COLON
 export const MEASUREMENT_SCOPE = MEASUREMENT + COLON
 
 export const LINK_PREFIX = 'link' + PLUS
@@ -71,7 +72,6 @@ export const sharedId = prefix(SHARED)
 export const defaultId = prefix(DEFAULT)
 export const tagsId = prefix(TAGS)
 export const styleId = prefix(STYLE)
-export const tileLayerId = prefix(TILE_LAYER)
 
 export const isId = prefix => id => id && id.startsWith(prefix)
 export const isProjectId = isId(PROJECT_SCOPE)
@@ -83,6 +83,7 @@ export const isViewId = isId(VIEW_SCOPE)
 export const isSymbolId = isId(SYMBOL)
 export const isPlaceId = isId(PLACE_SCOPE)
 export const isTileServiceId = isId(TILE_SERVICE_SCOPE)
+export const isTileLayerId = isId(TILE_LAYER_SCOPE)
 export const isTilePresetId = isId(TILE_PRESET_SCOPE)
 export const isLinkId = isId(LINK_PREFIX)
 export const isStyleId = isId(STYLE_PREFIX)
@@ -97,11 +98,7 @@ export const isMeasurementId = isId(MEASUREMENT_SCOPE)
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isViewId(id)
-export const isAssociatedId = id =>
-  isHiddenId(id) ||
-  isLockedId(id) ||
-  isDefaultId(id) ||
-  isTagsId(id)
+export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isDefaultId, isTagsId])
 
 export const layerUUID = R.cond([
   [isFeatureId, nthId(0)],
@@ -109,14 +106,21 @@ export const layerUUID = R.cond([
 ])
 
 /**
- * featureId :: '...+feature:' => FeatureId
- * featureId :: LayerId => FeatureId
+ * featureId :: '...+feature:' -> FeatureId
+ * featureId :: LayerId -> FeatureId
  */
 export const featureId = R.cond([
   [R.includes(makeScope(FEATURE, '')), dropScope],
   [R.T, layerId => makeId(FEATURE, ids(layerId), uuid())]
 ])
 
+
+/**
+ * layerId :: () -> LayerId
+ * layerId :: FeatureId -> LayerId
+ * layerId :: LayerId -> LayerId
+ * layerId :: '...+layer:' -> LayerId
+ */
 export const layerId = R.cond([
   [R.isNil, () => makeId(LAYER, uuid())],
   [isFeatureId, x => makeId(LAYER, nthId(0, x))],
@@ -124,21 +128,36 @@ export const layerId = R.cond([
   [R.includes(makeScope(LAYER, '')), dropScope]
 ])
 
+
+/**
+ * tileServiceId :: () -> TileServiceId
+ * tileServiceId :: TileLayerId -> TileServiceId
+ */
+export const tileServiceId = R.cond([
+  [R.isNil, () => makeId(TILE_SERVICE, uuid())],
+  [isTileLayerId, x => makeId(TILE_SERVICE, nthId(0, x))]
+])
+
+
+/**
+ * tileLayerId :: TileServiceId -> TileLayerId [OSM, XYZ]
+ * tileLayerId :: (TileServiceId, String) -> TileLayerId [WMS, WMTS]
+ */
+export const tileLayerId = (tileServiceId, layerId) =>
+  layerId
+    ? makeId(TILE_LAYER, ids(tileServiceId), layerId)
+    : makeId(TILE_LAYER, ids(tileServiceId))
+
 export const markerId = () => makeId(MARKER, uuid())
 export const bookmarkId = () => makeId(BOOKMARK, uuid())
 export const measurementId = () => makeId(MEASUREMENT, uuid())
 export const linkId = id => LINK + PLUS + id + SLASH + uuid()
 
-export const tileServiceId = R.cond([
-  [R.isNil, () => makeId(TILE_SERVICE, uuid())],
-  [R.startsWith('tile-layer:'), x => `tile-service:${x.split(':')[1].split('/')[0]}`]
-])
-
 
 /** Only a single preset (for now.) */
-export const defaultTileServiceId = 'tile-service:00000000-0000-0000-0000-000000000000'
-export const defaultTileLayerId = 'tile-layer:00000000-0000-0000-0000-000000000000'
-export const defaultTilePresetId = 'tile-preset:00000000-0000-0000-0000-000000000000'
+export const defaultTileServiceId = `${TILE_SERVICE}00000000-0000-0000-0000-000000000000`
+export const defaultTileLayerId = `${TILE_LAYER_SCOPE}00000000-0000-0000-0000-000000000000`
+export const defaultTilePresetId = `${TILE_PRESET_SCOPE}00000000-0000-0000-0000-000000000000`
 export const tilePresetId = () => defaultTilePresetId
 export const defaultStyleId = 'style+default:'
 

@@ -9,7 +9,7 @@ const assertFeatureId = s => {
   assert(ID.isUUID(featureUUID))
 }
 
-describe('ids', function () {
+describe.only('ids', function () {
 
   it('scope :: Id -> String', function () {
     const scope = 'xyz'
@@ -37,54 +37,88 @@ describe('ids', function () {
     assert.equal(ID.layerUUID('layer:10'), '10')
   })
 
-  it('() -> LayerId', function () {
+  it('layerId :: () -> LayerId', function () {
     const [scope, uuid] = ID.layerId().split(ID.COLON)
     assert.equal(scope, ID.LAYER)
     assert(ID.isUUID(uuid))
   })
 
-  it('FeatureId -> LayerId', function () {
+  it('layerId :: FeatureId -> LayerId', function () {
     const layerId = ID.layerId()
     const featureId = ID.featureId(layerId)
     assert.equal(ID.layerId(featureId), layerId)
   })
 
-  it('LayerId -> LayerId', function () {
+  it('layerId :: LayerId -> LayerId', function () {
     const layerId = ID.layerId()
     assert.equal(ID.layerId(layerId), layerId)
   })
 
-  it('...+LayerId -> LayerId', function () {
+  it("layerId :: '...+layer' -> LayerId", function () {
     const layerId = ID.layerId()
     const id = ID.prefix('XYZ')(layerId)
     assert.equal(ID.layerId(id), layerId)
   })
 
-  it('...+FeatureId -> FeatureId', function () {
+  it("featureId :: '...+feature:' -> FeatureId", function () {
     const layerId = ID.layerId()
     const featureId = ID.featureId(layerId)
     const id = ID.prefix('XYZ')(featureId)
     assert.equal(ID.featureId(id), featureId)
   })
 
-  it('LayerId -> FeatureId', function () {
+  it('featureId :: LayerId -> FeatureId', function () {
     const layerId = ID.layerId()
     assertFeatureId(ID.featureId(layerId))
   })
 
-  it('() -> MarkerId', function () {
+  it('tileServiceId :: () -> TileServiceId', function () {
+    const [scope, uuid] = ID.tileServiceId().split(ID.COLON)
+    assert.equal(scope, ID.TILE_SERVICE)
+    assert(ID.isUUID(uuid))
+  })
+
+  it('tileServiceId :: TileLayerId -> TileServiceId [OSM, XYZ]', function () {
+    const tileServiceId = ID.tileServiceId()
+    const tileLayerId = ID.tileLayerId(tileServiceId)
+    const [scope, uuid] = ID.tileServiceId(tileLayerId).split(ID.COLON)
+    assert.equal(scope, ID.TILE_SERVICE)
+    assert(ID.isUUID(uuid))
+  })
+
+  it('tileServiceId :: TileLayerId -> TileServiceId [WMS, WMTS]', function () {
+    const tileServiceId = ID.tileServiceId()
+    const tileLayerId = ID.tileLayerId(tileServiceId, '4711')
+    const [scope, uuid] = ID.tileServiceId(tileLayerId).split(ID.COLON)
+    assert.equal(scope, ID.TILE_SERVICE)
+    assert(ID.isUUID(uuid))
+  })
+
+  it('tileLayerId :: TileServiceId -> TileLayerId', function () {
+    const [scope, uuid] = ID.tileLayerId('tile-service:0815').split(ID.COLON)
+    assert.equal(scope, ID.TILE_LAYER)
+    assert.equal(uuid, '0815')
+  })
+
+  it('tileLayerId :: (TileServiceId, String) -> TileLayerId', function () {
+    const [scope, uuid] = ID.tileLayerId('tile-service:0815', '4711').split(ID.COLON)
+    assert.equal(scope, ID.TILE_LAYER)
+    assert.equal(uuid, '0815/4711')
+  })
+
+  it('markerId :: () -> MarkerId', function () {
     const [scope, uuid] = ID.markerId().split(ID.COLON)
     assert.equal(scope, ID.MARKER)
     assert(ID.isUUID(uuid))
   })
 
-  it('() -> BookmarkId', function () {
+  it('bookmarkId :: () -> BookmarkId', function () {
     const [scope, uuid] = ID.bookmarkId().split(ID.COLON)
     assert.equal(scope, ID.BOOKMARK)
     assert(ID.isUUID(uuid))
   })
 
-  it('Id -> LinkId', function () {
+  it('linkId :: Id -> LinkId', function () {
     const [scope, ids] = ID.linkId('layer:0817').split(ID.COLON)
     const [layerId, linkId] = ids.split(ID.SLASH)
     assert.equal(scope, 'link+layer')
