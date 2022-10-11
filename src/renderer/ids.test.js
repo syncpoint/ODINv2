@@ -9,7 +9,7 @@ const assertFeatureId = s => {
   assert(ID.isUUID(featureUUID))
 }
 
-describe.only('ids', function () {
+describe('ids', function () {
 
   it('scope :: Id -> String', function () {
     const scope = 'xyz'
@@ -115,6 +115,12 @@ describe.only('ids', function () {
   it('bookmarkId :: () -> BookmarkId', function () {
     const [scope, uuid] = ID.bookmarkId().split(ID.COLON)
     assert.equal(scope, ID.BOOKMARK)
+    assert(ID.isUUID(uuid))
+  })
+
+  it('measurementId :: () -> MeasurementId', function () {
+    const [scope, uuid] = ID.measurementId().split(ID.COLON)
+    assert.equal(scope, ID.MEASUREMENT)
     assert(ID.isUUID(uuid))
   })
 
