@@ -5,13 +5,11 @@ import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import Circle from 'ol/geom/Circle'
 import uuid from 'uuid-random'
-
 import GeometryType from './GeometryType'
-
 import { baseStyle, stylefunctionForGeometryType } from './style'
 import { getLastSegmentCoordinates } from './tools'
 import { militaryFormat } from '../../../../shared/datetime'
-import { measurementId } from '../../../ids'
+import * as ID from '../../../ids'
 import { writeFeatureObject } from '../../../store/FeatureStore'
 
 export default ({ map, services }) => {
@@ -81,7 +79,7 @@ export default ({ map, services }) => {
         measurement.name = `Area - ${militaryFormat.now()}`
       }
 
-      services.store.insert([[measurementId(), measurement]])
+      services.store.insert([[ID.measurementId(), measurement]])
       setImmediate(() => source.removeFeature(feature))
     })
 

@@ -1,11 +1,12 @@
 import * as Sources from '../../model/Sources'
+import * as ID from '../../ids'
 
 export default services => {
   const { store, featureStore, emitter, sessionStore, selection } = services
   const featureSource = Sources.union(
-    Sources.featureSource(store, featureStore, 'feature:'),
-    Sources.featureSource(store, featureStore, 'marker:'),
-    Sources.featureSource(store, featureStore, 'measurement:')
+    Sources.featureSource(store, featureStore, ID.FEATURE_SCOPE),
+    Sources.featureSource(store, featureStore, ID.MARKER_SCOPE),
+    Sources.featureSource(store, featureStore, ID.MEASUREMENT_SCOPE)
   )
 
   const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)

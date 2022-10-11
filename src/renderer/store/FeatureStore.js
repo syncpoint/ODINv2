@@ -70,9 +70,9 @@ FeatureStore.prototype.bootstrap = async function () {
   // On startup: load all features:
   //
   this.styleProps = Object.fromEntries(await this.store.tuples('style+'))
-  await this.loadFeatures('feature:')
-  await this.loadFeatures('marker:')
-  await this.loadFeatures('measurement:')
+  await this.loadFeatures(ID.FEATURE_SCOPE)
+  await this.loadFeatures(ID.MARKER_SCOPE)
+  await this.loadFeatures(ID.MEASUREMENT_SCOPE)
 }
 
 /**

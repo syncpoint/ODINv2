@@ -65,15 +65,15 @@ export const ScopeSwitcher = props => {
 
   const SCOPES = {
     '#pin': 'pinned',
-    '@layer': 'layer',
-    '@feature': 'feature',
-    '@link': 'link',
-    '@symbol': 'symbol',
-    '@marker': 'marker',
-    '@bookmark': 'bookmark',
-    '@place': 'place',
-    '@tile-service': 'tile-service',
-    '@measurement': 'measure'
+    [`@${ID.LAYER}`]: 'layer',
+    [`@${ID.FEATURE}`]: 'feature',
+    [`@${ID.LINK}`]: 'link',
+    [`@${ID.SYMBOL}`]: 'symbol',
+    [`@${ID.MARKER}`]: 'marker',
+    [`@${ID.BOOKMARK}`]: 'bookmark',
+    [`@${ID.PLACE}`]: 'place',
+    [`@${ID.TILE_SERVICE}`]: 'tile-service',
+    [`@${ID.MEASUREMENT}`]: 'measure'
   }
 
 
