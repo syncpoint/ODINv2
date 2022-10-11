@@ -1,3 +1,13 @@
+2.5.0-alpha
+* New: Distance and area measurement
+* New: Layer Styles
+* New: Tile Layer - min/max zoom (#46)
+* Fix: Sidebar - Unwanted scrolling (#45, #48)
+* Fix: Sidebar - Preview for circular areas (#49)
+* Fix: Sidebar - Title editing (#50)
+* Fix: Rendering of Boundaries (#51)
+* Fix: Evaluation Rating (#52)
+
 2.4.0-alpha
 * Updated dependencies
 * New: Sidebar persists scope and filter

@@ -1,7 +1,7 @@
 {
   "name": "nido",
   "productName": "NIDO",
-  "version": "2.4.0-alpha",
+  "version": "2.5.0-alpha",
   "description": "",
   "main": "dist/main.js",
   "scripts": {
