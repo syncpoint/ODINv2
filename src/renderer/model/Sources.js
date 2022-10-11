@@ -9,16 +9,17 @@ import * as ID from '../ids'
 /**
  *
  */
-export const featureSource = (store, featureStore, scope) => {
-  const source = new VectorSource()
+export const featureSource = (featureStore, scope) => {
+  const matchesScope = feature => ID.isId(scope)(feature.getId())
+  const features = Object.values(featureStore.features).filter(matchesScope)
+  const source = new VectorSource({ features })
 
   featureStore.on('addfeatures', ({ features }) => {
-    const candidates = features.filter(feature => ID.isId(scope)(feature.getId()))
-    source.addFeatures(candidates)
+    source.addFeatures(features.filter(matchesScope))
   })
 
   featureStore.on('removefeatures', ({ features }) => features
-    .filter(feature => ID.isId(scope)(feature.getId()))
+    .filter(matchesScope)
     .forEach(feature => source.removeFeature(feature))
   )
 
@@ -112,7 +113,9 @@ export const intersect = (a, b) => {
  */
 export const union = (...sources) => {
   const union = new VectorSource({ features: new Collection() })
+
   sources.forEach(source => {
+    union.addFeatures(source.getFeatures())
     source.on('addfeature', ({ feature }) => union.addFeature(feature))
     source.on('removefeature', ({ feature }) => union.removeFeature(union.getFeatureById(feature.getId())))
   })

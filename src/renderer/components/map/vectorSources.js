@@ -4,9 +4,9 @@ import * as ID from '../../ids'
 export default services => {
   const { store, featureStore, emitter, sessionStore, selection } = services
   const featureSource = Sources.union(
-    Sources.featureSource(store, featureStore, ID.FEATURE_SCOPE),
-    Sources.featureSource(store, featureStore, ID.MARKER_SCOPE),
-    Sources.featureSource(store, featureStore, ID.MEASURE_SCOPE)
+    Sources.featureSource(featureStore, ID.FEATURE_SCOPE),
+    Sources.featureSource(featureStore, ID.MARKER_SCOPE),
+    Sources.featureSource(featureStore, ID.MEASURE_SCOPE)
   )
 
   const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)
