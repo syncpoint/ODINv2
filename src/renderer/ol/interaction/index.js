@@ -1,3 +1,4 @@
+import Draw from 'ol/interaction/Draw'
 import { defaults as defaultInteractions } from 'ol/interaction'
 import selectInteraction from './select-interaction'
 import translateInteraction from './translate-interaction'
@@ -31,4 +32,23 @@ export default options => {
 
   const { map } = options
   interactions.getArray().forEach(interaction => map.addInteraction(interaction))
+
+  map.getInteractions().on('add', ({ target, element }) => {
+    if (element instanceof Draw) {
+      // Deactive select because draw propagates all events,
+      // even those which should be consumed (click, double click).
+      select.setActive(false)
+
+      // Move snap to end of list (after draw):
+      target.remove(snap)
+      target.push(snap)
+    }
+  })
+
+  map.getInteractions().on('remove', ({ element }) => {
+    if (element instanceof Draw) {
+      // Must be deferred, since double click is still handled otherwise.
+      setTimeout(() => select.setActive(true))
+    }
+  })
 }
