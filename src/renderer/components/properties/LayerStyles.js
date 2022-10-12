@@ -22,9 +22,8 @@ const LayerStyles = props => {
   const lineColor = value['line-color']
   const outlineColor = value['line-halo-color']
   const symbolSize = value['symbol-size'] || 60
-  const symbolFillOpacity = value['symbol-fill-opacity'] !== undefined
-    ? value['symbol-fill-opacity']
-    : 1
+  const symbolOutlineColor = value['symbol-halo-color']
+  const symbolFillOpacity = value['symbol-fill-opacity'] !== undefined ? value['symbol-fill-opacity'] : 1
   const symbolLineWidth = value['symbol-line-width'] || 3
   const lineWidth = value['line-width'] || 2
   const lineHaloWidth = value['line-halo-width'] || 1
@@ -42,12 +41,20 @@ const LayerStyles = props => {
     'symbol-color': color ? Color(color).rgb().string() : undefined
   })
 
+  const setLineWidth = ({ target }) => update({
+    ...value,
+    'line-width': parseInt(target.value)
+  })
+
   const setOutlineColor = color => update({
     ...value,
     'line-halo-color': color,
-    'line-halo-width': color ? 1 : 0,
-    'symbol-halo-color': color ? Color(color).rgb().string() : undefined,
-    'symbol-halo-width': color ? 3 : 0
+    'line-halo-width': color ? 1 : 0
+  })
+
+  const setLineHaloWidth = ({ target }) => update({
+    ...value,
+    'line-halo-width': parseInt(target.value)
   })
 
   const setSymbolSize = ({ target }) => update({
@@ -55,24 +62,20 @@ const LayerStyles = props => {
     'symbol-size': parseInt(target.value)
   })
 
-  const setSymbolFillOpacity = ({ target }) => update({
-    ...value,
-    'symbol-fill-opacity': parseFloat(target.value)
-  })
-
   const setSymbolLineWidth = ({ target }) => update({
     ...value,
     'symbol-line-width': parseInt(target.value)
   })
 
-  const setLineWidth = ({ target }) => update({
+  const setSymbolOutlineColor = color => update({
     ...value,
-    'line-width': parseInt(target.value)
+    'symbol-halo-color': color ? Color(color).rgb().string() : undefined,
+    'symbol-halo-width': color ? 3 : 0
   })
 
-  const setLineHaloWidth = ({ target }) => update({
+  const setSymbolFillOpacity = ({ target }) => update({
     ...value,
-    'line-halo-width': parseInt(target.value)
+    'symbol-fill-opacity': parseFloat(target.value)
   })
 
   return (
@@ -162,6 +165,15 @@ const LayerStyles = props => {
             <option value='7'>L</option>
             <option value='9'>XL</option>
           </Range>
+        </div>
+        <div>
+          <label>Symbol Outline Color</label>
+          <Palette
+            format='rgb'
+            color={symbolOutlineColor}
+            colors={outlineColors}
+            onChange={setSymbolOutlineColor}
+          />
         </div>
         <div>
           <label>Symbol Fill Opacity</label>
