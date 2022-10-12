@@ -74,7 +74,8 @@ export const Toolbar = () => {
     commandRegistry.command('LAYER_SET_DEFAULT'),
     commandRegistry.command('PIN'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
-    commandRegistry.separator()
+    commandRegistry.separator(),
+    commandRegistry.command('PRINT_MAP')
   ]
 
   const addCommands = [

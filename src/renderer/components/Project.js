@@ -30,7 +30,9 @@ export const Project = () => {
     <div className="site-container">
       { toolbar }
       <div className="content">
-        <Map/>
+        <div id='map-container' className='map-container'>
+          <Map/>
+        </div>
         <div className="map-overlay">
           { sidebar }
           <OSD/>

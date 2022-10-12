@@ -3,7 +3,8 @@ import * as ol from 'ol'
 export default async services => {
   const { sessionStore, emitter } = services
   const viewport = await sessionStore.get('viewport', sessionStore.DEFAULT_VIEWPORT)
-  const view = new ol.View({ ...viewport })
+  // const view = new ol.View({ ...viewport })
+  const view = new ol.View({ projection: 'EPSG:32633' })
 
   view.on('change', ({ target: view }) => {
     sessionStore.put('viewport', {

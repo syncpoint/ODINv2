@@ -76,7 +76,7 @@ const mapHandlers = (services, map) => {
     if (key === 'Escape') selection.set([])
   }, false)
 
-  map.once('rendercomplete', ({ target }) => sendPreview(services, target))
+  // map.once('rendercomplete', ({ target }) => sendPreview(services, target))
   map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
 
   // Deselect everything except features and markers.

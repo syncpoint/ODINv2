@@ -12,6 +12,7 @@ import createVectorLayers from './vectorLayers'
 import createTileLayers from './tileLayers'
 import registerEventHandlers from './eventHandlers'
 import registerGraticules from './graticules'
+import print from '../print'
 import './Map.css'
 import './ScaleLine.css'
 
@@ -57,6 +58,7 @@ export const Map = () => {
 
     registerEventHandlers({ services, sources, vectorLayers, map })
     registerGraticules({ services, map })
+    print({ map, services })
 
     // Force map resize on container resize:
     const observer = new ResizeObserver(() => map.updateSize())
