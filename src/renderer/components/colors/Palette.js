@@ -17,7 +17,7 @@ export const Palette = props => {
   const colors = props.colors.map(color => format(color))
 
   const handleClick = index => () => {
-    props.onChange(props.colors[index])
+    props.onChange(format(props.colors[index]))
   }
 
   const children = colors.reduce((acc, color, index) => {

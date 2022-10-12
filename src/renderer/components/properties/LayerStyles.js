@@ -69,7 +69,7 @@ const LayerStyles = props => {
 
   const setSymbolOutlineColor = color => update({
     ...value,
-    'symbol-halo-color': color ? Color(color).rgb().string() : undefined,
+    'symbol-halo-color': color,
     'symbol-halo-width': color ? 3 : 0
   })
 
