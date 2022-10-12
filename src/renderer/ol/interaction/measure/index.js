@@ -100,7 +100,7 @@ export default ({ map, services }) => {
     map.addInteraction(currentDrawInteraction)
   }
 
-  services.emitter.on('MEASURE_BEARING_DISTANCE', () => {
+  services.emitter.on('MEASURE_DISTANCE', () => {
     services.emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
     addDrawInteraction(GeometryType.LINE_STRING)
   })
