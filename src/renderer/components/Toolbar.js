@@ -85,15 +85,15 @@ export const Toolbar = () => {
     commandRegistry.command('TILE_SERVICE_CREATE')
   ]
 
+  const measureCommands = [
+    commandRegistry.command('MEASURE_DISTANCE'),
+    commandRegistry.command('MEASURE_AREA')
+  ]
+
   const toggleProperties = type => () => {
     if (properties === type) setProperties('')
     else setProperties(type)
   }
-
-  const measureCommands = [
-    commandRegistry.command('MEASURE_BEARING_DISTANCE'),
-    commandRegistry.command('MEASURE_AREA')
-  ]
 
   return (
     <header className='toolbar'>

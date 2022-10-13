@@ -1,11 +1,11 @@
-const MeasureBearingDistance = function (services) {
+const MeasureDistance = function (services) {
   this.emitter = services.emitter
-  this.label = 'Measure Bearing/Distance'
+  this.label = 'Measure Distance'
   this.path = 'mdiMapMarkerDistance'
 }
 
-MeasureBearingDistance.prototype.execute = function () {
-  this.emitter.emit('MEASURE_BEARING_DISTANCE')
+MeasureDistance.prototype.execute = function () {
+  this.emitter.emit('MEASURE_DISTANCE')
 }
 
 const MeasureArea = function (services) {
@@ -19,6 +19,6 @@ MeasureArea.prototype.execute = function () {
 }
 
 export default services => ({
-  MEASURE_BEARING_DISTANCE: new MeasureBearingDistance(services),
+  MEASURE_DISTANCE: new MeasureDistance(services),
   MEASURE_AREA: new MeasureArea(services)
 })
