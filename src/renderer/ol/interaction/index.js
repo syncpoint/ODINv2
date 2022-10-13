@@ -35,7 +35,7 @@ export default options => {
 
   map.getInteractions().on('add', ({ target, element }) => {
     if (element instanceof Draw) {
-      // Deactive select because draw propagates all events,
+      // Deactivate select because draw propagates all events,
       // even those which should be consumed (click, double click).
       select.setActive(false)
 
