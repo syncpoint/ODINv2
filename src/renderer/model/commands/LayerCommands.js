@@ -28,13 +28,16 @@ SetDefaultLayer.prototype.selected = function () {
 
 
 const SelectTilePreset = function (services) {
+  console.log('preferencesStore', services.preferencesStore)
   this.selection = services.selection
+  this.preferencesStore = services.preferencesStore
   this.store = services.store
   this.tileLayerStore = services.tileLayerStore
   this.path = 'mdiMap'
 }
 
 SelectTilePreset.prototype.execute = async function () {
+  this.preferencesStore.put('ui.properties', 'properties')
   this.selection.set([ID.defaultTilePresetId])
 }
 
