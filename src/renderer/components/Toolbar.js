@@ -1,61 +1,16 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import './Toolbar.css'
-import Icon from '@mdi/react'
-import * as mdi from '@mdi/js'
+
 import { useServices, useMemento } from './hooks'
 import { DropdownMenu } from './DropdownMenu'
+import { SimpleButton, CommandButton } from './ToolbarButtons'
 
-const SimpleButton = props => {
-  const className = props.checked
-    ? 'toolbar__button toolbar__button--checked'
-    : 'toolbar__button'
-
-  return (
-    <button
-      className={className}
-      onClick={() => props.onClick()}
-    >
-      <Icon path={mdi[props.path]} size='20px' />
-    </button>
-  )
-}
-
-SimpleButton.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  path: PropTypes.string.isRequired,
-  checked: PropTypes.bool.isRequired
-}
-
-
-const CommandButton = props => {
-  const { command } = props
-  const [enabled, setEnabled] = React.useState(command.enabled ? command.enabled() : true)
-
-  React.useEffect(() => {
-    const handle = () => setEnabled(command.enabled())
-    if (command.on) command.on('changed', handle)
-    return command.off && (() => command.off('changed', handle))
-  }, [command])
-
-  return (
-    <button
-      className='toolbar__button'
-      onClick={() => command.execute()}
-      disabled={!enabled}
-    >
-      <Icon path={mdi[command.path]} size='20px' />
-    </button>
-  )
-}
-
-CommandButton.propTypes = {
-  command: PropTypes.object.isRequired
-}
 
 // mdiFormatPaint
 // mdiPaletteSwatchOutline
 // mdiFileDocumentOutline
+
+
 
 export const Toolbar = () => {
   const [properties, setProperties] = useMemento('ui.properties', '')
@@ -75,7 +30,7 @@ export const Toolbar = () => {
     commandRegistry.command('PIN'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
     commandRegistry.separator(),
-    commandRegistry.command('PRINT_MAP')
+    commandRegistry.command('PRINT_SWITCH_SCOPE')
   ]
 
   const addCommands = [

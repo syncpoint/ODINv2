@@ -58,6 +58,8 @@ const sendPreview = (services, map) => {
   } catch (err) {
     // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
     // console.error('[PREVIEW]', err.message)
+  } finally {
+    canvas.remove()
   }
 
   // Send map preview every 5 minutes to main process.
@@ -76,7 +78,7 @@ const mapHandlers = (services, map) => {
     if (key === 'Escape') selection.set([])
   }, false)
 
-  // map.once('rendercomplete', ({ target }) => sendPreview(services, target))
+  map.once('rendercomplete', ({ target }) => sendPreview(services, target))
   map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
 
   // Deselect everything except features and markers.
