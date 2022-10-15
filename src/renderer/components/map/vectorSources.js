@@ -1,7 +1,7 @@
 import * as Sources from '../../model/Sources'
 import * as ID from '../../ids'
 
-export default services => {
+export default async services => {
   const { store, featureStore, emitter, sessionStore, selection } = services
   const featureSource = Sources.union(
     Sources.featureSource(featureStore, ID.FEATURE_SCOPE),
@@ -9,7 +9,7 @@ export default services => {
     Sources.featureSource(featureStore, ID.MEASURE_SCOPE)
   )
 
-  const { visibleSource } = Sources.visibilityTracker(featureSource, store, emitter)
+  const { visibleSource } = await Sources.visibilityTracker(featureSource, store, emitter)
   const { unlockedSource } = Sources.lockedTracker(featureSource, store)
   const selectableSource = visibleSource // alias: visible features are selectable
   const { selectedSource, deselectedSource } = Sources.selectionTracker(selectableSource, selection)

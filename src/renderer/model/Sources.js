@@ -149,12 +149,12 @@ export const selectionTracker = (source, selection) => {
 /**
  *
  */
-export const visibilityTracker = (source, store, emitter) => {
+export const visibilityTracker = async (source, store, emitter) => {
   const keySet = new Set()
   const hidden = key => keySet.has(key)
   const visible = key => !keySet.has(key)
 
-  ;(async () => {
+  await (async () => {
     emitter.on('feature/show', ({ ids }) => {
       const keys = ids.map(ID.associatedId)
       keys.forEach(key => keySet.delete(key))

@@ -26,7 +26,7 @@ export const Map = () => {
 
   const effect = async () => {
     const view = await createMapView(services)
-    const sources = vectorSources(services)
+    const sources = await vectorSources(services)
     const styles = createLayerStyles(services, sources)
     const vectorLayers = createVectorLayers(sources, styles)
 
