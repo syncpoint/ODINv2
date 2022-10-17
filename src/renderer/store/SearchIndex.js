@@ -100,35 +100,75 @@ SearchIndex.prototype.handleBatch = async function (ops) {
 /**
  *
  */
+SearchIndex.prototype.removeDocument = function (id) {
+  const document = this.cachedDocuments[id]
+  if (!document) return
+  delete this.cachedDocuments[id]
+  this.index.remove(document)
+}
+
+
+/**
+ *
+ */
+SearchIndex.prototype.addDocument = function (document) {
+  if (!document) return
+  this.cachedDocuments[document.id] = document
+  this.index.add(document)
+}
+
+
+/**
+ *
+ */
 SearchIndex.prototype.updateIndex = async function (ops) {
-  const pending = ops.map(async ({ type, key, value }) => {
 
-    // 'Associated information' is no document in its own right but some
-    // arbitrary 'value object' associated with a main document.
+  // 'Associated information' is no document in its own right but some
+  // arbitrary 'value object' associated with a main document.
 
-    const id = ID.isAssociatedId(key)
-      ? ID.associatedId(key)
-      : key
+  const affectedId = R.cond([
+    [ID.isAssociatedId, ID.associatedId],
+    [R.T, R.identity]
+  ])
 
-    return ID.isAssociatedId(key)
-      ? [id, await this.document(id)] // put/del: cached main entry
-      : type === 'put'
-        ? [id, await this.document(id)] // put: value from database update
-        : [id, null] // del: remove from index/cache only
-  })
+  // Dependent documents must be re-indexed when their
+  // dependency was deleted or updated.
 
-  const documents = await Promise.all(pending)
-  documents.forEach(([key, document]) => {
-    if (this.cachedDocuments[key]) {
-      this.index.remove(this.cachedDocuments[key])
-      delete this.cachedDocuments[key]
-    }
+  const dependentId = R.cond([
+    [ID.isLinkId, ID.containerId],
+    [R.T, R.always(null)]
+  ])
 
-    if (document) {
-      this.cachedDocuments[key] = document
-      this.index.add(document)
-    }
-  })
+  // Remove all affected and dependent documents.
+  ops
+    .flatMap(({ key }) => [affectedId(key), dependentId(key)])
+    .filter(Boolean)
+    .forEach(id => this.removeDocument(id))
+
+  const pushDocument = async (acc, id) => {
+    const documents = await acc
+    const document = await this.document(id)
+    if (document) documents.push(document)
+    return documents
+  }
+
+  // (Re-)add updated or new documents.
+  const additions = await ops
+    .filter(({ type }) => type === 'put')
+    .map(({ key }) => affectedId(key))
+    .reduce(pushDocument, [])
+
+  additions.forEach(document => this.addDocument(document))
+
+  // Re-add dependent documents.
+  // Note: One document may have multiple dependencies.
+  const dependentIds = R.uniq(ops
+    .map(({ key }) => dependentId(key))
+    .filter(Boolean)
+  )
+
+  const updates = await dependentIds.reduce(pushDocument, [])
+  updates.forEach(document => this.addDocument(document))
 
   this.emit('index/updated')
 }
