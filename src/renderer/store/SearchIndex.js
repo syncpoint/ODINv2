@@ -54,8 +54,6 @@ export default function SearchIndex (
   this.nominatim = nominatim
   this.sessionStore = sessionStore
   this.spatialIndex = spatialIndex
-
-  this.ready = false
   this.cachedDocuments = {}
 
   jsonDB.on('del', key => this.updateIndex([{ type: 'del', key }]))
@@ -78,9 +76,6 @@ SearchIndex.prototype.bootstrap = async function () {
   // Documents must be stored as is for later removal from index.
   documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
   this.index.addAll(documents)
-
-  this.ready = true
-  this.emit('ready')
 }
 
 
@@ -88,7 +83,6 @@ SearchIndex.prototype.bootstrap = async function () {
  *
  */
 SearchIndex.prototype.updateIndex = async function (ops) {
-  if (!this.index) return /* Not there yet! */
 
   const pending = ops.map(async ({ type, key, value }) => {
 
@@ -138,11 +132,7 @@ SearchIndex.prototype.document = function (key) {
  * query :: String -> Promise(Query)
  */
 SearchIndex.prototype.query = function (terms, options, callback) {
-  const query = () => this.createQuery(terms, callback, options)
-  return new Promise((resolve) => {
-    if (this.ready) resolve(query())
-    else this.once('ready', () => resolve(query()))
-  })
+  return this.createQuery(terms, callback, options)
 }
 
 
