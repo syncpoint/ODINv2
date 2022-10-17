@@ -56,8 +56,8 @@ export default function SearchIndex (
   this.spatialIndex = spatialIndex
   this.cachedDocuments = {}
 
-  jsonDB.on('del', key => this.updateIndex([{ type: 'del', key }]))
-  jsonDB.on('batch', event => this.updateIndex(event))
+  jsonDB.on('del', key => this.handleBatch([{ type: 'del', key }]))
+  jsonDB.on('batch', event => this.handleBatch(event))
 }
 
 util.inherits(SearchIndex, Emitter)
@@ -82,8 +82,25 @@ SearchIndex.prototype.bootstrap = async function () {
 /**
  *
  */
-SearchIndex.prototype.updateIndex = async function (ops) {
+SearchIndex.prototype.handleBatch = async function (ops) {
+  if (this.busy) return (this.queue = (this.queue || []).concat(ops))
 
+  this.busy = true
+  await this.updateIndex(ops)
+  this.busy = false
+
+  if (this.queue?.length) {
+    const queue = this.queue
+    delete this.queue
+    await this.handleBatch(queue)
+  }
+}
+
+
+/**
+ *
+ */
+SearchIndex.prototype.updateIndex = async function (ops) {
   const pending = ops.map(async ({ type, key, value }) => {
 
     // 'Associated information' is no document in its own right but some
