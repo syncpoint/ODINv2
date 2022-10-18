@@ -120,56 +120,43 @@ SearchIndex.prototype.addDocument = function (document) {
 
 
 /**
- *
+ * Add, remove or replace documents depending on store updates.
  */
 SearchIndex.prototype.updateIndex = async function (ops) {
+  const hasDocument = id => !R.isNil(this.cachedDocuments[id])
+  const isPut = ({ type }) => type === 'put'
+  const keyProp = R.prop('key')
+  const concatUniq = xs => R.uniq(xs.reduce(R.concat))
+  const associatedId = id => ID.isAssociatedId(id) ? ID.associatedId(id) : null
 
-  // 'Associated information' is no document in its own right but some
-  // arbitrary 'value object' associated with a main document.
-
-  const affectedId = R.cond([
-    [ID.isAssociatedId, ID.associatedId],
-    [R.T, R.identity]
-  ])
-
-  // Dependent documents must be re-indexed when their
-  // dependency was deleted or updated.
-
+  // Special dependency (relevant for search index only):
+  // Layer/feature must be updated whenever link is added/removed.
+  //
   const dependentId = R.cond([
     [ID.isLinkId, ID.containerId],
     [R.T, R.always(null)]
   ])
 
-  // Remove all affected and dependent documents.
-  ops
-    .flatMap(({ key }) => [affectedId(key), dependentId(key)])
-    .filter(Boolean)
-    .forEach(id => this.removeDocument(id))
+  const all = ops.map(keyProp)
+  const associated = all.map(associatedId).filter(Boolean)
+  const dependent = all.map(dependentId).filter(Boolean)
 
-  const pushDocument = async (acc, id) => {
+  // Associated object don't have documents.
+  //
+  const put = ops.filter(isPut).map(keyProp).filter(id => !ID.isAssociatedId(id))
+
+  const removals = concatUniq([all, associated, dependent]).filter(hasDocument)
+  const additions = concatUniq([put, associated, dependent])
+
+  const documents = await additions.reduce(async (acc, id) => {
     const documents = await acc
     const document = await this.document(id)
     if (document) documents.push(document)
     return documents
-  }
+  }, [])
 
-  // (Re-)add updated or new documents.
-  const additions = await ops
-    .filter(({ type }) => type === 'put')
-    .map(({ key }) => affectedId(key))
-    .reduce(pushDocument, [])
-
-  additions.forEach(document => this.addDocument(document))
-
-  // Re-add dependent documents.
-  // Note: One document may have multiple dependencies.
-  const dependentIds = R.uniq(ops
-    .map(({ key }) => dependentId(key))
-    .filter(Boolean)
-  )
-
-  const updates = await dependentIds.reduce(pushDocument, [])
-  updates.forEach(document => this.addDocument(document))
+  removals.forEach(this.removeDocument.bind(this))
+  documents.forEach(this.addDocument.bind(this))
 
   this.emit('index/updated')
 }
