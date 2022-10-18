@@ -55,9 +55,6 @@ export default function SearchIndex (
   this.sessionStore = sessionStore
   this.spatialIndex = spatialIndex
   this.cachedDocuments = {}
-
-  jsonDB.on('del', key => this.handleBatch([{ type: 'del', key }]))
-  jsonDB.on('batch', event => this.handleBatch(event))
 }
 
 util.inherits(SearchIndex, Emitter)
@@ -76,6 +73,10 @@ SearchIndex.prototype.bootstrap = async function () {
   // Documents must be stored as is for later removal from index.
   documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
   this.index.addAll(documents)
+
+  // Register store listeners:
+  this.jsonDB.on('del', key => this.handleBatch([{ type: 'del', key }]))
+  this.jsonDB.on('batch', event => this.handleBatch(event))
 }
 
 
