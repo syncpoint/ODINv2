@@ -44,6 +44,12 @@ export const databases = app => path.join(userData(app), 'databases')
 export const master = app => path.join(databases(app), 'master')
 
 /**
+ * .env file for providing user related environment settings
+ *
+ */
+export const dotenv = app => path.join(userData(app), '.env')
+
+/**
  * (Recusively) create directory for given path.
  * @param {string} path - directory to create.
  */
