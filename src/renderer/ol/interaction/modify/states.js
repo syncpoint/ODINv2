@@ -54,7 +54,7 @@ export const selected = (handleClick = false) => ({
     const insertVertex = pick => [insert(pick), coordinateEvent(pick)]
     const dragVertex = ({ segment, coordinate, index }) => {
       const feature = segment.feature
-      const events = [Events.coordinate(coordinate), Events.modifystart(feature)]
+      const events = [Events.coordinate(coordinate)]
       return [drag(feature, updateVertex(segment, index)), events]
     }
 
@@ -71,22 +71,14 @@ export const selected = (handleClick = false) => ({
     if (R.not(onVertex(pick))) return null
 
     const { segment, index } = pick
-    const feature = segment.feature
-    const modifystart = Events.modifystart(feature)
-
-    const coordinates = removeVertex(segment, index)
-    feature.coordinates = coordinates
+    const { feature } = segment
+    feature.coordinates = removeVertex(segment, index)
     feature.commit()
 
-    const modifyend = Events.modifyend(feature)
-
-    const events = [
-      modifystart,
-      modifyend,
+    return [selected(), [
+      Events.modifyend(feature),
       Events.coordinate(null)
-    ]
-
-    return [selected(), events]
+    ]]
   }
 })
 
@@ -106,7 +98,7 @@ const drag = (feature, update) => ({
 
   pointerup: () => {
     feature.commit()
-    return [selected(), Events.modifyend(feature, feature)]
+    return [selected(), Events.modifyend(feature)]
   }
 })
 
@@ -127,9 +119,8 @@ const insert = pick => {
         const coordinate = pointer.coordinate
         const feature = segment.feature
         const [coordinates, update] = insertVertex(segment, coordinate)
-        const modifystart = Events.modifystart(feature)
         feature.coordinates = coordinates
-        return [drag(feature, update), [modifystart, Events.coordinate(coordinate)]]
+        return [drag(feature, update), [Events.coordinate(coordinate)]]
       }
     },
 
@@ -147,13 +138,11 @@ const remove = pick => {
   return {
     pointerup: () => {
       const feature = segment.feature
-      const clone = feature.clone()
-      const coordinates = removeVertex(segment, index)
-      feature.coordinates = coordinates
+      feature.coordinates = removeVertex(segment, index)
       feature.commit()
 
       // Remain in REMOVE state and wait for next click event:
-      return [remove(pick), Events.update(clone, feature)]
+      return [remove(pick), Events.modifyend(feature)]
     },
 
     // Click event is handled again in SELECTED state

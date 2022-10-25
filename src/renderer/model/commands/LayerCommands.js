@@ -28,7 +28,6 @@ SetDefaultLayer.prototype.selected = function () {
 
 
 const SelectTilePreset = function (services) {
-  console.log('preferencesStore', services.preferencesStore)
   this.selection = services.selection
   this.preferencesStore = services.preferencesStore
   this.store = services.store

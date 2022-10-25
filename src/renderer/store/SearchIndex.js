@@ -54,12 +54,7 @@ export default function SearchIndex (
   this.nominatim = nominatim
   this.sessionStore = sessionStore
   this.spatialIndex = spatialIndex
-
-  this.ready = false
   this.cachedDocuments = {}
-
-  jsonDB.on('del', key => this.updateIndex([{ type: 'del', key }]))
-  jsonDB.on('batch', event => this.updateIndex(event))
 }
 
 util.inherits(SearchIndex, Emitter)
@@ -79,45 +74,89 @@ SearchIndex.prototype.bootstrap = async function () {
   documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
   this.index.addAll(documents)
 
-  this.ready = true
-  this.emit('ready')
+  // Register store listeners:
+  this.jsonDB.on('del', key => this.handleBatch([{ type: 'del', key }]))
+  this.jsonDB.on('batch', event => this.handleBatch(event))
 }
 
 
 /**
  *
  */
+SearchIndex.prototype.handleBatch = async function (ops) {
+  if (this.busy) return (this.queue = (this.queue || []).concat(ops))
+
+  this.busy = true
+  await this.updateIndex(ops)
+  this.busy = false
+
+  if (this.queue?.length) {
+    const queue = this.queue
+    delete this.queue
+    await this.handleBatch(queue)
+  }
+}
+
+
+/**
+ *
+ */
+SearchIndex.prototype.removeDocument = function (id) {
+  const document = this.cachedDocuments[id]
+  if (!document) return
+  delete this.cachedDocuments[id]
+  this.index.remove(document)
+}
+
+
+/**
+ *
+ */
+SearchIndex.prototype.addDocument = function (document) {
+  if (!document) return
+  this.cachedDocuments[document.id] = document
+  this.index.add(document)
+}
+
+
+/**
+ * Add, remove or replace documents depending on store updates.
+ */
 SearchIndex.prototype.updateIndex = async function (ops) {
-  if (!this.index) return /* Not there yet! */
+  const hasDocument = id => !R.isNil(this.cachedDocuments[id])
+  const isPut = ({ type }) => type === 'put'
+  const keyProp = R.prop('key')
+  const concatUniq = xs => R.uniq(xs.reduce(R.concat))
+  const associatedId = id => ID.isAssociatedId(id) ? ID.associatedId(id) : null
 
-  const pending = ops.map(async ({ type, key, value }) => {
+  // Special dependency (relevant for search index only):
+  // Layer/feature must be updated whenever link is added/removed.
+  //
+  const dependentId = R.cond([
+    [ID.isLinkId, ID.containerId],
+    [R.T, R.always(null)]
+  ])
 
-    // 'Associated information' is no document in its own right but some
-    // arbitrary 'value object' associated with a main document.
+  const all = ops.map(keyProp)
+  const associated = all.map(associatedId).filter(Boolean)
+  const dependent = all.map(dependentId).filter(Boolean)
 
-    const id = ID.isAssociatedId(key)
-      ? ID.associatedId(key)
-      : key
+  // Associated object don't have documents.
+  //
+  const put = ops.filter(isPut).map(keyProp).filter(id => !ID.isAssociatedId(id))
 
-    return ID.isAssociatedId(key)
-      ? [id, await this.document(id)] // put/del: cached main entry
-      : type === 'put'
-        ? [id, await this.document(id)] // put: value from database update
-        : [id, null] // del: remove from index/cache only
-  })
+  const removals = concatUniq([all, associated, dependent]).filter(hasDocument)
+  const additions = concatUniq([put, associated, dependent])
 
-  const documents = await Promise.all(pending)
-  documents.forEach(([key, document]) => {
-    if (this.cachedDocuments[key]) {
-      this.index.remove(this.cachedDocuments[key])
-      delete this.cachedDocuments[key]
-    }
+  const documents = await additions.reduce(async (acc, id) => {
+    const documents = await acc
+    const document = await this.document(id)
+    if (document) documents.push(document)
+    return documents
+  }, [])
 
-    if (document) {
-      this.cachedDocuments[key] = document
-      this.index.add(document)
-    }
-  })
+  removals.forEach(this.removeDocument.bind(this))
+  documents.forEach(this.addDocument.bind(this))
 
   this.emit('index/updated')
 }
@@ -138,11 +177,7 @@ SearchIndex.prototype.document = function (key) {
  * query :: String -> Promise(Query)
  */
 SearchIndex.prototype.query = function (terms, options, callback) {
-  const query = () => this.createQuery(terms, callback, options)
-  return new Promise((resolve) => {
-    if (this.ready) resolve(query())
-    else this.once('ready', () => resolve(query()))
-  })
+  return this.createQuery(terms, callback, options)
 }
 
 

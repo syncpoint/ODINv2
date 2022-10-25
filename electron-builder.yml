@@ -1,14 +1,20 @@
 directories:
   output: binaries
   buildResources: build
-appId: io.syncpoint.nido
-productName: NIDO
+appId: io.syncpoint.odin.v2
+productName: "ODIN v2"
 copyright: ${author} https://syncpoint.io
 win:
   target:
-    - target: nsis
+    - target: msi
       arch:
         - x64
+  icon: 'build/icon.ico'
+
+nsis:
+  oneClick: false
+  perMachine: false
+
 mac:
    target: default
-electronVersion: 20.3.1
+electronVersion: 20.3.2
