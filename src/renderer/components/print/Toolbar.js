@@ -1,38 +1,66 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { useServices } from '../hooks'
 import { CommandButton } from '../ToolbarButtons'
+import scales from './scales.json'
+import paperSizes from './paperSizes.json'
 import '../Toolbar.css'
+import './PrintToolbar.css'
 
-const Toolbar = props => {
-  const { commandRegistry } = useServices()
+const DropDown = props => {
+  const { onChange, options, selected } = props
+  return (
+    <select className="printToolbar_dropdown" defaultValue={selected} onChange={onChange}>
+      { options.map(option => (<option key={option.value} value={option.value}>{option.text}</option>)) }
+    </select>
+  )
+}
+DropDown.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  options: PropTypes.arrayOf(String).isRequired,
+  selected: PropTypes.string
+}
 
-  console.dir(commandRegistry)
-  console.dir(commandRegistry.PRINT_SWITCH_SCOPE)
+const Toolbar = () => {
+  const { commandRegistry, preferencesStore } = useServices()
+
+  const [printSettings, setPrintSettings] = React.useState()
+  const [restored, setRestored] = React.useState(false)
+
+  React.useEffect(() => {
+    preferencesStore.get('printSettings')
+      .then(settings => setPrintSettings(settings))
+      .catch(() => setPrintSettings({
+        paperSize: 'a4',
+        orientation: 'landscape',
+        scale: '50'
+      }))
+      .finally(() => setRestored(true))
+
+  }, [preferencesStore])
+
+  React.useEffect(() => {
+    if (!restored) return
+    preferencesStore.put('printSettings', printSettings)
+      .catch(error => console.error(error))
+  }, [preferencesStore, printSettings, restored])
+
+
+  const changeHandler = scope => ({ target }) => {
+    const next = { ...printSettings }
+    next[scope] = target.value
+    setPrintSettings(next)
+  }
+
+  if (!restored) return null
 
   return (
     <header className='toolbar'>
       <div className='toolbar__items-container'>
         <CommandButton command={commandRegistry.PRINT_SWITCH_SCOPE}/>
-          <select>
-            <option>1:2500</option>
-            <option>1:5000</option>
-            <option>1:10000</option>
-            <option selected>1:25000</option>
-            <option>1:50000</option>
-            <option>1:100000</option>
-            <option>1:250000</option>
-          </select>
-          <select>
-            <option selected>A4</option>
-            <option>A3</option>
-            <option>A2</option>
-            <option>A1</option>
-            <option>A0</option>
-          </select>
-          <select>
-            <option selected>Landscape</option>
-            <option>Portrait</option>
-          </select>
+          <DropDown options={Object.keys(paperSizes).map(size => ({ value: size, text: size.toUpperCase() }))} selected={printSettings.paperSize} onChange={changeHandler('paperSize')}/>
+          <DropDown options={['Landscape', 'Portrait'].map(orientation => ({ value: orientation.toLowerCase(), text: orientation }))} selected={printSettings.orientation} onChange={changeHandler('orientation')}/>
+          <DropDown options={scales.map(scale => ({ value: scale, text: `1:${1000 * scale}` }))} selected={printSettings.scale} onChange={changeHandler('scale')}/>
         <CommandButton command={commandRegistry.PRINT_MAP}/>
       </div>
     </header>

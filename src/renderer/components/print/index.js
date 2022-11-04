@@ -1,7 +1,7 @@
 import { MouseWheelZoom, PinchZoom, DragZoom, KeyboardZoom } from 'ol/interaction'
 import { getPointResolution, toLonLat } from 'ol/proj'
 import paperSizes from './paperSizes.json'
-import scale from './scale.json'
+
 
 import { jsPDF } from 'jspdf'
 
