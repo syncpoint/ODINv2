@@ -12,11 +12,11 @@ import createVectorLayers from './vectorLayers'
 import createTileLayers from './tileLayers'
 import registerEventHandlers from './eventHandlers'
 import registerGraticules from './graticules'
+import measure from '../../ol/interaction/measure'
 import print from '../print'
 import './Map.css'
 import './ScaleLine.css'
 
-import measure from '../../ol/interaction/measure'
 
 /**
  *

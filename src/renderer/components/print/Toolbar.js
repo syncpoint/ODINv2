@@ -22,7 +22,7 @@ DropDown.propTypes = {
 }
 
 const Toolbar = () => {
-  const { commandRegistry, preferencesStore } = useServices()
+  const { commandRegistry, preferencesStore, emitter } = useServices()
 
   const [printSettings, setPrintSettings] = React.useState()
   const [restored, setRestored] = React.useState(false)
@@ -42,8 +42,9 @@ const Toolbar = () => {
   React.useEffect(() => {
     if (!restored) return
     preferencesStore.put('printSettings', printSettings)
+      .then(() => { emitter.emit('PRINTSETTINGS', printSettings) })
       .catch(error => console.error(error))
-  }, [preferencesStore, printSettings, restored])
+  }, [emitter, preferencesStore, printSettings, restored])
 
 
   const changeHandler = scope => ({ target }) => {
