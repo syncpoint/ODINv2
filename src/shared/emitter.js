@@ -58,4 +58,9 @@ EventEmitter.prototype.off = function (pattern, handler) {
   return this
 }
 
+EventEmitter.prototype.removeAllListeners = function (pattern) {
+  if (!pattern) throw error(ERR_INVALID_ARG, '"pattern" argument is undefined')
+  if (this.handlers[pattern]) delete this.handlers[pattern]
+}
+
 export default EventEmitter
