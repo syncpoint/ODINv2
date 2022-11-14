@@ -10,11 +10,16 @@ import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore, PreferencesProvider } from './stores'
 import { ipc } from './ipc'
+import * as dotenv from 'dotenv'
 
 /**
  * Emitted once, when Electron has finished initializing.
  */
 const ready = async () => {
+  // read environment variables from .env file and add to process.env
+  console.log(`looking for .env file ${paths.dotenv(app)}`)
+  dotenv.config({ debug: true, path: paths.dotenv(app) })
+
   // loadReactChromeExtension()
 
   // Open/create master database.
