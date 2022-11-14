@@ -81,7 +81,8 @@ FeatureStore.prototype.bootstrap = async function () {
 FeatureStore.prototype.loadFeatures = async function (scope) {
   const tuples = await this.store.tuples(scope)
   const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
-  const [valid, invalid] = R.partition(R.prop('type'), geoJSON)
+  const isValid = feature => feature?.type === 'Feature' && feature.geometry
+  const [valid, invalid] = R.partition(isValid, geoJSON)
   if (invalid.length) console.warn('invalid features', invalid)
   this.addFeatures(readFeatures({ type: 'FeatureCollection', features: valid }))
 }
