@@ -1,6 +1,7 @@
 import { MouseWheelZoom, PinchZoom, DragZoom, KeyboardZoom } from 'ol/interaction'
 import { getPointResolution } from 'ol/proj'
 import { militaryFormat } from '../../../shared/datetime'
+import { Marker } from './marker'
 import paperSizes from './paperSizes.json'
 
 
@@ -80,6 +81,13 @@ const print = ({ map, services, options = {} }) => {
   const executePrint = async (map, settings, toFile = false) => {
     console.log('... printing ...')
 
+    /*
+      add some temporary marker on the SW/NE corner of the map
+    */
+    const printMarker = new Marker(map)
+    const markerCoordinates = printMarker.addMGRSMarker()
+    map.renderSync()
+
     // Adapted from: https://openlayers.org/en/latest/examples/export-map.html
     const draw = context => canvas => {
       if (canvas.width > 0) {
@@ -140,19 +148,21 @@ const print = ({ map, services, options = {} }) => {
       pdfDocument.addImage(url, 'PNG', content.x, content.y, content.w, content.h, '')
       pdfDocument.rect(content.x, content.y, content.w, content.h)
 
-      const dateTimeOfPrinting = militaryFormat.now()
+      if (settings.title) {
+        pdfDocument.text(settings.title, padding.left, padding.top - Math.floor(padding.top / 2), { maxWidth: paper.width - padding.left - padding.right })
+      }
 
       // scale text in the upper right corner of the header
-      const scaleText = `1 : ${settings.scale}000`
+      const scaleText = `1: ${settings.scale}000`
       pdfDocument.text(scaleText, (paper.width - padding.right), padding.top - Math.floor(padding.top / 2), { align: 'right' })
 
-      // date/time of printing in the upper left corner of the header
-      pdfDocument.text(dateTimeOfPrinting, padding.left, padding.top - Math.floor(padding.top / 2))
 
-      // place center of map coordinates in the upper left corner of the header
-      /* const centerAsLonLat = toLonLat(centerCoordinates, map.getView().getProjection())
-      pdfDocument.text(coordinateFormat.format({ lng: centerAsLonLat[0], lat: centerAsLonLat[1] }), padding.left, padding.top - 2)
- */
+      pdfDocument.setFontSize(10)
+
+      const dateTimeOfPrinting = militaryFormat.now()
+      pdfDocument.text(dateTimeOfPrinting, paper.width - padding.right, padding.top - 2, { align: 'right' })
+      pdfDocument.text(`SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}`, padding.left, padding.top - 2)
+
       // scale bar lower left corner ON THE map
       const scaleBarHeight = 2
       const scaleBarSegmentWidth = 10
@@ -185,13 +195,13 @@ const print = ({ map, services, options = {} }) => {
         paper.height - padding.bottom - scaleBarHeight
       )
 
-      // ---
 
       await pdfDocument.save(`ODINv2-MAP-${dateTimeOfPrinting}.pdf`, { returnPromise: true })
     } catch (err) {
       // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
       console.error('print', err.message)
     } finally {
+      printMarker.removeMGRSMarker()
       canvas.remove()
     }
 

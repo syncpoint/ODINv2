@@ -59,9 +59,10 @@ const Toolbar = () => {
     <header className='toolbar'>
       <div className='toolbar__items-container'>
         <CommandButton command={commandRegistry.PRINT_SWITCH_SCOPE}/>
-          <DropDown options={Object.keys(paperSizes).map(size => ({ value: size, text: size.toUpperCase() }))} selected={printSettings.paperSize} onChange={changeHandler('paperSize')}/>
-          <DropDown options={['Landscape', 'Portrait'].map(orientation => ({ value: orientation.toLowerCase(), text: orientation }))} selected={printSettings.orientation} onChange={changeHandler('orientation')}/>
-          <DropDown options={scales.map(scale => ({ value: scale, text: `1:${1000 * scale}` }))} selected={printSettings.scale} onChange={changeHandler('scale')}/>
+        <DropDown options={Object.keys(paperSizes).map(size => ({ value: size, text: size.toUpperCase() }))} selected={printSettings.paperSize} onChange={changeHandler('paperSize')}/>
+        <DropDown options={['Landscape', 'Portrait'].map(orientation => ({ value: orientation.toLowerCase(), text: orientation }))} selected={printSettings.orientation} onChange={changeHandler('orientation')}/>
+        <DropDown options={scales.map(scale => ({ value: scale, text: `1:${1000 * scale}` }))} selected={printSettings.scale} onChange={changeHandler('scale')}/>
+        <input type='text' placeholder='Optional title' maxLength={72} className='printToolbar_input' onChange={changeHandler('title')}/>
         <CommandButton command={commandRegistry.PRINT_MAP}/>
       </div>
     </header>
