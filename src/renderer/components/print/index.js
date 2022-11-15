@@ -3,6 +3,7 @@ import { getPointResolution } from 'ol/proj'
 import { militaryFormat } from '../../../shared/datetime'
 import { Marker } from './marker'
 import paperSizes from './paperSizes.json'
+import paddings from './paddings'
 
 
 import { jsPDF } from 'jspdf'
@@ -27,7 +28,8 @@ const print = ({ map, services, options = {} }) => {
   let printSettings = {
     paperSize: options.paperSize || DEFAULT_PAPER_SIZE,
     orientation: options.orientation || DEFAULT_ORIENTATION,
-    scale: options.scale || DEFAULT_SCALE
+    scale: options.scale || DEFAULT_SCALE,
+    targetFormat: options.targetFormat || 'PDF'
   }
 
   const resizeVirtualPaper = () => {
@@ -49,22 +51,19 @@ const print = ({ map, services, options = {} }) => {
 
     const displayScale = Math.min(scale.width, scale.height, 1)
 
-    const padding = Math.round(5 * displayScale * DEFAULT_QUALITY / INCH_TO_MM)
-
     targetElement.classList.add('map-print-page')
     targetElement.style.width = `${virtualPaper.width}px`
     targetElement.style.height = `${virtualPaper.height}px`
     targetElement.style.transform = `translate(-50%, -50%) scale(${displayScale})`
     targetElement.style.boxShadow = '0 1px 0 rgba(255,255,255,.6), 0 11px 35px 2px rgba(0,0,0,0.56), 0 0 0 1px rgba(0, 0, 0, 0.0)'
-    targetElement.style.padding = `${padding * 4}px ${padding}px ${padding}px ${padding}px`
+    targetElement.style.padding = ['top', 'right', 'bottom', 'left'].reduce((acc, current) => {
+      return `${acc} ${Math.round(paddings[printSettings.targetFormat][current] * displayScale * DEFAULT_QUALITY / INCH_TO_MM)}px`
+    }, '')
 
     map.updateSize()
-
     const viewResolution = printSettings.scale / getPointResolution(map.getView().getProjection(), DEFAULT_QUALITY / INCH_TO_MM, map.getView().getCenter())
-
     map.getView().setResolution(viewResolution)
   }
-
 
   const removePrintStyling = targetElement => {
     targetElement.classList.remove('map-print-page')
@@ -133,31 +132,40 @@ const print = ({ map, services, options = {} }) => {
       })
 
       const paper = paperSizes[settings.paperSize][settings.orientation]
-      const padding = {
-        left: 5,
-        right: 5,
-        top: 20,
-        bottom: 5
-      }
       const content = {
-        x: padding.left,
-        y: padding.top,
-        w: paper.width - (padding.left + padding.right),
-        h: paper.height - (padding.bottom + padding.top)
+        x: paddings[settings.targetFormat].left,
+        y: paddings[settings.targetFormat].top,
+        w: paper.width - (paddings[settings.targetFormat].left + paddings[settings.targetFormat].right),
+        h: paper.height - (paddings[settings.targetFormat].bottom + paddings[settings.targetFormat].top)
       }
       pdfDocument.addImage(url, 'PNG', content.x, content.y, content.w, content.h, '')
       pdfDocument.rect(content.x, content.y, content.w, content.h)
-      pdfDocument.text(settings.title, padding.left, padding.top - Math.floor(padding.top / 2), { maxWidth: paper.width - padding.left - padding.right })
+      pdfDocument.text(settings.title,
+        paddings[settings.targetFormat].left,
+        paddings[settings.targetFormat].top - Math.floor(paddings[settings.targetFormat].top / 2),
+        { maxWidth: paper.width - paddings[settings.targetFormat].left - paddings[settings.targetFormat].right }
+      )
 
       // scale text in the upper right corner of the header
       const scaleText = `1: ${settings.scale}000`
-      pdfDocument.text(scaleText, (paper.width - padding.right), padding.top - Math.floor(padding.top / 2), { align: 'right' })
+      pdfDocument.text(scaleText,
+        (paper.width - paddings[settings.targetFormat].right),
+        paddings[settings.targetFormat].top - Math.floor(paddings[settings.targetFormat].top / 2),
+        { align: 'right' }
+      )
 
       pdfDocument.setFontSize(10)
 
       const dateTimeOfPrinting = militaryFormat.now()
-      pdfDocument.text(dateTimeOfPrinting, paper.width - padding.right, padding.top - 2, { align: 'right' })
-      pdfDocument.text(`SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}`, padding.left, padding.top - 2)
+      pdfDocument.text(
+        dateTimeOfPrinting, paper.width - paddings[settings.targetFormat].right,
+        paddings[settings.targetFormat].top - 2,
+        { align: 'right' }
+      )
+      pdfDocument.text(`SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}`,
+        paddings[settings.targetFormat].left,
+        paddings[settings.targetFormat].top - 2
+      )
 
       // scale bar lower left corner ON THE map
       const scaleBarHeight = 2
@@ -166,8 +174,8 @@ const print = ({ map, services, options = {} }) => {
 
       pdfDocument.setFillColor(255, 255, 255)
       pdfDocument.rect(
-        padding.left + scaleBarHeight / 2,
-        paper.height - padding.bottom - 2.5 * scaleBarHeight,
+        paddings[settings.targetFormat].left + scaleBarHeight / 2,
+        paper.height - paddings[settings.targetFormat].bottom - 2.5 * scaleBarHeight,
         5.25 * scaleBarSegmentWidth,
         2 * scaleBarHeight,
         'FD'
@@ -175,22 +183,45 @@ const print = ({ map, services, options = {} }) => {
 
       // white segments
       pdfDocument.setFillColor(255, 255, 255)
-      pdfDocument.rect(padding.left + scaleBarHeight, paper.height - padding.bottom - 2 * scaleBarHeight, scaleBarSegmentWidth, scaleBarHeight, 'FD')
-      pdfDocument.rect(padding.left + scaleBarHeight + 2 * scaleBarSegmentWidth, paper.height - padding.bottom - 2 * scaleBarHeight, scaleBarSegmentWidth, scaleBarHeight, 'FD')
+      pdfDocument.rect(
+        paddings[settings.targetFormat].left + scaleBarHeight,
+        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+        scaleBarSegmentWidth,
+        scaleBarHeight,
+        'FD'
+      )
+      pdfDocument.rect(
+        paddings[settings.targetFormat].left + scaleBarHeight + 2 * scaleBarSegmentWidth,
+        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+        scaleBarSegmentWidth,
+        scaleBarHeight,
+        'FD'
+      )
 
       // red segments
       pdfDocument.setFillColor(255, 0, 0)
-      pdfDocument.rect(padding.left + scaleBarHeight + scaleBarSegmentWidth, paper.height - padding.bottom - 2 * scaleBarHeight, scaleBarSegmentWidth, scaleBarHeight, 'FD')
-      pdfDocument.rect(padding.left + scaleBarHeight + 3 * scaleBarSegmentWidth, paper.height - padding.bottom - 2 * scaleBarHeight, scaleBarSegmentWidth, scaleBarHeight, 'FD')
+      pdfDocument.rect(
+        paddings[settings.targetFormat].left + scaleBarHeight + scaleBarSegmentWidth,
+        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+        scaleBarSegmentWidth,
+        scaleBarHeight,
+        'FD'
+      )
+      pdfDocument.rect(
+        paddings[settings.targetFormat].left + scaleBarHeight + 3 * scaleBarSegmentWidth,
+        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+        scaleBarSegmentWidth,
+        scaleBarHeight,
+        'FD'
+      )
 
       // real length of scale bar in (k)m
       const realLifeLength = settings.scale * 0.04
       pdfDocument.setFontSize(scaleBarHeight * 4)
       pdfDocument.text(`${realLifeLength < 1 ? realLifeLength * 1000 : realLifeLength}${realLifeLength >= 1 ? 'k' : ''}m`,
-        padding.left + 4 * scaleBarSegmentWidth + 2 * scaleBarHeight,
-        paper.height - padding.bottom - scaleBarHeight
+        paddings[settings.targetFormat].left + 4 * scaleBarSegmentWidth + 2 * scaleBarHeight,
+        paper.height - paddings[settings.targetFormat].bottom - scaleBarHeight
       )
-
 
       await pdfDocument.save(`ODINv2-MAP-${dateTimeOfPrinting}.pdf`, { returnPromise: true })
     } catch (err) {
