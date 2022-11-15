@@ -8,8 +8,8 @@ import { Feature } from 'ol'
 import { Point } from 'ol/geom'
 
 const printMarkerStyle = (directions = [0, 1], text, textOffsetX, textOffsetY) => {
-  const radius = 30
-  const stroke = new Stroke({ color: 'black', width: 4 })
+  const radius = 20
+  const stroke = new Stroke({ color: 'black', width: 2 })
 
   return [
     ...directions.map(direction => new Style({
@@ -18,7 +18,7 @@ const printMarkerStyle = (directions = [0, 1], text, textOffsetX, textOffsetY) =
         rotation: direction * Math.PI / 2,
         points: 2,
         radius: radius / 2,
-        displacement: [0, 0.8 * radius]
+        displacement: [0, 0.6 * radius]
       }),
       text: new TextStyle({
         font: '16px sans-serif',
@@ -77,13 +77,13 @@ Marker.prototype.addMGRSMarker = function () {
   const sw = new Feature({
     geometry: toPointGeometry(p.sw)
   })
-  sw.setStyle(printMarkerStyle([2, 3], 'SW', -20, 20))
+  sw.setStyle(printMarkerStyle([0, 1, 2, 3], 'SW', -20, 20))
   features.push(sw)
 
   const ne = new Feature({
     geometry: toPointGeometry(p.ne)
   })
-  ne.setStyle(printMarkerStyle([0, 1], 'NE', 20, -16))
+  ne.setStyle(printMarkerStyle([0, 1, 2, 3], 'NE', 20, -16))
   features.push(ne)
 
   this.markerSource.addFeatures(features)
