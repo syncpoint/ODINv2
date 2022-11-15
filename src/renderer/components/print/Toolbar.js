@@ -66,7 +66,7 @@ const Toolbar = () => {
         <DropDown options={['Landscape', 'Portrait'].map(orientation => ({ value: orientation.toLowerCase(), text: orientation }))} selected={printSettings.orientation} onChange={changeHandler('orientation')}/>
         <DropDown options={scales.map(scale => ({ value: scale, text: `1:${1000 * scale}` }))} selected={printSettings.scale} onChange={changeHandler('scale')}/>
         <DropDown options={['PDF', 'PNG'].map(target => ({ value: target, text: target }))} selected={printSettings.targetFormat} onChange={changeHandler('targetFormat')}/>
-        <input type='text' placeholder='Optional title' maxLength={72} className='printToolbar_input' onChange={changeHandler('title')}/>
+        <input type='text' placeholder='Optional title' maxLength={72} className='printToolbar_input' onChange={changeHandler('title')} value={printSettings.title}/>
         <CommandButton command={commandRegistry.PRINT_MAP}/>
       </div>
     </header>
