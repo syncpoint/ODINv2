@@ -7,6 +7,7 @@ import paperSizes from './paperSizes.json'
 import '../Toolbar.css'
 import './PrintToolbar.css'
 
+
 const DropDown = props => {
   const { onChange, options, selected } = props
   return (
@@ -33,7 +34,9 @@ const Toolbar = () => {
       .catch(() => setPrintSettings({
         paperSize: 'a4',
         orientation: 'landscape',
-        scale: '50'
+        scale: '50',
+        title: '',
+        targetFormat: 'PDF'
       }))
       .finally(() => setRestored(true))
 
@@ -62,6 +65,7 @@ const Toolbar = () => {
         <DropDown options={Object.keys(paperSizes).map(size => ({ value: size, text: size.toUpperCase() }))} selected={printSettings.paperSize} onChange={changeHandler('paperSize')}/>
         <DropDown options={['Landscape', 'Portrait'].map(orientation => ({ value: orientation.toLowerCase(), text: orientation }))} selected={printSettings.orientation} onChange={changeHandler('orientation')}/>
         <DropDown options={scales.map(scale => ({ value: scale, text: `1:${1000 * scale}` }))} selected={printSettings.scale} onChange={changeHandler('scale')}/>
+        <DropDown options={['PDF', 'PNG'].map(target => ({ value: target, text: target }))} selected={printSettings.targetFormat} onChange={changeHandler('targetFormat')}/>
         <input type='text' placeholder='Optional title' maxLength={72} className='printToolbar_input' onChange={changeHandler('title')}/>
         <CommandButton command={commandRegistry.PRINT_MAP}/>
       </div>

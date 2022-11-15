@@ -78,8 +78,7 @@ const print = ({ map, services, options = {} }) => {
     }
   }
 
-  const executePrint = async (map, settings, toFile = false) => {
-    console.log('... printing ...')
+  const executePrint = async (map, settings) => {
 
     /*
       add some temporary marker on the SW/NE corner of the map
@@ -118,12 +117,13 @@ const print = ({ map, services, options = {} }) => {
 
     try {
       const url = canvas.toDataURL()
-      if (toFile) {
+      if (settings.targetFormat === 'PNG') {
         const link = document.createElement('a')
         link.download = 'map.png'
         link.href = url
         link.click()
         setTimeout(() => link.remove(), 300)
+        return
       }
 
       // eslint-disable-next-line new-cap
@@ -147,15 +147,11 @@ const print = ({ map, services, options = {} }) => {
       }
       pdfDocument.addImage(url, 'PNG', content.x, content.y, content.w, content.h, '')
       pdfDocument.rect(content.x, content.y, content.w, content.h)
-
-      if (settings.title) {
-        pdfDocument.text(settings.title, padding.left, padding.top - Math.floor(padding.top / 2), { maxWidth: paper.width - padding.left - padding.right })
-      }
+      pdfDocument.text(settings.title, padding.left, padding.top - Math.floor(padding.top / 2), { maxWidth: paper.width - padding.left - padding.right })
 
       // scale text in the upper right corner of the header
       const scaleText = `1: ${settings.scale}000`
       pdfDocument.text(scaleText, (paper.width - padding.right), padding.top - Math.floor(padding.top / 2), { align: 'right' })
-
 
       pdfDocument.setFontSize(10)
 
