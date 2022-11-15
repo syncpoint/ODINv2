@@ -146,7 +146,11 @@ FeatureStore.prototype.batch = function (operations) {
  */
 FeatureStore.prototype.handleAdditions = function (additions) {
   if (additions.length === 0) return
-  const features = additions.map(({ key, value }) => readFeature({ id: key, ...value }))
+  const isValid = feature => feature?.type === 'Feature' && feature.geometry
+  const features = additions
+    .filter(({ value }) => isValid(value))
+    .map(({ key, value }) => readFeature({ id: key, ...value }))
+
   this.addFeatures(features)
 }
 

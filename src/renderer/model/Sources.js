@@ -10,7 +10,10 @@ import * as ID from '../ids'
  *
  */
 export const featureSource = (featureStore, scope) => {
-  const matchesScope = feature => ID.isId(scope)(feature.getId())
+  const matchesScope = feature => feature
+    ? ID.isId(scope)(feature.getId())
+    : false
+
   const features = Object.values(featureStore.features).filter(matchesScope)
   const source = new VectorSource({ features })
 
