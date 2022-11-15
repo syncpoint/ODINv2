@@ -1,12 +1,11 @@
 import { MouseWheelZoom, PinchZoom, DragZoom, KeyboardZoom } from 'ol/interaction'
 import { getPointResolution } from 'ol/proj'
-import { militaryFormat } from '../../../shared/datetime'
+
 import { Marker } from './marker'
 import paperSizes from './paperSizes.json'
 import paddings from './paddings'
+import toPDF from './pdf'
 
-
-import { jsPDF } from 'jspdf'
 
 const DEFAULT_PAPER_SIZE = 'a4'
 const DEFAULT_ORIENTATION = 'landscape'
@@ -29,7 +28,8 @@ const print = ({ map, services, options = {} }) => {
     paperSize: options.paperSize || DEFAULT_PAPER_SIZE,
     orientation: options.orientation || DEFAULT_ORIENTATION,
     scale: options.scale || DEFAULT_SCALE,
-    targetFormat: options.targetFormat || 'PDF'
+    targetFormat: options.targetFormat || 'PDF',
+    title: options.title || ''
   }
 
   const resizeVirtualPaper = () => {
@@ -124,112 +124,13 @@ const print = ({ map, services, options = {} }) => {
         setTimeout(() => link.remove(), 300)
         return
       }
-
-      // eslint-disable-next-line new-cap
-      const pdfDocument = new jsPDF({
-        format: settings.paperSize,
-        orientation: settings.orientation
-      })
-
-      const paper = paperSizes[settings.paperSize][settings.orientation]
-      const content = {
-        x: paddings[settings.targetFormat].left,
-        y: paddings[settings.targetFormat].top,
-        w: paper.width - (paddings[settings.targetFormat].left + paddings[settings.targetFormat].right),
-        h: paper.height - (paddings[settings.targetFormat].bottom + paddings[settings.targetFormat].top)
-      }
-      pdfDocument.addImage(url, 'PNG', content.x, content.y, content.w, content.h, '')
-      pdfDocument.rect(content.x, content.y, content.w, content.h)
-      pdfDocument.text(settings.title,
-        paddings[settings.targetFormat].left,
-        paddings[settings.targetFormat].top - Math.floor(paddings[settings.targetFormat].top / 2),
-        { maxWidth: paper.width - paddings[settings.targetFormat].left - paddings[settings.targetFormat].right }
-      )
-
-      // scale text in the upper right corner of the header
-      const scaleText = `1: ${settings.scale}000`
-      pdfDocument.text(scaleText,
-        (paper.width - paddings[settings.targetFormat].right),
-        paddings[settings.targetFormat].top - Math.floor(paddings[settings.targetFormat].top / 2),
-        { align: 'right' }
-      )
-
-      pdfDocument.setFontSize(10)
-
-      const dateTimeOfPrinting = militaryFormat.now()
-      pdfDocument.text(
-        dateTimeOfPrinting, paper.width - paddings[settings.targetFormat].right,
-        paddings[settings.targetFormat].top - 2,
-        { align: 'right' }
-      )
-      pdfDocument.text(`SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}`,
-        paddings[settings.targetFormat].left,
-        paddings[settings.targetFormat].top - 2
-      )
-
-      // scale bar lower left corner ON THE map
-      const scaleBarHeight = 2
-      const scaleBarSegmentWidth = 10
-      pdfDocument.setDrawColor(0, 0, 0)
-
-      pdfDocument.setFillColor(255, 255, 255)
-      pdfDocument.rect(
-        paddings[settings.targetFormat].left + scaleBarHeight / 2,
-        paper.height - paddings[settings.targetFormat].bottom - 2.5 * scaleBarHeight,
-        5.25 * scaleBarSegmentWidth,
-        2 * scaleBarHeight,
-        'FD'
-      )
-
-      // white segments
-      pdfDocument.setFillColor(255, 255, 255)
-      pdfDocument.rect(
-        paddings[settings.targetFormat].left + scaleBarHeight,
-        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
-        scaleBarSegmentWidth,
-        scaleBarHeight,
-        'FD'
-      )
-      pdfDocument.rect(
-        paddings[settings.targetFormat].left + scaleBarHeight + 2 * scaleBarSegmentWidth,
-        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
-        scaleBarSegmentWidth,
-        scaleBarHeight,
-        'FD'
-      )
-
-      // red segments
-      pdfDocument.setFillColor(255, 0, 0)
-      pdfDocument.rect(
-        paddings[settings.targetFormat].left + scaleBarHeight + scaleBarSegmentWidth,
-        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
-        scaleBarSegmentWidth,
-        scaleBarHeight,
-        'FD'
-      )
-      pdfDocument.rect(
-        paddings[settings.targetFormat].left + scaleBarHeight + 3 * scaleBarSegmentWidth,
-        paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
-        scaleBarSegmentWidth,
-        scaleBarHeight,
-        'FD'
-      )
-
-      // real length of scale bar in (k)m
-      const realLifeLength = settings.scale * 0.04
-      pdfDocument.setFontSize(scaleBarHeight * 4)
-      pdfDocument.text(`${realLifeLength < 1 ? realLifeLength * 1000 : realLifeLength}${realLifeLength >= 1 ? 'k' : ''}m`,
-        paddings[settings.targetFormat].left + 4 * scaleBarSegmentWidth + 2 * scaleBarHeight,
-        paper.height - paddings[settings.targetFormat].bottom - scaleBarHeight
-      )
-
-      await pdfDocument.save(`ODINv2-MAP-${dateTimeOfPrinting}.pdf`, { returnPromise: true })
+      await toPDF(url, { ...settings, subtitle: `SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}` })
     } catch (err) {
       // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
       console.error('print', err.message)
     } finally {
       printMarker.removeMGRSMarker()
-      canvas.remove()
+      canvas?.remove()
     }
 
   }
