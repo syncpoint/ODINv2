@@ -1,6 +1,7 @@
 import { getTopRight, getBottomLeft } from 'ol/extent'
 import { toLonLat, fromLonLat } from 'ol/proj'
 import Mgrs, { LatLon } from 'geodesy/mgrs.js'
+import Dms from 'geodesy/dms.js'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import { Stroke, Style, Text as TextStyle, RegularShape } from 'ol/style'
@@ -30,7 +31,12 @@ const printMarkerStyle = (directions = [0, 1], text, textOffsetX, textOffsetY) =
 }
 
 const formatters = {
-  MGRS: ([lng, lat], digits) => new LatLon(lat, lng).toUtm().toMgrs().toString(digits)
+  MGRS: ([lng, lat], digits) => new LatLon(lat, lng).toUtm().toMgrs().toString(digits),
+  LATLON: ([lng, lat]) => `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+  DMS: ([lng, lat]) => `${Dms.toLat(lat, 'dms')} ${Dms.toLon(lng, 'dms')}`,
+  DDM: ([lng, lat]) => `${Dms.toLat(lat, 'dm')} ${Dms.toLon(lng, 'dm')}`,
+  DD: ([lng, lat]) => `${Dms.toLat(lat, 'd')} ${Dms.toLon(lng, 'd')}`,
+  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString()
 }
 
 const process = (coordinates, summand = 0) => {
@@ -51,19 +57,36 @@ export const Marker = function (map) {
   map.addLayer(this.markerLayer)
 }
 
-Marker.prototype.addMGRSMarker = function () {
+Marker.prototype.add = function (coordinatesFormat) {
   const view = this.map.getView()
   const extent = view.calculateExtent(this.map.getSize())
   const projection = view.getProjection()
 
-  const m = {
-    sw: formatters.MGRS(toLonLat(getBottomLeft(extent), projection), 4),
-    ne: formatters.MGRS(toLonLat(getTopRight(extent), projection), 4)
+  const mapExtentCoordinates = {
+    sw: toLonLat(getBottomLeft(extent), projection),
+    ne: toLonLat(getTopRight(extent), projection)
+  }
+
+  if (coordinatesFormat === 'MGRS') {
+    return this.addMGRSMarker(mapExtentCoordinates)
+  }
+
+  return {
+    sw: formatters[coordinatesFormat](mapExtentCoordinates.sw),
+    ne: formatters[coordinatesFormat](mapExtentCoordinates.ne)
+  }
+}
+
+Marker.prototype.addMGRSMarker = function (extentCoordinates) {
+
+  const mgrsCoordinates = {
+    sw: formatters.MGRS(extentCoordinates.sw, 4),
+    ne: formatters.MGRS(extentCoordinates.ne, 4)
   }
   // adjust coordinates in order to match the MGRS grid of the 50k map
   const p = {
-    sw: process(m.sw, 1),
-    ne: process(m.ne, 0)
+    sw: process(mgrsCoordinates.sw, 1),
+    ne: process(mgrsCoordinates.ne, 0)
   }
 
   const toPointGeometry = mgrs => {
@@ -91,7 +114,7 @@ Marker.prototype.addMGRSMarker = function () {
   return p
 }
 
-Marker.prototype.removeMGRSMarker = function () {
+Marker.prototype.remove = function () {
   this.map.removeLayer(this.markerLayer)
   this.markerLayer.dispose()
   this.markerSource.dispose()

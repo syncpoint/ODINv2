@@ -80,12 +80,13 @@ const print = ({ map, services, options = {} }) => {
   }
 
   const executePrint = async (map, settings) => {
-
+    const coordinatesFormat = await services.preferencesStore.get('coordinates-format', 'MGRS')
     /*
       add some temporary marker on the SW/NE corner of the map
     */
     const printMarker = new Marker(map)
-    const markerCoordinates = printMarker.addMGRSMarker()
+    const markerCoordinates = printMarker.add(coordinatesFormat)
+    console.dir(markerCoordinates)
     map.renderSync()
 
     // Adapted from: https://openlayers.org/en/latest/examples/export-map.html
@@ -131,7 +132,7 @@ const print = ({ map, services, options = {} }) => {
 
       const text = {
         H1Left: settings.title,
-        H1Right: `1: ${settings.scale}000`,
+        H1Right: `1:${settings.scale}000`,
         H2Left: `SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}`,
         H2Right: dateTimeOfPrinting
       }
@@ -140,7 +141,7 @@ const print = ({ map, services, options = {} }) => {
       // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
       console.error('print', err.message)
     } finally {
-      printMarker.removeMGRSMarker()
+      printMarker.remove()
       canvas?.remove()
     }
 

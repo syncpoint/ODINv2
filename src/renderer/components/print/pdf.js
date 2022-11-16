@@ -1,6 +1,8 @@
 import paddings from './paddings'
 import paperSizes from './paperSizes.json'
 import { jsPDF } from 'jspdf'
+import RobotoMediumFont from './Roboto-Medium'
+
 
 const toPDF = async (dataURL, settings) => {
   /*
@@ -20,6 +22,9 @@ const toPDF = async (dataURL, settings) => {
     format: settings.paperSize,
     orientation: settings.orientation
   })
+  pdfDocument.addFileToVFS('RobotoMedium.ttf', RobotoMediumFont)
+  pdfDocument.addFont('RobotoMedium.ttf', 'RobotoMedium', 'normal')
+  pdfDocument.setFont('RobotoMedium')
 
   const paper = paperSizes[settings.paperSize][settings.orientation]
   const content = {
