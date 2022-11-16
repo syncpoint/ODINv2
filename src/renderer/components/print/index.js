@@ -1,6 +1,7 @@
 import { MouseWheelZoom, PinchZoom, DragZoom, KeyboardZoom } from 'ol/interaction'
 import { getPointResolution } from 'ol/proj'
 
+import { militaryFormat } from '../../../shared/datetime'
 import { Marker } from './marker'
 import paperSizes from './paperSizes.json'
 import paddings from './paddings'
@@ -10,7 +11,8 @@ import toPDF from './pdf'
 const DEFAULT_PAPER_SIZE = 'a4'
 const DEFAULT_ORIENTATION = 'landscape'
 const DEFAULT_SCALE = '25'
-const DEFAULT_QUALITY = 96 * 1.5 // dpi
+// const DEFAULT_QUALITY = 96 * 1.5 // dpi
+const DEFAULT_QUALITY = 96 * 2 // dpi
 const INCH_TO_MM = 25.4
 
 const setZoomInteractions = (map, active = true) => {
@@ -114,17 +116,26 @@ const print = ({ map, services, options = {} }) => {
     const list = document.querySelectorAll('.ol-layer canvas')
     Array.prototype.forEach.call(list, draw(context))
 
+
     try {
+      const dateTimeOfPrinting = militaryFormat.now()
       const url = canvas.toDataURL()
       if (settings.targetFormat === 'PNG') {
         const link = document.createElement('a')
-        link.download = 'map.png'
+        link.download = `ODINv2-MAP-${dateTimeOfPrinting}.png`
         link.href = url
         link.click()
         setTimeout(() => link.remove(), 300)
         return
       }
-      await toPDF(url, { ...settings, subtitle: `SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}` })
+
+      const text = {
+        H1Left: settings.title,
+        H1Right: `1: ${settings.scale}000`,
+        H2Left: `SW: ${markerCoordinates.sw} / NE: ${markerCoordinates.ne}`,
+        H2Right: dateTimeOfPrinting
+      }
+      await toPDF(url, { ...settings, pdfFileName: `ODINv2-MAP-${dateTimeOfPrinting}.pdf`, text })
     } catch (err) {
       // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
       console.error('print', err.message)
