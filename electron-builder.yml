@@ -2,7 +2,7 @@ directories:
   output: binaries
   buildResources: build
 appId: io.syncpoint.odin.v2
-productName: "ODIN v2"
+productName: "ODINv2"
 copyright: ${author} https://syncpoint.io
 win:
   target:
@@ -17,4 +17,4 @@ nsis:
 
 mac:
    target: default
-electronVersion: 21.3.1
+electronVersion: 20.3.7

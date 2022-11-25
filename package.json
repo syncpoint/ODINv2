@@ -1,6 +1,6 @@
 {
   "name": "nido",
-  "productName": "NIDO",
+  "productName": "ODINv2",
   "version": "2.5.1-alpha",
   "description": "",
   "main": "dist/main.js",
@@ -32,7 +32,7 @@
     "babel-loader": "^9.1.0",
     "c8": "^7.11.3",
     "css-loader": "^6.7.2",
-    "electron": "^21.3.1",
+    "electron": "^20.3.7",
     "electron-builder": "^23.6.0",
     "eslint": "^8.28.0",
     "eslint-config-standard": "^17.0.0",

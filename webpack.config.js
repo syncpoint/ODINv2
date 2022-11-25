@@ -40,7 +40,7 @@ const mode = env => env.production ? 'production' : 'development'
 
 const rendererConfig = (env, argv) => ({
   context: path.resolve(__dirname, 'src/renderer'),
-  target: 'electron-renderer',
+  target: 'electron20.3-renderer',
 
   // In production mode webpack applies internal optimization/minification:
   // no additional plugins necessary.
@@ -61,7 +61,7 @@ const rendererConfig = (env, argv) => ({
 
 const mainConfig = (env, argv) => ({
   context: path.resolve(__dirname, 'src/main'),
-  target: 'electron-main',
+  target: 'electron20.3-main',
   mode: mode(env),
   stats: 'errors-only',
   entry: {
