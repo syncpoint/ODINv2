@@ -71,7 +71,13 @@ const rendererConfig = (env, argv) => ({
     // Title is managed by BrowserWindow title option.
     new HtmlWebpackPlugin(),
     new webpack.ExternalsPlugin('commonjs', ['leveldown'])
-  ]
+  ],
+  externals: {
+    // unused dependencies referenced by jsPDF
+    canvg: 'canvg',
+    html2canvas: 'html2canvas',
+    dompurify: 'dompurify'
+  }
 })
 
 const mainConfig = (env, argv) => ({
@@ -85,7 +91,13 @@ const mainConfig = (env, argv) => ({
   plugins: [
     // NOTE: Required. Else "Error: No native build was found for ..."
     new webpack.ExternalsPlugin('commonjs', ['leveldown'])
-  ]
+  ],
+  externals: {
+    // unused dependencies referenced by jsPDF
+    canvg: 'canvg',
+    html2canvas: 'html2canvas',
+    dompurify: 'dompurify'
+  }
 })
 
 const devServer = env => {
