@@ -17,4 +17,4 @@ nsis:
 
 mac:
    target: default
-electronVersion: 20.3.2
+electronVersion: 21.3.1
