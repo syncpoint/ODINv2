@@ -1,7 +1,22 @@
 const path = require('path')
+const fs = require('fs')
 const { spawn } = require('child_process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
+const YAML = require('yaml')
+
+// Pick up Electron version [X.Y] from builder configuration:
+const { rendererTarget, mainTarget } = (() => {
+  const file = fs.readFileSync('./electron-builder.yml', 'utf8')
+  const configuration = YAML.parse(file)
+  const version = configuration.electronVersion.match(/(\d+\.\d+)/)[0]
+
+  return {
+    rendererTarget: 'electron' + version + '-renderer',
+    mainTarget: 'electron' + version + '-main'
+  }
+})()
+
 
 const RULES = {
   javascript: {
@@ -40,7 +55,7 @@ const mode = env => env.production ? 'production' : 'development'
 
 const rendererConfig = (env, argv) => ({
   context: path.resolve(__dirname, 'src/renderer'),
-  target: 'electron20.3-renderer',
+  target: rendererTarget,
 
   // In production mode webpack applies internal optimization/minification:
   // no additional plugins necessary.
@@ -61,7 +76,7 @@ const rendererConfig = (env, argv) => ({
 
 const mainConfig = (env, argv) => ({
   context: path.resolve(__dirname, 'src/main'),
-  target: 'electron20.3-main',
+  target: mainTarget,
   mode: mode(env),
   stats: 'errors-only',
   entry: {
