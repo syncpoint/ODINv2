@@ -16,5 +16,7 @@ nsis:
   perMachine: false
 
 mac:
-   target: default
+  target: default
+  entitlements: 'build/entitlements.mac.plist'
+  entitlementsInherit: 'build/entitlements.mac.plist'
 electronVersion: 20.3.7
