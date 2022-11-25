@@ -30,6 +30,7 @@ const printMarkerStyle = (directions = [0, 1], text, textOffsetX, textOffsetY) =
     }))]
 }
 
+// FIXME: DRY (renderer/model/CoordinatesFormat.js)
 const formatters = {
   MGRS: ([lng, lat], digits) => new LatLon(lat, lng).toUtm().toMgrs().toString(digits),
   LATLON: ([lng, lat]) => `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
