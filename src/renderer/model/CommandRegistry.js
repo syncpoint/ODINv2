@@ -5,6 +5,7 @@ import clipboardCommands from './commands/ClipboardCommands'
 import layerCommands from './commands/LayerCommands'
 import creationCommand from './commands/CreationCommands'
 import measureCommands from './commands/MeasureCommands'
+import printCommands from './commands/PrintCommands'
 
 /**
  *
@@ -17,6 +18,7 @@ export function CommandRegistry (services) {
   Object.assign(this, layerCommands(services))
   Object.assign(this, creationCommand(services))
   Object.assign(this, measureCommands(services))
+  Object.assign(this, printCommands(services))
 
   this.VIEW_CREATE = {
     label: 'Create View'

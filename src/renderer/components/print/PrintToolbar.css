@@ -1,0 +1,20 @@
+.printToolbar_dropdown {
+  background-color: #f0f0f0;
+  font-size: 0.9rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.printToolbar_input {
+  background-color: #f0f0f0;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border: solid lightslategray 1px;
+}
+
+.printToolbar_input::placeholder {
+  opacity: 0.6;
+}

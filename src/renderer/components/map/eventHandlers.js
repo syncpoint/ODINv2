@@ -58,6 +58,8 @@ const sendPreview = (services, map) => {
   } catch (err) {
     // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
     // console.error('[PREVIEW]', err.message)
+  } finally {
+    canvas.remove()
   }
 
   // Send map preview every 5 minutes to main process.
