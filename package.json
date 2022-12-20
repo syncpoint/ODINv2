@@ -2,7 +2,7 @@
   "name": "nido",
   "productName": "ODINv2",
   "version": "2.5.2",
-  "description": "",
+  "description": "Open Source Command and Control Information System (C2IS)",
   "main": "dist/main.js",
   "scripts": {
     "start": "electron . --cold",
@@ -16,7 +16,9 @@
     "jsdoc:main": "jsdoc src/main -r -d jsdoc/main",
     "build:win": "electron-builder --win --publish never",
     "build:mac": "electron-builder --mac --publish never",
-    "release": "electron-builder -mlw --publish always"
+    "build:linux": "electron-builder --linux --publish never",
+    "release": "electron-builder -mlw --publish always",
+    "postinstall": "electron-builder install-app-deps"
   },
   "author": {
     "name": "Syncpoint GmbH",
@@ -35,6 +37,8 @@
     "css-loader": "^6.7.2",
     "electron": "^20.3.7",
     "electron-builder": "^23.6.0",
+    "electron-notarize": "^1.2.2",
+    "electron-updater": "^5.3.0",
     "eslint": "^8.28.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-react": "^7.31.11",
@@ -59,8 +63,6 @@
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.2.0",
     "color": "^4.2.3",
-    "electron-notarize": "^1.2.2",
-    "electron-updater": "^5.3.0",
     "fuse.js": "^6.6.2",
     "geo-coordinates-parser": "^1.5.3",
     "geodesy": "^2.4.0",
