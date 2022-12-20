@@ -61,7 +61,7 @@ const toPDF = async (dataURL, settings) => {
     { align: 'right' }
   )
 
-  /* scale bar lower left corner ON THE map */
+  /* scale bar top left corner ON THE map */
   const scaleBarHeight = 2
   const scaleBarSegmentWidth = 10
   pdfDocument.setDrawColor(0, 0, 0)
@@ -69,7 +69,7 @@ const toPDF = async (dataURL, settings) => {
   pdfDocument.setFillColor(255, 255, 255)
   pdfDocument.rect(
     paddings[settings.targetFormat].left + scaleBarHeight / 2,
-    paper.height - paddings[settings.targetFormat].bottom - 2.5 * scaleBarHeight,
+    paddings[settings.targetFormat].top + 1.5 * scaleBarHeight,
     5.25 * scaleBarSegmentWidth,
     2 * scaleBarHeight,
     'FD'
@@ -79,14 +79,14 @@ const toPDF = async (dataURL, settings) => {
   pdfDocument.setFillColor(255, 255, 255)
   pdfDocument.rect(
     paddings[settings.targetFormat].left + scaleBarHeight,
-    paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+    paddings[settings.targetFormat].top + 2 * scaleBarHeight,
     scaleBarSegmentWidth,
     scaleBarHeight,
     'FD'
   )
   pdfDocument.rect(
     paddings[settings.targetFormat].left + scaleBarHeight + 2 * scaleBarSegmentWidth,
-    paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+    paddings[settings.targetFormat].top + 2 * scaleBarHeight,
     scaleBarSegmentWidth,
     scaleBarHeight,
     'FD'
@@ -96,14 +96,14 @@ const toPDF = async (dataURL, settings) => {
   pdfDocument.setFillColor(255, 0, 0)
   pdfDocument.rect(
     paddings[settings.targetFormat].left + scaleBarHeight + scaleBarSegmentWidth,
-    paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+    paddings[settings.targetFormat].top + 2 * scaleBarHeight,
     scaleBarSegmentWidth,
     scaleBarHeight,
     'FD'
   )
   pdfDocument.rect(
     paddings[settings.targetFormat].left + scaleBarHeight + 3 * scaleBarSegmentWidth,
-    paper.height - paddings[settings.targetFormat].bottom - 2 * scaleBarHeight,
+    paddings[settings.targetFormat].top + 2 * scaleBarHeight,
     scaleBarSegmentWidth,
     scaleBarHeight,
     'FD'
@@ -114,7 +114,7 @@ const toPDF = async (dataURL, settings) => {
   pdfDocument.setFontSize(scaleBarHeight * 4)
   pdfDocument.text(`${realLifeLength < 1 ? realLifeLength * 1000 : realLifeLength}${realLifeLength >= 1 ? 'k' : ''}m`,
     paddings[settings.targetFormat].left + 4 * scaleBarSegmentWidth + 2 * scaleBarHeight,
-    paper.height - paddings[settings.targetFormat].bottom - scaleBarHeight
+    paddings[settings.targetFormat].top + 3 * scaleBarHeight
   )
 
   pdfDocument.setDocumentProperties({
