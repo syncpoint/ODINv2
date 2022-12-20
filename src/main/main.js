@@ -11,6 +11,7 @@ import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore, PreferencesProvider } from './stores'
 import { ipc } from './ipc'
 import * as dotenv from 'dotenv'
+import SelfUpdate from './SelfUpdate'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -102,6 +103,9 @@ const ready = async () => {
 
   await session.restore()
   await menu.show()
+
+  const selfUpdate = new SelfUpdate()
+  selfUpdate.checkForUpdates()
 }
 
 
