@@ -17,7 +17,6 @@
     "build:win": "electron-builder --win --publish never",
     "build:mac": "electron-builder --mac --publish never",
     "build:linux": "electron-builder --linux --publish never",
-    "release": "electron-builder -mlw --publish always",
     "postinstall": "electron-builder install-app-deps"
   },
   "author": {
