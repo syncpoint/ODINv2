@@ -9,14 +9,10 @@ afterSign: 'scripts/notarize.js'
 
 win:
   target:
-    - target: msi
+    - target: nsis
       arch:
         - x64
   icon: 'build/icon.ico'
-
-nsis:
-  oneClick: false
-  perMachine: false
 
 mac:
   target: default
