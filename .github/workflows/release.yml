@@ -23,7 +23,18 @@ jobs:
     - run: npm ci --no-audit --no-optional
     - run: npm i dmg-license
     - run: npm run webpack:production
-    - run: npx electron-builder -ml --publish always
+    - name: Import OS-X certificates
+      run: chmod +x ./.github/workflows/add-osx-cert.sh && ./.github/workflows/add-osx-cert.sh
+      env:
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+    - run: npm run release:ml
+      env:
+        APPLEID: ${{ secrets.APPLEID }}
+        APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   win:
     runs-on: windows-latest
@@ -41,4 +52,8 @@ jobs:
         cache: 'npm'
     - run: npm ci --no-audit --no-optional
     - run: npm run webpack:production
-    - run: npx electron-builder -w --publish always
+    - run: npm run release:w
+      env:          
+        WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+        WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
