@@ -1,7 +1,7 @@
 {
   "name": "nido",
   "productName": "ODINv2",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "description": "Open Source Command and Control Information System (C2IS)",
   "main": "dist/main.js",
   "scripts": {
