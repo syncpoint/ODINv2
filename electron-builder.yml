@@ -32,6 +32,7 @@ linux:
     - 'dist'
 
 publish:
-  - github
-
+  - provider: github
+    releaseType: release
+  
 electronVersion: 20.3.7
