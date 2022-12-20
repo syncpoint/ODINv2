@@ -68,7 +68,7 @@ SelfUpdate.prototype.checkForUpdates = function () {
     })).show()
   })
 
-  setTimeout(autoUpdater.checkForUpdates, DELAY_CHECK_AFTER_APP_READY)
+  setTimeout(() => autoUpdater.checkForUpdates(), DELAY_CHECK_AFTER_APP_READY)
 }
 
 export default SelfUpdate
