@@ -21,6 +21,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci --no-audit --no-optional
+    - run: npm i dmg-license
     - run: npm run webpack:production
     - run: npx electron-builder -ml --publish always
 
