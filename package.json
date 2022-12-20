@@ -8,7 +8,7 @@
     "start": "electron . --cold",
     "hot": "webpack serve",
     "webpack": "webpack",
-    "webpack:production": "webpack --mode='production'",
+    "webpack:production": "webpack --mode=production",
     "test": "mocha 'src/**/*.test.js' --bail --recursive",
     "test:watch": "mocha 'src/**/*.test.js' --recursive --watch --reporter min",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'src/**/*.test.js' --recursive",
