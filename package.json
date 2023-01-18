@@ -79,7 +79,7 @@
     "most-subject": "^6.0.0",
     "mousetrap": "^1.6.5",
     "mousetrap-global-bind": "^1.1.0",
-    "ol": "^7.1.0",
+    "ol": "^7.2.2",
     "path-to-regexp": "^6.2.1",
     "proj4": "^2.8.0",
     "ramda": "^0.28.0",
