@@ -128,16 +128,21 @@ export const readMetadata = (location, uuid) => {
  * @param {*} uuid project UUID
  */
 export const readPreferences = async (location, uuid) => {
-  const filename = paths.preferences(location, uuid)
-  const json = await readJSON(filename)
-  delete json.paletteMemento // no longer needed
+  try {
+    const filename = paths.preferences(location, uuid)
+    const json = await readJSON(filename)
+    delete json.paletteMemento // no longer needed
 
-  // Convert WGS84 (EPSG:4326) center to Web Mercator (EPSG:3857).
-  if (json.viewport && json.viewport.center) {
-    json.viewport.center = proj4('EPSG:4326', 'EPSG:3857', json.viewport.center)
+    // Convert WGS84 (EPSG:4326) center to Web Mercator (EPSG:3857).
+    if (json.viewport && json.viewport.center) {
+      json.viewport.center = proj4('EPSG:4326', 'EPSG:3857', json.viewport.center)
+    }
+
+    return json
+  } catch (error) {
+    console.error(`LEGACY::readPreferences: ${error.message}`)
+    return {}
   }
-
-  return json
 }
 
 
