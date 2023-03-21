@@ -9,6 +9,6 @@ const format = sidc => sidc.match(/S.G.U/)
 
 export const svg = (sidc, options = defaultOptions) => {
   if (!sidc) return null
-  const symbol = new Symbol(format(sidc), options) 
+  const symbol = new Symbol(format(sidc), options)
   return symbol.asSVG()
 }
