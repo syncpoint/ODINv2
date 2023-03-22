@@ -4,18 +4,24 @@ import * as ID from '../ids'
 
 /**
  * Upgrade/downgrade databases as necessary.
+ * TODO: provided already configured schemaDB, jsonDB instances
  */
 export default function MigrationTool (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
+
+  ;(async () => {
+    const tuples = await L.tuples(this.schemaDB)
+    console.log('tuples', tuples)
+  })()
 }
 
-MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers'
-MigrationTool.INLINE_TAGS = 'inlineTags'
-MigrationTool.INLINE_FLAGS = 'inlineFlags'
-MigrationTool.DEFAULT_TAG = 'defaultTag'
-MigrationTool.INLINE_STYLES = 'inlineStyles'
+MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers' // TODO: ids: VALUE | KEY-ONLY
+MigrationTool.INLINE_TAGS = 'inlineTags' // TODO: tags : INLINE | SEPARATE
+MigrationTool.INLINE_FLAGS = 'inlineFlags' // TODO: flags : INLINE | SEPARATE
+MigrationTool.DEFAULT_TAG = 'defaultTag' // TODO: default-tag : INLINE | SEPARATE
+MigrationTool.INLINE_STYLES = 'inlineStyles' // TODO: styles: INLINE | SEPARATE
 
 
 /**
@@ -46,7 +52,18 @@ MigrationTool.prototype.redundantIdentifiers = async function () {
     await this.schemaDB.put(MigrationTool.REDUNDANT_IDENTIFIERS, false)
   }
 
+  const downgrade = async () => {
+    // TODO: limit to scopes originally carrying ids in values
+    const tuples = await L.readTuples(this.jsonDB, '')
+    const ops = tuples
+      .map(([key, value]) => L.putOp(key, { ...value, id: key }))
+
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.REDUNDANT_IDENTIFIERS, true)
+  }
+
   if (actual && wanted === false) await upgrade()
+  else if (actual === false && wanted === true) await downgrade()
 }
 
 MigrationTool.prototype.inlineTags = async function () {

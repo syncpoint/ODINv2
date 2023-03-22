@@ -75,7 +75,7 @@ util.inherits(Store, Emitter)
 Store.prototype.bootstrap = async function () {
 
   // Import symbols once for each fresh project database.
-  //
+  // TODO: move to MigrationTool
   const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
   const ops = () => Object.values(index).map(value => L.putOp(id(value), value))
   const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
