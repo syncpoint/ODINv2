@@ -1,0 +1,372 @@
+[
+  {
+    "sidc": "K-G-D----------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Danger Unspecified (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DI---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Risk of Infection (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DF---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Fire Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DC---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Chemical Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DG---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Gas Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DA---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Avalanche, Landslide or Rockfall Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DR---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Radiation Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DW---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Risk of Flooding (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DE---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Explosion Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DS---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Smoke Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-DX---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Danger)",
+      "Electricity Hazard (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-H----------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Damage unspecified (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HI---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Contamination (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HFL--------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Fire Light (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HFM--------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Fire Medium (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HFH--------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Fire Heavy (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HC---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Chemical Leak (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HG---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Gas Leak (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HA---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Avalanche, Landslide or Rockfall (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HR---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Radiation (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HW---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Flood (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HBD--------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Damaged, Functionally Impaired (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HBP--------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Partially Destroyed, Partly out of Function (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HBC-------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Broken, Blocked, Locked (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-HBY-------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Event (Damage)",
+      "Completely Destroyed, out of Function (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-P----------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Individual",
+      "Person (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-PC---------",
+    "class": "KC",
+    "geometry": "Point",
+    "hierarchy": [
+      "SKKM",
+      "Individual",
+      "Person in Commander Function (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-PI---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Individual",
+      "Person Injured (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-PK---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Individual",
+      "Person Killed (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-PF---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Individual",
+      "Person in Forced Position (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-PM---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Individual",
+      "Person Missing (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-FU---------",
+    "class": "KU",
+    "hierarchy": [
+      "SKKM",
+      "Forces",
+      "Formation of Forces (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-FI---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Forces",
+      "Permanent Fixed Facility (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-FS---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Forces",
+      "Temporary Occasion-Related Facility (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-VM---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Vehicle",
+      "Motor Vehicle (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-VT---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Vehicle",
+      "Trailer (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-VL---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Vehicle",
+      "Rail Vehicle (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-VS---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Vehicle",
+      "Watercraft (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-VF---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Vehicle",
+      "Aircraft/Fixed Wing (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-VR---------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Vehicle",
+      "Aircraft/Rotary Wing (AUT only)"
+    ]
+  },
+  {
+    "sidc": "K-G-E----------",
+    "class": "K",
+    "hierarchy": [
+      "SKKM",
+      "Equipment",
+      "Large-Scale Equipment (AUT only)"
+    ]
+  }
+]
