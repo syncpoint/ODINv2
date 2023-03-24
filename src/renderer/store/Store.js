@@ -89,6 +89,7 @@ Store.prototype.bootstrap = async function () {
   const textHaloColor = 'white'
   const textHaloWidth = 3
 
+  // TODO: move to MigrationTool
   const defaultStyleExists = await L.existsKey(this.jsonDB, L.prefix(ID.defaultStyleId))
   await defaultStyleExists
     ? Promise.resolve()
