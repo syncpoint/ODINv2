@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import * as L from '../../shared/level'
 import * as ID from '../ids'
 
@@ -10,11 +11,6 @@ export default function MigrationTool (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
   this.options = options
-
-  ;(async () => {
-    const tuples = await L.tuples(this.schemaDB)
-    console.log('tuples', tuples)
-  })()
 }
 
 MigrationTool.REDUNDANT_IDENTIFIERS = 'redundantIdentifiers' // TODO: ids: VALUE | KEY-ONLY
@@ -84,7 +80,18 @@ MigrationTool.prototype.inlineTags = async function () {
     await this.schemaDB.put(MigrationTool.INLINE_TAGS, false)
   }
 
+  const downgrade = async () => {
+    const tags = await L.tuples(this.jsonDB, 'tags+')
+    const ids = tags.map(([k]) => ID.dropScope(k))
+    const oldValues = await L.values(this.jsonDB, ids)
+    const newValues = R.zip(tags, oldValues).map(([[_, tags], v]) => ({ ...v, tags }))
+    await L.mput(this.jsonDB, R.zip(ids, newValues))
+    await L.mdel(this.jsonDB, tags.map(R.prop(0)))
+    await this.schemaDB.put(MigrationTool.INLINE_TAGS, true)
+  }
+
   if (actual && wanted === false) await upgrade()
+  else if (actual === false && wanted === true) await downgrade()
 }
 
 MigrationTool.prototype.inlineFlags = async function () {
@@ -107,7 +114,34 @@ MigrationTool.prototype.inlineFlags = async function () {
     await this.schemaDB.put(MigrationTool.INLINE_FLAGS, false)
   }
 
+  const downgrade = async () => {
+    const hidden = await L.keys(this.jsonDB, 'hidden+')
+    const locked = await L.keys(this.jsonDB, 'locked+')
+    const shared = await L.keys(this.jsonDB, 'shared+')
+    const all = [].concat(hidden, locked, shared)
+
+    const entities = all.reduce((acc, key) => {
+      const [scope, id] = key.split('+')
+      acc[id] = acc[id] || {}
+      acc[id][scope] = true
+      return acc
+    }, {})
+
+    const keys = Object.keys(entities)
+    const tuples = await L.mgetTuples(this.jsonDB, keys)
+    const kv = tuples.map(([k, v]) => [k, { ...v, ...entities[k] }])
+
+    const ops = [
+      ...all.map(L.delOp),
+      ...kv.map(([k, v]) => L.putOp(k, v))
+    ]
+
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.INLINE_FLAGS, true)
+  }
+
   if (actual && wanted === false) await upgrade()
+  else if (actual === false && wanted === true) await downgrade()
 }
 
 MigrationTool.prototype.defaultTag = async function () {
@@ -131,7 +165,24 @@ MigrationTool.prototype.defaultTag = async function () {
     await this.schemaDB.put(MigrationTool.DEFAULT_TAG, false)
   }
 
+  const downgrade = async () => {
+    const keys = await L.keys(this.jsonDB, 'default+layer:')
+    if (keys.length === 1) {
+      const key = ID.dropScope(keys[0])
+      const tags = await L.get(this.jsonDB, ID.tagsId(key))
+      const ops = [
+        L.delOp(keys[0]),
+        L.putOp(ID.tagsId(key), [...tags, 'default'])
+      ]
+
+      await this.jsonDB.batch(ops)
+    }
+
+    await this.schemaDB.put(MigrationTool.DEFAULT_TAG, true)
+  }
+
   if (actual && wanted === false) await upgrade()
+  else if (actual === false && wanted === true) await downgrade()
 }
 
 
@@ -157,5 +208,30 @@ MigrationTool.prototype.inlineStyles = async function () {
     await this.schemaDB.put(MigrationTool.INLINE_STYLES, false)
   }
 
+  const downgrade = async () => {
+    const tuples = await L.tuples(this.jsonDB, 'style+feature:')
+    const keys = tuples.map(([k]) => ID.dropScope(k))
+    const styles = tuples.map(R.prop(1))
+    const oldValues = await L.tuples(this.jsonDB, keys)
+
+    const value = ({ properties, ...rest }, style) => ({
+      ...rest,
+      properties: {
+        ...properties,
+        style
+      }
+    })
+
+    const newValues = R.zip(styles, oldValues).map(([style, [k, v]]) => [k, value(v, style)])
+    const ops = [
+      ...tuples.map(([k]) => L.delOp(k)),
+      ...newValues.map(([k, v]) => L.putOp(k, v))
+    ]
+
+    await this.jsonDB.batch(ops)
+    await this.schemaDB.put(MigrationTool.INLINE_STYLES, true)
+  }
+
   if (actual && wanted === false) await upgrade()
+  else if (actual === false && wanted === true) await downgrade()
 }
