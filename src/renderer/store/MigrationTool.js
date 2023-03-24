@@ -2,7 +2,7 @@ import * as L from '../../shared/level'
 import ids from './schema/ids'
 import tags from './schema/tags'
 import flags from './schema/flags'
-import defaultFlag from './schema/default-flag'
+import defaultTag from './schema/default-tag'
 import styles from './schema/styles'
 
 
@@ -22,7 +22,6 @@ MigrationTool.INLINE_FLAGS = 'inlineFlags' // TODO: flags : INLINE | SEPARATE
 MigrationTool.DEFAULT_TAG = 'defaultTag' // TODO: default-tag : INLINE | SEPARATE
 MigrationTool.INLINE_STYLES = 'inlineStyles' // TODO: styles: INLINE | SEPARATE
 
-
 /**
  * async
  */
@@ -32,6 +31,16 @@ MigrationTool.prototype.bootstrap = async function () {
   await this.inlineFlags()
   await this.defaultTag()
   await this.inlineStyles()
+
+  // const ps = Object.entries(configurations).map(async ([id, config]) => {
+  //   const { wanted, fns, key } = config
+  //   const actual = await L.get(this.schemaDB, id, true)
+  //   // const wanted = this.options[MigrationTool.REDUNDANT_IDENTIFIERS]
+  //   if (key(actual) === wanted) return
+  //   await fns[wanted](this.jsonDB)
+  //   await this.schemaDB.put(id, wanted)
+  // })
+
 }
 
 /**
@@ -81,7 +90,7 @@ MigrationTool.prototype.defaultTag = async function () {
   if (actual === wanted) return
 
   const key = wanted ? 'TAGS' : 'SEPARATE'
-  await defaultFlag[key](this.jsonDB)
+  await defaultTag[key](this.jsonDB)
   await this.schemaDB.put(MigrationTool.DEFAULT_TAG, wanted)
 }
 

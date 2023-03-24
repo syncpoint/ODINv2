@@ -15,13 +15,7 @@
  * enabled or disabled.
  */
 
-/**
- * Initially we stored ids not only in keys but often also redundantly in values.
- * It was convenient at first, but pretty soon it became just confusing.
- * The current approach is to store ids ONLY in keys and NEVER in values.
- */
 export const REDUNDANT_IDENTIFIERS = 'redundantIdentifiers' // KEY-ONLY | VALUE
-
 export const INLINE_TAGS = 'inlineTags' // TODO: tags : INLINE | SEPARATE
 export const INLINE_FLAGS = 'inlineFlags' // TODO: flags : INLINE | SEPARATE
 export const DEFAULT_TAG = 'defaultTag' // TODO: default-tag : INLINE | SEPARATE

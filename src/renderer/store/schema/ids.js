@@ -1,5 +1,11 @@
 import * as L from '../../../shared/level'
 
+/**
+ * Initially we stored ids not only in keys but often also redundantly in values.
+ * It was convenient at first, but pretty soon it became just confusing.
+ * The current approach is to store ids ONLY in keys and NEVER in values.
+ */
+
 const upgrade = async jsonDB => {
   const tuples = await L.readTuples(jsonDB, '')
   const ops = tuples

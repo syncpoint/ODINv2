@@ -123,7 +123,7 @@ const fixtures = [
   }
 ]
 
-describe.only('MigrationTool', function () {
+describe('MigrationTool', function () {
 
   fixtures.forEach(fixture => {
     it(`${fixture.characteristic} [${fixture.actual} -> ${fixture.wanted}]`, async function () {
