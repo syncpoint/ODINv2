@@ -194,9 +194,9 @@ export const get = async (db, key, value) => {
 }
 
 /**
- * put :: levelup -> (k, v) -> unit
- * put :: levelup -> {k: v} -> unit
- * put :: levelup -> [[k, v]] -> unit
+ * mput :: levelup -> (k, v) -> unit
+ * mput :: levelup -> {k: v} -> unit
+ * mput :: levelup -> [[k, v]] -> unit
  */
 export const mput = (db, ...args) => {
   if (args.length === 2) return db.put(args[0], args[1]) // key/value
