@@ -8,14 +8,12 @@ import * as TS from '../ol/ts'
 import { transform, geometryType } from '../model/geometry'
 import { readGeometry } from '../store/FeatureStore'
 import { bbox } from './geometry'
-import { index } from '../symbology/2525c'
 
 /**
  * Persistence for layers, features and associated information.
  *
  * addTag :: k -> String -> unit
  * batch :: (leveldb, operations) -> unit
- * bootstrap :: () -> unit
  * collect :: k -> [(k -> k)] -> [v]
  * collectKeys :: ([k], [String]) -> [k]
  * defaultLayerId :: () -> k
@@ -60,53 +58,9 @@ export default function Store (jsonDB, wkbDB, undo, selection) {
   this.undo = undo
   this.selection = selection
   this.db = L.leveldb({ down: new PartitionDOWN(jsonDB, wkbDB) })
-
-  ;(async () => {
-    // potential clean-up
-  })()
 }
 
 util.inherits(Store, Emitter)
-
-
-/**
- * bootstrap :: () -> unit
- */
-Store.prototype.bootstrap = async function () {
-
-  // Import symbols once for each fresh project database.
-  // TODO: move to MigrationTool
-  const id = symbol => `symbol:${symbol.sidc.substring(0, 10)}`
-  const ops = () => Object.values(index).map(value => L.putOp(id(value), value))
-  const alreadyImported = await L.existsKey(this.jsonDB, L.prefix('symbol:'))
-  await alreadyImported
-    ? Promise.resolve()
-    : this.jsonDB.batch(ops())
-
-  // Store default style properties once for each fresh project database.
-  //
-  const textColor = 'black'
-  const textHaloColor = 'white'
-  const textHaloWidth = 3
-
-  // TODO: move to MigrationTool
-  const defaultStyleExists = await L.existsKey(this.jsonDB, L.prefix(ID.defaultStyleId))
-  await defaultStyleExists
-    ? Promise.resolve()
-    : this.jsonDB.put(ID.defaultStyleId, {
-      'color-scheme': 'medium',
-      'line-width': 2,
-      'line-halo-width': 1,
-      'text-font-size': '12px',
-      'text-font-family': 'sans-serif',
-      'text-color': textColor,
-      'text-halo-color': textHaloColor,
-      'text-halo-width': textHaloWidth,
-      'symbol-text-color': textColor,
-      'symbol-text-halo-color': textHaloColor,
-      'symbol-text-halo-width': textHaloWidth * 1.5
-    })
-}
 
 
 /**

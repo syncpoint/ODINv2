@@ -4,6 +4,8 @@ import tags from './tags'
 import flags from './flags'
 import defaultTag from './default-tag'
 import styles from './styles'
+import ms2525c from './ms2525c'
+import defaultStyle from './default-style'
 
 /**
  * Verify that data organization/structure in project database
@@ -23,6 +25,8 @@ const features = {
   flags: [flags, 'INLINE', 'SEPARATE'],
   'default-tag': [defaultTag, 'TAGS', 'SEPARATE'],
   styles: [styles, 'PROPERTIES', 'SEPARATE'],
+  ms2525c: [ms2525c, 'UNLOADED', 'LOADED'],
+  'default-style': [defaultStyle, 'UNLOADED', 'LOADED']
 }
 
 const value = (id, x) => features[id][1 + (x ? 0 : 1)]
@@ -41,6 +45,10 @@ export default function Schema (db, options) {
   this.options = options
 }
 
+
+/**
+ * 
+ */
 Schema.prototype.bootstrap = async function () {
   await this.translate()
 
@@ -49,7 +57,7 @@ Schema.prototype.bootstrap = async function () {
   const ps = Object.entries(features).map(async ([id, feature]) => {
     const actual = await L.get(this.schemaDB, id, feature[1])
     const wanted = this.options[id]
-  
+    
     if (wanted === undefined) return
     if (actual === wanted) return
   
@@ -60,6 +68,10 @@ Schema.prototype.bootstrap = async function () {
   return await Promise.all(ps)
 }
 
+
+/**
+ * 
+ */
 Schema.prototype.translate = async function () {
   // For some reason `getMany()` never resolves on
   // database with status 'opening'.
@@ -77,8 +89,6 @@ Schema.prototype.translate = async function () {
 
   // Translate and delete any old keys in schema database.
   const tuples = await L.tuples(this.schemaDB, Object.keys(translations))
-
-  console.log('tuples', await L.tuples(this.schemaDB))
 
   const ops = tuples
     .map(([ko, vo]) => [ko, vo, translations[ko]])

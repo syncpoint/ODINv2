@@ -118,13 +118,14 @@ export default async projectUUID => {
     tags: 'SEPARATE',
     flags: 'SEPARATE',
     'default-tag': 'SEPARATE',
-    styles: 'SEPARATE'
+    styles: 'SEPARATE',
+    ms2525c: 'LOADED',
+    'default-style': 'LOADED'
   })
 
   // Orderly bootstrapping:
   //
   await schema.bootstrap()
-  await store.bootstrap()
   await tileLayerStore.bootstrap()
   await searchIndex.bootstrap()
   await featureStore.bootstrap()
