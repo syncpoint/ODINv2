@@ -1,5 +1,5 @@
 import * as L from '../../../shared/level'
-import { symbols } from '../../symbology/2525c'
+import { symbols } from '../../symbology/skkm'
 
 const upgrade = async (jsonDB) => {
 
@@ -10,8 +10,8 @@ const upgrade = async (jsonDB) => {
 }
 
 const downgrade = async jsonDB => {
-  // TODO: only delete 2525-C symbols.
-  await L.mdel(jsonDB, 'symbol:')
+  // Only delete SKKM symbols:
+  await L.mdel(jsonDB, 'symbol:K')
 }
 
 export default {

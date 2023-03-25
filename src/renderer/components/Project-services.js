@@ -118,7 +118,8 @@ export default async projectUUID => {
     flags: 'SEPARATE',
     'default-tag': 'SEPARATE',
     styles: 'SEPARATE',
-    ms2525c: 'LOADED',
+    ms2525c: 'LOADED', // NOTE: also deletes SKKM on UNLOADED.
+    skkm: 'LOADED',
     'default-style': 'LOADED'
   })
 

@@ -5,6 +5,7 @@ import flags from './flags'
 import defaultTag from './default-tag'
 import styles from './styles'
 import ms2525c from './ms2525c'
+import skkm from './skkm'
 import defaultStyle from './default-style'
 
 /**
@@ -26,6 +27,7 @@ const features = {
   'default-tag': [defaultTag, 'TAGS', 'SEPARATE'],
   styles: [styles, 'PROPERTIES', 'SEPARATE'],
   ms2525c: [ms2525c, 'UNLOADED', 'LOADED'],
+  skkm: [skkm, 'UNLOADED', 'LOADED'],
   'default-style': [defaultStyle, 'UNLOADED', 'LOADED']
 }
 
@@ -47,7 +49,7 @@ export default function Schema (db, options) {
 
 
 /**
- * 
+ *
  */
 Schema.prototype.bootstrap = async function () {
   await this.translate()
@@ -57,10 +59,10 @@ Schema.prototype.bootstrap = async function () {
   const ps = Object.entries(features).map(async ([id, feature]) => {
     const actual = await L.get(this.schemaDB, id, feature[1])
     const wanted = this.options[id]
-    
+
     if (wanted === undefined) return
     if (actual === wanted) return
-  
+
     await feature[0][wanted](this.jsonDB)
     await this.schemaDB.put(id, wanted)
   })
@@ -70,7 +72,7 @@ Schema.prototype.bootstrap = async function () {
 
 
 /**
- * 
+ *
  */
 Schema.prototype.translate = async function () {
   // For some reason `getMany()` never resolves on

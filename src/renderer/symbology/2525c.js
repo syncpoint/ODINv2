@@ -1,6 +1,6 @@
 import * as R from 'ramda'
-import ms2525c from './2525c.json'
-import skkm from './skkm.json'
+import data from './2525c.json'
+import * as skkm from './skkm'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
@@ -97,7 +97,10 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
-export const index = ms2525c
+/**
+ * 2525-C only
+ */
+export const symbols = data
   .filter(({ unsupported }) => !unsupported)
   .reduce((acc, descriptor) => {
     const sidc = parameterized(descriptor.sidc)
@@ -121,40 +124,35 @@ export const index = ms2525c
     return acc
   }, {})
 
-// Add SKKM symbols to index:
-skkm.reduce((acc, descriptor) => {
-  const sidc = parameterized(descriptor.sidc)
-  acc[sidc] = {
-    parameterized: sidc,
-    sidc: descriptor.sidc,
-    hierarchy: descriptor.hierarchy,
-    dimensions: [],
-    scope: 'SKKM',
-    geometry: { type: 'Point' }
-  }
+/**
+ * 2525-C + SKKM
+ * TODO: This is a hack. Separate symbol usage in interactions and otherwise.
+ */
+export const descriptors = Object.entries(skkm.symbols).reduce((acc, [k, v]) => {
+  acc[k] = v
   return acc
-}, index)
+}, { ...symbols })
 
 export const descriptor = sidc => {
   if (!sidc) return
-  return index[parameterized(sidc)]
+  return descriptors[parameterized(sidc)]
 }
 
 export const geometry = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   return descriptor && descriptor.geometry
 }
 
 export const geometryType = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   return descriptor && descriptor.geometry && descriptor.geometry.type
 }
 
 export const className = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
 
   if (descriptor.scope === 'UNIT') return 'UNIT'
@@ -171,7 +169,7 @@ export const className = sidc => {
 
 export const specialization = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
 
   const { geometry } = descriptor
