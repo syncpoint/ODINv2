@@ -1,5 +1,9 @@
 import * as L from '../../../shared/level'
 import ids from './ids'
+import tags from './tags'
+import flags from './flags'
+import defaultTag from './default-tag'
+import styles from './styles'
 
 /**
  * Verify that data organization/structure in project database
@@ -12,33 +16,52 @@ import ids from './ids'
  * First we have to translate to new keys and values if necessary,
  */
 
+
+const features = {
+  ids: [ids, 'VALUE', 'KEY-ONLY'],
+  tags: [tags, 'INLINE', 'SEPARATE'],
+  flags: [flags, 'INLINE', 'SEPARATE'],
+  'default-tag': [defaultTag, 'TAGS', 'SEPARATE'],
+  styles: [styles, 'PROPERTIES', 'SEPARATE'],
+}
+
+const value = (id, x) => features[id][1 + (x ? 0 : 1)]
+
 const translations = {
-  redundantIdentifiers: ['ids', x => x ? 'VALUE' : 'KEY-ONLY'],
-  inlineTags: ['tags', x => x ? 'INLINE' : 'SEPARATE'],
-  inlineFlags: ['flags', x => x ? 'INLINE' : 'SEPARATE'],
-  defaultTag: ['default-tag', x => x ? 'TAGS' : 'SEPARATE'],
-  inlineStyles: ['styles', x => x ? 'PROPERTIES' : 'SEPARATE' ]
+  redundantIdentifiers: 'ids',
+  inlineTags: 'tags',
+  inlineFlags: 'flags',
+  defaultTag: 'default-tag',
+  inlineStyles: 'styles'
 }
 
-const configurations = {
-  ids: ['KEY-ONLY', ids]
-}
-
-
-export default function Schema (db) {
+export default function Schema (db, options) {
   this.schemaDB = L.schemaDB(db)
   this.jsonDB = L.jsonDB(db)
+  this.options = options
 }
 
 Schema.prototype.bootstrap = async function () {
   await this.translate()
 
   // Check current and wanted configurations;
-  // upgrade/downgrade as necessary,
+  // upgrade/downgrade as necessary.
+  const ps = Object.entries(features).map(async ([id, feature]) => {
+    const actual = await L.get(this.schemaDB, id, feature[1])
+    const wanted = this.options[id]
+  
+    if (wanted === undefined) return
+    if (actual === wanted) return
+  
+    await feature[0][wanted](this.jsonDB)
+    await this.schemaDB.put(id, wanted)
+  })
+
+  return await Promise.all(ps)
 }
 
 Schema.prototype.translate = async function () {
-  // For some reason getMany() never resolves on
+  // For some reason `getMany()` never resolves on
   // database with status 'opening'.
   // Waiting one tick seems to fix this problem.
   // NOTE: This is only an issue for unit tests.
@@ -55,10 +78,12 @@ Schema.prototype.translate = async function () {
   // Translate and delete any old keys in schema database.
   const tuples = await L.tuples(this.schemaDB, Object.keys(translations))
 
-  const ops = tuples.flatMap(([key, value]) => [
-    L.delOp(key),
-    L.putOp(translations[key][0], translations[key][1](value))
-  ])
+  console.log('tuples', await L.tuples(this.schemaDB))
+
+  const ops = tuples
+    .map(([ko, vo]) => [ko, vo, translations[ko]])
+    .map(([ko, ov, kn]) => [ko, kn, value(kn, ov)])
+    .flatMap(([ko, kn, vn]) => [L.delOp(ko), L.putOp(kn, vn)])
 
   await this.schemaDB.batch(ops)
 }

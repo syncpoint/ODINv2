@@ -5,7 +5,7 @@ import EventEmitter from '../../shared/emitter'
 import SessionStore from '../store/SessionStore'
 import PreferencesStore from '../store/PreferencesStore'
 import Store from '../store/Store'
-import MigrationTool from '../store/MigrationTool'
+import Schema from '../store/schema/Schema'
 import ProjectStore from '../store/ProjectStore'
 import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
@@ -113,17 +113,17 @@ export default async projectUUID => {
 
   services.commandRegistry = new CommandRegistry(services)
 
-  const migrationsOptions = {}
-  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
-  migrationsOptions[MigrationTool.INLINE_TAGS] = false
-  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
-  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
-  migrationsOptions[MigrationTool.INLINE_STYLES] = false
-  const migration = new MigrationTool(db, migrationsOptions)
+  const schema = new Schema(db, {
+    ids: 'KEY-ONLY',
+    tags: 'SEPARATE',
+    flags: 'SEPARATE',
+    'default-tag': 'SEPARATE',
+    styles: 'SEPARATE'
+  })
 
   // Orderly bootstrapping:
   //
-  await migration.bootstrap()
+  await schema.bootstrap()
   await store.bootstrap()
   await tileLayerStore.bootstrap()
   await searchIndex.bootstrap()
