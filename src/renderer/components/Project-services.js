@@ -29,7 +29,6 @@ export default async projectUUID => {
   const locator = () => services
   services.locator = locator
 
-
   const selection = new Selection()
   const undo = new Undo()
 

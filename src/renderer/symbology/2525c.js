@@ -1,5 +1,6 @@
 import * as R from 'ramda'
-import raw from './2525c.json'
+import ms2525c from './2525c.json'
+import skkm from './skkm.json'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
@@ -96,7 +97,7 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
-export const index = raw
+export const index = ms2525c
   .filter(({ unsupported }) => !unsupported)
   .reduce((acc, descriptor) => {
     const sidc = parameterized(descriptor.sidc)
@@ -119,6 +120,20 @@ export const index = raw
 
     return acc
   }, {})
+
+// Add SKKM symbols to index:
+skkm.reduce((acc, descriptor) => {
+  const sidc = parameterized(descriptor.sidc)
+  acc[sidc] = {
+    parameterized: sidc,
+    sidc: descriptor.sidc,
+    hierarchy: descriptor.hierarchy,
+    dimensions: [],
+    scope: 'SKKM',
+    geometry: { type: 'Point' }
+  }
+  return acc
+}, index)
 
 export const descriptor = sidc => {
   if (!sidc) return
