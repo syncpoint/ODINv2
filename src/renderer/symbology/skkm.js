@@ -11,6 +11,7 @@ export const symbols = skkm.reduce((acc, descriptor) => {
   acc[sidc] = {
     parameterized: sidc,
     sidc: descriptor.sidc,
+    class: descriptor.class,
     hierarchy: descriptor.hierarchy,
     dimensions: [],
     scope: 'SKKM',
