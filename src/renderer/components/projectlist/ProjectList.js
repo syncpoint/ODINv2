@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from './Button'
 // TODO: replace Card and List with simple <div/>s
+import { Input } from './Input'
 import { FilterInput } from './FilterInput'
 import { List } from './List'
 import { Card } from './Card'
@@ -109,70 +110,16 @@ ButtonBar.propTypes = {
   children: PropTypes.array.isRequired
 }
 
-
-/**
- *
- */
-const Project = React.forwardRef((props, ref) => {
-  // TODO: remove dependencies on ipc and store if possible
-  const { ipcRenderer, projectStore } = useServices()
-  const { project, selected } = props
-  const send = message => () => ipcRenderer.send(message, project.id)
-  const loadPreview = () => projectStore.getPreview(project.id)
-  const handleRename = name => projectStore.updateProject({ ...project, name })
-  const handleDelete = () => projectStore.deleteProject(project.id)
-
-  const isOpen = props.project.tags
-    ? props.project.tags.includes('OPEN')
-    : false
-
-  const className = props.selected
-    ? 'card focus'
-    : 'card'
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      aria-selected={selected}
-      onClick={event => props.onClick && props.onClick(event)}
-      onDoubleClick={event => props.onDoubleClick && props.onDoubleClick(event)}
-    >
-      <div className='card-content'>
-        <Title value={project.name} onChange={handleRename}/>
-        <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
-        <ButtonBar>
-          <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
-          <CustomButton
-            danger
-            onClick={handleDelete}
-            style={{ marginLeft: 'auto' }}
-            text='Delete'
-            disabled={isOpen}
-          />
-        </ButtonBar>
-      </div>
-      <Media loadPreview={loadPreview}/>
-    </div>
-  )
-})
-
-Project.propTypes = {
-  project: PropTypes.object.isRequired,
-  selected: PropTypes.bool,
-  onClick: PropTypes.func,
-  onDoubleClick: PropTypes.func
-}
-
-// TODO: move state menagement to useModel()
-
 /**
  *
  */
 export const ProjectList = () => {
-  const { projectStore, ipcRenderer } = useServices()
+  const { projectStore, ipcRenderer, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
+  const [replication, setReplication] = React.useState(undefined)
+  const [inviteValue, setInviteValue] = React.useState({})
+  const [offline, setOffline] = React.useState(true)
 
   /**
    * Reload projects from store and update entry list
@@ -184,10 +131,21 @@ export const ProjectList = () => {
   const fetch = React.useCallback(projectId => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
-      dispatch({ type: 'entries', entries: projects, candidateId: projectId })
+      const localProjectIds = projects.map(project => project.id.split(':')[1])
+      const sharedProjects = replication ? (await replication.invited()).map(project => ({ ...project, ...{ tags: ['INVITED'] } })) : []
+
+      /*  Sometimes the replication API does not update the state immediately. In ordwer to
+          avoid duplicate entries - one from the local db and one from the replication API -
+          we remove these duplicate entries.
+      */
+      const allProjects = [...projects, ...(sharedProjects).filter(project => {
+        const hasAlreadyJoined = localProjectIds.includes(project.id)
+        return !hasAlreadyJoined
+      })]
+      dispatch({ type: 'entries', entries: allProjects, candidateId: projectId })
       if (projectId) dispatch({ type: 'select', selected: [projectId] })
     })()
-  }, [dispatch, filter, projectStore])
+  }, [dispatch, filter, projectStore, replication])
 
 
   /**
@@ -225,6 +183,67 @@ export const ProjectList = () => {
    */
   React.useEffect(fetch, [fetch])
 
+  React.useEffect(() => {
+    const initializeReplication = async () => {
+      try {
+        /*
+          Replication credentials are tokens that are used to authenticate the current SESSION
+          to the replication server. Credentials do not contain username or password.
+        */
+        const credentials = await projectStore.getCredentials('PROJECT-LIST')
+        const replicatedProjectList = await replicationProvider.projectList(credentials)
+
+        replicatedProjectList.tokenRefreshed(credentials => {
+          console.log('Will persist the current credentials')
+          console.dir(credentials)
+          projectStore.putCredentials('PROJECT-LIST', credentials)
+        })
+
+        await replicatedProjectList.hydrate()
+        setReplication(replicatedProjectList)
+
+        const handler = {
+          streamToken: streamToken => {
+            projectStore.putStreamToken('PROJECT-LIST', streamToken)
+            setOffline(false)
+          },
+          renamed: project => {
+            console.log(`SHOULD rename ${project.id} to ${project.name}`)
+          },
+          invited: project => {
+            /*
+              This handler receives detailed information about a project the user
+              is invited to join. Currently we just call fetch() in order to update the projects.
+              Since we already have that information we should find a better way to merge the data.
+            */
+            console.log('INVITED')
+            console.dir(project)
+            fetch()
+          },
+          error: error => {
+            console.error(error)
+            setOffline(true)
+          }
+        }
+        const mostRecentStreamToken = await projectStore.getStreamToken('PROJECT-LIST')
+        replicatedProjectList.start(mostRecentStreamToken, handler)
+
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    initializeReplication()
+
+    /*
+      Returning a cleanup function from this top-level component does not make sense. The window
+      gets closed but react does not execute the cleanup function.
+      Even subscribing to the appropriate window event (beforeunload) does not work in order to
+      logout from the replication server.
+    */
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
 
@@ -247,9 +266,34 @@ export const ProjectList = () => {
     const handleClick = id => ({ metaKey, shiftKey }) => {
       dispatch({ type: 'click', id, shiftKey, metaKey })
     }
+    const handleJoin = async () => {
+      console.log(`Joining project ${project.id}`)
+      await replication.join(project.id)
+      await projectStore.createProject(project.id, project.name, ['SHARED', 'UNINITIALIZED'])
+    }
+
+    const handleShare = async () => {
+      console.log(`Sharing project ${project.id}`)
+    }
+
+    const handleInvite = value => {
+      if (!value) return
+      replication
+        .invite(project.id.replace('project:', ''), value /* [matrix] user name */)
+        .then(() => console.log(`Sent invitation for project ${project.name} to ${value}`))
+        .catch(error => console.error(error))
+    }
 
     const isOpen = project.tags
       ? project.tags.includes('OPEN')
+      : false
+
+    const isInvited = project.tags
+      ? project.tags.includes('INVITED')
+      : false
+
+    const isShared = project.tags
+      ? project.tags.includes('SHARED')
       : false
 
     return (
@@ -269,8 +313,36 @@ export const ProjectList = () => {
               <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
               <ButtonBar>
-                <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
+                <CustomButton onClick={send('OPEN_PROJECT')} text='Open' disabled={isInvited && !isShared}/>
                 <CustomButton onClick={send('EXPORT_PROJECT')} text='Export' disabled={true}/>
+                { isInvited && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
+                { (!isInvited && !isShared) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
+                { isShared &&
+                    <span style={{ display: 'flex', alignItems: 'center' }} >
+                    <Input
+                      style= {{ width: '25em' }}
+                      placeholder='[matrix] username'
+                      value={inviteValue[props.id] || ''}
+                      onChange={({ target }) => {
+                        const value = { ...inviteValue }
+                        value[props.id] = target.value
+                        setInviteValue(value)
+                      }}
+                      onKeyDown={event => {
+                        if (event.key !== 'Enter') return
+                        handleInvite(inviteValue[props.id])
+                      }}
+                      disabled={offline}
+                    />
+                    <Button
+                      onClick={() => handleInvite(inviteValue[props.id])}
+                      style={{ backgroundColor: '#40a9ff', color: 'white' }}
+                      disabled={offline}
+                    >
+                        Invite
+                    </Button>
+                  </span>
+                }
                 <CustomButton
                   danger
                   onClick={handleDelete}
@@ -285,7 +357,7 @@ export const ProjectList = () => {
         </Card>
       </div>
     )
-  }, [dispatch, ipcRenderer, projectStore])
+  }, [dispatch, inviteValue, ipcRenderer, offline, projectStore, replication])
   /* eslint-enable react/prop-types */
 
   return (
@@ -297,6 +369,7 @@ export const ProjectList = () => {
         height: '100vh'
       }}
     >
+      { offline && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>Replication is enabled but ODIN is OFFLINE. Trying to reconnect ...</div> }
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >

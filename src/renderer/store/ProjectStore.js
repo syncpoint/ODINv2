@@ -95,11 +95,12 @@ ProjectStore.prototype.updateProject = async function (project) {
 /**
  * @async
  */
-ProjectStore.prototype.createProject = async function () {
-  const id = `project:${uuid()}`
-  const project = { id, name: 'New Project', lastAccess: DateTime.local().toISO() }
+ProjectStore.prototype.createProject = async function (projectUUID = uuid(), projectName = 'New Project', tags = []) {
+  const id = `project:${projectUUID}`
+  const project = { id, name: projectName, lastAccess: DateTime.local().toISO(), tags }
   await this.ipcRenderer.invoke('ipc:post:project', project)
   this.emit('created', { project })
+  this.emit('tagged', { id: projectUUID })
 }
 
 
@@ -117,4 +118,23 @@ ProjectStore.prototype.deleteProject = async function (id) {
  */
 ProjectStore.prototype.getPreview = function (id) {
   return this.ipcRenderer.invoke('ipc:get:project/preview', id)
+}
+
+/**
+ * @async
+ */
+ProjectStore.prototype.getStreamToken = function (id) {
+  return this.ipcRenderer.invoke('ipc:get:replication/streamToken', id)
+}
+
+ProjectStore.prototype.putStreamToken = async function (id, streamToken) {
+  await this.ipcRenderer.invoke('ipc:put:replication/streamToken', id, streamToken)
+}
+
+ProjectStore.prototype.getCredentials = function (id) {
+  return this.ipcRenderer.invoke('ipc:get:replication/credentials', id)
+}
+
+ProjectStore.prototype.putCredentials = async function (id, credentials) {
+  await this.ipcRenderer.invoke('ipc:put:replication/credentials', id, credentials)
 }

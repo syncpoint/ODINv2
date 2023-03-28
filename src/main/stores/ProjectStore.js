@@ -3,6 +3,8 @@ import * as L from '../../shared/level'
 
 const PROJECT = 'project:'
 const PREVIEW = key => `preview:${key}`
+const STREAM_TOKEN = key => `streamToken:${key}`
+const CREDENTIALS = key => `credentials:${key}`
 
 /**
  * @typedef {object} Project
@@ -55,4 +57,20 @@ ProjectStore.prototype.putPreview = function (id, dataURL) {
 
 ProjectStore.prototype.getPreview = function (id) {
   return L.get(this.db, PREVIEW(id), null)
+}
+
+ProjectStore.prototype.getStreamToken = function (id) {
+  return L.get(this.db, STREAM_TOKEN(id), null)
+}
+
+ProjectStore.prototype.putStreamToken = function (id, streamToken) {
+  return this.db.put(STREAM_TOKEN(id), streamToken)
+}
+
+ProjectStore.prototype.getCredentials = function (id) {
+  return L.get(this.db, CREDENTIALS(id), null)
+}
+
+ProjectStore.prototype.putCredentials = function (id, credentials) {
+  return this.db.put(CREDENTIALS(id), credentials)
 }

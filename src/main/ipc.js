@@ -38,4 +38,21 @@ export const ipc = (databases, ipcMain, projectStore) => {
 
     return projectStore.deleteProject(id)
   })
+
+  ipcMain.handle('ipc:get:replication/streamToken', async (_, id) => {
+    return projectStore.getStreamToken(id)
+  })
+
+  ipcMain.handle('ipc:put:replication/streamToken', async (_, id, streamToken) => {
+    return projectStore.putStreamToken(id, streamToken)
+  })
+
+  ipcMain.handle('ipc:get:replication/credentials', async (_, id) => {
+    return projectStore.getCredentials(id)
+  })
+
+  ipcMain.handle('ipc:put:replication/credentials', async (_, id, credentials) => {
+    return projectStore.putCredentials(id, credentials)
+  })
+
 }
