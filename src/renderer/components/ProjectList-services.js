@@ -2,7 +2,6 @@ import { ipcRenderer } from 'electron'
 import ProjectStore from '../store/ProjectStore'
 import { Selection } from '../Selection'
 import { MatrixClient } from '@syncpoint/matrix-client-api'
-import { PotemkinMatrixClient } from '../replication/PotemkinMatrixClient'
 
 export default () => {
   const services = {}
@@ -17,7 +16,9 @@ export default () => {
       password: process.env.MATRIX_PASSWORD,
       deviceId: 'PROJECT-LIST'
     })
-    : PotemkinMatrixClient()
+    : {
+        disabled: true
+      }
   )
   return services
 }

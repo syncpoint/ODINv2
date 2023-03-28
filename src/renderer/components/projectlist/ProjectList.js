@@ -188,14 +188,12 @@ export const ProjectList = () => {
       try {
         /*
           Replication credentials are tokens that are used to authenticate the current SESSION
-          to the replication server. Credentials do not contain username or password.
+          to the replication server. Credentials do not contain the user's password.
         */
         const credentials = await projectStore.getCredentials('PROJECT-LIST')
         const replicatedProjectList = await replicationProvider.projectList(credentials)
 
         replicatedProjectList.tokenRefreshed(credentials => {
-          console.log('Will persist the current credentials')
-          console.dir(credentials)
           projectStore.putCredentials('PROJECT-LIST', credentials)
         })
 
@@ -207,17 +205,15 @@ export const ProjectList = () => {
             projectStore.putStreamToken('PROJECT-LIST', streamToken)
             setOffline(false)
           },
-          renamed: project => {
-            console.log(`SHOULD rename ${project.id} to ${project.name}`)
+          renamed: (/* project */) => {
+            fetch()
           },
-          invited: project => {
+          invited: (/* project */) => {
             /*
               This handler receives detailed information about a project the user
               is invited to join. Currently we just call fetch() in order to update the projects.
               Since we already have that information we should find a better way to merge the data.
             */
-            console.log('INVITED')
-            console.dir(project)
             fetch()
           },
           error: error => {
@@ -231,6 +227,11 @@ export const ProjectList = () => {
       } catch (error) {
         console.error(error)
       }
+    }
+
+    if (replicationProvider.disabled) {
+      console.log('Replication is disabled')
+      return
     }
     initializeReplication()
 
@@ -315,9 +316,9 @@ export const ProjectList = () => {
               <ButtonBar>
                 <CustomButton onClick={send('OPEN_PROJECT')} text='Open' disabled={isInvited && !isShared}/>
                 <CustomButton onClick={send('EXPORT_PROJECT')} text='Export' disabled={true}/>
-                { isInvited && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
-                { (!isInvited && !isShared) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
-                { isShared &&
+                { (replication && isInvited) && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
+                { (replication && !isInvited && !isShared) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
+                { (replication && isShared) &&
                     <span style={{ display: 'flex', alignItems: 'center' }} >
                     <Input
                       style= {{ width: '25em' }}
@@ -369,7 +370,7 @@ export const ProjectList = () => {
         height: '100vh'
       }}
     >
-      { offline && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>Replication is enabled but ODIN is OFFLINE. Trying to reconnect ...</div> }
+      { (replication && offline) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>Replication is enabled but ODIN is OFFLINE. Trying to reconnect ...</div> }
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >

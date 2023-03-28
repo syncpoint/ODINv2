@@ -1,5 +1,0 @@
-const PotemkinMatrixClient = {}
-
-export {
-  PotemkinMatrixClient
-}
