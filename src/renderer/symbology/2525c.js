@@ -1,5 +1,6 @@
 import * as R from 'ramda'
-import raw from './2525c.json'
+import data from './2525c.json'
+import * as skkm from './skkm'
 
 /* eslint-disable no-unused-vars */
 const SCHEMA = 0
@@ -96,7 +97,10 @@ export const MODIFIERS = {
   w: 'dtg'
 }
 
-export const index = raw
+/**
+ * 2525-C only
+ */
+export const symbols = data
   .filter(({ unsupported }) => !unsupported)
   .reduce((acc, descriptor) => {
     const sidc = parameterized(descriptor.sidc)
@@ -120,32 +124,45 @@ export const index = raw
     return acc
   }, {})
 
+/**
+ * 2525-C + SKKM
+ * TODO: This is a hack. Separate symbol usage in interactions and otherwise.
+ */
+export const descriptors = Object.entries(skkm.symbols).reduce((acc, [k, v]) => {
+  acc[k] = v
+  return acc
+}, { ...symbols })
+
 export const descriptor = sidc => {
   if (!sidc) return
-  return index[parameterized(sidc)]
+  return descriptors[parameterized(sidc)]
 }
 
 export const geometry = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   return descriptor && descriptor.geometry
 }
 
 export const geometryType = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   return descriptor && descriptor.geometry && descriptor.geometry.type
 }
 
 export const className = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
+
+  console.log('descriptor', descriptor)
 
   if (descriptor.scope === 'UNIT') return 'UNIT'
   else if (descriptor.scope === 'INSTALLATION') return 'INSTALLATION'
   else if (descriptor.scope === 'EQUIPMENT') return 'EQUIPMENT'
   else if (descriptor.scope === 'ACTIVITY') return 'ACTIVITY'
+  // FIXME: hack - treat SKKM differently
+  else if (descriptor.scope === 'SKKM') return `SKKM/${descriptor.class}`
   // No geometry type defaults to POINT:
   else if (!descriptor.geometry) return 'POINT'
   else if (descriptor.geometry.type !== 'Point') {
@@ -156,7 +173,7 @@ export const className = sidc => {
 
 export const specialization = sidc => {
   if (!sidc) return
-  const descriptor = index[parameterized(sidc)]
+  const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
 
   const { geometry } = descriptor

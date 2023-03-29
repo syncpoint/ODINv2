@@ -118,7 +118,7 @@ describe('ids', function () {
     assert(ID.isUUID(uuid))
   })
 
-  it.only('measureId :: () -> MeasureId', function () {
+  it('measureId :: () -> MeasureId', function () {
     console.log(ID.measureId())
     const [scope, uuid] = ID.measureId().split(ID.COLON)
     assert.equal(scope, ID.MEASURE)

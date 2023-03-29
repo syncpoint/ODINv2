@@ -5,7 +5,7 @@ import EventEmitter from '../../shared/emitter'
 import SessionStore from '../store/SessionStore'
 import PreferencesStore from '../store/PreferencesStore'
 import Store from '../store/Store'
-import MigrationTool from '../store/MigrationTool'
+import Schema from '../store/schema/Schema'
 import ProjectStore from '../store/ProjectStore'
 import SearchIndex from '../store/SearchIndex'
 import DocumentStore from '../store/DocumentStore'
@@ -28,7 +28,6 @@ export default async projectUUID => {
   const services = {}
   const locator = () => services
   services.locator = locator
-
 
   const selection = new Selection()
   const undo = new Undo()
@@ -113,18 +112,20 @@ export default async projectUUID => {
 
   services.commandRegistry = new CommandRegistry(services)
 
-  const migrationsOptions = {}
-  migrationsOptions[MigrationTool.REDUNDANT_IDENTIFIERS] = false
-  migrationsOptions[MigrationTool.INLINE_TAGS] = false
-  migrationsOptions[MigrationTool.INLINE_FLAGS] = false
-  migrationsOptions[MigrationTool.DEFAULT_TAG] = false
-  migrationsOptions[MigrationTool.INLINE_STYLES] = false
-  const migration = new MigrationTool(db, migrationsOptions)
+  const schema = new Schema(db, {
+    ids: 'KEY-ONLY',
+    tags: 'SEPARATE',
+    flags: 'SEPARATE',
+    'default-tag': 'SEPARATE',
+    styles: 'SEPARATE',
+    ms2525c: 'LOADED', // NOTE: also deletes SKKM on UNLOADED.
+    skkm: 'LOADED',
+    'default-style': 'LOADED'
+  })
 
   // Orderly bootstrapping:
   //
-  await migration.bootstrap()
-  await store.bootstrap()
+  await schema.bootstrap()
   await tileLayerStore.bootstrap()
   await searchIndex.bootstrap()
   await featureStore.bootstrap()
