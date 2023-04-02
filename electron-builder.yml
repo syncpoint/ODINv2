@@ -31,4 +31,4 @@ publish:
   - provider: github
     releaseType: release
   
-electronVersion: 20.3.10
+electronVersion: 23.2.1
