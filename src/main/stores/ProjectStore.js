@@ -74,3 +74,7 @@ ProjectStore.prototype.getCredentials = function (id) {
 ProjectStore.prototype.putCredentials = function (id, credentials) {
   return this.db.put(CREDENTIALS(id), credentials)
 }
+
+ProjectStore.prototype.delCredentials = function (id) {
+  return this.db.del(CREDENTIALS(id))
+}

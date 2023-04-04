@@ -1,9 +1,9 @@
 import React from 'react'
 import { useServices } from '../components/hooks'
 
-const STREAM_TOKEN = 'streamToken'
-const CREDENTIALS = 'credentials'
-const SEED = 'seed'
+const STREAM_TOKEN = 'replication:streamToken'
+const CREDENTIALS = 'replication:credentials'
+const SEED = 'replication:seed'
 
 const Replication = () => {
   const { selection, sessionStore, store, replicationProvider } = useServices()
@@ -15,11 +15,14 @@ const Replication = () => {
   React.useEffect(() => {
     const initializeReplication = async () => {
       try {
+        /* const sessionKeys = await sessionStore.keys()
+        console.dir(sessionKeys) */
+
         /*
           Replication credentials are tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
         */
-        const credentials = await sessionStore.get(CREDENTIALS)
+        const credentials = await sessionStore.get(CREDENTIALS, null)
         const replicatedProject = await replicationProvider.project(credentials)
 
         replicatedProject.tokenRefreshed(credentials => {
@@ -32,12 +35,14 @@ const Replication = () => {
           Since these values are non-volatile they are stored in the projectStore instead of
           the session store.
         */
+
         const seed = await sessionStore.get(SEED)
         await replicatedProject.hydrate(seed)
         setReplication(replicatedProject)
 
         const handler = {
           streamToken: streamToken => {
+            console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
             setOffline(false)
           },
@@ -49,7 +54,7 @@ const Replication = () => {
             setOffline(true)
           }
         }
-        const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN)
+        const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, handler)
 
       } catch (error) {

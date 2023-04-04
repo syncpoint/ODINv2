@@ -138,3 +138,11 @@ ProjectStore.prototype.getCredentials = function (id) {
 ProjectStore.prototype.putCredentials = async function (id, credentials) {
   await this.ipcRenderer.invoke('ipc:put:replication/credentials', id, credentials)
 }
+
+ProjectStore.prototype.delCredentials = async function (id) {
+  await this.ipcRenderer.invoke('ipc:del:replication/credentials', id)
+}
+
+ProjectStore.prototype.putReplicationSeed = async function (id, seed) {
+  await this.ipcRenderer.invoke('ipc:put:project:replication/seed', id, seed)
+}

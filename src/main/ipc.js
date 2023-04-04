@@ -1,6 +1,6 @@
 import path from 'path'
 import { promises as fs } from 'fs'
-import { leveldb } from '../shared/level'
+import { leveldb, sessionDB } from '../shared/level'
 
 export const ipc = (databases, ipcMain, projectStore) => {
 
@@ -55,5 +55,19 @@ export const ipc = (databases, ipcMain, projectStore) => {
     return projectStore.putCredentials(id, credentials)
   })
 
+  ipcMain.handle('ipc:del:replication/credentials', async (_, id) => {
+    return projectStore.delCredentials(id)
+  })
 
+  ipcMain.handle('ipc:put:project:replication/seed', async (_, id, seed) => {
+    try {
+      const location = path.join(databases, id)
+      const db = leveldb({ location })
+      const session = sessionDB(db)
+      await session.put('replication:seed', seed)
+      await db.close()
+    } catch (error) {
+      console.error(error)
+    }
+  })
 }

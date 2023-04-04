@@ -120,6 +120,7 @@ export const ProjectList = () => {
   const [replication, setReplication] = React.useState(undefined)
   const [inviteValue, setInviteValue] = React.useState({})
   const [offline, setOffline] = React.useState(true)
+  const [reAuthenticate, setReAuthenticate] = React.useState(false)
 
   /**
    * Reload projects from store and update entry list
@@ -185,6 +186,7 @@ export const ProjectList = () => {
 
   React.useEffect(() => {
     const initializeReplication = async () => {
+      console.log('INITIALIZING REPLICATION')
       try {
         /*
           Replication credentials are tokens that are used to authenticate the current SESSION
@@ -192,6 +194,10 @@ export const ProjectList = () => {
         */
         const credentials = await projectStore.getCredentials('PROJECT-LIST')
         const replicatedProjectList = await replicationProvider.projectList(credentials)
+        if (reAuthenticate) {
+          setReAuthenticate(false)
+          return
+        }
 
         replicatedProjectList.tokenRefreshed(credentials => {
           projectStore.putCredentials('PROJECT-LIST', credentials)
@@ -225,7 +231,11 @@ export const ProjectList = () => {
         replicatedProjectList.start(mostRecentStreamToken, handler)
 
       } catch (error) {
-        console.error(error)
+        // console.error(error)
+        if (error.response?.status === 403) {
+          await projectStore.delCredentials('PROJECT-LIST')
+          setReAuthenticate(true)
+        }
       }
     }
 
@@ -243,7 +253,7 @@ export const ProjectList = () => {
     */
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [reAuthenticate])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
@@ -269,12 +279,15 @@ export const ProjectList = () => {
     }
     const handleJoin = async () => {
       console.log(`Joining project ${project.id}`)
-      await replication.join(project.id)
+      const seed = await replication.join(project.id)
       await projectStore.createProject(project.id, project.name, ['SHARED', 'UNINITIALIZED'])
+      await projectStore.putReplicationSeed(project.id, seed)
     }
 
     const handleShare = async () => {
       console.log(`Sharing project ${project.id}`)
+      const seed = await replication.share(project.id, project.name, project.description || '')
+      await projectStore.putReplicationSeed(project.id, seed)
     }
 
     const handleInvite = value => {
@@ -317,7 +330,7 @@ export const ProjectList = () => {
                 <CustomButton onClick={send('OPEN_PROJECT')} text='Open' disabled={isInvited && !isShared}/>
                 <CustomButton onClick={send('EXPORT_PROJECT')} text='Export' disabled={true}/>
                 { (replication && isInvited) && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
-                { (replication && !isInvited && !isShared) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
+                { (replication && !isInvited && !isShared && !isOpen) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
                 { (replication && isShared) &&
                     <span style={{ display: 'flex', alignItems: 'center' }} >
                     <Input
