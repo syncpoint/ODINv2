@@ -23,6 +23,7 @@ import { Selection } from '../Selection'
 import { Clipboard } from '../Clipboard'
 import { bindings } from '../bindings'
 import { SpatialIndex } from '../store/SpatialIndex'
+import { MatrixClient } from '@syncpoint/matrix-client-api'
 
 export default async projectUUID => {
   const services = {}
@@ -130,6 +131,21 @@ export default async projectUUID => {
   await searchIndex.bootstrap()
   await featureStore.bootstrap()
   await spatialIndex.bootstrap()
+
+  const projectTags = (await projectStore.getProject(`project:${projectUUID}`)).tags || []
+  const isRemoteProject = projectTags.includes('SHARED') || projectTags.includes('JOINED')
+
+  services.replicationProvider = (isRemoteProject && process.env.MATRIX_HOME_SERVER_URL && process.env.MATRIX_USER_ID && process.env.MATRIX_PASSWORD
+    ? MatrixClient({
+      homeServerUrl: process.env.MATRIX_HOME_SERVER_URL,
+      userId: process.env.MATRIX_USER_ID,
+      password: process.env.MATRIX_PASSWORD,
+      deviceId: projectUUID
+    })
+    : {
+        disabled: true
+      }
+  )
 
   return services
 }

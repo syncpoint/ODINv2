@@ -7,6 +7,7 @@ import tileService from './documents/tile-service'
 import bookmark from './documents/bookmark'
 import place from './documents/place'
 import measure from './documents/measure'
+import invited from './documents/invited'
 
 export default function DocumentStore (store) {
   this.store = store
@@ -23,3 +24,4 @@ DocumentStore.prototype.measure = measure
 DocumentStore.prototype['tile-service'] = tileService
 DocumentStore.prototype.bookmark = bookmark
 DocumentStore.prototype.place = place
+DocumentStore.prototype.invited = invited
