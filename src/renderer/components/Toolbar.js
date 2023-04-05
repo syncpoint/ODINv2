@@ -46,6 +46,13 @@ export const Toolbar = () => {
     commandRegistry.command('MEASURE_AREA')
   ]
 
+  const replicationCommands = [
+    commandRegistry.separator(),
+    commandRegistry.command('REPLICATION_LAYER_SHARE'),
+    commandRegistry.command('REPLICATION_LAYER_JOIN'),
+    commandRegistry.separator()
+  ]
+
   const toggleProperties = type => () => {
     if (properties === type) setProperties('')
     else setProperties(type)
@@ -63,6 +70,13 @@ export const Toolbar = () => {
           })
         }
         <DropdownMenu path='mdiAndroidStudio' options={measureCommands} />
+        {
+          replicationCommands.map(([key, command]) => {
+            return command === 'separator'
+              ? <span key={key} className='toolbar__divider'></span>
+              : <CommandButton key={key} command={command}/>
+          })
+        }
       </div>
       <div className='toolbar__items-container toolbar__items--right'>
         <SimpleButton
