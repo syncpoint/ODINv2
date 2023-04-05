@@ -8,7 +8,7 @@ export default async function (id) {
   return {
     id,
     title: layer.name,
-    description: 'Remote Layer',
+    description: layer.description || '',
     tags: [
       'SCOPE:INVITED',
       ...((tags || [])).map(label => `USER:${label}:NONE`),

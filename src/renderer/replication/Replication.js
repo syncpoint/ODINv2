@@ -1,12 +1,13 @@
 import React from 'react'
 import { useServices } from '../components/hooks'
+import { INVITED, LAYER, isInvitedId, makeId } from '../ids'
 
 const STREAM_TOKEN = 'replication:streamToken'
 const CREDENTIALS = 'replication:credentials'
 const SEED = 'replication:seed'
 
 const Replication = () => {
-  const { selection, sessionStore, store, replicationProvider } = useServices()
+  const { emitter, selection, sessionStore, store, replicationProvider } = useServices()
 
   const [notifications] = React.useState(new Set())
   const [replication, setReplication] = React.useState(undefined)
@@ -32,19 +33,45 @@ const Replication = () => {
         /*
           seed is the projectId and the matrix room id of the project related space.
           At least the matrix room id must be persisted while joining the project.
-          Since these values are non-volatile they are stored in the projectStore instead of
-          the session store.
         */
 
         const seed = await sessionStore.get(SEED)
-        await replicatedProject.hydrate(seed)
-        setReplication(replicatedProject)
+        const projectDescription = await replicatedProject.hydrate(seed)
+
+        const allInvitations = await store.keys(INVITED)
+        const invitations = projectDescription.invitations
+          .filter(invitation => (!allInvitations.includes(makeId(INVITED, invitation.id))))
+          .map(invitation => ([
+            makeId(INVITED, invitation.id),
+            {
+              name: invitation.name,
+              description: invitation.topic
+            }
+          ]))
+
+        await store.insert(invitations)
+
+        emitter.on('replication/:action/:id', async ({ action, id }) => {
+          // TODO: replace with RAMDA function
+          if (action === 'join') {
+            const layer = await replicatedProject.joinLayer(id.split(':')[1])
+            console.dir(layer)
+            await store.insert([[makeId(LAYER, layer.id), {
+              name: layer.name,
+              description: layer.topic,
+              tags: ['SHARED']
+            }]])
+            await store.delete(id)
+          } /* else if (action === 'share') {
+
+          } */
+        })
 
         const handler = {
           streamToken: streamToken => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
-            setOffline(false)
+            if (offline) setOffline(false)
           },
           renamed: (/* layer */) => {
             /* rename the layer accordingly */
@@ -56,6 +83,8 @@ const Replication = () => {
         }
         const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, handler)
+
+        setReplication(replicatedProject)
 
       } catch (error) {
         console.error(error)
@@ -96,7 +125,7 @@ const Replication = () => {
     }
 
     const handler = batch => {
-      const invitations = batch.operations.filter(op => op.type === 'put' && op.key.startsWith('invited'))
+      const invitations = batch.operations.filter(op => op.type === 'put' && isInvitedId(op.key))
       invitations.forEach(invitation => {
         const options = {
           body: invitation.value.name,
