@@ -68,13 +68,20 @@ const Replication = () => {
         })
 
         const handler = {
-          streamToken: streamToken => {
+          streamToken: async (streamToken) => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
             if (offline) setOffline(false)
           },
-          renamed: (/* layer */) => {
-            /* rename the layer accordingly */
+          invited: async (invitation) => {
+            const content = [
+              makeId(INVITED, invitation.id),
+              {
+                name: invitation.name,
+                description: invitation.topic
+              }
+            ]
+            await store.insert([content])
           },
           error: error => {
             console.error(error)
