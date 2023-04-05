@@ -98,6 +98,7 @@ export const isDefaultId = isId(DEFAULT_PREFIX)
 export const isTagsId = isId(TAGS_PREFIX)
 export const isMeasureId = isId(MEASURE_SCOPE)
 export const isSharedLayerId = isId(sharedId(LAYER_SCOPE))
+export const isInvitedId = isId(INVITED)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
