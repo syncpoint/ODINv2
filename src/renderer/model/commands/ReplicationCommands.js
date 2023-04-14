@@ -28,7 +28,7 @@ JoinLayer.prototype.selected = function () {
 
 const ShareLayer = function (services) {
   this.selection = services.selection
-  this.store = services.store
+  this.emitter = services.emitter
   this.path = 'mdiCloudUploadOutline'
   this.selection.on('selection', () => this.emit('changed'))
 }
@@ -36,7 +36,8 @@ const ShareLayer = function (services) {
 Object.assign(ShareLayer.prototype, EventEmitter.prototype)
 
 ShareLayer.prototype.execute = function () {
-  // this.store.setDefaultLayer(this.selected()[0])
+  const selected = this.selected()
+  selected.forEach(invitationId => this.emitter.emit(`replication/share/${invitationId}`))
 }
 
 ShareLayer.prototype.enabled = function () {

@@ -32,3 +32,8 @@ SessionStore.prototype.get = async function (key, defaultValue) {
     return value
   }
 }
+
+SessionStore.prototype.del = async function (key) {
+  await this.db.del(key)
+  delete this.cache[key]
+}
