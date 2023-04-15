@@ -37,7 +37,7 @@ Object.assign(ShareLayer.prototype, EventEmitter.prototype)
 
 ShareLayer.prototype.execute = function () {
   const selected = this.selected()
-  selected.forEach(invitationId => this.emitter.emit(`replication/share/${invitationId}`))
+  selected.forEach(layerId => this.emitter.emit(`replication/share/${layerId}`))
 }
 
 ShareLayer.prototype.enabled = function () {
