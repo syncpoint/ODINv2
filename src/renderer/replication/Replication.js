@@ -117,30 +117,57 @@ const Replication = () => {
           if (CREATOR_ID === creatorId) return
           console.dir(operations)
 
+          /* helper */
           const sharedLayerIDs = async () => {
             const keys = await store.keys('shared+layer:')
             return store.tuples(keys.map(key => ID.layerId(key)))
           }
 
-          const sharedOnly = async (ops) => {
+          const sharedLayersOnly = async (ops) => {
             const sharedLayers = (await sharedLayerIDs()).map(([key]) => key)
             return ops.filter(op => sharedLayers.includes(ID.layerId(op.key)))
           }
 
-          const layerOperations = await sharedOnly(operations.filter(op => ID.isLayerId(op.key)))
-          layerOperations
+
+          const structuralOperations = await sharedLayersOnly(operations.filter(op => ID.isLayerId(op.key)))
+          /* LAYER RENAMED */
+          structuralOperations
             .filter(op => op.type === 'put')
             .map(op => ({ id: ID.layerUUID(op.key), name: op.value.name }))
             .forEach(op => replicatedProject.setLayerName(op.id, op.name))
-          /*
-            Layer is already shared so it must have been renamed
 
-          */
+          /* LAYER REMOVED so the original layer does not exist anymore. Thus, we need to filter for the "shared+layer:" key */
+          /* TODO: If we remove a shared layer, should we create a new invitation? */
+          operations.filter(op => ID.isSharedLayerId(op.key))
+            .filter(op => op.type === 'del')
+            .map(op => op.key.replace('shared+layer:', ''))
+            .forEach(id => replicatedProject.leaveLayer(id))
 
-          /*
-            Delete layer
+          /* TODO: Deleting a layer is UNDOable! How dow we support re-joining after undo? */
 
-          */
+          const predicates = [
+            ID.isFeatureId,
+            ID.isLinkId,
+            ID.isTagsId,
+            ID.isStyleId
+          ]
+          const sharedContent = await sharedLayersOnly(operations.filter(op => predicates.some(test => test(op.key))))
+          if (sharedContent.length) {
+            console.dir(sharedContent)
+
+            const operationsByLayer = sharedContent
+              .filter(op => op !== null)
+              .reduce((acc, op) => {
+                const layerId = ID.layerUUID(op.key)
+                acc[layerId] = acc[layerId] || []
+                acc[layerId].push(op)
+                return acc
+              }, {})
+
+            Object.entries(operationsByLayer)
+              .forEach(([layerId, operations]) => replicatedProject.post(layerId, operations))
+          }
+
         })
 
 

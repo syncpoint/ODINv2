@@ -101,7 +101,7 @@ export const isSharedLayerId = isId(sharedId(LAYER_SCOPE))
 export const isInvitedId = isId(INVITED)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
-export const isDeletableId = id => !isSymbolId(id)
+export const isDeletableId = id => !isSymbolId(id) || isInvitedId(id)
 export const isTaggableId = id => !isViewId(id)
 export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isDefaultId, isTagsId])
 

@@ -75,6 +75,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
   const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(ID.tagsId(id)))
   const defaultIds = id => L.readKeys(this.jsonDB, L.prefix(ID.defaultId(id)))
   const styleIds = id => L.readKeys(this.jsonDB, L.prefix(ID.styleId(id)))
+  const sharedLayerIds = id => L.readKeys(this.jsonDB, L.prefix(ID.sharedId(id)))
   const tileLayerIds = id => L.readKeys(this.jsonDB, L.prefix(`tile-layer:${id.split(':')[1]}`))
   const hasLinks = id => consider('link') && (ID.isLayerId(id) || ID.isFeatureId(id))
   const hasFeatures = ID.isLayerId
@@ -83,6 +84,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
   const maybeTagged = id => consider('tags') && ID.isTaggableId(id)
   const maybeDefault = id => consider('default') && ID.isLayerId(id)
   const hasStyle = id => consider('style') && (ID.isLayerId(id) || ID.isFeatureId(id))
+  const isShared = id => consider(ID.SHARED) && (ID.isLayerId(id))
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -97,6 +99,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
       if (maybeTagged(id)) ys.push(...await tagsIds(id))
       if (maybeDefault(id)) ys.push(...await defaultIds(id))
       if (hasStyle(id)) ys.push(...await styleIds(id))
+      if (isShared(id)) ys.push(...await sharedLayerIds(id))
 
       await collect(xs, ys)
       return xs
@@ -297,7 +300,7 @@ Store.prototype.delete = async function (arg) {
     .filter(ID.isDeletableId) // symbols for example cannot be deleted.
     .filter(key => !locks[ID.lockedId(key)])
 
-  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default', 'style'])
+  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default', 'style', ID.SHARED])
   const tuples = await L.tuples(this.db, keys)
   const command = this.deleteCommand(this.db, tuples)
   this.undo.apply(command)
