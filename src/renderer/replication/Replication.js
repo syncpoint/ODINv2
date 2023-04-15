@@ -1,10 +1,13 @@
 import React from 'react'
 import { useServices } from '../components/hooks'
 import * as ID from '../ids'
+import uuid from 'uuid-random'
+
 
 const STREAM_TOKEN = 'replication:streamToken'
 const CREDENTIALS = 'replication:credentials'
 const SEED = 'replication:seed'
+const CREATOR_ID = uuid()
 
 const Replication = () => {
   const { emitter, selection, sessionStore, store, replicationProvider } = useServices()
@@ -12,6 +15,7 @@ const Replication = () => {
   const [notifications] = React.useState(new Set())
   const [offline, setOffline] = React.useState(true)
   const [reAuthenticate, setReAuthenticate] = React.useState(false)
+
 
   React.useEffect(() => {
     const initializeReplication = async () => {
@@ -42,56 +46,45 @@ const Replication = () => {
         const seed = await sessionStore.get(SEED)
         const projectDescription = await replicatedProject.hydrate(seed)
 
+        /*
+          On startup we import all invitations we already know about.
+          We need to check if this is still required because we may receive the invitations by the upstream handler.
+        */
         const allInvitations = await store.keys(ID.INVITED)
         const invitations = projectDescription.invitations
           .filter(invitation => (!allInvitations.includes(ID.makeId(ID.INVITED, invitation.id))))
-          .map(invitation => ([
-            ID.makeId(ID.INVITED, invitation.id),
-            {
-              name: invitation.name,
-              description: invitation.topic
-            }
-          ]))
+          .map(invitation => ([{ type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }]))
+        await store.import(invitations, { creatorId: CREATOR_ID })
 
-        await store.insert(invitations)
-
+        /*
+          Handler for sharing and joining layers
+        */
         emitter.on('replication/:action/:id', async ({ action, id }) => {
-          // TODO: replace with RAMDA function
-          if (action === 'join') {
-            const layer = await replicatedProject.joinLayer(id.split(':')[1])
-            const key = ID.makeId(ID.LAYER, layer.id)
-            await store.import([{
-              type: 'put',
-              key,
-              value: {
-                name: layer.name,
-                description: layer.topic,
-                tags: ['SHARED']
-              }
-            }])
-            await store.import([{
-              type: 'put',
-              key: ID.sharedId(key),
-              value: true
-            }])
-            await store.delete(id)
-          } else if (action === 'share') {
-            console.log(`SHARE LAYER ${id}`)
-            const { name } = await store.value(id)
-            const uuid = ID.layerUUID(id)
-            await replicatedProject.shareLayer(uuid, name)
-            await store.import([{
-              type: 'put',
-              key: ID.sharedId(id),
-              value: true
-            }])
-            await store.addTag(id, 'SHARED')
+          switch (action) {
+            case 'join': {
+              const layer = await replicatedProject.joinLayer(id.split(':')[1])
+              const key = ID.makeId(ID.LAYER, layer.id)
+              await store.import([{ type: 'put', key, value: { name: layer.name, description: layer.topic, tags: ['SHARED'] } }], { creatorId: CREATOR_ID })
+              await store.import([{ type: 'put', key: ID.sharedId(key), value: true }], { creatorId: CREATOR_ID })
+              await store.delete(id) // invitation ID
+              break
+            }
+            case 'share': {
+              const { name } = await store.value(id)
+              const uuid = ID.layerUUID(id)
+              await replicatedProject.shareLayer(uuid, name)
+              await store.import([{ type: 'put', key: ID.sharedId(id), value: true }], { creatorId: CREATOR_ID })
+              await store.addTag(id, 'SHARED')
 
-            // publish content
-
+              // TODO publish content
+              break
+            }
           }
         })
 
+        /*
+          Handling upstream events triggered by the timline API
+        */
         const upstreamHandler = {
           streamToken: async (streamToken) => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
@@ -99,34 +92,56 @@ const Replication = () => {
             if (offline) setOffline(false)
           },
           invited: async (invitation) => {
-            const content = {
-              type: 'put',
-              key: ID.makeId(ID.INVITED, invitation.id),
-              value: {
-                name: invitation.name,
-                description: invitation.topic
-              }
-            }
-            await store.import([content])
+            const content = { type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }
+            await store.import([content], { creatorId: CREATOR_ID })
           },
           received: async (operations) => {
-            console.dir(operations)
-            await store.import(operations)
+            await store.import(operations, { creatorId: CREATOR_ID })
           },
           renamed: async (renamed) => {
-            const ops = renamed.map(layer => ({
-              type: 'put',
-              key: ID.makeId(ID.LAYER, layer.id),
-              value: { name: layer.name }
-            }))
-            await store.import(ops)
+            const ops = renamed.map(layer => ({ type: 'put', key: ID.makeId(ID.LAYER, layer.id), value: { name: layer.name } }))
+            await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
             console.error(error)
           }
         }
+
+        /*
+          Start the timeline sync process with the most recent stream token
+        */
         const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, upstreamHandler)
+
+        store.on('batch', async ({ operations, creatorId }) => {
+          if (CREATOR_ID === creatorId) return
+          console.dir(operations)
+
+          const sharedLayerIDs = async () => {
+            const keys = await store.keys('shared+layer:')
+            return store.tuples(keys.map(key => ID.layerId(key)))
+          }
+
+          const sharedOnly = async (ops) => {
+            const sharedLayers = (await sharedLayerIDs()).map(([key]) => key)
+            return ops.filter(op => sharedLayers.includes(ID.layerId(op.key)))
+          }
+
+          const layerOperations = await sharedOnly(operations.filter(op => ID.isLayerId(op.key)))
+          layerOperations
+            .filter(op => op.type === 'put')
+            .map(op => ({ id: ID.layerUUID(op.key), name: op.value.name }))
+            .forEach(op => replicatedProject.setLayerName(op.id, op.name))
+          /*
+            Layer is already shared so it must have been renamed
+
+          */
+
+          /*
+            Delete layer
+
+          */
+        })
 
 
       } catch (error) {
