@@ -133,7 +133,7 @@ export default async projectUUID => {
   await spatialIndex.bootstrap()
 
   const projectTags = (await projectStore.getProject(`project:${projectUUID}`)).tags || []
-  const isRemoteProject = projectTags.includes('SHARED') || projectTags.includes('JOINED')
+  const isRemoteProject = projectTags.includes('SHARED')
 
   services.replicationProvider = (isRemoteProject && process.env.MATRIX_HOME_SERVER_URL && process.env.MATRIX_USER_ID && process.env.MATRIX_PASSWORD
     ? MatrixClient({
