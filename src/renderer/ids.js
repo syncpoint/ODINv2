@@ -176,7 +176,7 @@ export const defaultStyleId = 'style+default:'
 export const containerId = id => {
   const indexStart = id.indexOf('+') // remove '...+' part
   const indexEnd = id.lastIndexOf('/') // remove last UUID
-  return id.substring(indexStart + 1, indexEnd)
+  return id.substring(indexStart + 1, (indexEnd >= indexStart + 1 ? indexEnd : id.length))
 }
 
 /**
