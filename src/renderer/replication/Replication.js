@@ -20,35 +20,38 @@ const Replication = () => {
   React.useEffect(() => {
     const initializeReplication = async () => {
       try {
-        /* const sessionKeys = await sessionStore.keys()
-        console.dir(sessionKeys) */
-
+        console.log('Initializing replication')
         /*
-          Replication credentials are tokens that are used to authenticate the current SESSION
+          Replication credentials are (access, refresh) tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
         */
         const credentials = await sessionStore.get(CREDENTIALS, null)
         const replicatedProject = await replicationProvider.project(credentials)
         if (reAuthenticate) {
+          console.log('ReAuthentication has been triggererd. ')
           setReAuthenticate(false)
           return
         }
 
+        /*
+          Whenever a access and a refresh token a renewed we store/update them
+          for the next time the replication is started.
+        */
         replicatedProject.tokenRefreshed(credentials => {
           sessionStore.put(CREDENTIALS, credentials)
         })
 
         /*
-          seed is the projectId and the matrix room id of the project related space.
+          Seed is the projectId and the matrix room id of the project related space.
           At least the matrix room id must be persisted while joining the project.
+          See project-list where this is done.
         */
-
         const seed = await sessionStore.get(SEED)
         const projectDescription = await replicatedProject.hydrate(seed)
 
         /*
           On startup we import all invitations we already know about.
-          We need to check if this is still required because we may receive the invitations by the upstream handler.
+          18apr23: We need to check if this is still required because we may receive the invitations via the upstream handler.
         */
         const allInvitations = await store.keys(ID.INVITED)
         const invitations = projectDescription.invitations
@@ -57,7 +60,7 @@ const Replication = () => {
         await store.import(invitations, { creatorId: CREATOR_ID })
 
         /*
-          Handler for sharing and joining layers
+          Handler toolbar commands for for sharing and joining layers
         */
         emitter.on('replication/:action/:id', async ({ action, id }) => {
           switch (action) {
@@ -85,7 +88,7 @@ const Replication = () => {
         })
 
         /*
-          Handling upstream events triggered by the timline API
+          Handling upstream events triggered by the timeline API
         */
         const upstreamHandler = {
           streamToken: async (streamToken) => {
@@ -105,6 +108,10 @@ const Replication = () => {
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
+            /* TODO: error handling:
+                #offline
+                #auth_failed
+            */
             console.error(error)
           }
         }
@@ -115,6 +122,9 @@ const Replication = () => {
         const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, upstreamHandler)
 
+        /*
+          Handle events emitted by the local store.
+        */
         store.on('batch', async ({ operations, creatorId }) => {
           if (CREATOR_ID === creatorId) return
           console.dir(operations)
