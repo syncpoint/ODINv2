@@ -280,13 +280,14 @@ export const ProjectList = () => {
     const handleJoin = async () => {
       console.log(`Joining project ${project.id}`)
       const seed = await replication.join(project.id)
-      await projectStore.createProject(project.id, project.name, ['SHARED', 'UNINITIALIZED'])
+      await projectStore.createProject(project.id, project.name, ['SHARED'])
       await projectStore.putReplicationSeed(project.id, seed)
     }
 
     const handleShare = async () => {
       console.log(`Sharing project ${project.id}`)
       const seed = await replication.share(project.id, project.name, project.description || '')
+      await projectStore.addTag(project.id, 'SHARED')
       await projectStore.putReplicationSeed(project.id, seed)
     }
 
