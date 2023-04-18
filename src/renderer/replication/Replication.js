@@ -68,7 +68,7 @@ const Replication = () => {
               const layer = await replicatedProject.joinLayer(id.split(':')[1])
               const key = ID.makeId(ID.LAYER, layer.id)
               await store.import([
-                { type: 'put', key, value: { name: layer.name, description: layer.topic, tags: ['SHARED'] } },
+                { type: 'put', key, value: { name: layer.name, description: layer.topic } },
                 { type: 'put', key: ID.sharedId(key), value: true }
               ], { creatorId: CREATOR_ID })
               await store.delete(id) // invitation ID
@@ -79,9 +79,12 @@ const Replication = () => {
               const uuid = ID.layerUUID(id)
               await replicatedProject.shareLayer(uuid, name)
               await store.import([{ type: 'put', key: ID.sharedId(id), value: true }], { creatorId: CREATOR_ID })
-              await store.addTag(id, 'SHARED')
 
-              // TODO publish content
+              /* post initial content of the layer */
+              const keys = await store.collectKeys([id], [ID.STYLE, ID.LINK, ID.TAGS, ID.FEATURE])
+              const tuples = await store.tuples(keys)
+              const operations = tuples.map(([key, value]) => ({ type: 'put', key, value }))
+              replicatedProject.post(uuid, operations)
               break
             }
           }
@@ -169,7 +172,7 @@ const Replication = () => {
             const operationsByLayer = sharedContent
               .filter(op => op !== null)
               .reduce((acc, op) => {
-                const layerId = ID.layerUUID(op.key)
+                const layerId = ID.layerUUID(ID.containerId(op.key))
                 acc[layerId] = acc[layerId] || []
                 acc[layerId].push(op)
                 return acc
