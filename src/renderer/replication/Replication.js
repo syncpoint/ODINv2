@@ -64,8 +64,10 @@ const Replication = () => {
             case 'join': {
               const layer = await replicatedProject.joinLayer(id.split(':')[1])
               const key = ID.makeId(ID.LAYER, layer.id)
-              await store.import([{ type: 'put', key, value: { name: layer.name, description: layer.topic, tags: ['SHARED'] } }], { creatorId: CREATOR_ID })
-              await store.import([{ type: 'put', key: ID.sharedId(key), value: true }], { creatorId: CREATOR_ID })
+              await store.import([
+                { type: 'put', key, value: { name: layer.name, description: layer.topic, tags: ['SHARED'] } },
+                { type: 'put', key: ID.sharedId(key), value: true }
+              ], { creatorId: CREATOR_ID })
               await store.delete(id) // invitation ID
               break
             }
@@ -127,7 +129,6 @@ const Replication = () => {
             const sharedLayers = (await sharedLayerIDs()).map(([key]) => key)
             return ops.filter(op => sharedLayers.includes(ID.layerId(op.key)))
           }
-
 
           const structuralOperations = await sharedLayersOnly(operations.filter(op => ID.isLayerId(op.key)))
           /* LAYER RENAMED */
