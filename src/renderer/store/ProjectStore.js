@@ -122,6 +122,29 @@ ProjectStore.prototype.getPreview = function (id) {
 
 /**
  * @async
+ * @param {uuid} id Project Id
+ * @param {string} tag Whatever the tag shall be
+ * @returns The result of the operation
+ */
+ProjectStore.prototype.addTag = async function (id, tag) {
+  await this.ipcRenderer.invoke('ipc:add:project/tag', id, tag)
+  this.emit('tagged', { id })
+}
+
+/**
+ *
+ * @async
+ * @param {uuid} id Project Id
+ * @param {string} tag The tag that should be removed
+ * @returns The result of the operation
+ */
+ProjectStore.prototype.removeTag = async function (id, tag) {
+  await this.ipcRenderer.invoke('ipc:remove:project/tag', id, tag)
+  this.emit('tagged', { id })
+}
+
+/**
+ * @async
  */
 ProjectStore.prototype.getStreamToken = function (id) {
   return this.ipcRenderer.invoke('ipc:get:replication/streamToken', id)

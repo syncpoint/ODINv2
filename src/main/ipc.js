@@ -39,6 +39,14 @@ export const ipc = (databases, ipcMain, projectStore) => {
     return projectStore.deleteProject(id)
   })
 
+  ipcMain.handle('ipc:add:project/tag', (_, id, tag) => {
+    return projectStore.addTag(id, tag)
+  })
+
+  ipcMain.handle('ipc:remove:project/tag', (_, id, tag) => {
+    return projectStore.removeTag(id, tag)
+  })
+
   ipcMain.handle('ipc:get:replication/streamToken', async (_, id) => {
     return projectStore.getStreamToken(id)
   })
