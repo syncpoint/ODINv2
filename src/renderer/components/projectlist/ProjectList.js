@@ -132,15 +132,14 @@ export const ProjectList = () => {
   const fetch = React.useCallback(projectId => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
-      const localProjectIds = projects.map(project => project.id.split(':')[1])
       const sharedProjects = replication ? (await replication.invited()).map(project => ({ ...project, ...{ tags: ['INVITED'] } })) : []
 
-      /*  Sometimes the replication API does not update the state immediately. In ordwer to
+      /*  Sometimes the replication API does not update the state immediately. In orwer to
           avoid duplicate entries - one from the local db and one from the replication API -
           we remove these duplicate entries.
       */
       const allProjects = [...projects, ...(sharedProjects).filter(project => {
-        const hasAlreadyJoined = localProjectIds.includes(project.id)
+        const hasAlreadyJoined = projects.includes(project.id)
         return !hasAlreadyJoined
       })]
       dispatch({ type: 'entries', entries: allProjects, candidateId: projectId })
