@@ -280,7 +280,8 @@ export const ProjectList = () => {
     const handleJoin = async () => {
       console.log(`Joining project ${project.id}`)
       const seed = await replication.join(project.id)
-      await projectStore.createProject(project.id, project.name, ['SHARED'])
+      // createProject requires the id to be a UUID without prefix
+      await projectStore.createProject(project.id.split(':')[1], project.name, ['SHARED'])
       await projectStore.putReplicationSeed(project.id, seed)
     }
 
