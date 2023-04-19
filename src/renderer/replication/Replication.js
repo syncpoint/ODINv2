@@ -65,8 +65,9 @@ const Replication = () => {
         emitter.on('replication/:action/:id', async ({ action, id }) => {
           switch (action) {
             case 'join': {
-              const layer = await replicatedProject.joinLayer(id)
-              // const key = ID.makeId(ID.LAYER, layer.id)
+              /* id looks like invited+THE_ID. So we need to remove the prefix. */
+              const layerId = id.replace('invited:', '')
+              const layer = await replicatedProject.joinLayer(layerId)
               await store.import([
                 { type: 'put', key: layer.id, value: { name: layer.name, description: layer.topic } },
                 { type: 'put', key: ID.sharedId(layer.id), value: true }
