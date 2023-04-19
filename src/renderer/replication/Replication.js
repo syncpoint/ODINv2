@@ -65,26 +65,25 @@ const Replication = () => {
         emitter.on('replication/:action/:id', async ({ action, id }) => {
           switch (action) {
             case 'join': {
-              const layer = await replicatedProject.joinLayer(id.split(':')[1])
-              const key = ID.makeId(ID.LAYER, layer.id)
+              const layer = await replicatedProject.joinLayer(id)
+              // const key = ID.makeId(ID.LAYER, layer.id)
               await store.import([
-                { type: 'put', key, value: { name: layer.name, description: layer.topic } },
-                { type: 'put', key: ID.sharedId(key), value: true }
+                { type: 'put', key: layer.id, value: { name: layer.name, description: layer.topic } },
+                { type: 'put', key: ID.sharedId(layer.id), value: true }
               ], { creatorId: CREATOR_ID })
               await store.delete(id) // invitation ID
               break
             }
             case 'share': {
               const { name } = await store.value(id)
-              const uuid = ID.layerUUID(id)
-              await replicatedProject.shareLayer(uuid, name)
+              await replicatedProject.shareLayer(id, name)
               await store.import([{ type: 'put', key: ID.sharedId(id), value: true }], { creatorId: CREATOR_ID })
 
               /* post initial content of the layer */
               const keys = await store.collectKeys([id], [ID.STYLE, ID.LINK, ID.TAGS, ID.FEATURE])
               const tuples = await store.tuples(keys)
               const operations = tuples.map(([key, value]) => ({ type: 'put', key, value }))
-              replicatedProject.post(uuid, operations)
+              replicatedProject.post(id, operations)
               break
             }
           }
@@ -107,7 +106,7 @@ const Replication = () => {
             await store.import(operations, { creatorId: CREATOR_ID })
           },
           renamed: async (renamed) => {
-            const ops = renamed.map(layer => ({ type: 'put', key: ID.makeId(ID.LAYER, layer.id), value: { name: layer.name } }))
+            const ops = renamed.map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
@@ -147,14 +146,14 @@ const Replication = () => {
           /* LAYER RENAMED */
           structuralOperations
             .filter(op => op.type === 'put')
-            .map(op => ({ id: ID.layerUUID(op.key), name: op.value.name }))
+            .map(op => ({ id: op.key, name: op.value.name }))
             .forEach(op => replicatedProject.setLayerName(op.id, op.name))
 
           /* LAYER REMOVED so the original layer does not exist anymore. Thus, we need to filter for the "shared+layer:" key */
           /* TODO: If we remove a shared layer, should we create a new invitation? */
           operations.filter(op => ID.isSharedLayerId(op.key))
             .filter(op => op.type === 'del')
-            .map(op => op.key.replace('shared+layer:', ''))
+            .map(op => ID.containerId(op.key))
             .forEach(id => replicatedProject.leaveLayer(id))
 
           /* TODO: Deleting a layer is UNDOable! How dow we support re-joining after undo? */
@@ -172,7 +171,7 @@ const Replication = () => {
             const operationsByLayer = sharedContent
               .filter(op => op !== null)
               .reduce((acc, op) => {
-                const layerId = ID.layerUUID(ID.containerId(op.key))
+                const layerId = ID.layerId(ID.containerId(op.key))
                 acc[layerId] = acc[layerId] || []
                 acc[layerId].push(op)
                 return acc

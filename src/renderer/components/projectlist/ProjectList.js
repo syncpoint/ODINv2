@@ -270,6 +270,7 @@ export const ProjectList = () => {
   /* eslint-disable react/prop-types */
   const child = React.useCallback(props => {
     const { entry: project } = props
+
     const send = message => () => ipcRenderer.send(message, project.id)
     const loadPreview = () => projectStore.getPreview(project.id)
     const handleRename = name => projectStore.updateProject({ ...project, name })
@@ -289,12 +290,13 @@ export const ProjectList = () => {
       const seed = await replication.share(project.id, project.name, project.description || '')
       await projectStore.addTag(project.id, 'SHARED')
       await projectStore.putReplicationSeed(project.id, seed)
+      fetch(project.id)
     }
 
     const handleInvite = value => {
       if (!value) return
       replication
-        .invite(project.id.replace('project:', ''), value /* [matrix] user name */)
+        .invite(project.id, value /* [matrix] user name */)
         .then(() => console.log(`Sent invitation for project ${project.name} to ${value}`))
         .catch(error => console.error(error))
     }

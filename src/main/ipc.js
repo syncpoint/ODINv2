@@ -69,7 +69,8 @@ export const ipc = (databases, ipcMain, projectStore) => {
 
   ipcMain.handle('ipc:put:project:replication/seed', async (_, id, seed) => {
     try {
-      const location = path.join(databases, id)
+      const uuid = id.split(':')[1]
+      const location = path.join(databases, uuid)
       const db = leveldb({ location })
       const session = sessionDB(db)
       await session.put('replication:seed', seed)
