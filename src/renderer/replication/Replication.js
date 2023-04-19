@@ -106,6 +106,11 @@ const Replication = () => {
             await store.import(operations, { creatorId: CREATOR_ID })
           },
           renamed: async (renamed) => {
+            /*
+              Since we must monitor the project itself for child added events we also may receive
+              renamed events regarding the project. We ignore these for now.
+            */
+            if (renamed.id.startsWith('project:')) return
             const ops = renamed.map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
             await store.import(ops, { creatorId: CREATOR_ID })
           },
