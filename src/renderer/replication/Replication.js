@@ -10,7 +10,7 @@ const SEED = 'replication:seed'
 const CREATOR_ID = uuid()
 
 const Replication = () => {
-  const { emitter, selection, sessionStore, store, replicationProvider } = useServices()
+  const { emitter, preferencesStore, selection, sessionStore, store, replicationProvider } = useServices()
 
   const [notifications] = React.useState(new Set())
   const [offline, setOffline] = React.useState(true)
@@ -217,15 +217,20 @@ const Replication = () => {
   }, [reAuthenticate])
 
 
-
+  /*
+    When we receive an invitation for a new layer we use to OS notification
+    system to inform the user. The user may either dismiss the notification (close)
+    or click on it. The latter switches to the @invited scope and allows joining
+    the layer.
+  */
   React.useEffect(() => {
 
     const clickHandler = event => {
       event.preventDefault() // prevent the browser from focusing the Notification's tab
       event.target.onclick = undefined
       notifications.delete(event.target)
-      selection.focus(event.target.data)
-      console.log('CLICK')
+      preferencesStore.showSidebar(true)
+      setTimeout(() => selection.focus(event.target.data), 250)
     }
 
     const closeHandler = event => {
@@ -252,7 +257,9 @@ const Replication = () => {
       store.off('batch', handler)
       notifications.clear()
     }
-  }, [notifications, store, selection])
+  },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [])
 }
 
 export {
