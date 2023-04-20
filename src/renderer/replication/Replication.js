@@ -74,6 +74,14 @@ const Replication = () => {
                 { type: 'put', key: ID.sharedId(layer.id), value: true }
               ], { creatorId: CREATOR_ID })
               await store.delete(id) // invitation ID
+              /*
+                We load the entire existing content. This may be huge, especially
+                if you join long running rooms. Unless we have a solid solution
+                for managing snapshots: this is the way.
+              */
+              const operations = await replicatedProject.content(layer.id)
+              console.log(`Initial sync has ${operations.length} operations`)
+              await store.import(operations, { creatorId: CREATOR_ID })
               break
             }
             case 'share': {
