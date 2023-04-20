@@ -57,6 +57,7 @@ const Replication = () => {
         const invitations = projectDescription.invitations
           .filter(invitation => (!allInvitations.includes(ID.makeId(ID.INVITED, invitation.id))))
           .map(invitation => ([{ type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }]))
+          .flat()
         await store.import(invitations, { creatorId: CREATOR_ID })
 
         /*
@@ -111,8 +112,9 @@ const Replication = () => {
               Since we must monitor the project itself for child added events we also may receive
               renamed events regarding the project. We ignore these for now.
             */
-            if (renamed.id.startsWith('project:')) return
-            const ops = renamed.map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
+            const ops = renamed
+              .filter(target => ID.isLayerId(target.id))
+              .map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
