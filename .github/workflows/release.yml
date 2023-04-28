@@ -57,3 +57,10 @@ jobs:
         WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
         WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: VirusTotal Scan
+      uses: crazy-max/ghaction-virustotal@v3
+      with:
+        vt_api_key: ${{ secrets.VIRUS_TOTAL_API_KEY }}
+        files: |
+          .exe$
