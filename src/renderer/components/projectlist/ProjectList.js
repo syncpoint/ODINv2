@@ -122,6 +122,10 @@ export const ProjectList = () => {
   const [offline, setOffline] = React.useState(true)
   const [reAuthenticate, setReAuthenticate] = React.useState(false)
 
+  React.useEffect(() => {
+    console.log(`Replication is ${offline ? 'offline' : 'online'}`)
+  }, [offline])
+
   /**
    * Reload projects from store and update entry list
    * with optional entry id to focus.
@@ -187,12 +191,18 @@ export const ProjectList = () => {
     const initializeReplication = async () => {
       console.log('INITIALIZING REPLICATION')
       try {
+
+        /*
+          connect() waits endlessly
+        */
+        await replicationProvider.connect()
         /*
           Replication credentials are tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
         */
         const credentials = await projectStore.getCredentials('PROJECT-LIST')
         const replicatedProjectList = await replicationProvider.projectList(credentials)
+        setReplication(replicatedProjectList)
         if (reAuthenticate) {
           setReAuthenticate(false)
           return
@@ -230,7 +240,8 @@ export const ProjectList = () => {
         replicatedProjectList.start(mostRecentStreamToken, handler)
 
       } catch (error) {
-        // console.error(error)
+        console.error(error)
+        setOffline(true)
         if (error.response?.status === 403) {
           await projectStore.delCredentials('PROJECT-LIST')
           setReAuthenticate(true)
@@ -252,7 +263,7 @@ export const ProjectList = () => {
     */
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reAuthenticate])
+  }, [reAuthenticate, setOffline])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
@@ -386,7 +397,7 @@ export const ProjectList = () => {
         height: '100vh'
       }}
     >
-      { (replication && offline) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>Replication is enabled but ODIN is OFFLINE. Trying to reconnect ...</div> }
+      { (!replicationProvider.disabled && offline) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>Replication is enabled but ODIN is OFFLINE. Trying to reconnect ...</div> }
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >

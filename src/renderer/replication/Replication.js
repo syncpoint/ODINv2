@@ -47,6 +47,11 @@ const Replication = () => {
           See project-list where this is done.
         */
         const seed = await sessionStore.get(SEED)
+
+        /*
+          connect() waits 'till infinity
+        */
+        await replicatedProject.connect()
         const projectDescription = await replicatedProject.hydrate(seed)
 
         /*
