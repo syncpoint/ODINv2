@@ -51,7 +51,7 @@ const Replication = () => {
         /*
           connect() waits 'till infinity
         */
-        await replicatedProject.connect()
+        await replicationProvider.connect()
         const projectDescription = await replicatedProject.hydrate(seed)
 
         /*
