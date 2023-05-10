@@ -137,10 +137,10 @@ export default async projectUUID => {
 
   services.replicationProvider = (isRemoteProject && process.env.MATRIX_HOME_SERVER_URL && process.env.MATRIX_USER_ID && process.env.MATRIX_PASSWORD
     ? MatrixClient({
-      homeServerUrl: process.env.MATRIX_HOME_SERVER_URL,
-      userId: process.env.MATRIX_USER_ID,
+      home_server_url: process.env.MATRIX_HOME_SERVER_URL,
+      user_id: process.env.MATRIX_USER_ID,
       password: process.env.MATRIX_PASSWORD,
-      deviceId: projectUUID
+      device_id: projectUUID
     })
     : {
         disabled: true
