@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import * as R from 'ramda'
 import { Button } from './Button'
 // TODO: replace Card and List with simple <div/>s
 import { Input } from './Input'
@@ -117,10 +118,12 @@ export const ProjectList = () => {
   const { projectStore, ipcRenderer, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
+
   const [replication, setReplication] = React.useState(undefined)
   const [inviteValue, setInviteValue] = React.useState({})
   const [offline, setOffline] = React.useState(true)
   const [reAuthenticate, setReAuthenticate] = React.useState(false)
+  const [notifications] = React.useState(new Set())
 
   React.useEffect(() => {
     console.log(`Replication is ${offline ? 'offline' : 'online'}`)
@@ -132,8 +135,9 @@ export const ProjectList = () => {
    * Use current filter to load only projects to display in list.
    *
    * @param {*} projectId - optional project id to focus in list next.
+   * @param {*} epemeralProject - An array of projects we received an invitation for, defaults to []
    */
-  const fetch = React.useCallback(projectId => {
+  const fetch = React.useCallback((projectId, ephemeralProjects = []) => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
       const sharedProjects = replication ? (await replication.invited()).map(project => ({ ...project, ...{ tags: ['INVITED'] } })) : []
@@ -142,12 +146,12 @@ export const ProjectList = () => {
           avoid duplicate entries - one from the local db and one from the replication API -
           we remove these duplicate entries.
       */
-      const allProjects = [...projects, ...(sharedProjects).filter(project => {
+      const allProjects = R.uniq([...projects, ...ephemeralProjects, ...(sharedProjects).filter(project => {
         const hasAlreadyJoined = projects.includes(project.id)
         return !hasAlreadyJoined
-      })]
+      })])
       dispatch({ type: 'entries', entries: allProjects, candidateId: projectId })
-      if (projectId) dispatch({ type: 'select', selected: [projectId] })
+      if (projectId) dispatch({ type: 'select', id: projectId })
     })()
   }, [dispatch, filter, projectStore, replication])
 
@@ -213,7 +217,6 @@ export const ProjectList = () => {
         })
 
         await replicatedProjectList.hydrate()
-        setReplication(replicatedProjectList)
 
         const handler = {
           streamToken: streamToken => {
@@ -223,13 +226,24 @@ export const ProjectList = () => {
           renamed: (/* project */) => {
             fetch()
           },
-          invited: (/* project */) => {
-            /*
-              This handler receives detailed information about a project the user
-              is invited to join. Currently we just call fetch() in order to update the projects.
-              Since we already have that information we should find a better way to merge the data.
-            */
-            fetch()
+          invited: (project) => {
+            const clickHandler = event => {
+              event.preventDefault() // prevent the browser from focusing the Notification's tab
+              event.target.onclick = undefined
+              dispatch({ type: 'select', id: project.id })
+              notifications.delete(event.target)
+            }
+            const closeHandler = event => {
+              event.target.onclick = undefined
+              notifications.delete(event.target)
+            }
+
+            const notification = new Notification('Received invitation', { body: project.name, data: project.id })
+            notification.onclick = clickHandler
+            notification.onclose = closeHandler
+            notifications.add(notification)
+
+            fetch(null, [project])
           },
           error: error => {
             console.error(error)
@@ -238,6 +252,8 @@ export const ProjectList = () => {
         }
         const mostRecentStreamToken = await projectStore.getStreamToken('PROJECT-LIST')
         replicatedProjectList.start(mostRecentStreamToken, handler)
+
+        setReplication(replicatedProjectList)
 
       } catch (error) {
         console.error(error)
@@ -385,6 +401,7 @@ export const ProjectList = () => {
         </Card>
       </div>
     )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, inviteValue, ipcRenderer, offline, projectStore, replication])
   /* eslint-enable react/prop-types */
 
