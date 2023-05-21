@@ -140,16 +140,20 @@ export const ProjectList = () => {
   const fetch = React.useCallback((projectId, ephemeralProjects = []) => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
-      const sharedProjects = replication ? (await replication.invited()).map(project => ({ ...project, ...{ tags: ['INVITED'] } })) : []
+      const sharedProjects = replication ? (await replication.invited()) : []
 
-      /*  Sometimes the replication API does not update the state immediately. In orwer to
+      const invitedProjects = [...sharedProjects, ...ephemeralProjects]
+        .filter(project => {
+          const hasAlreadyJoined = projects.includes(project.id)
+          return !hasAlreadyJoined
+        })
+        .map(project => ({ ...project, ...{ tags: ['INVITED'] } }))
+
+      /*  Sometimes the replication API does not update the state immediately. In order to
           avoid duplicate entries - one from the local db and one from the replication API -
           we remove these duplicate entries.
       */
-      const allProjects = R.uniq([...projects, ...ephemeralProjects, ...(sharedProjects).filter(project => {
-        const hasAlreadyJoined = projects.includes(project.id)
-        return !hasAlreadyJoined
-      })])
+      const allProjects = R.uniq([...projects, ...invitedProjects])
       dispatch({ type: 'entries', entries: allProjects, candidateId: projectId })
       if (projectId) dispatch({ type: 'select', id: projectId })
     })()
