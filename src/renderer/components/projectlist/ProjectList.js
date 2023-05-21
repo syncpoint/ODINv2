@@ -225,7 +225,7 @@ export const ProjectList = () => {
         const handler = {
           streamToken: streamToken => {
             projectStore.putStreamToken('PROJECT-LIST', streamToken)
-            setOffline(false)
+            if (offline) setOffline(false)
           },
           renamed: (/* project */) => {
             fetch()
@@ -258,6 +258,7 @@ export const ProjectList = () => {
         replicatedProjectList.start(mostRecentStreamToken, handler)
 
         setReplication(replicatedProjectList)
+        setOffline(false)
 
       } catch (error) {
         console.error(error)
