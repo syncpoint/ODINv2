@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as olStyle from 'ol/style'
 import { PI_OVER_2, PI } from '../../../shared/Math'
-import ms from 'milsymbol'
+import { Symbol } from '@syncpoint/signs'
 import * as patterns from './patterns'
 
 const Styles = {
@@ -148,7 +148,7 @@ const makeSymbol = props => {
     ...props['symbol-modifiers']
   })
 
-  const symbol = new ms.Symbol(props['symbol-code'], { ...options })
+  const symbol = new Symbol(props['symbol-code'], { ...options, infoFields: true })
   const { width, height } = symbol.getSize()
 
   return Styles.icon({

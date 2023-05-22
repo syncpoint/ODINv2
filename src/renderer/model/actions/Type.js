@@ -12,7 +12,7 @@ const type = ([parameterized, descriptor]) => ({
 })
 
 const TYPES = Object
-  .entries(MILSTD.index)
+  .entries(MILSTD.symbols)
   .map(type)
 
 

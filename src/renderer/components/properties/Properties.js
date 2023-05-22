@@ -14,6 +14,9 @@ import PointProperties from './PointProperties'
 import MarkerProperties from './MarkerProperties'
 import TileServiceProperties from './TileServiceProperties'
 import TilePresetProperties from './TilePresetProperties'
+import SKKMStandardProperties from './SKKMStandardProperties'
+import SKKMUnitProperties from './SKKMUnitProperties'
+import SKKMCommandProperties from './SKKMCommandProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -26,15 +29,16 @@ const propertiesPanels = {
   'feature:POINT': props => <PointProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
-  'tile-preset': props => <TilePresetProperties {...props}/>
+  'tile-preset': props => <TilePresetProperties {...props}/>,
+  'feature:SKKM/K': props => <SKKMStandardProperties {...props}/>,
+  'feature:SKKM/KU': props => <SKKMUnitProperties {...props}/>,
+  'feature:SKKM/KC': props => <SKKMCommandProperties {...props}/>
+
 }
 
 const singletons = ['tile-service', 'tile-layers']
 
-const sidc = feature =>
-  feature &&
-  feature.properties &&
-  feature.properties.sidc
+const sidc = feature => feature?.properties?.sidc
 
 /**
  *
@@ -47,6 +51,7 @@ const propertiesClasses = features => Object
       ? `feature:${MILSTD.className(sidc(value)) || ''}`
       : scope(key)
 
+    console.log('className', className)
     return push(className)
   }, [])
 

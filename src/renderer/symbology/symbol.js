@@ -1,14 +1,14 @@
-import ms from 'milsymbol'
+import { Symbol } from '@syncpoint/signs'
 import * as MILSTD from '../symbology/2525c'
-import './extension'
 
 const defaultOptions = { size: 30 }
 
+const format = sidc => sidc.match(/S.G.U/)
+  ? sidc // // keep echelon for units
+  : MILSTD.format(sidc, { echelon: '-' })
+
 export const svg = (sidc, options = defaultOptions) => {
   if (!sidc) return null
-  const symbol = sidc.match(/S.G.U/)
-    ? new ms.Symbol(sidc, options) // keep echelon for units
-    : new ms.Symbol(MILSTD.format(sidc, { echelon: '-' }), options)
-
+  const symbol = new Symbol(format(sidc), options)
   return symbol.asSVG()
 }
