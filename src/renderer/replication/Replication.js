@@ -160,7 +160,7 @@ const Replication = () => {
 
           const sharedLayersOnly = async (ops) => {
             const sharedLayers = (await sharedLayerIDs()).map(([key]) => key)
-            return ops.filter(op => sharedLayers.includes(ID.layerId(op.key)))
+            return ops.filter(op => sharedLayers.includes(ID.layerId(ID.containerId(op.key))))
           }
 
           const structuralOperations = await sharedLayersOnly(operations.filter(op => ID.isLayerId(op.key)))
@@ -185,7 +185,9 @@ const Replication = () => {
             ID.isTagsId,
             ID.isStyleId
           ]
-          const sharedContent = await sharedLayersOnly(operations.filter(op => predicates.some(test => test(op.key))))
+          const operationsToBeReplicated = operations.filter(op => predicates.some(test => test(op.key)))
+
+          const sharedContent = await sharedLayersOnly(operationsToBeReplicated)
           if (sharedContent.length) {
             console.dir(sharedContent)
 
