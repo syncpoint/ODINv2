@@ -63,7 +63,6 @@
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.2.0",
     "color": "^4.2.3",
-    "flyd": "^0.2.8",
     "fuse.js": "^6.6.2",
     "geo-coordinates-parser": "^1.5.3",
     "geodesy": "^2.4.0",

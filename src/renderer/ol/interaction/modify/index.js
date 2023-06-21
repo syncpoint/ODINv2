@@ -5,8 +5,7 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import Point from 'ol/geom/Point'
 import * as style from 'ol/style'
-import flyd from './flyd'
-
+import Signal from './signal'
 import * as Events from './events'
 import { selected } from './states'
 import { ModifyEvent } from './events'
@@ -14,19 +13,20 @@ import { setCoordinates } from '../../../model/geometry'
 import { writeIndex } from './writers'
 
 
-// rbush :: ol/Feature => Stream ol/structs/RBush
+// rbush :: ol/Feature => Signal ol/structs/RBush
 export const rbush = (() => {
-  const changeEvents = feature => flyd.fromListeners(['change'], feature)
+  const changeEvents = feature => Signal.fromListeners(['change'], feature)
   let events
 
+  // TODO: dispose listener
   return feature => {
-    // End previous (if applicable) to release change listener:
-    if (events) events.end(true)
-
+    if (events) events.dispose()
     events = changeEvents(feature)
-    const externalEvents = flyd.reject(({ target }) => target.internalChange(), events)
-    const rbush = flyd.combine(() => writeIndex(feature), [externalEvents])
-    return flyd.immediate(rbush)
+    const externalEvents = R.reject(({ target }) => target.internalChange, events)
+    Signal.tap(({ target }) => console.log('change; internal:', target.internalChange), externalEvents)
+    const rbush = Signal.link(() => writeIndex(feature), externalEvents)
+    // TODO: startWith
+    return Signal.startWith(() => writeIndex(feature), rbush)
   }
 })()
 
@@ -34,9 +34,13 @@ const handlers = {
   set (target, property, value, proxy) {
     // coordinates setter on feature proxy:
     if (property === 'coordinates') {
-      proxy.internalChange(true)
+      console.log('internalChange: true')
+      proxy.internalChange = true
+      // proxy.internalChange(true)
       setCoordinates(target.getGeometry(), value)
-      proxy.internalChange(false)
+      proxy.internalChange = false
+      // proxy.internalChange(false)
+      console.log('internalChange: false')
       return true
     } else {
       return Reflect.set(target, property, value)
@@ -47,7 +51,8 @@ const handlers = {
 // TODO: extend and move to feature store
 export const proxy = feature => {
   const proxy = new Proxy(feature, handlers)
-  proxy.internalChange = flyd.stream(false)
+  proxy.internalChange = false
+  // proxy.internalChange = Signal.of(false)
 
   // Simulate external change by emitting change event explicitly.
   proxy.commit = () => proxy.dispatchEvent({ type: 'change', target: proxy })
@@ -68,7 +73,7 @@ class OverlaySink {
       updateWhileInteracting: true
     })
 
-    flyd.on(coordinate => {
+    Signal.link(coordinate => {
       const feature = source.getFeatureById('feature:pointer')
       if (coordinate && !feature) {
         const pointer = new Feature(new Point(coordinate))
@@ -95,7 +100,7 @@ export class Modify extends Interaction {
   constructor (options) {
     super(options)
 
-    this.mapEvent$ = flyd.stream()
+    this.mapEvent$ = Signal.of()
 
     // features :: ol/source/Vector => [ol/Feature]
     const features = source => source.getFeatures()
@@ -110,18 +115,19 @@ export class Modify extends Interaction {
     // isSymbol :: ol/Feature => Boolean
     const isSymbol = feature => feature?.getGeometry()?.getType() === 'Point'
 
-    const sourceEvents = flyd.fromListeners(['addfeature', 'removefeature'], options.source)
+    const sourceEvents = Signal.fromListeners(['addfeature', 'removefeature'], options.source)
     const rbush$ = R.compose(
-      flyd.chain(rbush),
+      Signal.tap(x => console.log('rbush', x)),
+      Signal.chain(rbush),
       R.map(proxy),
-      flyd.reject(isSymbol),
+      R.reject(isSymbol),
       R.map(feature),
       R.map(features),
       R.map(R.prop('target'))
     )(sourceEvents)
 
     const rbushEventPair$ =
-      flyd.lift((rbush, event) => [rbush, event], rbush$, this.mapEvent$)
+      Signal.lift((rbush, event) => [rbush, event], rbush$, this.mapEvent$)
 
     const eventHandler = (state, [rbush, event]) => {
       // For empty index, reset to loaded state:
@@ -132,23 +138,23 @@ export class Modify extends Interaction {
     }
 
     const looped = R.compose(
-      flyd.reject(R.isNil),
-      flyd.loop(eventHandler, selected(true))
+      R.reject(R.isNil),
+      Signal.loop(eventHandler, selected(true))
     )(rbushEventPair$)
 
     const coordinate = R.compose(
       R.map(({ coordinate }) => coordinate),
-      flyd.filter(event => event.type === 'coordinate'),
-      flyd.reject(R.isNil)
+      R.filter(event => event.type === 'coordinate'),
+      R.reject(R.isNil)
     )(looped)
 
     const modifyEvent = R.compose(
-      flyd.filter(event => event instanceof ModifyEvent)
+      Signal.filter(event => event instanceof ModifyEvent)
     )(looped)
 
     // Effects: Update overlay feature coordinate, dispatch modify event
     this.overlay = new OverlaySink(pointerStyles.DEFAULT, options, coordinate)
-    flyd.on(event => this.dispatchEvent(event), modifyEvent)
+    Signal.link(event => this.dispatchEvent(event), modifyEvent)
   }
 
   handleEvent (event) {
