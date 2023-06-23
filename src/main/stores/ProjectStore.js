@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import * as L from '../../shared/level'
+import { safeStorage } from 'electron'
 
 const PROJECT = 'project:'
 const PREVIEW = key => `preview:${key}`
@@ -67,14 +68,26 @@ ProjectStore.prototype.putStreamToken = function (id, streamToken) {
   return this.db.put(STREAM_TOKEN(id), streamToken)
 }
 
-ProjectStore.prototype.getCredentials = function (id) {
-  return L.get(this.db, CREDENTIALS(id), null)
+ProjectStore.prototype.getCredentials = async function (id) {
+  const value = await L.get(this.db, CREDENTIALS(id), null)
+  if (value && safeStorage.isEncryptionAvailable()) {
+    try {
+      return JSON.parse(safeStorage.decryptString(Buffer.from(value)))
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+  return value
 }
 
-ProjectStore.prototype.putCredentials = function (id, credentials) {
-  return this.db.put(CREDENTIALS(id), credentials)
+ProjectStore.prototype.putCredentials = async function (id, credentials) {
+  const value = safeStorage.isEncryptionAvailable()
+    ? safeStorage.encryptString(JSON.stringify(credentials))
+    : credentials
+  return this.db.put(CREDENTIALS(id), value)
 }
 
-ProjectStore.prototype.delCredentials = function (id) {
+ProjectStore.prototype.delCredentials = async function (id) {
   return this.db.del(CREDENTIALS(id))
 }

@@ -3,22 +3,23 @@ import ProjectStore from '../store/ProjectStore'
 import { Selection } from '../Selection'
 import { MatrixClient } from '@syncpoint/matrix-client-api'
 
-export default () => {
+export default async () => {
   const services = {}
 
   services.ipcRenderer = ipcRenderer
   services.projectStore = new ProjectStore(ipcRenderer)
   services.selection = new Selection()
-  services.replicationProvider = (process.env.MATRIX_HOME_SERVER_URL && process.env.MATRIX_USER_ID && process.env.MATRIX_PASSWORD
+
+  const credentials = await services.projectStore.getCredentials('default')
+
+  services.replicationProvider = credentials
     ? MatrixClient({
-      home_server_url: process.env.MATRIX_HOME_SERVER_URL,
-      user_id: process.env.MATRIX_USER_ID,
-      password: process.env.MATRIX_PASSWORD,
+      ...credentials,
       device_id: 'PROJECT-LIST'
     })
     : {
         disabled: true
       }
-  )
+
   return services
 }

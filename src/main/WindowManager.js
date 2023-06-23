@@ -64,6 +64,10 @@ WindowManager.prototype.createWindow = function (options) {
       y: options.y,
       width: options.width,
       height: options.height,
+      minimizable: options.minimizable ?? true,
+      maximizable: options.maximizable ?? true,
+      resizable: options.resizable ?? true,
+      alwaysOnTop: options.alwaysOnTop ?? false,
       frame: !(options.frame === false),
       titleBarStyle: options.titleBarStyle || 'default',
       webPreferences: {
@@ -161,6 +165,13 @@ WindowManager.prototype.closeWindow = function (handle) {
   if (window) window.close()
 }
 
+WindowManager.prototype.reloadAll = function () {
+  Object.values(this.windows).forEach(handle => {
+    const window = this.windowFromHandle(handle)
+    window?.reload()
+  })
+}
+
 
 /**
  * Create and show project window.
@@ -199,3 +210,36 @@ WindowManager.prototype.showSplash = function () {
     additionalArguments
   })
 }
+
+WindowManager.prototype.showLogin = function () {
+  const additionalArguments = ['--page=login']
+  return this.createWindow({
+    handle: 'login',
+    title: 'Login and enable collaboration',
+    url: url(app),
+    minimizable: false,
+    maximizable: false,
+    // resizable: false,
+    alwaysOnTop: true,
+    width: 640,
+    height: 480,
+    additionalArguments
+  })
+}
+
+WindowManager.prototype.showLogout = function () {
+  const additionalArguments = ['--page=logout']
+  return this.createWindow({
+    handle: 'logout',
+    title: 'Logout and disable collaboration',
+    url: url(app),
+    minimizable: false,
+    maximizable: false,
+    // resizable: false,
+    alwaysOnTop: true,
+    width: 640,
+    height: 480,
+    additionalArguments
+  })
+}
+

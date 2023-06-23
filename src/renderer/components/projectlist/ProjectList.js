@@ -310,7 +310,6 @@ export const ProjectList = () => {
       dispatch({ type: 'click', id, shiftKey, metaKey })
     }
     const handleJoin = async () => {
-      console.log(`Joining project ${project.id}`)
       const seed = await replication.join(project.id)
       // createProject requires the id to be a UUID without prefix
       await projectStore.createProject(project.id.split(':')[1], project.name, ['SHARED'])
@@ -318,7 +317,6 @@ export const ProjectList = () => {
     }
 
     const handleShare = async () => {
-      console.log(`Sharing project ${project.id}`)
       const seed = await replication.share(project.id, project.name, project.description || '')
       await projectStore.addTag(project.id, 'SHARED')
       await projectStore.putReplicationSeed(project.id, seed)

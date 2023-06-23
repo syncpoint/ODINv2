@@ -134,12 +134,11 @@ export default async projectUUID => {
 
   const projectTags = (await projectStore.getProject(`project:${projectUUID}`)).tags || []
   const isRemoteProject = projectTags.includes('SHARED')
+  const credentials = await projectStore.getCredentials('default')
 
-  services.replicationProvider = (isRemoteProject && process.env.MATRIX_HOME_SERVER_URL && process.env.MATRIX_USER_ID && process.env.MATRIX_PASSWORD
+  services.replicationProvider = (isRemoteProject && credentials
     ? MatrixClient({
-      home_server_url: process.env.MATRIX_HOME_SERVER_URL,
-      user_id: process.env.MATRIX_USER_ID,
-      password: process.env.MATRIX_PASSWORD,
+      ...credentials,
       device_id: projectUUID
     })
     : {

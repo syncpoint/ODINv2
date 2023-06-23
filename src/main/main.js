@@ -46,7 +46,7 @@ const ready = async () => {
 
   const windowManager = new WindowManager()
   const session = new Session({ sessionStore, projectStore, windowManager })
-  const menu = new ApplicationMenu(sessionStore)
+  const menu = new ApplicationMenu({ sessionStore, projectStore })
   const preferencesProvider = new PreferencesProvider(windowManager, ipcMain)
 
   preferencesProvider.on('preferencesChanged', ({ projectId, preferences }) => {
@@ -61,6 +61,8 @@ const ready = async () => {
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())
+  menu.on('collaboration/enable', () => session.login())
+  menu.on('collaboration/disable', () => session.logout())
 
   windowManager.on('window/closed/:id', ({ id }) => {
     session.windowClosed(id)
@@ -99,6 +101,14 @@ const ready = async () => {
         : openExternal
 
     open(link.url)
+  })
+
+  ipcMain.on('RELOAD_ALL_WINDOWS', () => {
+    windowManager.reloadAll()
+  })
+
+  ipcMain.on('CLOSE_WINDOW', (event, handle) => {
+    windowManager.closeWindow(handle)
   })
 
   await session.restore()

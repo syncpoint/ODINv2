@@ -146,12 +146,12 @@ ProjectStore.prototype.removeTag = async function (id, tag) {
 /**
  * @async
  */
-ProjectStore.prototype.getStreamToken = function (id) {
+ProjectStore.prototype.getStreamToken = async function (id) {
   return this.ipcRenderer.invoke('ipc:get:replication/streamToken', id)
 }
 
 ProjectStore.prototype.putStreamToken = async function (id, streamToken) {
-  await this.ipcRenderer.invoke('ipc:put:replication/streamToken', id, streamToken)
+  return this.ipcRenderer.invoke('ipc:put:replication/streamToken', id, streamToken)
 }
 
 ProjectStore.prototype.getCredentials = function (id) {
@@ -159,13 +159,13 @@ ProjectStore.prototype.getCredentials = function (id) {
 }
 
 ProjectStore.prototype.putCredentials = async function (id, credentials) {
-  await this.ipcRenderer.invoke('ipc:put:replication/credentials', id, credentials)
+  return this.ipcRenderer.invoke('ipc:put:replication/credentials', id, credentials)
 }
 
 ProjectStore.prototype.delCredentials = async function (id) {
-  await this.ipcRenderer.invoke('ipc:del:replication/credentials', id)
+  return this.ipcRenderer.invoke('ipc:del:replication/credentials', id)
 }
 
 ProjectStore.prototype.putReplicationSeed = async function (id, seed) {
-  await this.ipcRenderer.invoke('ipc:put:project:replication/seed', id, seed)
+  return this.ipcRenderer.invoke('ipc:put:project:replication/seed', id, seed)
 }

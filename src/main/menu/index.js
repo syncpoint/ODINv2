@@ -5,9 +5,10 @@ import fileMenu from './file-menu'
 import editMenu from './edit-menu'
 import viewMenu from './view-menu'
 import windowMenu from './window-menu'
+import collaborationMenu from './collaboration-menu'
 import Emitter from '../../shared/emitter'
 
-const menus = [appMenu, fileMenu, editMenu, viewMenu, windowMenu]
+const menus = [appMenu, fileMenu, editMenu, viewMenu, collaborationMenu, windowMenu]
 
 /**
  * @constructor
@@ -15,9 +16,10 @@ const menus = [appMenu, fileMenu, editMenu, viewMenu, windowMenu]
  * @fires project/create create new project
  * @fires project/open/:key open existing project
  */
-export function ApplicationMenu (sessionStore) {
+export function ApplicationMenu ({ sessionStore, projectStore }) {
   Emitter.call(this)
   this.sessionStore = sessionStore
+  this.projectStore = projectStore
 }
 
 util.inherits(ApplicationMenu, Emitter)
@@ -30,6 +32,7 @@ ApplicationMenu.prototype.show = async function (preferences) {
     platform: process.platform,
     appName: app.name,
     sessionStore: this.sessionStore,
+    projectStore: this.projectStore,
     emitter: this
   }
 
