@@ -13,7 +13,7 @@ const Replication = () => {
   const { emitter, preferencesStore, selection, sessionStore, store, replicationProvider } = useServices()
 
   const [notifications] = React.useState(new Set())
-  const [reAuthenticate, setReAuthenticate] = React.useState(false)
+  const [reload, setReload] = React.useState(false)
 
   const notify = message => emitter.emit('osd', { message, cell: 'B2' })
 
@@ -30,8 +30,8 @@ const Replication = () => {
         /*
           Unfortunately we have to deal with rate limiting (http error 429) at
           login. If this is our very first time we try to connect to the project it is very
-          likely that we get a 429 and reAuthenticate is TRUE.
-          If we have no previous credentials we need to persist them before we set reAuthenticate
+          likely that we get a 429 and 'reload' is TRUE.
+          If we have no previous credentials we need to persist them before we set 'reload'
           to FALSE and re-run the effect handler.
         */
         if (!credentials) {
@@ -39,9 +39,9 @@ const Replication = () => {
           await sessionStore.put(CREDENTIALS, currentCredentials)
         }
 
-        if (reAuthenticate) {
+        if (reload) {
           console.log('ReAuthentication has been triggererd. ')
-          setReAuthenticate(false)
+          setReload(false)
           return
         }
 
@@ -219,11 +219,13 @@ const Replication = () => {
       } catch (error) {
         if (error.response?.status === 403) {
           await sessionStore.del(CREDENTIALS)
-          setReAuthenticate(true)
+          notify('Credentials for replication may be void, reauthenticating ...')
+          setReload(true)
         } else if (error.response?.status === 429) {
-          console.log('(AUTH) RATE LIMITED, retrying ...')
           notify('Replication was rate-limited, retrying ...')
-          setReAuthenticate(true)
+          setReload(true)
+        } else {
+          notify('Replication error: ', error.message)
         }
         console.error(error)
       }
@@ -243,7 +245,7 @@ const Replication = () => {
     */
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reAuthenticate])
+  }, [reload])
 
 
   /*

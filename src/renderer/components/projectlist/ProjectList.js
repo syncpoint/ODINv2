@@ -115,19 +115,17 @@ ButtonBar.propTypes = {
  *
  */
 export const ProjectList = () => {
-  const { projectStore, ipcRenderer, replicationProvider } = useServices()
+  const { emitter, projectStore, ipcRenderer, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
 
   const [replication, setReplication] = React.useState(undefined)
   const [inviteValue, setInviteValue] = React.useState({})
-  const [offline, setOffline] = React.useState(true)
-  const [reAuthenticate, setReAuthenticate] = React.useState(false)
+  const [reload, setReload] = React.useState(false)
   const [notifications] = React.useState(new Set())
 
-  React.useEffect(() => {
-    console.log(`Replication is ${offline ? 'offline' : 'online'}`)
-  }, [offline])
+  const notify = message => emitter.emit('osd', { message, cell: 'B2' })
+
 
   /**
    * Reload projects from store and update entry list
@@ -197,9 +195,8 @@ export const ProjectList = () => {
 
   React.useEffect(() => {
     const initializeReplication = async () => {
-      console.log('INITIALIZING REPLICATION')
       try {
-
+        notify('Initializing replication ...')
         /*
           connect() waits endlessly
         */
@@ -210,9 +207,24 @@ export const ProjectList = () => {
         */
         const credentials = await projectStore.getCredentials('PROJECT-LIST')
         const replicatedProjectList = await replicationProvider.projectList(credentials)
-        setReplication(replicatedProjectList)
-        if (reAuthenticate) {
-          setReAuthenticate(false)
+
+        /*
+          Unfortunately we have to deal with rate limiting (http error 429) at
+          login. If this is our very first time we try to connect to the project it is very
+          likely that we get a 429 and 'reload'' is TRUE.
+          If we have no previous credentials we need to persist them before we set 'reload'
+          to FALSE and re-run the effect handler.
+        */
+        if (!credentials) {
+          const currentCredentials = replicatedProjectList.credentials()
+          await projectStore.put('PROJECT-LIST', currentCredentials)
+        }
+
+        /*
+          A reload my be requested due to an auth-err or a rate-limiting error.
+        */
+        if (reload) {
+          setReload(false)
           return
         }
 
@@ -225,7 +237,7 @@ export const ProjectList = () => {
         const handler = {
           streamToken: streamToken => {
             projectStore.putStreamToken('PROJECT-LIST', streamToken)
-            if (offline) setOffline(false)
+            notify(null)
           },
           renamed: (/* project */) => {
             fetch()
@@ -251,24 +263,27 @@ export const ProjectList = () => {
           },
           error: error => {
             console.error(error)
-            setOffline(true)
+            notify('Replication error, trying to reestablish connection ...')
           }
         }
         const mostRecentStreamToken = await projectStore.getStreamToken('PROJECT-LIST')
         replicatedProjectList.start(mostRecentStreamToken, handler)
 
         setReplication(replicatedProjectList)
-        setOffline(false)
+        notify(null)
 
       } catch (error) {
         console.error(error)
-        setOffline(true)
+        notify()
         if (error.response?.status === 403) {
           await projectStore.delCredentials('PROJECT-LIST')
-          setReAuthenticate(true)
+          notify('Credentials for replication may be void, reauthenticating ...')
+          setReload(true)
         } else if (error.response?.status === 429) {
-          console.log('(AUTH) RATE LIMITED, retrying ...')
-          setReAuthenticate(true)
+          notify('Replication was rate-limited, retrying ...')
+          setReload(true)
+        } else {
+          notify('Replication error: ', error.message)
         }
       }
     }
@@ -287,7 +302,7 @@ export const ProjectList = () => {
     */
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reAuthenticate, setOffline])
+  }, [reload, setOffline])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
