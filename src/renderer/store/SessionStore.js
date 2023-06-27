@@ -19,9 +19,9 @@ SessionStore.prototype.DEFAULT_VIEWPORT = {
   rotation: 0
 }
 
-SessionStore.prototype.put = function (key, value) {
+SessionStore.prototype.put = async function (key, value) {
   this.cache[key] = value
-  this.db.put(key, value)
+  return this.db.put(key, value)
 }
 
 SessionStore.prototype.get = async function (key, defaultValue) {

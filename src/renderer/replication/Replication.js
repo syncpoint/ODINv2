@@ -27,6 +27,18 @@ const Replication = () => {
         */
         const credentials = await sessionStore.get(CREDENTIALS, null)
         const replicatedProject = await replicationProvider.project(credentials)
+        /*
+          Unfortunately we have to deal with rate limiting (http error 429) at
+          login. If this is our very first time we try to connect to the project it is very
+          likely that we get a 429 and reAuthenticate is TRUE.
+          If we have no previous credentials we need to persist them before we set reAuthenticate
+          to FALSE and re-run the effect handler.
+        */
+        if (!credentials) {
+          const currentCredentials = replicatedProject.credentials()
+          await sessionStore.put(CREDENTIALS, currentCredentials)
+        }
+
         if (reAuthenticate) {
           console.log('ReAuthentication has been triggererd. ')
           setReAuthenticate(false)
@@ -211,6 +223,9 @@ const Replication = () => {
         setOffline(true)
         if (error.response?.status === 403) {
           await sessionStore.del(CREDENTIALS)
+          setReAuthenticate(true)
+        } else if (error.response?.status === 429) {
+          console.log('(AUTH) RATE LIMITED, retrying ...')
           setReAuthenticate(true)
         }
         console.error(error)

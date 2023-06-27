@@ -266,6 +266,9 @@ export const ProjectList = () => {
         if (error.response?.status === 403) {
           await projectStore.delCredentials('PROJECT-LIST')
           setReAuthenticate(true)
+        } else if (error.response?.status === 429) {
+          console.log('(AUTH) RATE LIMITED, retrying ...')
+          setReAuthenticate(true)
         }
       }
     }
