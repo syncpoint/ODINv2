@@ -7,7 +7,7 @@
 
   display: grid;
   grid-template-columns: auto auto auto;
-  grid-template-rows: repeat(3, 1.5rem);
+  grid-template-rows: repeat(3, 2rem);
   grid-template-areas:
     "A1 B1 C1"
     "A2 B2 C2"
@@ -16,4 +16,16 @@
 
 .osd__cell {
   background: white;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.osd__error {
+  background-color: rgb(211, 47, 47);;
+  color: white;
+  padding: 5px;
+  border: 1px solid red;
+  border-radius: 4px;
+  font-weight: 500;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 5px -1px, rgba(0, 0, 0, 0.14) 0px 6px 10px 0px, rgba(0, 0, 0, 0.12) 0px 1px 18px 0px;
 }
