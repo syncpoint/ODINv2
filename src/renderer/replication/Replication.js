@@ -13,14 +13,14 @@ const Replication = () => {
   const { emitter, preferencesStore, selection, sessionStore, store, replicationProvider } = useServices()
 
   const [notifications] = React.useState(new Set())
-  const [offline, setOffline] = React.useState(true)
   const [reAuthenticate, setReAuthenticate] = React.useState(false)
 
+  const notify = message => emitter.emit('osd', { message, cell: 'B2' })
 
   React.useEffect(() => {
     const initializeReplication = async () => {
       try {
-        console.log('Initializing replication')
+        notify('Initializing replication ...')
         /*
           Replication credentials are (access, refresh) tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
@@ -123,7 +123,7 @@ const Replication = () => {
           streamToken: async (streamToken) => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
-            if (offline) setOffline(false)
+            notify(null)
           },
           invited: async (invitation) => {
             const content = { type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }
@@ -143,11 +143,8 @@ const Replication = () => {
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
-            /* TODO: error handling:
-                #offline
-                #auth_failed
-            */
             console.error(error)
+            notify('Replication error, trying to reestablish connection ...')
           }
         }
 
@@ -156,7 +153,7 @@ const Replication = () => {
         */
         const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, upstreamHandler)
-
+        notify(null)
         /*
           Handle events emitted by the local store.
         */
@@ -220,12 +217,12 @@ const Replication = () => {
 
 
       } catch (error) {
-        setOffline(true)
         if (error.response?.status === 403) {
           await sessionStore.del(CREDENTIALS)
           setReAuthenticate(true)
         } else if (error.response?.status === 429) {
           console.log('(AUTH) RATE LIMITED, retrying ...')
+          notify('Replication was rate-limited, retrying ...')
           setReAuthenticate(true)
         }
         console.error(error)
