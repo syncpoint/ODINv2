@@ -10,7 +10,7 @@ const SEED = 'replication:seed'
 const CREATOR_ID = uuid()
 
 const Replication = () => {
-  const { emitter, preferencesStore, selection, sessionStore, store, replicationProvider } = useServices()
+  const { emitter, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
 
   const [notifications] = React.useState(new Set())
   const [reload, setReload] = React.useState(false)
@@ -124,6 +124,7 @@ const Replication = () => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
             notify(null)
+            signals['replication/operational'](true)
           },
           invited: async (invitation) => {
             const content = { type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }
@@ -149,6 +150,7 @@ const Replication = () => {
             } else {
               notify('Replication error! Reconnecting ...')
             }
+            signals['replication/operational'](false)
           }
         }
 
@@ -158,6 +160,7 @@ const Replication = () => {
         const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, upstreamHandler)
         notify(null)
+        signals['replication/operational'](true)
         /*
           Handle events emitted by the local store.
         */
@@ -234,6 +237,7 @@ const Replication = () => {
           notify('Replication error!', error.message)
         }
         console.dir(error)
+        signals['replication/operational'](false)
       }
     }
 

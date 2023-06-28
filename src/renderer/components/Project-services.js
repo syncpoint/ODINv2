@@ -24,6 +24,7 @@ import { Clipboard } from '../Clipboard'
 import { bindings } from '../bindings'
 import { SpatialIndex } from '../store/SpatialIndex'
 import { MatrixClient } from '@syncpoint/matrix-client-api'
+import Signal from '@syncpoint/signal'
 
 export default async projectUUID => {
   const services = {}
@@ -104,14 +105,14 @@ export default async projectUUID => {
   services.optionStore = optionStore
   services.searchIndex = searchIndex
 
+  services.signals = {}
+
   services.kbarActions = new KBarActions({
     store,
     emitter,
     selection,
     sessionStore
   })
-
-  services.commandRegistry = new CommandRegistry(services)
 
   const schema = new Schema(db, {
     ids: 'KEY-ONLY',
@@ -136,15 +137,21 @@ export default async projectUUID => {
   const isRemoteProject = projectTags.includes('SHARED')
   const credentials = await projectStore.getCredentials('default')
 
-  services.replicationProvider = (isRemoteProject && credentials
-    ? MatrixClient({
+  if (isRemoteProject && credentials) {
+    services.replicationProvider = MatrixClient({
       ...credentials,
       device_id: projectUUID
     })
-    : {
-        disabled: true
-      }
-  )
+
+    services.signals['replication/operational'] = Signal.of(false)
+
+  } else {
+    services.replicationProvider = {
+      disabled: true
+    }
+  }
+
+  services.commandRegistry = new CommandRegistry(services)
 
   return services
 }

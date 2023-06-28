@@ -1,10 +1,13 @@
 import EventEmitter from '../../../shared/emitter'
 import * as ID from '../../ids'
+import Signal from '@syncpoint/signal'
 
 
 const JoinLayer = function (services) {
   this.selection = services.selection
   this.emitter = services.emitter
+  this.operational = services.signals['replication/operational']
+  Signal.link(() => this.emit('changed'), this.operational)
   this.path = 'mdiCloudDownloadOutline'
   this.selection.on('selection', () => this.emit('changed'))
 }
@@ -18,7 +21,8 @@ JoinLayer.prototype.execute = function () {
 }
 
 JoinLayer.prototype.enabled = function () {
-  return this.selected().length > 0
+  return this.operational() &&
+         this.selected().length > 0
 }
 
 JoinLayer.prototype.selected = function () {
@@ -27,8 +31,11 @@ JoinLayer.prototype.selected = function () {
 
 
 const ShareLayer = function (services) {
+  this.replicationProivder = services.replicationProvider
   this.selection = services.selection
   this.emitter = services.emitter
+  this.operational = services.signals['replication/operational']
+  Signal.link(() => this.emit('changed'), this.operational)
   this.path = 'mdiCloudUploadOutline'
   this.selection.on('selection', () => this.emit('changed'))
 }
@@ -41,10 +48,13 @@ ShareLayer.prototype.execute = function () {
 }
 
 ShareLayer.prototype.enabled = function () {
-  return this.selected().length > 0
+  return this.operational() &&
+         this.selected().length > 0
 }
 
 ShareLayer.prototype.selected = function () {
+  const s = this.selection.selected()
+  console.dir(s)
   return this.selection.selected().filter(ID.isLayerId)
 }
 
