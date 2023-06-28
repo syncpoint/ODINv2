@@ -263,7 +263,11 @@ export const ProjectList = () => {
           },
           error: error => {
             console.error(error)
-            notify('Replication error, trying to reestablish connection ...')
+            if (!navigator.onLine) {
+              notify('Looks like we are offline! Reconnecting ...')
+            } else {
+              notify('Replication error! Reconnecting ...')
+            }
           }
         }
         const mostRecentStreamToken = await projectStore.getStreamToken('PROJECT-LIST')
@@ -282,6 +286,8 @@ export const ProjectList = () => {
         } else if (error.response?.status === 429) {
           notify('Replication was rate-limited, retrying ...')
           setReload(true)
+        } else if (!navigator.onLine) {
+          notify('Looks like we are offline! Reconnecting ...')
         } else {
           notify('Replication error: ', error.message)
         }

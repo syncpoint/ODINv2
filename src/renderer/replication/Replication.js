@@ -143,8 +143,12 @@ const Replication = () => {
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
-            console.error(error)
-            notify('Replication error, trying to reestablish connection ...')
+            console.dir(error)
+            if (!navigator.onLine) {
+              notify('Looks like we are offline! Reconnecting ...')
+            } else {
+              notify('Replication error! Reconnecting ...')
+            }
           }
         }
 
@@ -224,10 +228,12 @@ const Replication = () => {
         } else if (error.response?.status === 429) {
           notify('Replication was rate-limited, retrying ...')
           setReload(true)
+        } else if (!navigator.onLine) {
+          notify('Looks like we are offline! Reconnecting ...')
         } else {
-          notify('Replication error: ', error.message)
+          notify('Replication error!', error.message)
         }
-        console.error(error)
+        console.dir(error)
       }
     }
 
