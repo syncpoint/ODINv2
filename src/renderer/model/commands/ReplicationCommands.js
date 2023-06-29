@@ -13,7 +13,6 @@ const JoinLayer = function (services) {
 Object.assign(JoinLayer.prototype, EventEmitter.prototype)
 
 JoinLayer.prototype.execute = function () {
-  // this.store.setDefaultLayer(this.selected()[0])
   const selected = this.selected()
   selected.forEach(invitationId => this.emitter.emit(`replication/join/${invitationId}`))
 }
@@ -26,8 +25,6 @@ JoinLayer.prototype.enabled = function () {
 JoinLayer.prototype.selected = function () {
   return this.selection.selected().filter(ID.isInvitedId)
 }
-
-
 const ShareLayer = function (services) {
   this.replicationProivder = services.replicationProvider
   this.selection = services.selection
@@ -51,11 +48,8 @@ ShareLayer.prototype.enabled = function () {
 }
 
 ShareLayer.prototype.selected = function () {
-  const s = this.selection.selected()
-  console.dir(s)
   return this.selection.selected().filter(ID.isLayerId)
 }
-
 
 export default services => ({
   REPLICATION_LAYER_JOIN: new JoinLayer(services),
