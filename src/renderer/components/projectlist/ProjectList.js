@@ -115,7 +115,7 @@ ButtonBar.propTypes = {
  *
  */
 export const ProjectList = () => {
-  const { emitter, projectStore, ipcRenderer, replicationProvider } = useServices()
+  const { projectStore, ipcRenderer, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
 
@@ -123,9 +123,10 @@ export const ProjectList = () => {
   const [inviteValue, setInviteValue] = React.useState({})
   const [reload, setReload] = React.useState(false)
   const [notifications] = React.useState(new Set())
+  const [offline, setOffline] = React.useState(true)
+  const [message, setMessage] = React.useState(null)
 
-  const notify = message => emitter.emit('osd', { message, cell: 'B2' })
-
+  const notify = message => setMessage(message)
 
   /**
    * Reload projects from store and update entry list
@@ -217,7 +218,7 @@ export const ProjectList = () => {
         */
         if (!credentials) {
           const currentCredentials = replicatedProjectList.credentials()
-          await projectStore.put('PROJECT-LIST', currentCredentials)
+          await projectStore.putCredentials('PROJECT-LIST', currentCredentials)
         }
 
         /*
@@ -238,6 +239,7 @@ export const ProjectList = () => {
           streamToken: streamToken => {
             projectStore.putStreamToken('PROJECT-LIST', streamToken)
             notify(null)
+            if (offline) setOffline(false)
           },
           renamed: (/* project */) => {
             fetch()
@@ -268,6 +270,7 @@ export const ProjectList = () => {
             } else {
               notify('Replication error! Reconnecting ...')
             }
+            setOffline(true)
           }
         }
         const mostRecentStreamToken = await projectStore.getStreamToken('PROJECT-LIST')
@@ -278,7 +281,7 @@ export const ProjectList = () => {
 
       } catch (error) {
         console.error(error)
-        notify()
+        setOffline(true)
         if (error.response?.status === 403) {
           await projectStore.delCredentials('PROJECT-LIST')
           notify('Credentials for replication may be void, reauthenticating ...')
@@ -308,7 +311,7 @@ export const ProjectList = () => {
     */
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reload, setOffline])
+  }, [reload])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
@@ -441,7 +444,7 @@ export const ProjectList = () => {
         height: '100vh'
       }}
     >
-      { (!replicationProvider.disabled && offline) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>Replication is enabled but ODIN is OFFLINE. Trying to reconnect ...</div> }
+      { (message) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>{message}</div> }
       <div
         style={{ display: 'flex', gap: '8px', padding: '8px' }}
       >
