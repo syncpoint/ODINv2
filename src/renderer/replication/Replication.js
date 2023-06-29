@@ -10,6 +10,11 @@ const SEED = 'replication:seed'
 const CREATOR_ID = uuid()
 
 const Replication = () => {
+  /*
+    Using the signal 'replication/operational' is a way to communicate the current state of the replication
+    to other components of the application. I.e. if replication is not operational some buttons in the
+    replication toolbar are disabled.
+  */
   const { emitter, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
 
   const [notifications] = React.useState(new Set())
