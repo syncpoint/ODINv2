@@ -1,13 +1,11 @@
 import EventEmitter from '../../../shared/emitter'
 import * as ID from '../../ids'
-import Signal from '@syncpoint/signal'
-
 
 const JoinLayer = function (services) {
   this.selection = services.selection
   this.emitter = services.emitter
   this.operational = services.signals['replication/operational']
-  Signal.link(() => this.emit('changed'), this.operational)
+  this.operational.on(() => this.emit('changed'))
   this.path = 'mdiCloudDownloadOutline'
   this.selection.on('selection', () => this.emit('changed'))
 }
@@ -35,7 +33,7 @@ const ShareLayer = function (services) {
   this.selection = services.selection
   this.emitter = services.emitter
   this.operational = services.signals['replication/operational']
-  Signal.link(() => this.emit('changed'), this.operational)
+  this.operational.on(() => this.emit('changed'))
   this.path = 'mdiCloudUploadOutline'
   this.selection.on('selection', () => this.emit('changed'))
 }
