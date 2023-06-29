@@ -72,7 +72,7 @@ export const selected = (handleClick = false) => ({
 
     const { segment, index } = pick
     const { feature } = segment
-    feature.coordinates = removeVertex(segment, index)
+    feature.updateCoordinates(removeVertex(segment, index))
     feature.commit()
 
     return [selected(), [
@@ -87,12 +87,11 @@ export const selected = (handleClick = false) => ({
  * Drag vertex state.
  */
 const drag = (feature, update) => ({
-
   pointerdrag: pointer => {
     const [coordinates, coordinate] = update(pointer.coordinate, pointer.condition)
 
     // Side-effect: Update feature coordinates and thus geometry.
-    feature.coordinates = coordinates
+    feature.updateCoordinates(coordinates)
     return [drag(feature, update), Events.coordinate(coordinate)]
   },
 
@@ -119,7 +118,7 @@ const insert = pick => {
         const coordinate = pointer.coordinate
         const feature = segment.feature
         const [coordinates, update] = insertVertex(segment, coordinate)
-        feature.coordinates = coordinates
+        feature.updateCoordinates(coordinates)
         return [drag(feature, update), [Events.coordinate(coordinate)]]
       }
     },
@@ -138,7 +137,7 @@ const remove = pick => {
   return {
     pointerup: () => {
       const feature = segment.feature
-      feature.coordinates = removeVertex(segment, index)
+      feature.updateCoordinates(removeVertex(segment, index))
       feature.commit()
 
       // Remain in REMOVE state and wait for next click event:

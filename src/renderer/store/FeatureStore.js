@@ -3,9 +3,10 @@ import * as R from 'ramda'
 import util from 'util'
 import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
+import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
 import { debounce, batch } from '../../shared/debounce'
-import { geometryType } from '../model/geometry'
+import { geometryType, setCoordinates } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from '../ol/style/rules'
 import crosshair from '../ol/style/crosshair'
@@ -271,6 +272,7 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   R.when(Boolean, set('layerStyle'))(this.styleProps['style+' + layerId])
   R.when(Boolean, set('featureStyle'))(this.styleProps['style+' + featureId])
 
+  feature.internalChange = Signal.of(false)
   feature.setStyle((feature, resolution) => {
     const { geometry: definingGeometry, ...properties } = feature.getProperties()
     state = reduce(state, {
@@ -284,6 +286,19 @@ FeatureStore.prototype.wrapFeature = function (feature) {
     return state.style
   })
 
+  feature.updateCoordinates = coordinates => {
+    feature.internalChange(true)
+    setCoordinates(feature.getGeometry(), coordinates)
+    feature.internalChange(false)
+  }
+
+  feature.commit = () => {
+    // Event must be deferred so that event handler has a chance
+    // to update to a new state (drag -> selected).
+    setTimeout(() => feature.dispatchEvent({ type: 'change', target: feature }))
+  }
+
+  // TODO: move to handlers
   feature.apply = (obj, forceUpdate) => {
     state = reduce(state, obj)
     if (forceUpdate) feature.changed()

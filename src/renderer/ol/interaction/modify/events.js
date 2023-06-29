@@ -120,7 +120,8 @@ export const pointer = (options, rbush, event) => {
   pointer.pick = () => {
     const [segment] = sortedSegments()
     const [coordinate, index] = vertex(segment)
-    return { segment, coordinate, index }
+    // Signal will ignore undefined values: use null coordinates in this case:
+    return { segment, coordinate: coordinate === undefined ? null : coordinate, index }
   }
 
   return pointer
