@@ -137,19 +137,14 @@ export default async projectUUID => {
   const isRemoteProject = projectTags.includes('SHARED')
   const credentials = await projectStore.getCredentials('default')
 
-  if (isRemoteProject && credentials) {
-    services.replicationProvider = MatrixClient({
+  services.replicationProvider = (isRemoteProject && credentials)
+    ? MatrixClient({
       ...credentials,
       device_id: projectUUID
     })
+    : { disabled: true }
 
-    services.signals['replication/operational'] = Signal.of(false)
-
-  } else {
-    services.replicationProvider = {
-      disabled: true
-    }
-  }
+  services.signals['replication/operational'] = Signal.of(false)
 
   services.commandRegistry = new CommandRegistry(services)
 
