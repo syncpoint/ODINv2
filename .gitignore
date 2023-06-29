@@ -6,3 +6,5 @@ binaries/
 coverage/
 dist/
 jsdoc/
+git-archive
+git-mirror

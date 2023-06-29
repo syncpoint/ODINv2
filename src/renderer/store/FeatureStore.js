@@ -256,7 +256,7 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   const type = geometryType(feature.getGeometry())
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
 
-  let state = {
+  feature.renderState = {
     TS,
     ...Math,
     mode: 'default',
@@ -267,7 +267,7 @@ FeatureStore.prototype.wrapFeature = function (feature) {
 
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
-  const set = key => props => (state[key] = props)
+  const set = key => props => (feature.renderState[key] = props)
   R.when(Boolean, set('globalStyle'))(this.styleProps[ID.defaultStyleId])
   R.when(Boolean, set('layerStyle'))(this.styleProps['style+' + layerId])
   R.when(Boolean, set('featureStyle'))(this.styleProps['style+' + featureId])
@@ -275,7 +275,7 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   feature.internalChange = Signal.of(false)
   feature.setStyle((feature, resolution) => {
     const { geometry: definingGeometry, ...properties } = feature.getProperties()
-    state = reduce(state, {
+    feature.renderState = reduce(feature.renderState, {
       definingGeometry,
       properties,
       centerResolution: resolution,
@@ -283,7 +283,7 @@ FeatureStore.prototype.wrapFeature = function (feature) {
       geometryType: type
     })
 
-    return state.style
+    return feature.renderState.style
   })
 
   feature.updateCoordinates = coordinates => {
@@ -298,9 +298,8 @@ FeatureStore.prototype.wrapFeature = function (feature) {
     setTimeout(() => feature.dispatchEvent({ type: 'change', target: feature }))
   }
 
-  // TODO: move to handlers
   feature.apply = (obj, forceUpdate) => {
-    state = reduce(state, obj)
+    feature.renderState = reduce(feature.renderState, obj)
     if (forceUpdate) feature.changed()
   }
 
