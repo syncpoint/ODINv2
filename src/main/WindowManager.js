@@ -160,9 +160,13 @@ WindowManager.prototype.focusWindow = function (handle) {
  *
  * @param {String} handle - window handle
  */
-WindowManager.prototype.closeWindow = function (handle) {
-  const window = this.windowFromHandle(handle)
-  if (window) window.close()
+WindowManager.prototype.closeWindow = async function (handle) {
+  return new Promise(resolve => {
+    const window = this.windowFromHandle(handle)
+    if (!window) return resolve()
+    window.once('closed', () => resolve())
+    window.close()
+  })
 }
 
 WindowManager.prototype.reloadAll = function () {

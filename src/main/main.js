@@ -10,6 +10,7 @@ import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore, PreferencesProvider } from './stores'
 import { ipc } from './ipc'
+import { Collaboration } from './Collaboration'
 import * as dotenv from 'dotenv'
 import SelfUpdate from './SelfUpdate'
 
@@ -47,6 +48,7 @@ const ready = async () => {
   const windowManager = new WindowManager()
   const session = new Session({ sessionStore, projectStore, windowManager })
   const menu = new ApplicationMenu({ sessionStore, projectStore })
+  const collaboration = new Collaboration({ sessionStore, projectStore, windowManager })
   const preferencesProvider = new PreferencesProvider(windowManager, ipcMain)
 
   preferencesProvider.on('preferencesChanged', ({ projectId, preferences }) => {
@@ -61,8 +63,8 @@ const ready = async () => {
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())
-  menu.on('collaboration/enable', () => session.login())
-  menu.on('collaboration/disable', () => session.logout())
+  menu.on('collaboration/enable', () => collaboration.login())
+  menu.on('collaboration/disable', () => collaboration.logout())
 
   windowManager.on('window/closed/:id', ({ id }) => {
     session.windowClosed(id)
@@ -109,6 +111,10 @@ const ready = async () => {
 
   ipcMain.on('CLOSE_WINDOW', (event, handle) => {
     windowManager.closeWindow(handle)
+  })
+
+  ipcMain.handle('PURGE_COLLABORATION_SETTINGS', async () => {
+    return collaboration.purgeSettings()
   })
 
   await session.restore()

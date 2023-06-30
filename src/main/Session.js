@@ -71,26 +71,6 @@ Session.prototype.createProject = async function () {
   }
 }
 
-Session.prototype.login = async function () {
-  const id = 'login'
-  if (this.windowManager.isWindowOpen(id)) {
-    return this.windowManager.focusWindow(id)
-  } else {
-    const window = await this.windowManager.showLogin()
-    window.show()
-  }
-}
-
-Session.prototype.logout = async function () {
-  const id = 'logout'
-  if (this.windowManager.isWindowOpen(id)) {
-    return this.windowManager.focusWindow(id)
-  } else {
-    const window = await this.windowManager.showLogout()
-    window.show()
-  }
-}
-
 Session.prototype.windowClosed = async function (id) {
 
   // Leave seesion/open projects untouched when quitting.

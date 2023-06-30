@@ -1,18 +1,13 @@
 import React from 'react'
 import { ipcRenderer } from 'electron'
-import { useServices } from '../hooks'
 import './collaboration.css'
 
 export const Logout = () => {
-  const { projectStore } = useServices()
 
   const handleLogout = async () => {
     console.log('logging out')
-    await projectStore.delCredentials('default')
-    const projects = await projectStore.getProjects()
-    await Promise.all(projects.map(project => projectStore.removeTag(project.id, 'SHARED')))
 
-    ipcRenderer.postMessage('RELOAD_ALL_WINDOWS')
+    await ipcRenderer.invoke('PURGE_COLLABORATION_SETTINGS')
     ipcRenderer.postMessage('CLOSE_WINDOW', 'logout')
   }
 
