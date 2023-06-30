@@ -32,6 +32,24 @@ export const writeGeometryObject = geometry => format.writeGeometryObject(geomet
 export const writeFeatureCollection = features => format.writeFeaturesObject(features)
 export const writeFeatureObject = feature => format.writeFeatureObject(feature)
 
+/**
+ * FIXME: redundant code
+ */
+const isGeometry = value => {
+  if (!value) return false
+  else if (typeof value !== 'object') return false
+  else {
+    if (!value.type) return false
+    else if (!value.coordinates && !value.geometries) return false
+    return true
+  }
+}
+
+const isPutOp = ({ type }) => type === 'put'
+const isDeleteOp = ({ type }) => type === 'del'
+const isDefaultStyle = ({ key }) => key === ID.defaultStyleId
+const isLayerStyle = ({ key }) => ID.isLayerStyleId(key)
+const isFeatureLike = ({ key }) => ID.isFeatureId(key) || ID.isMarkerId(key) || ID.isMeasureId(key)
 
 /**
  *
@@ -40,7 +58,7 @@ export function FeatureStore (store, selection) {
   this.store = store
   this.selection = selection
   this.features = {}
-  this.styleProps = {}
+  this.styles = {} // default/layer styles
 
   // TODO: rather debounce in sources?
   const debouncedHandler = batch(debounce(32), this.batch.bind(this))
@@ -63,159 +81,82 @@ export function FeatureStore (store, selection) {
 
 util.inherits(FeatureStore, Emitter)
 
-
 /**
  *
  */
 FeatureStore.prototype.bootstrap = async function () {
-  // On startup: load all features:
-  //
-  this.styleProps = Object.fromEntries(await this.store.tuples('style+'))
-  await this.loadFeatures(ID.FEATURE_SCOPE)
-  await this.loadFeatures(ID.MARKER_SCOPE)
-  await this.loadFeatures(ID.MEASURE_SCOPE)
+  this.batch([
+    ...await this.store.tuples('style+'),
+    ...await this.store.tuples(ID.FEATURE_SCOPE),
+    ...await this.store.tuples(ID.MARKER_SCOPE),
+    ...await this.store.tuples(ID.MEASURE_SCOPE)
+  ].map(([key, value]) => ({ type: 'put', key, value })))
 }
-
-/**
- *
- */
-FeatureStore.prototype.loadFeatures = async function (scope) {
-  const tuples = await this.store.tuples(scope)
-  const geoJSON = tuples.map(([id, feature]) => ({ id, ...feature }))
-  const isValid = feature => feature?.type === 'Feature' && feature.geometry
-  const [valid, invalid] = R.partition(isValid, geoJSON)
-  if (invalid.length) console.warn('invalid features', invalid)
-  this.addFeatures(readFeatures({ type: 'FeatureCollection', features: valid }))
-}
-
 
 /**
  *
  */
 FeatureStore.prototype.batch = function (operations) {
-  const features = Object.values(this.features)
-  const apply = obj => feature => feature.apply(obj, true)
+  const existsFeature = ({ key }) => this.features[key]
 
-  operations
-    .filter(({ key }) => key === ID.defaultStyleId)
-    .forEach(({ value }) => features.forEach(apply({ globalStyle: value })))
-
-  operations
-    .filter(({ key }) => ID.isFeatureStyleId(key))
-    .forEach(({ key, value }) => apply({ featureStyle: value })(this.features[ID.featureId(key)]))
-
-  // Apply new/updated layer styles:
-  //
-  operations
-    .filter(({ type }) => type === 'put')
-    .filter(({ key }) => ID.isLayerStyleId(key))
-    .forEach(({ key, value }) => {
-      this.styleProps[key] = value
-      const layerId = ID.layerId(key)
-      Object
-        .keys(this.features)
-        .filter(key => ID.layerId(key) === layerId)
-        .forEach(key => apply({ layerStyle: value })(this.features[key]))
-    })
-
-  // Remove deleted layer styles:
-  //
-  operations
-    .filter(({ type }) => type === 'del')
-    .filter(({ key }) => ID.isLayerStyleId(key))
-    .forEach(({ key }) => {
-      delete this.styleProps[key]
-      const layerId = ID.layerId(key)
-      Object
-        .keys(this.features)
-        .filter(key => ID.layerId(key) === layerId)
-        .forEach(key => apply({ layerStyle: {} })(this.features[key]))
-    })
-
-  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
-  const candidates = operations.filter(({ key }) => isCandidateId(key))
-  const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
-  const [updates, additions] = R.partition(({ key }) => this.features[key], other)
-  this.handleRemovals(removals)
-  this.handleAdditions(additions)
-  this.handleUpdates(updates)
-}
-
-
-/**
- *
- */
-FeatureStore.prototype.handleAdditions = function (additions) {
-  if (additions.length === 0) return
-  const isValid = feature => feature?.type === 'Feature' && feature.geometry
-  const features = additions
-    .filter(({ value }) => isValid(value))
-    .map(({ key, value }) => readFeature({ id: key, ...value }))
-
-  this.addFeatures(features)
-}
-
-
-/**
- *
- */
-FeatureStore.prototype.handleRemovals = function (removals) {
-  if (removals.length === 0) return
-  const features = removals.map(({ key }) => this.features[key])
-  removals.forEach(({ key }) => delete this.features[key])
-  this.emit('removefeatures', ({ features }))
-}
-
-
-/**
- * FIXME: redundant code
- */
-const isGeometry = value => {
-  if (!value) return false
-  else if (typeof value !== 'object') return false
-  else {
-    if (!value.type) return false
-    else if (!value.coordinates && !value.geometries) return false
-    return true
+  const applyGlobalStyle = features => ({ value }) => {
+    this.styles[ID.defaultStyleId] = value
+    Object.values(features)
+      .forEach(feature => feature.apply({ globalStyle: value }, true))
   }
-}
 
+  const applyLayerStyle = features => ({ key, value }) => {
+    this.styles[key] = value
+    const layerId = ID.layerId(key)
+    Object
+      .keys(features)
+      .filter(key => ID.layerId(key) === layerId)
+      .forEach(key => features[key].apply({ layerStyle: value }, true))
+  }
 
-/**
- *
- */
-FeatureStore.prototype.handleUpdates = function (updates) {
-
-  // We don't want null geometry overwrite existing one
-  // in case only feature properties were updated (JSON).
-  //
   const trim = properties => {
     const { geometry, ...rest } = properties
-    return geometry
-      ? properties
-      : rest
+    return geometry ? properties : rest
   }
 
-  updates.forEach(({ key, value }) => {
+  const updateFeature = features => ({ key, value }) => {
+    // We don't want null geometry overwrite existing one
+    // in case only feature properties were updated (JSON).
+    //
     const properties = isGeometry(value)
       ? { geometry: readGeometry(value) }
       : trim(readFeature(value).getProperties())
 
     // FIXME: properties with null value won't override initial properties.
-    const feature = this.features[key]
+    const feature = features[key]
     feature.setProperties({ ...feature.getProperties(), ...properties })
-  })
-}
+  }
 
-/**
- *
- */
-FeatureStore.prototype.addFeatures = function (features) {
-  const wrap = this.wrap.bind(this)
-  features.map(wrap).forEach(feature => (this.features[feature.getId()] = feature))
-  this.emit('addfeatures', ({ features }))
-}
+  const isValid = feature => feature?.type === 'Feature' && feature.geometry
 
+  const addFeature = features => ({ key, value }) => {
+    if (!isValid(value)) return
+    features[key] = this.wrap(readFeature({ id: key, ...value }))
+    this.emit('addfeatures', ({ features: [features[key]] }))
+  }
+
+  const removeFeature = features => ({ key }) => {
+    const feature = features[key]
+    delete features[key]
+    this.emit('removefeatures', ({ features: [feature] }))
+  }
+
+  const handler = R.cond([
+    [R.allPass([isFeatureLike, isPutOp, existsFeature]), updateFeature(this.features)],
+    [R.allPass([isFeatureLike, isPutOp]), addFeature(this.features)],
+    [R.allPass([isFeatureLike, isDeleteOp]), removeFeature(this.features)],
+    [isDefaultStyle, applyGlobalStyle(this.features)],
+    [R.allPass([isLayerStyle, isPutOp]), applyLayerStyle(this.features)],
+    [R.T, () => {}]
+  ])
+
+  operations.forEach(operation => handler(operation))
+}
 
 /**
  *
@@ -228,14 +169,12 @@ FeatureStore.prototype.center = async function (key) {
   return Extent.getCenter(extent)
 }
 
-
 /**
  *
  */
 FeatureStore.prototype.feature = function (key) {
   return this.features[key]
 }
-
 
 /**
  *
@@ -248,7 +187,6 @@ FeatureStore.prototype.wrap = function (feature) {
   else return feature
 }
 
-
 /**
  *
  */
@@ -256,21 +194,18 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   const type = geometryType(feature.getGeometry())
   if (!rules[type]) console.warn('[style] unsupported geometry', type)
 
+  const layerId = ID.layerId(feature.getId())
+  const layerStyleId = ID.styleId(layerId)
+
   feature.renderState = {
     TS,
     ...Math,
     mode: 'default',
     rules: rules[type] || [],
-    layerStyle: {},
-    featureStyle: {}
+    globalStyle: this.styles[ID.defaultStyleId] || {},
+    layerStyle: this.styles[layerStyleId] || {},
+    featureStyle: {} // unused
   }
-
-  const featureId = feature.getId()
-  const layerId = ID.layerId(featureId)
-  const set = key => props => (feature.renderState[key] = props)
-  R.when(Boolean, set('globalStyle'))(this.styleProps[ID.defaultStyleId])
-  R.when(Boolean, set('layerStyle'))(this.styleProps['style+' + layerId])
-  R.when(Boolean, set('featureStyle'))(this.styleProps['style+' + featureId])
 
   feature.internalChange = Signal.of(false)
   feature.setStyle((feature, resolution) => {
@@ -306,7 +241,6 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   return feature
 }
 
-
 /**
  *
  */
@@ -323,7 +257,6 @@ FeatureStore.prototype.wrapMarker = function (feature) {
 
   return feature
 }
-
 
 /**
  *
