@@ -238,6 +238,9 @@ FeatureStore.prototype.wrapFeature = function (feature) {
     if (forceUpdate) feature.changed()
   }
 
+  // Also wrap clones:
+  const clone = feature.clone
+  feature.clone = () => this.wrapFeature(clone.call(feature))
   return feature
 }
 
