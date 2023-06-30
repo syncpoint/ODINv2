@@ -66,6 +66,7 @@ export const Login = () => {
       await HttpAPI.loginWithPassword(credentials)
       await projectStore.putCredentials('default', credentials)
       ipcRenderer.postMessage('RELOAD_ALL_WINDOWS')
+      ipcRenderer.postMessage('REFRESH_MENU')
       ipcRenderer.postMessage('CLOSE_WINDOW', 'login')
 
     } catch (error) {

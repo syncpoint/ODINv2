@@ -8,6 +8,7 @@ export const Logout = () => {
     console.log('logging out')
 
     await ipcRenderer.invoke('PURGE_COLLABORATION_SETTINGS')
+    ipcRenderer.postMessage('REFRESH_MENU')
     ipcRenderer.postMessage('CLOSE_WINDOW', 'logout')
   }
 

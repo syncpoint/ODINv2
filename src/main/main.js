@@ -113,6 +113,8 @@ const ready = async () => {
     windowManager.closeWindow(handle)
   })
 
+  ipcMain.on('REFRESH_MENU', () => menu.show())
+
   ipcMain.handle('PURGE_COLLABORATION_SETTINGS', async () => {
     return collaboration.purgeSettings()
   })
