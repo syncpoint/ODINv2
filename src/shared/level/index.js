@@ -214,7 +214,7 @@ export const mput = (db, ...args) => {
  * mdel :: levelup -> [k] -> unit
  */
 export const mdel = async (db, arg) => {
-  if (Array.isArray(arg)) db.batch(arg.map(key => delOp(key)))
+  if (Array.isArray(arg)) return db.batch(arg.map(key => delOp(key)))
   else return mdel(db, await readKeys(db, prefix(arg)))
 }
 
