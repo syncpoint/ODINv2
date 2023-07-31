@@ -16,22 +16,6 @@ CreateLayer.prototype.execute = async function () {
   this.selection.focus(key)
 }
 
-
-const CreateInvitedLayer = function (services) {
-  this.selection = services.selection
-  this.store = services.store
-  this.label = 'FAKE invited layer'
-}
-
-CreateInvitedLayer.prototype.execute = async function () {
-  const key = ID.invitationId()
-  const name = `INVITED Layer - ${militaryFormat.now()}`
-  await this.store.insert([[key, { name }]])
-  this.selection.focus(key)
-  console.log(`Created new FAKE invitation ${key}`)
-}
-
-
 /**
  *
  */
@@ -99,7 +83,6 @@ CreateBookmark.prototype.execute = async function () {
  */
 export default services => ({
   LAYER_CREATE: new CreateLayer(services),
-  INVITED_LAYER_CREATE: new CreateInvitedLayer(services),
   TILE_SERVICE_CREATE: new CreateTileService(services),
   MARKER_CREATE: new CreateMarker(services),
   BOOKMARK_CREATE: new CreateBookmark(services)
