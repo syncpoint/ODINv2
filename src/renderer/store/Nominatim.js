@@ -53,6 +53,7 @@ const Strategy = {
  */
 export default function Nominatim (store) {
   this.strategy = Strategy.sticky(store)
+  this.url = process.env.NOMINATIM_URL || 'https://nominatim.openstreetmap.org/search'
 }
 
 Nominatim.prototype.sync = async function (query) {
@@ -92,7 +93,7 @@ Nominatim.prototype.sync = async function (query) {
 
 Nominatim.prototype.request = function (query) {
   const options = {
-    formal: 'json',
+    format: 'json',
     dedupe: 1,
     polygon_geojson: 1,
     limit: 20
@@ -115,11 +116,10 @@ Nominatim.prototype.request = function (query) {
       }
     })
 
-    const params = Object.entries(options)
-      .reduce((acc, [key, value]) => acc.concat([`${key}=${value}`]), ['format=json'])
-      .join('&')
+    const params = new URLSearchParams(options)
+    params.append('q', query)
 
-    const url = `https://nominatim.openstreetmap.org/search/${query}?${params}`
+    const url = `${this.url}?${params}`
     const async = true
     xhr.open('GET', url, async)
     xhr.setRequestHeader('Accept-Language', 'de')
