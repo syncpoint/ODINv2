@@ -43,7 +43,7 @@ Collaboration.prototype.purgeSettings = async function () {
 
 
   const projects = await this.projectStore.getProjects()
-  const sharedProjects = projects.filter(project => project.tags.includes('SHARED'))
+  const sharedProjects = projects.filter(project => project.tags?.includes('SHARED'))
 
   const removeSharedLayers = () => sharedProjects.map(async (project) => {
     try {
@@ -53,8 +53,10 @@ Collaboration.prototype.purgeSettings = async function () {
 
       const jsonDB = L.jsonDB(db)
       const sharedLayers = await L.keys(jsonDB, 'shared+')
-      await L.mdel(jsonDB, sharedLayers)
-      console.log('Removed shared layers')
+      if (sharedLayers) {
+        await L.mdel(jsonDB, sharedLayers)
+        console.log('Removed shared layers')
+      }
       const session = L.sessionDB(db)
 
       await L.mdel(session, ['replication:seed', 'replication:credentials', 'replication:streamToken'])
