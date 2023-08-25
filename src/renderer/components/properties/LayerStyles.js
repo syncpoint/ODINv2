@@ -72,7 +72,8 @@ const LayerStyles = props => {
   const setOutlineColor = color => update({
     ...value,
     'line-halo-color': color,
-    'line-halo-width': color ? 1 : 0
+    // 'line-halo-width': color ? 1 : 0
+    'line-halo-width': color ? lineHaloWidth || 1 : 0
   })
 
   const setLineHaloWidth = ({ target }) => update({
