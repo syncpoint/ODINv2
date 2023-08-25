@@ -6,7 +6,7 @@ const upgrade = async jsonDB => {
   const textColor = 'black'
   const textHaloColor = 'white'
   const textHaloWidth = 3
-  
+
   await jsonDB.put(ID.defaultStyleId, {
     'color-scheme': 'medium',
     'line-width': 2,
