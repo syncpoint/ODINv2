@@ -174,7 +174,7 @@ const LayerStyles = props => {
         </Range>
 
         <Checkbox
-          label='Bold font weigth'
+          label='Bold font weight'
           checked={textFontWeight !== ''}
           onChange={setTextFontWeight}
         />
