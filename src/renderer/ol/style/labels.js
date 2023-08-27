@@ -96,8 +96,6 @@ const jexl = new Jexl()
  *
  */
 export const evalSync = context => {
-  // const context = { modifiers, echelon: ' ⏺⏺⏺ ' }
-  console.dir(context)
 
   const evalSync = textField => Array.isArray(textField)
     ? textField.map(evalSync).filter(Boolean).join('\n')
