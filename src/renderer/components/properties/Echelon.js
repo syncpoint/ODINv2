@@ -35,6 +35,8 @@ export default props => {
     const { value } = event.target
     setState(value)
     store.update(props.features, set(value))
+    console.log(`updating with value ${value}`)
+    console.dir(props.features, { depth: 5 })
   }
 
   return (
@@ -50,8 +52,8 @@ export default props => {
         <option value='C'>Section - ⏺⏺</option>
         <option value='D'>Platoon - ⏺⏺⏺</option>
         <option value='E'>Company - ❙</option>
-        <option value='F'>Battalion - ❙❙</option>
-        <option value='G'>Regiment/Group - ❙❙❙</option>
+        <option value='F'>Battalion - ❙ ❙</option>
+        <option value='G'>Regiment/Group - ❙ ❙ ❙</option>
         <option value='H'>Brigade - X</option>
         <option value='I'>Division - XX</option>
         <option value='J'>Corps - XXX</option>
