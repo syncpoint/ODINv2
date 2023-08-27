@@ -28,9 +28,8 @@ export const evalSync = [next => {
   const { modifiers, sidc } = next
   const sizeCode = echelonCode(sidc)
   const echelonText = (sizeCode === '*' || sizeCode === '-') ? '' : echelons[sizeCode]?.text
-
   return { evalSync: Labels.evalSync({ modifiers, echelon: echelonText }) }
-}, ['modifiers']]
+}, ['modifiers', 'sidc']]
 
 
 /**
