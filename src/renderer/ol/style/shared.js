@@ -1,9 +1,9 @@
 import * as Colors from './color-schemes'
-import { identityCode, statusCode, parameterized } from '../../symbology/2525c'
+import { echelonCode, identityCode, statusCode, parameterized } from '../../symbology/2525c'
 import { smooth } from './chaikin'
 import { transform } from '../../model/geometry'
 import { styleFactory } from './styleFactory'
-import echelon from './echelon'
+import echelon, { echelons } from './echelon'
 import * as Labels from './labels'
 import styleRegistry from './styleRegistry'
 
@@ -25,8 +25,11 @@ export const sidc = [next => {
 
 
 export const evalSync = [next => {
-  const { modifiers } = next
-  return { evalSync: Labels.evalSync(modifiers) }
+  const { modifiers, sidc } = next
+  const sizeCode = echelonCode(sidc)
+  const echelonText = (sizeCode === '*' || sizeCode === '-') ? '' : echelons[sizeCode]?.text
+
+  return { evalSync: Labels.evalSync({ modifiers, echelon: echelonText }) }
 }, ['modifiers']]
 
 

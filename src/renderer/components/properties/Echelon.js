@@ -46,19 +46,19 @@ export default props => {
       >
         <option value='-'>N/A</option>
         <option value='A'>Team/Crew - ∅</option>
-        <option value='B'>Squad - ⦁</option>
-        <option value='C'>Section - ⦁⦁</option>
-        <option value='D'>Platoon - ⦁⦁⦁</option>
-        <option value='E'>Company - |</option>
-        <option value='F'>Battalion - ||</option>
-        <option value='G'>Regiment/Group - |||</option>
+        <option value='B'>Squad - ⏺</option>
+        <option value='C'>Section - ⏺⏺</option>
+        <option value='D'>Platoon - ⏺⏺⏺</option>
+        <option value='E'>Company - ❙</option>
+        <option value='F'>Battalion - ❙❙</option>
+        <option value='G'>Regiment/Group - ❙❙❙</option>
         <option value='H'>Brigade - X</option>
         <option value='I'>Division - XX</option>
         <option value='J'>Corps - XXX</option>
         <option value='K'>Army - XXXX</option>
         <option value='L'>Front - XXXXX</option>
         <option value='M'>Region - XXXXXX</option>
-        <option value='N'>Command - ++</option>
+        <option value='N'>Command - ＋＋</option>
       </Select>
     </Section>
   )
