@@ -17,9 +17,9 @@ import N from './resources/N.png'
 
 export const echelons = {
   A: { width: 24, height: 25, url: A, text: '∅' },
-  B: { width: 12, height: 12, url: B, text: '⏺' },
-  C: { width: 26, height: 12, url: C, text: '⏺ ⏺' },
-  D: { width: 40, height: 12, url: D, text: '⏺ ⏺ ⏺' },
+  B: { width: 12, height: 12, url: B, text: '●' },
+  C: { width: 26, height: 12, url: C, text: '●●' },
+  D: { width: 40, height: 12, url: D, text: '●●●' },
   E: { width: 6, height: 29, url: E, text: '❙' },
   F: { width: 28, height: 29, url: F, text: ' ❙ ❙ ' },
   G: { width: 50, height: 29, url: G, text: ' ❙ ❙ ❙ ' },

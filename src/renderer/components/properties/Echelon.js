@@ -48,9 +48,9 @@ export default props => {
       >
         <option value='-'>N/A</option>
         <option value='A'>Team/Crew - ∅</option>
-        <option value='B'>Squad - ⏺</option>
-        <option value='C'>Section - ⏺⏺</option>
-        <option value='D'>Platoon - ⏺⏺⏺</option>
+        <option value='B'>Squad - ●</option>
+        <option value='C'>Section - ●●</option>
+        <option value='D'>Platoon - ●●●</option>
         <option value='E'>Company - ❙</option>
         <option value='F'>Battalion - ❙ ❙</option>
         <option value='G'>Regiment/Group - ❙ ❙ ❙</option>
