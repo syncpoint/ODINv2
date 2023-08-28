@@ -16,12 +16,6 @@ SelfUpdate.prototype.checkForUpdates = function () {
 
     const releaseName = updateInfo.releaseName ? `Release name: ${updateInfo.releaseName}` : ''
 
-    const releaseNotes = updateInfo.releaseNotes
-      ? Array.isArray(updateInfo.releaseNotes)
-        ? updateInfo.releaseNotes.join('\n')
-        : updateInfo.releaseNotes
-      : ''
-
     dialog.showMessageBox({
       title: 'Update available',
       type: 'info',
@@ -29,10 +23,7 @@ SelfUpdate.prototype.checkForUpdates = function () {
         A new version of ODINv2 is available!
 
         Do you want to download version ${updateInfo.version}?`,
-      detail: `
-        ${releaseName}
-
-        ${releaseNotes}`,
+      detail: releaseName,
       buttons: ['Download now!', 'Remind me next time please!'],
       cancelId: 1
     })
