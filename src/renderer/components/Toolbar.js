@@ -28,6 +28,7 @@ export const Toolbar = () => {
     commandRegistry.separator(),
     commandRegistry.command('LAYER_SET_DEFAULT'),
     commandRegistry.command('PIN'),
+    commandRegistry.command('LAYER_EXPORT'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
     commandRegistry.separator(),
     commandRegistry.command('PRINT_SWITCH_SCOPE')

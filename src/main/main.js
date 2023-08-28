@@ -9,6 +9,7 @@ import { Session } from './Session'
 import { ApplicationMenu } from './menu'
 import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore, PreferencesProvider } from './stores'
+import { exportLayer } from './export.js'
 import { ipc } from './ipc'
 import * as dotenv from 'dotenv'
 import SelfUpdate from './SelfUpdate'
@@ -100,6 +101,8 @@ const ready = async () => {
 
     open(link.url)
   })
+
+  ipcMain.on('EXPORT_LAYER', exportLayer)
 
   await session.restore()
   await menu.show()

@@ -89,6 +89,7 @@
     "react-easy-sort": "^1.5.1",
     "react-fast-compare": "^3.2.0",
     "reproject": "^1.2.7",
+    "sanitize-filename": "^1.6.3",
     "subleveldown": "^6.0.1",
     "throttle-debounce": "^5.0.0",
     "typeface-roboto": "^1.1.13",
