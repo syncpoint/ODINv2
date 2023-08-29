@@ -9,7 +9,7 @@ export default ({ TS, geometry }) => {
     {
       id: 'style:default-text',
       geometry: anchor,
-      'text-field': ['am ? "RANGE " + am : ""', 'x ? "ALTITUDE " + x : ""'],
+      'text-field': ['modifiers.am ? "RANGE " + modifiers.am : ""', 'modifiers.x ? "ALTITUDE " + modifiers.x : ""'],
       'text-padding': 10,
       'text-clipping': 'line'
     }

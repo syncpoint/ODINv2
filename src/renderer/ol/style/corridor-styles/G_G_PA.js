@@ -32,7 +32,7 @@ export default ({ TS, geometry, resolution }) => {
     {
       id: 'style:default-text',
       geometry: TS.point(aps[3]),
-      'text-field': 't',
+      'text-field': 'modifiers.t',
       'text-font': font,
       'text-anchor': 'center',
       'text-justify': 'end',
