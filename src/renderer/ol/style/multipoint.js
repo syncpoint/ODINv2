@@ -72,11 +72,11 @@ export default [
 const HALO = { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }
 const C = (text, options) => [{ id: 'style:default-text', 'text-field': text, 'text-clipping': 'none', ...options }]
 const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-padding': 5, 'text-clipping': 'line' }]
-const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
-const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
+const DTG_LINE = '(modifiers.w || modifiers.w1) ? (modifiers.w ? modifiers.w : "") + "—" + (modifiers.w1 ? modifiers.w1 : "") : null'
+const ALT_LINE = '(modifiers.x || modifiers.x1) ? (modifiers.x ? modifiers.x : "") + "—" + (modifiers.x1 ? modifiers.x1 : "") : null'
 const ALL_LINES = title => title
-  ? [`"${title}"`, 't', 'h', ALT_LINE, DTG_LINE]
-  : ['t', 'h', ALT_LINE, DTG_LINE]
+  ? [`"${title}"`, 'modifiers.t', 'modifiers.h', ALT_LINE, DTG_LINE]
+  : ['modifiers.t', 'modifiers.h', ALT_LINE, DTG_LINE]
 
 const labels = {
   'G*F*ATC---': C(ALL_LINES()),                // CIRCULAR TARGET

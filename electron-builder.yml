@@ -5,8 +5,6 @@ appId: io.syncpoint.odin.v2
 productName: "ODINv2"
 copyright: ${author} https://syncpoint.io
 
-afterSign: 'scripts/notarize.js'
-
 win:
   target:
     - target: nsis
@@ -31,4 +29,4 @@ publish:
   - provider: github
     releaseType: release
   
-electronVersion: 24.1.3
+electronVersion: 26.1.0

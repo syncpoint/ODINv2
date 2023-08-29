@@ -9,7 +9,7 @@ export default ({ TS, geometry }) => {
     {
       id: 'style:default-text',
       geometry: anchor,
-      'text-field': 't',
+      'text-field': 'modifiers.t',
       'text-padding': 10,
       'text-clipping': 'line'
     }

@@ -111,11 +111,11 @@ const B = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor'
 const F = text => [{ id: 'style:default-text', 'text-field': text, 'text-anchor': 'bottom', 'text-offset': [0, 20] }]
 const LR = text => ['left', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
 const TLBR = text => ['top', 'left', 'bottom', 'right'].map(anchor => ({ id: 'style:default-text', 'text-field': text, 'text-anchor': anchor, 'text-padding': 5, 'text-clipping': 'line' }))
-const DTG_LINE = '(w || w1) ? (w ? w : "") + "—" + (w1 ? w1 : "") : null'
-const ALT_LINE = '(x || x1) ? (x ? x : "") + "—" + (x1 ? x1 : "") : null'
+const DTG_LINE = '(modifiers.w || modifiers.w1) ? (modifiers.w ? modifiers.w : "") + "—" + (modifiers.w1 ? modifiers.w1 : "") : null'
+const ALT_LINE = '(modifiers.x || modifiers.x1) ? (modifiers.x ? modifiers.x : "") + "—" + (modifiers.x1 ? modifiers.x1 : "") : null'
 const ALL_LINES = title => title
-  ? [`"${title}"`, 't', 'h', ALT_LINE, DTG_LINE]
-  : ['t', 'h', ALT_LINE, DTG_LINE]
+  ? [`"${title}"`, 'modifiers.t', 'modifiers.h', ALT_LINE, DTG_LINE]
+  : ['modifiers.t', 'modifiers.h', ALT_LINE, DTG_LINE]
 
 const G_G_PM = [
   ...TLBR('"M"'),
@@ -145,14 +145,14 @@ labels['G*G*PM----'] = G_G_PM // DECOY MINED AREA
 labels['G*G*PY----'] = G_G_PM // DECOY MINED AREA, FENCED
 // TODO: G*G*PC---- : DUMMY MINEFIELD (DYNAMIC)
 labels['G*G*DAB---'] = C(ALL_LINES()) // BATTLE POSITION
-labels['G*G*DABP--'] = C('t ? "(P) " + t : (P)') // BATTLE POSITION / PREPARED BUT NOT OCCUPIED
+labels['G*G*DABP--'] = C('modifiers.t ? "(P) " + modifiers.t : (P)') // BATTLE POSITION / PREPARED BUT NOT OCCUPIED
 labels['G*G*DAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA (DEFENSE)
 labels['G*G*OAA---'] = C(ALL_LINES('ASLT\nPSN')) // ASSAULT POSITION
 labels['G*G*OAK---'] = C(ALL_LINES('ATK')) // ATTACK POSITION
 labels['G*G*OAO---'] = C(ALL_LINES('OBJ')) // OBJECTIVE (OFFENSE)
 labels['G*G*OAP---'] = [] // PENETRATION BOX
 labels['G*G*SAO---'] = C(ALL_LINES('AO')) // AREA OF OPERATIONS (AO)
-labels['G*G*SAA---'] = F(['"AIRHEAD LINE"', 't ? "(PL " + t + ")" : null']) // AIRHEAD
+labels['G*G*SAA---'] = F(['"AIRHEAD LINE"', 'modifiers.t ? "(PL " + modifiers.t + ")" : null']) // AIRHEAD
 labels['G*G*SAE---'] = C(ALL_LINES()) // ENCIRCLEMENT
 labels['G*G*SAN---'] = C(ALL_LINES('NAI')) // NAMED AREA OF INTEREST (NAI)
 labels['G*G*SAT---'] = C(ALL_LINES('TAI')) // TARGETED AREA OF INTEREST (TAI)
