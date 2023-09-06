@@ -1,12 +1,13 @@
 import { dialog, Notification } from 'electron'
 import sanitizeFilename from 'sanitize-filename'
 import fs from 'fs'
+import { militaryFormat } from '../shared/datetime'
 
 export const exportLayer = async (event, layerName, content) => {
 
   const dialogOptions = {
     title: 'Export layer',
-    defaultPath: sanitizeFilename(`${layerName}.json`),
+    defaultPath: sanitizeFilename(`${layerName}-${militaryFormat.now()}.json`),
     filters: [{ name: 'Layer', extensions: ['json'] }]
   }
 
