@@ -14,7 +14,7 @@ export default title => ({ TS, geometry, resolution }) => {
 
   const label = ([point, rotation]) => ({
     id: 'style:default-text',
-    'text-field': `t ? "${title} " + t : "${title}"`,
+    'text-field': `modifiers.t ? "${title} " + modifiers.t : "${title}"`,
     'text-justify': 'center',
     'text-rotate': rotation,
     'text-clipping': 'none',

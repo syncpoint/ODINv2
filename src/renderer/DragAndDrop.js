@@ -5,6 +5,8 @@ import path from 'path'
 import { reproject } from 'reproject'
 import Emitter from '../shared/emitter'
 import * as ID from './ids'
+import { CONTENT_TYPE } from './Clipboard'
+import { clone } from './model/Import'
 
 const readJSON = async path => {
   const content = await fs.readFile(path, 'utf8')
@@ -43,9 +45,18 @@ DragAndDrop.prototype.drop = async function (event) {
 }
 
 DragAndDrop.prototype.json = async function (files) {
-  // We expect JSON to be valid GeoJSON (FeatureCollection) only.
 
   const geoJSON = await Promise.all(files.map(file => readJSON(file.path)))
+
+  /*  treat dropped files the same way as if they were copied/pasted */
+  const natives = geoJSON.filter(json => json.contentType === CONTENT_TYPE)
+  if (natives.length > 0) {
+    const defaultLayerId = await this.store.defaultLayerId()
+    const imports = await Promise.all(natives.map(native => clone(defaultLayerId, native.entries)))
+    this.store.insert(imports.flat())
+  }
+
+  /* plain old geoJSON */
   const featureCollections = geoJSON.filter(json => json.type === 'FeatureCollection')
 
   const tuples = featureCollections.flatMap((collection, index) => {

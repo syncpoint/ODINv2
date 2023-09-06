@@ -95,10 +95,11 @@ const jexl = new Jexl()
 /**
  *
  */
-export const evalSync = modifiers => {
+export const evalSync = context => {
+
   const evalSync = textField => Array.isArray(textField)
     ? textField.map(evalSync).filter(Boolean).join('\n')
-    : jexl.evalSync(textField, modifiers)
+    : jexl.evalSync(textField, context)
 
   return props => {
     props = Array.isArray(props) ? props : [props]

@@ -15,7 +15,7 @@ export default ({ TS, geometry }) => {
     {
       id: 'style:default-text',
       geometry: anchor,
-      'text-field': 't',
+      'text-field': 'modifiers.t',
       'text-anchor': 'center',
       'text-padding': 5,
       'text-rotate': TS.rotation(segments[0])

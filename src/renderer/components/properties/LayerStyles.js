@@ -4,6 +4,7 @@ import Color from 'color'
 import { useServices } from '../hooks'
 import { Palette } from '../colors/Palette'
 import Range from './Range'
+import Checkbox from './Checkbox'
 import './Styles.scss'
 
 const lineColors = [undefined, 'white', 'black', 'red', 'brown', 'gold', 'green', 'blue', 'purple']
@@ -21,6 +22,8 @@ const LayerStyles = props => {
   const colorScheme = value['color-scheme'] || 'medium'
   const lineColor = value['line-color']
   const outlineColor = value['line-halo-color']
+  const textFontSize = value['text-font-size'] || '12px'
+  const textFontWeight = value['text-font-weight'] || ''
   const symbolSize = value['symbol-size'] || 60
   const symbolOutlineColor = value['symbol-halo-color']
   const symbolFillOpacity = value['symbol-fill-opacity'] !== undefined ? value['symbol-fill-opacity'] : 1
@@ -29,6 +32,26 @@ const LayerStyles = props => {
   const lineHaloWidth = value['line-halo-width'] || 1
 
   const update = newValue => store.update([key], [newValue], [value])
+
+  const setTextFontSize = ({ target }) => update({
+    ...value,
+    ...{
+      'text-font-size': `${target.value}px`,
+      'text-font-familiy': 'sans-serif',
+      'text-font-weight': textFontWeight,
+      'text-font': null
+    }
+  })
+
+  const setTextFontWeight = ({ target }) => update({
+    ...value,
+    ...{
+      'text-font-size': textFontSize,
+      'text-font-familiy': 'sans-serif',
+      'text-font-weight': `${target.checked ? 'bold' : ''}`,
+      'text-font': null
+    }
+  })
 
   const setColorScheme = ({ target }) => update({
     ...value,
@@ -49,7 +72,8 @@ const LayerStyles = props => {
   const setOutlineColor = color => update({
     ...value,
     'line-halo-color': color,
-    'line-halo-width': color ? 1 : 0
+    // 'line-halo-width': color ? 1 : 0
+    'line-halo-width': color ? lineHaloWidth || 1 : 0
   })
 
   const setLineHaloWidth = ({ target }) => update({
@@ -133,6 +157,28 @@ const LayerStyles = props => {
             <option value='4'>XL</option>
           </Range>
         </div>
+
+        <label>Font Size</label>
+        <Range
+          min='12'
+          max='36'
+          step='1'
+          value={textFontSize?.replace('px', '')}
+          onChange={setTextFontSize}
+        >
+          <option value='12'>S</option>
+          <option value='18'>M</option>
+          <option value='24'>L</option>
+          <option value='30'>XL</option>
+          <option value='36'>XXL</option>
+        </Range>
+
+        <Checkbox
+          label='Bold font weight'
+          checked={textFontWeight !== ''}
+          onChange={setTextFontWeight}
+        />
+
       </div>
       <div className='a0d5-card'>
         <div>
