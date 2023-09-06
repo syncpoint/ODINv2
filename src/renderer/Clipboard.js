@@ -54,7 +54,7 @@ Clipboard.doCopy = async (store, selected) => {
   const ids = selected.filter(canCopy)
   const keys = await store.collectKeys(ids, ['tags', 'link', 'style'])
   const tuples = await store.tuples(keys)
-  writeEntries(tuples)
+  await writeEntries(tuples)
   return keys
 }
 
