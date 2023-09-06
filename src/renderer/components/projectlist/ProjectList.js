@@ -185,7 +185,7 @@ export const ProjectList = () => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
       dispatch({ type: 'entries', entries: projects, candidateId: projectId })
-      if (projectId) dispatch({ type: 'select', selected: [projectId] })
+      if (projectId) dispatch({ type: 'select', id: projectId })
     })()
   }, [dispatch, filter, projectStore])
 
