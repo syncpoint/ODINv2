@@ -11,6 +11,7 @@ const SetDefaultLayer = function (services) {
   this.selection = services.selection
   this.store = services.store
   this.path = 'mdiCreation'
+  this.toolTip = 'Make the selected layer the default layer'
   this.selection.on('selection', () => this.emit('changed'))
 }
 
@@ -34,6 +35,7 @@ const SelectTilePreset = function (services) {
   this.preferencesStore = services.preferencesStore
   this.store = services.store
   this.tileLayerStore = services.tileLayerStore
+  this.toolTip = 'Change the visibility of the background maps'
   this.path = 'mdiMap'
 }
 
@@ -47,6 +49,7 @@ const ExportLayer = function (services) {
   this.store = services.store
   this.clipboard = services.clipboard
   this.path = 'mdiExport'
+  this.toolTip = 'Export selected layer to the filesystem'
   this.selection.on('selection', () => this.emit('changed'))
 }
 

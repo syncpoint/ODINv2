@@ -15,6 +15,7 @@ const state = [
 const PrintSwitchScopeCommand = function (services) {
   this.emitter = services.emitter
   this.currentState = 0
+  this.toolTip = 'Print'
 }
 
 Object.assign(PrintSwitchScopeCommand.prototype, EventEmitter.prototype)

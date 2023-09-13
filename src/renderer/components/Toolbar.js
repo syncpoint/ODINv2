@@ -54,7 +54,7 @@ export const Toolbar = () => {
   return (
     <header className='toolbar'>
       <div className='toolbar__items-container'>
-        <DropdownMenu path='mdiPlusBoxOutline' options={addCommands}/>
+        <DropdownMenu path='mdiPlusBoxOutline' options={addCommands} toolTip='Create new ...'/>
         {
           commands.map(([key, command]) => {
             return command === 'separator'
@@ -62,18 +62,20 @@ export const Toolbar = () => {
               : <CommandButton key={key} command={command}/>
           })
         }
-        <DropdownMenu path='mdiAndroidStudio' options={measureCommands} />
+        <DropdownMenu path='mdiAndroidStudio' options={measureCommands} toolTip='Measure ...'/>
       </div>
       <div className='toolbar__items-container toolbar__items--right'>
         <SimpleButton
           onClick={toggleProperties('properties')}
           path='mdiFileDocumentOutline'
           checked={properties === 'properties'}
+          toolTip='Show properties of selected features'
         />
         <SimpleButton
           onClick={toggleProperties('styles')}
           path='mdiFormatPaint'
           checked={properties === 'styles'}
+          toolTip='Show styling options for selected layer'
         />
       </div>
     </header>

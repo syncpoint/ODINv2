@@ -5,6 +5,7 @@ const Pin = function (services) {
   this.store = services.store
   this.selection = services.selection
   this.path = 'mdiPinOutline'
+  this.toolTip = 'Add this to the pinned items'
   this.selection.on('selection', () => this.emit('changed'))
 }
 
