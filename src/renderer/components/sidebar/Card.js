@@ -9,16 +9,6 @@ import * as ID from '../../ids'
 import { Tooltip } from 'react-tooltip'
 import './Card.scss'
 
-const sanitizeForCSS = source => {
-  if (source && typeof source === 'string') {
-    return source
-      .replaceAll(':', '_')
-      .replaceAll('/', '_')
-      .replaceAll('*', '_')
-  }
-  return source
-}
-
 /**
  *
  */
@@ -201,10 +191,10 @@ export const Card = React.forwardRef((props, ref) => {
 
   const renameButton = (capabilities || '').includes('RENAME')
     ? <>
-        <IconButton id={`ren-${sanitizeForCSS(id)}`} onClick={() => emitter.emit('edit/begin', { id })}>
-          <Icon className='e3de-icon' path={mdi.mdiPencil}/>
+        <IconButton onClick={() => emitter.emit('edit/begin', { id })}>
+          <Icon className='e3de-icon tt-rename-button' path={mdi.mdiPencil}/>
         </IconButton>
-        <Tooltip anchorSelect={`#ren-${sanitizeForCSS(id)}`} content='Edit item name' delayShow={750} />
+        <Tooltip anchorSelect='.tt-rename-button' content='Edit item name' delayShow={750} />
       </>
     : null
 
@@ -226,10 +216,10 @@ export const Card = React.forwardRef((props, ref) => {
             highlight={highlight}
           />
           { renameButton }
-          <IconButton id={`pin-${sanitizeForCSS(id)}`} onClick={() => emitter.emit(pinned ? 'unpin' : 'pin', { id })}>
-            <Icon className='e3de-icon' path={pinPath}/>
+          <IconButton onClick={() => emitter.emit(pinned ? 'unpin' : 'pin', { id })}>
+            <Icon className='e3de-icon tt-pin-button' path={pinPath}/>
           </IconButton>
-          <Tooltip anchorSelect={`#pin-${sanitizeForCSS(id)}`} content={`${pinned ? 'Unpin' : 'Pin'} this item`} delayShow={750} />
+          <Tooltip anchorSelect='.tt-pin-button' content='Pin/Unpin this item' delayShow={750} />
         </div>
         { children.body }
         <hr></hr>
