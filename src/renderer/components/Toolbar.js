@@ -69,7 +69,7 @@ export const Toolbar = () => {
           onClick={toggleProperties('properties')}
           path='mdiFileDocumentOutline'
           checked={properties === 'properties'}
-          toolTip='Show properties of selected features'
+          toolTip='Show properties of selected items'
         />
         <SimpleButton
           onClick={toggleProperties('styles')}
