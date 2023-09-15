@@ -5,6 +5,8 @@ import * as mdi from '@mdi/js'
 import ColSpan2 from './ColSpan2'
 import FlexRow from './FlexRow'
 import textProperty from './textProperty'
+import { Tooltip } from 'react-tooltip'
+import uuid from 'uuid-random'
 import { useServices, useMemento } from '../hooks'
 
 const Button = props => {
@@ -36,6 +38,7 @@ const TextProperty = props => {
       feature.geometry.coordinates = coordinates
     } catch (err) {
       /* TODO: handle parse error */
+      console.error(err)
     }
 
     return feature
@@ -46,13 +49,15 @@ const TextProperty = props => {
 
 const Coordinates = props => {
   const [format] = useMemento('coordinates-format', 'MGRS')
+  const [id] = React.useState(uuid())
   return (
     <ColSpan2>
       <FlexRow>
         <TextProperty {...props} format={format}/>
-        <div style={{ marginLeft: 'auto' }}>
-          <Button path='mdiCrosshairsGps'/>
+        <div style={{ marginLeft: 'auto' }} id={`${id}`}>
+          <Button path='mdiCrosshairsGps' />
         </div>
+        <Tooltip anchorSelect={`#${id}`} content='Apply coordinates' delayShow={750}/>
       </FlexRow>
     </ColSpan2>
   )
