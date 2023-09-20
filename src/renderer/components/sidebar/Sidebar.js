@@ -293,7 +293,7 @@ export const Sidebar = () => {
         if (activeAnchor?.id) return null
 
         const toggler = ['VISIBLE', 'HIDDEN', 'LOCKED', 'UNLOCKED']
-        const highlighter = ['LAYER', 'FEATURE', 'MARKER']
+        const highlighter = ['LAYER', 'FEATURE', 'MARKER', 'PLACE']
         const linker = ['LINK']
 
         if (toggler.includes(activeAnchor?.innerText)) return 'Click to toggle value'
