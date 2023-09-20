@@ -92,7 +92,8 @@ export const ScopeSwitcher = props => {
     [`@${ID.BOOKMARK}`]: 'Manage existing bookmarks',
     [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
     [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
-    [`@${ID.MEASURE}`]: 'Manage existing measurements'
+    [`@${ID.MEASURE}`]: 'Manage existing measurements',
+    [`@${ID.INVITED}`]: 'Show invitations and join shared layers'
   }
 
   const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>

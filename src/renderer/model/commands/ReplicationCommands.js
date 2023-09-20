@@ -7,6 +7,7 @@ const JoinLayer = function (services) {
   this.operational = services.signals['replication/operational']
   this.operational.on(() => this.emit('changed'))
   this.path = 'mdiCloudDownloadOutline'
+  this.toolTip = 'Join the selected layer'
   this.selection.on('selection', () => this.emit('changed'))
 }
 
@@ -32,6 +33,7 @@ const ShareLayer = function (services) {
   this.operational = services.signals['replication/operational']
   this.operational.on(() => this.emit('changed'))
   this.path = 'mdiCloudUploadOutline'
+  this.toolTip = 'Share the selected layer'
   this.selection.on('selection', () => this.emit('changed'))
 }
 
