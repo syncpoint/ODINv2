@@ -4,6 +4,7 @@ import EventEmitter from '../../../shared/emitter'
 const Undo = function (services) {
   this.undo = services.undo
   this.path = 'mdiUndo'
+  this.toolTip = 'Undo'
   this.undo.on('changed', () => this.emit('changed'))
 }
 
@@ -15,6 +16,7 @@ Undo.prototype.enabled = function () { return this.undo.canUndo() }
 const Redo = function (services) {
   this.undo = services.undo
   this.path = 'mdiRedo'
+  this.toolTip = 'Redo'
   this.undo.on('changed', () => this.emit('changed'))
 }
 

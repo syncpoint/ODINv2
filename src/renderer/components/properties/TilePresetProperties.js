@@ -2,9 +2,10 @@
 import React from 'react'
 import SortableList, { SortableItem } from 'react-easy-sort'
 import Icon from '@mdi/react'
-import { mdiDrag, mdiEye, mdiEyeOff } from '@mdi/js'
+import { mdiDrag, mdiEye, mdiEyeOff, mdiOpacity } from '@mdi/js'
 import { useServices, useList } from '../hooks'
 import Range from './Range'
+import { Tooltip } from 'react-tooltip'
 import './TilePresetProperties.scss'
 
 
@@ -46,19 +47,28 @@ const Layer = props => (
     {/* react-easy-sort kills list style => add necessary margins.  */}
     <div
       className='bf12-card'
-      onClick={props.onSelect}
       aria-selected={props.selected}
     >
       <div className='bf12-column'>
         <div className='bf12-row'>
-          <Icon path={mdiDrag} size='24px'/>
+          <Icon path={mdiDrag} size='24px' className='tt-tile-preset-handle'/>
           <span className='bf12-card__description'>{props.name}</span>
+          <Icon
+            path={mdiOpacity}
+            size='24px'
+            style={{ marginLeft: 'auto' }}
+            className=' tt-tile-preset-opacity'
+            onClick={props.onSelect}
+          />
           <Icon
             path={props.visible ? mdiEye : mdiEyeOff}
             size='24px'
-            style={{ marginLeft: 'auto' }}
             onClick={props.onToggleVisible}
+            className='tt-tile-preset-visibility'
           />
+          <Tooltip anchorSelect='.tt-tile-preset-opacity' content='Change the opacity' delayShow={750}/>
+          <Tooltip anchorSelect='.tt-tile-preset-handle' content='Drag to change the order of visibility' delayShow={750}/>
+          <Tooltip anchorSelect='.tt-tile-preset-visibility' content='Hide/Show this map' delayShow={750}/>
         </div>
         <Opacity
           opacity={props.opacity}

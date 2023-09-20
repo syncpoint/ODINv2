@@ -27,7 +27,7 @@ export default async function (id) {
     sort: `${distance}`, // should be string because of Intl.Collator.compare()
     description: `${place.description} - ${formattedDistance} km`,
     tags: [
-      'SCOPE:PLACE:NONE',
+      'SCOPE:PLACE',
       ...systemTags,
       ...(userTags || []).map(label => `USER:${label}:NONE`),
       'PLUS'

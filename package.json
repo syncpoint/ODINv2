@@ -1,7 +1,7 @@
 {
   "name": "odin",
   "productName": "ODINv2",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Open Source Command and Control Information System (C2IS)",
   "main": "dist/main.js",
   "scripts": {
@@ -88,6 +88,7 @@
     "react-dom": "^18.2.0",
     "react-easy-sort": "^1.5.1",
     "react-fast-compare": "^3.2.0",
+    "react-tooltip": "^5.21.3",
     "reproject": "^1.2.7",
     "sanitize-filename": "^1.6.3",
     "subleveldown": "^6.0.1",
