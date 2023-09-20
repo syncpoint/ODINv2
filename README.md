@@ -11,6 +11,13 @@ Replication in a distributed command and control environment by making use of th
 ODINv2 will migrate all of your existing ODINv1 projects on first start. You will be able to further use ODINv1 in parallel but we will not update newly or updated projects after the first start of ODINv2. If you do have any 
 ODINv1 layer files (*.json) you can import them at any time via drag&drop onto the ODINv2 map.
 
+## Configuration via environment
+
+### Self-Update
+
+Self-Update is enabled by default and ODIN will check for newer versions. In order to disable Self-Update
+one can use the environment variable `ODIN_SELF_UPDATE` with a value of `0`.
+
 ## License
 
 Copyright (c) Syncpoint GmbH. All rights reserved.
