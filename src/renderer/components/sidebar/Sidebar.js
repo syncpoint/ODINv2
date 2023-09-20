@@ -301,7 +301,10 @@ export const Sidebar = () => {
         if (linker.includes(activeAnchor?.innerText)) return 'Show assigned links'
         return ''
       }} />
-      <Tooltip anchorSelect='.e3de-icon-tag' delayShow={750} content='Show content' />
+      <Tooltip anchorSelect='.e3de-icon-tag' delayShow={750} render={({ activeAnchor }) => {
+        if (activeAnchor?.id) return null
+        return 'Show content'
+      }} />
 
     </div>
   )
