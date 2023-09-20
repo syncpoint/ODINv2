@@ -15,7 +15,7 @@ export default async function (id) {
     title: marker.name,
     description,
     tags: [
-      'SCOPE:MARKER:NONE',
+      'SCOPE:MARKER',
       hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
       locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
       ...((tags || [])).map(label => `USER:${label}:NONE`),
