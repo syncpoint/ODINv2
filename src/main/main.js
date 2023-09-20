@@ -13,6 +13,7 @@ import { exportLayer } from './export.js'
 import { ipc } from './ipc'
 import * as dotenv from 'dotenv'
 import SelfUpdate from './SelfUpdate'
+import { isEnabled } from './environment'
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -107,8 +108,10 @@ const ready = async () => {
   await session.restore()
   await menu.show()
 
-  const selfUpdate = new SelfUpdate()
-  selfUpdate.checkForUpdates()
+  if (isEnabled('ODIN_SELF_UPDATE', true)) {
+    const selfUpdate = new SelfUpdate()
+    selfUpdate.checkForUpdates()
+  }
 }
 
 
