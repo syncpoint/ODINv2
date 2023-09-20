@@ -6,6 +6,7 @@ import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import * as ID from '../../ids'
 import { IconTag } from './IconTag'
+import { Tooltip } from 'react-tooltip'
 
 
 /**
@@ -37,13 +38,17 @@ const ScopeSwitch = props => {
         <div className='name'>{props.name}</div>
         <div className='label'>{props.label}</div>
       </div>
-    : <span className={className} onClick={handleClick}>{props.label}</span>
+    : <>
+        <span id={`ss-${props.label}`} className={className} onClick={handleClick}>{props.label}</span>
+        <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
+      </>
 }
 
 ScopeSwitch.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string.isRequired,
-  scope: PropTypes.string.isRequired
+  scope: PropTypes.string.isRequired,
+  toolTip: PropTypes.string
 }
 
 
@@ -77,11 +82,25 @@ export const ScopeSwitcher = props => {
     [`@${ID.INVITED}`]: 'invited'
   }
 
+  const TOOLTIPS = {
+    '#pin': 'Manage pinned items',
+    [`@${ID.LAYER}`]: 'Manage existing layers',
+    [`@${ID.FEATURE}`]: 'Manage existing features',
+    [`@${ID.LINK}`]: 'Manage existing links',
+    [`@${ID.SYMBOL}`]: 'Create new features based on the symbol palette',
+    [`@${ID.MARKER}`]: 'Manage existing markers',
+    [`@${ID.BOOKMARK}`]: 'Manage existing bookmarks',
+    [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
+    [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
+    [`@${ID.MEASURE}`]: 'Manage existing measurements'
+  }
+
   const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
     <ScopeSwitch
       key={scope}
       scope={scope}
       label={label}
+      toolTip={TOOLTIPS[scope]}
     />
   )
 
@@ -95,10 +114,13 @@ export const ScopeSwitcher = props => {
   )
 
   const back = history.length > 1
-    ? <IconTag
+    ? <><IconTag
         path={mdi.mdiArrowUp}
         onClick={handleClick}
+        id='scope-back'
       />
+      <Tooltip anchorSelect='#scope-back' content='Return to parent scope' delayShow={750} />
+      </>
     : null
 
   return (

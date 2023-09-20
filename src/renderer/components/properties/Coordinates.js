@@ -5,6 +5,7 @@ import * as mdi from '@mdi/js'
 import ColSpan2 from './ColSpan2'
 import FlexRow from './FlexRow'
 import textProperty from './textProperty'
+import { Tooltip } from 'react-tooltip'
 import { useServices, useMemento } from '../hooks'
 
 const Button = props => {
@@ -36,6 +37,7 @@ const TextProperty = props => {
       feature.geometry.coordinates = coordinates
     } catch (err) {
       /* TODO: handle parse error */
+      console.error(err)
     }
 
     return feature
@@ -50,9 +52,10 @@ const Coordinates = props => {
     <ColSpan2>
       <FlexRow>
         <TextProperty {...props} format={format}/>
-        <div style={{ marginLeft: 'auto' }}>
-          <Button path='mdiCrosshairsGps'/>
+        <div style={{ marginLeft: 'auto' }} className='tt-apply-coordinates'>
+          <Button path='mdiCrosshairsGps' />
         </div>
+        <Tooltip anchorSelect='.tt-apply-coordinates' content='Apply coordinates' delayShow={750}/>
       </FlexRow>
     </ColSpan2>
   )

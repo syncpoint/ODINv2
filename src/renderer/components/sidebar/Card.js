@@ -6,6 +6,7 @@ import { TAG } from './tags'
 import { Title } from './Title'
 import { useServices, useEmitter } from '../hooks'
 import * as ID from '../../ids'
+import { Tooltip } from 'react-tooltip'
 import './Card.scss'
 
 /**
@@ -189,9 +190,12 @@ export const Card = React.forwardRef((props, ref) => {
     : mdi.mdiPinOutline
 
   const renameButton = (capabilities || '').includes('RENAME')
-    ? <IconButton onClick={() => emitter.emit('edit/begin', { id })}>
-        <Icon className='e3de-icon' path={mdi.mdiPencil}/>
-      </IconButton>
+    ? <>
+        <IconButton onClick={() => emitter.emit('edit/begin', { id })}>
+          <Icon className='e3de-icon tt-rename-button' path={mdi.mdiPencil}/>
+        </IconButton>
+        <Tooltip anchorSelect='.tt-rename-button' content='Edit item name' delayShow={750} />
+      </>
     : null
 
   return (
@@ -213,8 +217,9 @@ export const Card = React.forwardRef((props, ref) => {
           />
           { renameButton }
           <IconButton onClick={() => emitter.emit(pinned ? 'unpin' : 'pin', { id })}>
-            <Icon className='e3de-icon' path={pinPath}/>
+            <Icon className='e3de-icon tt-pin-button' path={pinPath}/>
           </IconButton>
+          <Tooltip anchorSelect='.tt-pin-button' content='Pin/Unpin this item' delayShow={750} />
         </div>
         { children.body }
         <hr></hr>

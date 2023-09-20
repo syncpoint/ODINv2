@@ -6,3 +6,4 @@ binaries/
 coverage/
 dist/
 jsdoc/
+.vscode
