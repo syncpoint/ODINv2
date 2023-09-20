@@ -39,7 +39,7 @@ const ScopeSwitch = props => {
         <div className='label'>{props.label}</div>
       </div>
     : <>
-        <span id={`ss-${props.label}`}className={className} onClick={handleClick}>{props.label}</span>
+        <span id={`ss-${props.label}`} className={className} onClick={handleClick}>{props.label}</span>
         <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
       </>
 }

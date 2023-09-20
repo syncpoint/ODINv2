@@ -11,6 +11,7 @@ import { ScopeSwitcher } from './ScopeSwitcher'
 import { MemoizedCard } from './Card'
 import { LazyList } from './LazyList'
 import { FilterInput } from './FilterInput'
+import { Tooltip } from 'react-tooltip'
 import './Sidebar.scss'
 
 
@@ -284,6 +285,24 @@ export const Sidebar = () => {
         focusIndex={state.focusIndex}
         renderEntry={renderEntry}
       />
+      <Tooltip anchorSelect='.e3de-tag--active' delayShow={750} render={({ activeAnchor }) => {
+        /*
+          Unfortunately we have elements that are addressed by both id and class selectors. In order
+          to avoid showing wrong tooltips we do not show a tt if the element has an id.
+        */
+        if (activeAnchor?.id) return null
+
+        const toggler = ['VISIBLE', 'HIDDEN', 'LOCKED', 'UNLOCKED']
+        const highlighter = ['LAYER', 'FEATURE', 'MARKER']
+        const linker = ['LINK']
+
+        if (toggler.includes(activeAnchor?.innerText)) return 'Click to toggle value'
+        if (highlighter.includes(activeAnchor?.innerText)) return 'Click and hold to highlight'
+        if (linker.includes(activeAnchor?.innerText)) return 'Show assigned links'
+        return ''
+      }} />
+      <Tooltip anchorSelect='.e3de-icon-tag' delayShow={750} content='Show content' />
+
     </div>
   )
 }
