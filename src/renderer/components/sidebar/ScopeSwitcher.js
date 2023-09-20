@@ -82,7 +82,7 @@ export const ScopeSwitcher = props => {
   }
 
   const TOOLTIPS = {
-    '#pin': 'Pinned elements',
+    '#pin': 'Manage pinned items',
     [`@${ID.LAYER}`]: 'Manage existing layers',
     [`@${ID.FEATURE}`]: 'Manage existing features',
     [`@${ID.LINK}`]: 'Manage existing links',
