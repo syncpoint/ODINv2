@@ -7,8 +7,9 @@ import { useServices } from '../hooks'
 export default options => {
   const { label, get, set } = options
 
-  const Property = props => {
+  const Property = React.forwardRef((props, ref) => {
     const { store } = useServices()
+    const inputRef = React.useRef(null)
 
     const initialValue = () => {
       const features = Object.values(props.features)
@@ -23,6 +24,13 @@ export default options => {
     /* eslint-disable react-hooks/exhaustive-deps */
     React.useEffect(() => setValue(initialValue()), [props])
 
+    React.useImperativeHandle(ref, () => {
+      return {
+        set: value => setValue(value),
+        focus: () => inputRef.current.focus()
+      }
+    }, [])
+
     const handleChange = ({ target }) => setValue(target.value)
 
     const handleBlur = () => {
@@ -36,8 +44,10 @@ export default options => {
       disabled={props.disabled}
       onChange={handleChange}
       onBlur={handleBlur}
+      ref={inputRef}
     />
-  }
+  })
 
   return Property
 }
+
