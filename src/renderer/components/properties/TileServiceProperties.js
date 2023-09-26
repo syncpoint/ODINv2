@@ -16,6 +16,7 @@ import Zoom from './Zoom'
 import { useList, useServices } from '../hooks'
 import * as TileService from '../../store/tileServiceAdapters'
 import './TileServiceProperties.css'
+import { Tooltip } from 'react-tooltip'
 
 
 /**
@@ -153,7 +154,7 @@ const TileServiceProperties = props => {
     : null
 
   const filterField = ['WMS', 'WMTS'].includes(service.type)
-    ? <TextField label='Filter' value={filter} onChange={handleFilterChange}/>
+    ? <><TextField id='tsp-filter' label='Filter' value={filter} onChange={handleFilterChange}/><Tooltip anchorSelect='#tsp-filter' content='Filter the list of layers' /></>
     : null
 
   const zoomSliders = service.type === 'XYZ'
@@ -164,7 +165,8 @@ const TileServiceProperties = props => {
   return (
     <FlexColumnGap>
       <Name {...props}/>
-      <TextField label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
+      <TextField id='tsp-url' label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
+      <Tooltip anchorSelect='#tsp-url' content='Z/X/Y, WMS or WMTS URL' delayShow={750} />
       { filterField }
       { layerList }
       <div className='map-preview' id='map-preview'></div>
