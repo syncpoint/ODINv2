@@ -12,6 +12,10 @@ win:
         - x64
   icon: 'build/icon.ico'
 
+nsis:
+  perMachine: false
+  oneClick: false
+
 mac:
   target: default
   entitlements: 'build/entitlements.mac.plist'
@@ -28,5 +32,5 @@ linux:
 publish:
   - provider: github
     releaseType: release
-  
+
 electronVersion: 26.2.1
