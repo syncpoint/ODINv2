@@ -17,7 +17,7 @@ const Replication = () => {
   */
   const { emitter, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
 
-  const [notifications] = React.useState(new Set())
+  const notifications = React.useRef(new Set())
   const [reload, setReload] = React.useState(false)
 
   const notify = message => emitter.emit('osd', { message, cell: 'B2' })
@@ -274,14 +274,14 @@ const Replication = () => {
     const clickHandler = event => {
       event.preventDefault() // prevent the browser from focusing the Notification's tab
       event.target.onclick = undefined
-      notifications.delete(event.target)
+      notifications.current.delete(event.target)
       preferencesStore.showSidebar(true)
       setTimeout(() => selection.focus(event.target.data), 250)
     }
 
     const closeHandler = event => {
       event.target.onclick = undefined
-      notifications.delete(event.target)
+      notifications.current.delete(event.target)
     }
 
     const handler = batch => {
@@ -294,14 +294,14 @@ const Replication = () => {
         const notification = new Notification('Received invitation', options)
         notification.onclick = clickHandler
         notification.onclose = closeHandler
-        notifications.add(notification)
+        notifications.current.add(notification)
       })
     }
     store.on('batch', handler)
 
     return () => {
       store.off('batch', handler)
-      notifications.clear()
+      notifications.current.clear()
     }
   },
   // eslint-disable-next-line react-hooks/exhaustive-deps

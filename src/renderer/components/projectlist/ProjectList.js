@@ -122,7 +122,7 @@ export const ProjectList = () => {
   const [replication, setReplication] = React.useState(undefined)
   const [inviteValue, setInviteValue] = React.useState({})
   const [reload, setReload] = React.useState(false)
-  const [notifications] = React.useState(new Set())
+  const notifications = React.useRef(new Set())
   const [offline, setOffline] = React.useState(true)
   const [message, setMessage] = React.useState(null)
 
@@ -249,17 +249,17 @@ export const ProjectList = () => {
               event.preventDefault() // prevent the browser from focusing the Notification's tab
               event.target.onclick = undefined
               dispatch({ type: 'select', id: project.id })
-              notifications.delete(event.target)
+              notifications.current.delete(event.target)
             }
             const closeHandler = event => {
               event.target.onclick = undefined
-              notifications.delete(event.target)
+              notifications.current.delete(event.target)
             }
 
             const notification = new Notification('Received invitation', { body: project.name, data: project.id })
             notification.onclick = clickHandler
             notification.onclose = closeHandler
-            notifications.add(notification)
+            notifications.current.add(notification)
 
             fetch(null, [project])
           },
