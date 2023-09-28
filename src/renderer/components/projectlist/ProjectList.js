@@ -122,11 +122,13 @@ export const ProjectList = () => {
   const [replication, setReplication] = React.useState(undefined)
   const [inviteValue, setInviteValue] = React.useState({})
   const [reload, setReload] = React.useState(false)
+
+  /* system/OS level notifications */
   const notifications = React.useRef(new Set())
   const [offline, setOffline] = React.useState(true)
   const [message, setMessage] = React.useState(null)
 
-  const notify = message => setMessage(message)
+  const feedback = message => setMessage(message)
 
   /**
    * Reload projects from store and update entry list
@@ -134,7 +136,7 @@ export const ProjectList = () => {
    * Use current filter to load only projects to display in list.
    *
    * @param {*} projectId - optional project id to focus in list next.
-   * @param {*} epemeralProject - An array of projects we received an invitation for, defaults to []
+   * @param {*} ephemeralProject - An array of projects we received an invitation for, defaults to []
    */
   const fetch = React.useCallback((projectId, ephemeralProjects = []) => {
     (async () => {
@@ -197,11 +199,7 @@ export const ProjectList = () => {
   React.useEffect(() => {
     const initializeReplication = async () => {
       try {
-        notify('Initializing replication ...')
-        /*
-          connect() waits endlessly
-        */
-        await replicationProvider.connect()
+        feedback('Initializing replication ...')
         /*
           Replication credentials are tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
@@ -233,13 +231,17 @@ export const ProjectList = () => {
           projectStore.putCredentials('PROJECT-LIST', credentials)
         })
 
+        /*
+          connect() waits endlessly
+        */
+        await replicationProvider.connect()
         await replicatedProjectList.hydrate()
 
         const handler = {
           streamToken: streamToken => {
             projectStore.putStreamToken('PROJECT-LIST', streamToken)
-            notify(null)
-            if (offline) setOffline(false)
+            feedback(null)
+            setOffline(false)
           },
           renamed: (/* project */) => {
             fetch()
@@ -266,9 +268,9 @@ export const ProjectList = () => {
           error: error => {
             console.error(error)
             if (!navigator.onLine) {
-              notify('Looks like we are offline! Reconnecting ...')
+              feedback('Looks like we are offline! Reconnecting ...')
             } else {
-              notify('Replication error! Reconnecting ...')
+              feedback('Replication error! Reconnecting ...')
             }
             setOffline(true)
           }
@@ -277,22 +279,23 @@ export const ProjectList = () => {
         replicatedProjectList.start(mostRecentStreamToken, handler)
 
         setReplication(replicatedProjectList)
-        notify(null)
+        feedback(null)
+        setOffline(false)
 
       } catch (error) {
         console.error(error)
         setOffline(true)
         if (error.response?.status === 403) {
           await projectStore.delCredentials('PROJECT-LIST')
-          notify('Credentials for replication may be void, reauthenticating ...')
+          feedback('Credentials for replication may be void, reauthenticating ...')
           setReload(true)
         } else if (error.response?.status === 429) {
-          notify('Replication was rate-limited, retrying ...')
+          feedback('Replication was rate-limited, retrying ...')
           setReload(true)
         } else if (!navigator.onLine) {
-          notify('Looks like we are offline! Reconnecting ...')
+          feedback('Looks like we are offline! Reconnecting ...')
         } else {
-          notify('Replication error: ', error.message)
+          feedback('Replication error: ', error.message)
         }
       }
     }
