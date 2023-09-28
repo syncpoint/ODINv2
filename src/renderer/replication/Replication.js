@@ -17,15 +17,16 @@ const Replication = () => {
   */
   const { emitter, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
 
+  /* system/OS level notifications */
   const notifications = React.useRef(new Set())
   const [reload, setReload] = React.useState(false)
 
-  const notify = message => emitter.emit('osd', { message, cell: 'B2' })
+  const feedback = message => emitter.emit('osd', { message, cell: 'B2' })
 
   React.useEffect(() => {
     const initializeReplication = async () => {
       try {
-        notify('Initializing replication ...')
+        feedback('Initializing replication ...')
         /*
           Replication credentials are (access, refresh) tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
@@ -128,7 +129,7 @@ const Replication = () => {
           streamToken: async (streamToken) => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
-            notify(null)
+            feedback(null)
             signals['replication/operational'](true)
           },
           invited: async (invitation) => {
@@ -151,9 +152,9 @@ const Replication = () => {
           error: async (error) => {
             console.dir(error)
             if (!navigator.onLine) {
-              notify('Looks like we are offline! Reconnecting ...')
+              feedback('Looks like we are offline! Reconnecting ...')
             } else {
-              notify('Replication error! Reconnecting ...')
+              feedback('Replication error! Reconnecting ...')
             }
             signals['replication/operational'](false)
           }
@@ -164,7 +165,7 @@ const Replication = () => {
         */
         const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
         replicatedProject.start(mostRecentStreamToken, upstreamHandler)
-        notify(null)
+        feedback(null)
         signals['replication/operational'](true)
         /*
           Handle events emitted by the local store.
@@ -231,15 +232,15 @@ const Replication = () => {
       } catch (error) {
         if (error.response?.status === 403) {
           await sessionStore.del(CREDENTIALS)
-          notify('Credentials for replication may be void, reauthenticating ...')
+          feedback('Credentials for replication may be void, reauthenticating ...')
           setReload(true)
         } else if (error.response?.status === 429) {
-          notify('Replication was rate-limited, retrying ...')
+          feedback('Replication was rate-limited, retrying ...')
           setReload(true)
         } else if (!navigator.onLine) {
-          notify('Looks like we are offline! Reconnecting ...')
+          feedback('Looks like we are offline! Reconnecting ...')
         } else {
-          notify('Replication error!', error.message)
+          feedback('Replication error!', error.message)
         }
         console.dir(error)
         signals['replication/operational'](false)
