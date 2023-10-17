@@ -43,7 +43,8 @@ const TextProperty = props => {
     return feature
   }
 
-  return textProperty({ label: 'Coordinates', get, set })(props)
+  const TP = textProperty({ label: 'Coordinates', get, set })
+  return <TP {...props} />
 }
 
 const Coordinates = props => {
