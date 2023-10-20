@@ -3,12 +3,13 @@ import PropTypes from 'prop-types'
 import * as R from 'ramda'
 import { Button } from './Button'
 // TODO: replace Card and List with simple <div/>s
-import { Input } from './Input'
 import { FilterInput } from './FilterInput'
 import { List } from './List'
 import { Card } from './Card'
 import { useList, useServices } from '../hooks'
 import { militaryFormat } from '../../../shared/datetime'
+import Members from './Members'
+
 
 /**
  *
@@ -120,7 +121,6 @@ export const ProjectList = () => {
   const [state, dispatch] = useList({ multiselect: false })
 
   const [replication, setReplication] = React.useState(undefined)
-  const [inviteValue, setInviteValue] = React.useState({})
   const [reload, setReload] = React.useState(false)
 
   /* system/OS level notifications */
@@ -353,13 +353,19 @@ export const ProjectList = () => {
       fetch(project.id)
     }
 
-    const handleInvite = value => {
+    const handleMembers = async () => {
+      console.log(`Handle members for ${project.name} - ${project.id}`)
+      const members = await replication.members(project.id)
+      console.dir(members)
+    }
+
+    /* const handleInvite = value => {
       if (!value) return
       replication
-        .invite(project.id, value /* [matrix] user name */)
+        .invite(project.id, value)
         .then(() => console.log(`Sent invitation for project ${project.name} to ${value}`))
         .catch(error => console.error(error))
-    }
+    } */
 
     const isOpen = project.tags
       ? project.tags.includes('OPEN')
@@ -395,30 +401,10 @@ export const ProjectList = () => {
                 { (replication && isInvited) && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
                 { (replication && !isInvited && !isShared && !isOpen) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
                 { (replication && isShared) &&
-                    <span style={{ display: 'flex', alignItems: 'center' }} >
-                    <Input
-                      style= {{ width: '25em' }}
-                      placeholder='[matrix] username'
-                      value={inviteValue[props.id] || ''}
-                      onChange={({ target }) => {
-                        const value = { ...inviteValue }
-                        value[props.id] = target.value
-                        setInviteValue(value)
-                      }}
-                      onKeyDown={event => {
-                        if (event.key !== 'Enter') return
-                        handleInvite(inviteValue[props.id])
-                      }}
-                      disabled={offline}
+                    <CustomButton
+                      text='Members'
+                      onClick={handleMembers}
                     />
-                    <Button
-                      onClick={() => handleInvite(inviteValue[props.id])}
-                      style={{ backgroundColor: '#40a9ff', color: 'white' }}
-                      disabled={offline}
-                    >
-                        Invite
-                    </Button>
-                  </span>
                 }
                 <CustomButton
                   danger
@@ -435,27 +421,45 @@ export const ProjectList = () => {
       </div>
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, inviteValue, ipcRenderer, offline, projectStore, replication])
+  }, [dispatch, ipcRenderer, offline, projectStore, replication])
   /* eslint-enable react/prop-types */
 
   return (
-    <div
-      onKeyDown={handleKeyDown}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh'
-      }}
-    >
-      { (message) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>{message}</div> }
+    <>
+      <Members memberlist={[
+        {
+          displayName: 'Placebo',
+          membership: 'join',
+          userId: '@placebo:thomass-macbook-pro.local'
+        },
+        {
+          membership: 'join',
+          userId: '@rocky:thomass-macbook-pro.local',
+          avatarUrl: 'http://thomass-macbook-pro.local:8008/_matrix/media/v3/download/thomass-macbook-pro.local/mwYSWqkMGDKldUfCSjOAkdMn'
+        },
+        {
+          membership: 'join',
+          userId: '@sylvester:thomass-macbook-pro.local'
+        }
+      ]} />
       <div
-        style={{ display: 'flex', gap: '8px', padding: '8px' }}
+        onKeyDown={handleKeyDown}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh'
+        }}
       >
-        <FilterInput onChange={handleFilterChange} placeholder='search for projects'/>
-        <Button onClick={handleCreate}>New</Button>
-        <Button disabled={true}>Import</Button>
+        { (message) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>{message}</div> }
+        <div
+          style={{ display: 'flex', gap: '8px', padding: '8px' }}
+        >
+          <FilterInput onChange={handleFilterChange} placeholder='search for projects'/>
+          <Button onClick={handleCreate}>New</Button>
+          <Button disabled={true}>Import</Button>
+        </div>
+        <List child={child} { ...state }/>
       </div>
-      <List child={child} { ...state }/>
-    </div>
+    </>
   )
 }
