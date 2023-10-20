@@ -36,7 +36,7 @@
     "babel-loader": "^9.1.0",
     "c8": "^7.11.3",
     "css-loader": "^6.7.2",
-    "electron": "^26.2.1",
+    "electron": "^26.4.1",
     "electron-builder": "^24.6.4",
     "electron-updater": "^6.1.4",
     "eslint": "^8.37.0",
