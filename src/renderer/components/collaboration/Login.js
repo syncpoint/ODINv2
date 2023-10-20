@@ -2,6 +2,7 @@ import React from 'react'
 import { ipcRenderer } from 'electron'
 import { useServices } from '../hooks'
 import { HttpAPI } from '@syncpoint/matrix-client-api/src/http-api.mjs'
+import { discover } from '@syncpoint/matrix-client-api'
 import Icon from '@mdi/react'
 import { mdiAccount, mdiKey, mdiHomeAccount } from '@mdi/js'
 import './collaboration.css'
@@ -11,6 +12,7 @@ export const Login = () => {
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [homeServerUrl, setHomeServerUrl] = React.useState('')
+  const [writeProtected, setWriteProtected] = React.useState(false)
 
   const [validating, setValidating] = React.useState(false)
   const [error, setError] = React.useState(undefined)
@@ -31,16 +33,19 @@ export const Login = () => {
 
   const detectHomeServerUrl = async () => {
     if (userId?.indexOf(':') === -1) return
+
+    setHomeServerUrl('')
     try {
-      const domainUrl = `https://${userId.split(':')[1]}`
-      const result = await HttpAPI.getWellKnownClientInfo(domainUrl)
-      if (Object.hasOwn(result, 'm.homeserver')) {
-        setHomeServerUrl(result['m.homeserver'].base_url)
+      const result = await discover({ user_id: userId })
+      if (result?.home_server_url) {
+        setHomeServerUrl(result.home_server_url)
+        setWriteProtected(true)
       } else {
         console.warn(`Failed to detect server url for ${userId}: ${result}`)
+        setWriteProtected(false)
       }
     } catch (error) {
-      console.error(error)
+      setWriteProtected(false)
     }
   }
 
@@ -119,6 +124,7 @@ export const Login = () => {
             placeholder="[matrix] homeserver url"
             required
             onChange={ev => setHomeServerUrl(ev.target.value)}
+            disabled={writeProtected}
           />
         </div>
         <div>
@@ -136,5 +142,4 @@ export const Login = () => {
     </div>
   )
 }
-
 
