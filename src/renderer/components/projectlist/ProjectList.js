@@ -8,8 +8,7 @@ import { List } from './List'
 import { Card } from './Card'
 import { useList, useServices } from '../hooks'
 import { militaryFormat } from '../../../shared/datetime'
-import Members from './Members'
-
+import MemberManagement from './MemberManagement'
 
 /**
  *
@@ -116,17 +115,21 @@ ButtonBar.propTypes = {
  *
  */
 export const ProjectList = () => {
+
   const { projectStore, ipcRenderer, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
 
   const [replication, setReplication] = React.useState(undefined)
-  const [reload, setReload] = React.useState(false)
+  const [managedProject, setManagedProject] = React.useState(null)
 
   /* system/OS level notifications */
   const notifications = React.useRef(new Set())
-  const [offline, setOffline] = React.useState(true)
+  const [offline, setOffline] = React.useState(false)
+  const [initialized, setInitialized] = React.useState(false)
   const [message, setMessage] = React.useState(null)
+
+  const abortController = React.useRef(new AbortController())
 
   const feedback = message => setMessage(message)
 
@@ -197,9 +200,34 @@ export const ProjectList = () => {
   React.useEffect(fetch, [fetch])
 
   React.useEffect(() => {
+    if (!initialized) return
+
+    const reconnect = async () => {
+      try {
+        abortController.current = new AbortController()
+        await replicationProvider.connect(abortController.current)
+        setOffline(false)
+        feedback(null)
+      } catch (error) {
+        if (error.name === 'AbortError' && error.message === 'online') {
+          setOffline(false)
+          feedback(null)
+          return
+        }
+        feedback(error.message)
+        setOffline(true)
+      }
+    }
+    reconnect()
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized, offline])
+
+  React.useEffect(() => {
     const initializeReplication = async () => {
       try {
         feedback('Initializing replication ...')
+
         /*
           Replication credentials are tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
@@ -219,14 +247,6 @@ export const ProjectList = () => {
           await projectStore.putCredentials('PROJECT-LIST', currentCredentials)
         }
 
-        /*
-          A reload my be requested due to an auth-err or a rate-limiting error.
-        */
-        if (reload) {
-          setReload(false)
-          return
-        }
-
         replicatedProjectList.tokenRefreshed(credentials => {
           projectStore.putCredentials('PROJECT-LIST', credentials)
         })
@@ -240,7 +260,6 @@ export const ProjectList = () => {
         const handler = {
           streamToken: streamToken => {
             projectStore.putStreamToken('PROJECT-LIST', streamToken)
-            feedback(null)
             setOffline(false)
           },
           renamed: (/* project */) => {
@@ -267,11 +286,7 @@ export const ProjectList = () => {
           },
           error: error => {
             console.error(error)
-            if (!navigator.onLine) {
-              feedback('Looks like we are offline! Reconnecting ...')
-            } else {
-              feedback('Replication error! Reconnecting ...')
-            }
+            feedback('Looks like we are offline! Reconnecting ...')
             setOffline(true)
           }
         }
@@ -280,19 +295,18 @@ export const ProjectList = () => {
 
         setReplication(replicatedProjectList)
         feedback(null)
-        setOffline(false)
+        setInitialized(true)
+
+        window.addEventListener('online', () => {
+          console.log('Browser thinks we are back online. Let\'s give it a try ...')
+          abortController.current.abort('online')
+        })
 
       } catch (error) {
+
         console.error(error)
         setOffline(true)
-        if (error.response?.status === 403) {
-          await projectStore.delCredentials('PROJECT-LIST')
-          feedback('Credentials for replication may be void, reauthenticating ...')
-          setReload(true)
-        } else if (error.response?.status === 429) {
-          feedback('Replication was rate-limited, retrying ...')
-          setReload(true)
-        } else if (!navigator.onLine) {
+        if (!navigator.onLine) {
           feedback('Looks like we are offline! Reconnecting ...')
         } else {
           feedback('Replication error: ', error.message)
@@ -313,8 +327,9 @@ export const ProjectList = () => {
       logout from the replication server.
     */
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reload])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
@@ -331,6 +346,7 @@ export const ProjectList = () => {
   /* eslint-disable react/prop-types */
   const child = React.useCallback(props => {
     const { entry: project } = props
+
 
     const send = message => () => ipcRenderer.send(message, project.id)
     const loadPreview = () => projectStore.getPreview(project.id)
@@ -353,18 +369,10 @@ export const ProjectList = () => {
       fetch(project.id)
     }
 
-    const handleMembers = async () => {
+    /* const handleMembers = async () => {
       console.log(`Handle members for ${project.name} - ${project.id}`)
       const members = await replication.members(project.id)
       console.dir(members)
-    }
-
-    /* const handleInvite = value => {
-      if (!value) return
-      replication
-        .invite(project.id, value)
-        .then(() => console.log(`Sent invitation for project ${project.name} to ${value}`))
-        .catch(error => console.error(error))
     } */
 
     const isOpen = project.tags
@@ -403,7 +411,7 @@ export const ProjectList = () => {
                 { (replication && isShared) &&
                     <CustomButton
                       text='Members'
-                      onClick={handleMembers}
+                      onClick={() => setManagedProject(project)}
                     />
                 }
                 <CustomButton
@@ -424,24 +432,11 @@ export const ProjectList = () => {
   }, [dispatch, ipcRenderer, offline, projectStore, replication])
   /* eslint-enable react/prop-types */
 
+
+
   return (
-    <>
-      <Members memberlist={[
-        {
-          displayName: 'Placebo',
-          membership: 'join',
-          userId: '@placebo:thomass-macbook-pro.local'
-        },
-        {
-          membership: 'join',
-          userId: '@rocky:thomass-macbook-pro.local',
-          avatarUrl: 'http://thomass-macbook-pro.local:8008/_matrix/media/v3/download/thomass-macbook-pro.local/mwYSWqkMGDKldUfCSjOAkdMn'
-        },
-        {
-          membership: 'join',
-          userId: '@sylvester:thomass-macbook-pro.local'
-        }
-      ]} />
+    <div >
+      { managedProject && <MemberManagement replication={replication} managedProject={managedProject} onClose={() => setManagedProject(null)}/>}
       <div
         onKeyDown={handleKeyDown}
         style={{
@@ -460,6 +455,8 @@ export const ProjectList = () => {
         </div>
         <List child={child} { ...state }/>
       </div>
-    </>
+    </div>
   )
 }
+
+ProjectList.whyDidYouRender = true
