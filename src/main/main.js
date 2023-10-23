@@ -118,7 +118,8 @@ const ready = async () => {
   ipcMain.on('REFRESH_MENU', () => menu.show())
 
   ipcMain.handle('PURGE_COLLABORATION_SETTINGS', async () => {
-    return collaboration.purgeSettings()
+    await collaboration.purgeSettings()
+    windowManager.reloadAll()
   })
   ipcMain.on('EXPORT_LAYER', exportLayer)
 
