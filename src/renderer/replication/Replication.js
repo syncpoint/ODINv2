@@ -19,9 +19,42 @@ const Replication = () => {
 
   /* system/OS level notifications */
   const notifications = React.useRef(new Set())
-  const [reload, setReload] = React.useState(false)
+
+  const abortController = React.useRef(new AbortController())
+  const [initialized, setInitialized] = React.useState(false)
+  const [offline, setOffline] = React.useState(false)
 
   const feedback = message => emitter.emit('osd', { message, cell: 'B2' })
+
+  React.useEffect(() => {
+    if (!initialized) return
+
+    const reconnect = async () => {
+      try {
+        feedback('Looks like we are offline! Reconnecting ...')
+        signals['replication/operational'](false)
+        abortController.current = new AbortController()
+        await replicationProvider.connect(abortController.current)
+        setOffline(false)
+        feedback(null)
+        signals['replication/operational'](true)
+      } catch (error) {
+        // issued by abortController
+        if (error === 'online') {
+          setOffline(false)
+          feedback(null)
+          signals['replication/operational'](true)
+          return
+        }
+        console.error(error)
+        feedback(error.message)
+        setOffline(true)
+      }
+    }
+    reconnect()
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized, offline])
 
   React.useEffect(() => {
     const initializeReplication = async () => {
@@ -33,22 +66,10 @@ const Replication = () => {
         */
         const credentials = await sessionStore.get(CREDENTIALS, null)
         const replicatedProject = await replicationProvider.project(credentials)
-        /*
-          Unfortunately we have to deal with rate limiting (http error 429) at
-          login. If this is our very first time we try to connect to the project it is very
-          likely that we get a 429 and 'reload' is TRUE.
-          If we have no previous credentials we need to persist them before we set 'reload'
-          to FALSE and re-run the effect handler.
-        */
+
         if (!credentials) {
           const currentCredentials = replicatedProject.credentials()
           await sessionStore.put(CREDENTIALS, currentCredentials)
-        }
-
-        if (reload) {
-          console.log('ReAuthentication has been triggererd. ')
-          setReload(false)
-          return
         }
 
         /*
@@ -129,8 +150,7 @@ const Replication = () => {
           streamToken: async (streamToken) => {
             console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
             sessionStore.put(STREAM_TOKEN, streamToken)
-            feedback(null)
-            signals['replication/operational'](true)
+            setOffline(false)
           },
           invited: async (invitation) => {
             const content = { type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }
@@ -150,23 +170,11 @@ const Replication = () => {
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
-            console.dir(error)
-            if (!navigator.onLine) {
-              feedback('Looks like we are offline! Reconnecting ...')
-            } else {
-              feedback('Replication error! Reconnecting ...')
-            }
-            signals['replication/operational'](false)
+            console.error(error)
+            setOffline(true)
           }
         }
 
-        /*
-          Start the timeline sync process with the most recent stream token
-        */
-        const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
-        replicatedProject.start(mostRecentStreamToken, upstreamHandler)
-        feedback(null)
-        signals['replication/operational'](true)
         /*
           Handle events emitted by the local store.
         */
@@ -226,11 +234,28 @@ const Replication = () => {
               .forEach(([layerId, operations]) => replicatedProject.post(layerId, operations))
           }
 
+        }) // store.on('batch') ....
+
+
+        window.addEventListener('online', () => {
+          console.log('Browser thinks we are back online. Let\'s give it a try ...')
+          abortController.current.abort('online')
         })
 
+        /*
+          Start the timeline sync process with the most recent stream token
+        */
+        const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
+        replicatedProject.start(mostRecentStreamToken, upstreamHandler)
+        feedback(null)
+        signals['replication/operational'](true)
+        setInitialized(true)
 
       } catch (error) {
-        if (error.response?.status === 403) {
+        if (error.response) {
+          console.log(`http error code ${error.response.status}`)
+        }
+        /* if (error.response?.status === 403) {
           await sessionStore.del(CREDENTIALS)
           feedback('Credentials for replication may be void, reauthenticating ...')
           setReload(true)
@@ -241,9 +266,9 @@ const Replication = () => {
           feedback('Looks like we are offline! Reconnecting ...')
         } else {
           feedback('Replication error!', error.message)
-        }
+        } */
         console.dir(error)
-        signals['replication/operational'](false)
+        setOffline(true)
       }
     }
 
@@ -261,7 +286,7 @@ const Replication = () => {
     */
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reload])
+  }, [])
 
 
   /*

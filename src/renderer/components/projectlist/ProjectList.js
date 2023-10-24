@@ -209,11 +209,13 @@ export const ProjectList = () => {
         setOffline(false)
         feedback(null)
       } catch (error) {
-        if (error.name === 'AbortError' && error.message === 'online') {
+        // issued by abortController
+        if (error === 'online') {
           setOffline(false)
           feedback(null)
           return
         }
+        console.error(error)
         feedback(error.message)
         setOffline(true)
       }
