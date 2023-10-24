@@ -237,13 +237,6 @@ export const ProjectList = () => {
         const credentials = await projectStore.getCredentials('PROJECT-LIST')
         const replicatedProjectList = await replicationProvider.projectList(credentials)
 
-        /*
-          Unfortunately we have to deal with rate limiting (http error 429) at
-          login. If this is our very first time we try to connect to the project it is very
-          likely that we get a 429 and 'reload'' is TRUE.
-          If we have no previous credentials we need to persist them before we set 'reload'
-          to FALSE and re-run the effect handler.
-        */
         if (!credentials) {
           const currentCredentials = replicatedProjectList.credentials()
           await projectStore.putCredentials('PROJECT-LIST', currentCredentials)
