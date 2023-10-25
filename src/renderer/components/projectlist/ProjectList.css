@@ -18,8 +18,22 @@
   border-radius: 1rem;
 }
 
+.mm-header {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.mm-membership {
+  font-size: medium;
+  margin-left: auto;
+}
+
 .title {
   font-size: x-large;
   font-weight: 500;
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
