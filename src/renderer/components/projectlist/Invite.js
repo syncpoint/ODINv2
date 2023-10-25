@@ -14,10 +14,17 @@ const Invite = props => {
   const [query, setQuery] = React.useState('')
   const deferredQuery = React.useDeferredValue(query)
 
+  const FQUN = /^@.*:.*/
 
   React.useEffect(() => {
     const doSearch = async () => {
-      const r = await replication.searchUsers(query)
+      if (!query) return
+      const jobs = [replication.searchUsers(query)]
+      if (query.match(FQUN)) {
+        jobs.push(replication.profile(query))
+      }
+
+      const r = (await Promise.all(jobs)).flat()
       const modified = r.map(u => ({ ...u, id: u.userId }))
       dispatch({ type: 'entries', entries: modified })
     }
@@ -38,7 +45,7 @@ const Invite = props => {
 
   return (
     <div style={{ margin: '6px' }}>
-      <FilterInput placeholder='Search for users ...' onChange={e => setQuery(e)} value={query}/>
+      <FilterInput placeholder='Search for users ...' onChange={e => setQuery(e)} value={query} />
       <React.Suspense fallback={<h2>Loading...</h2>}>
         <List child={child} { ...state } />
       </React.Suspense>
