@@ -5,6 +5,8 @@ appId: io.syncpoint.odin.v2
 productName: "ODINv2"
 copyright: ${author} https://syncpoint.io
 
+asarUnpack: "**/*.node"
+
 win:
   target:
     - target: nsis
@@ -32,5 +34,5 @@ linux:
 publish:
   - provider: github
     releaseType: release
-  
+
 electronVersion: 26.4.1
