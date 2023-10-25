@@ -17,7 +17,9 @@ const MemberManagement = props => {
     const members = await replication.members(managedProject.id)
     const p = await replication.permissions(managedProject.id)
     setPermissions(p)
-    const enhancedMebersList = members.map(m => ({ ...m, id: m.userId }))
+    const enhancedMebersList = members
+      .filter(m => m.membership !== 'leave')
+      .map(m => ({ ...m, id: m.userId }))
     setMemberList(enhancedMebersList)
   }
 
@@ -41,15 +43,28 @@ const MemberManagement = props => {
     }
   }
 
-  const toggleView = () => setAction(current => current === ACTIONS.KICK ? ACTIONS.INVITE : ACTIONS.KICK)
+  const handleInvite = async () => {
+    try {
+      await Promise.all(selected.map(userId => replication.invite(managedProject.id, userId)))
+      getMembers()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const toggleView = () => {
+    setAction(current => current === ACTIONS.KICK ? ACTIONS.INVITE : ACTIONS.KICK)
+    setSelected([])
+  }
 
   const changeSelection = selection => {
+    if (!selection) return
     setSelected(selection)
   }
 
   const getCurrentView = () => {
     if (action === ACTIONS.KICK) return <Members memberlist={memberList} handleSelect={changeSelection}/>
-    return <Invite replication={replication} projectId={managedProject.id}/>
+    return <Invite replication={replication} handleSelect={changeSelection}/>
   }
 
   const notKickable = () => {
@@ -59,6 +74,14 @@ const MemberManagement = props => {
       .filter(m => selected.includes(m.userId))
       .some(m => m.membership === 'invite')
     return !r
+  }
+
+  const notInvitable = () => {
+    if (selected.length === 0) return true
+    if (!permissions[ACTIONS.INVITE]) return true
+    const r = memberList
+      .filter(m => selected.includes(m.userId))
+    return r.length > 0
   }
 
   return (
@@ -73,7 +96,15 @@ const MemberManagement = props => {
                                       onClick={handleKick}
                                       style={{ marginLeft: 'auto', marginRight: '6px' }}
                                       disabled={notKickable()}>Withdraw invitation
-                                   </Button> }
+                                   </Button>
+      }
+      {
+        action === ACTIONS.INVITE && <Button
+                                        onClick={handleInvite}
+                                        style={{ marginLeft: 'auto', marginRight: '6px' }}
+                                        disabled={notInvitable()}>Invite
+                                     </Button>
+      }
     </div>
     { getCurrentView() }
   </div>

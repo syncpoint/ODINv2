@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { List } from './List'
 import { userProvider } from './User'
 import { useList } from '../hooks'
@@ -26,6 +27,10 @@ const Members = props => {
   return (
     <List child={child} { ...state } />
   )
+}
+Members.propTypes = {
+  memberlist: PropTypes.array.isRequired,
+  handleSelect: PropTypes.func.isRequired
 }
 
 export default Members

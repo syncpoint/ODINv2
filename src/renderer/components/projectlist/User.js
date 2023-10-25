@@ -12,6 +12,20 @@ const User = props => {
     props.onClick(props.id)
   }
 
+  const displayMembership = membership => {
+    switch (membership) {
+      case 'invite': return 'Invited'
+      case 'join': return 'Joined'
+      case 'ban': return 'Banned'
+      default: return membership
+    }
+  }
+
+  const getCSSClass = membership => {
+    if (!membership) return ''
+    return `mm-${membership}`
+  }
+
   return (
     <div
       key={props.id}
@@ -24,7 +38,7 @@ const User = props => {
         <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
           <Avatar entry={entry} />
           <div className='card-title'>{entry.displayName ?? entry.userId}</div>
-          <div className='mm-membership'>{`${entry.membership.toUpperCase()}ED`}</div>
+          <div className={`mm-membership ${getCSSClass(entry.membership)}`}>{displayMembership(entry.membership)}</div>
         </div>
       </Card>
     </div>

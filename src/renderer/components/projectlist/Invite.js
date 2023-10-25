@@ -1,49 +1,53 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import SearchResult from './SearchResults'
+import { List } from './List'
+import { useList } from '../hooks'
+import { userProvider } from './User'
+// import SearchResult from './SearchResults'
 import { FilterInput } from './FilterInput'
 
 const Invite = props => {
 
-  const { projectId, replication } = props
+  const { replication, handleSelect } = props
 
+  const [state, dispatch] = useList({ multiselect: false })
   const [query, setQuery] = React.useState('')
   const deferredQuery = React.useDeferredValue(query)
 
-  const [result, setResult] = React.useState([])
-
-  React.useEffect(() => console.log(`${query} VS ${deferredQuery}`), [query, deferredQuery])
 
   React.useEffect(() => {
     const doSearch = async () => {
       const r = await replication.searchUsers(query)
-      setResult(r)
+      const modified = r.map(u => ({ ...u, id: u.userId }))
+      dispatch({ type: 'entries', entries: modified })
     }
     doSearch()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deferredQuery])
 
-  const handleInvite = async (userId) => {
-    console.dir(userId)
-    try {
-      await replication.invite(projectId, userId)
-    } catch (error) {
-      console.error(error)
-    }
+  React.useEffect(() => {
+    handleSelect(state.selected)
+  }, [state, handleSelect])
+
+
+  const handleClick = id => {
+    dispatch({ type: 'select', id })
   }
 
+  const child = userProvider(handleClick)
+
   return (
-    <>
+    <div style={{ margin: '6px' }}>
       <FilterInput placeholder='Search for users ...' onChange={e => setQuery(e)} value={query}/>
       <React.Suspense fallback={<h2>Loading...</h2>}>
-        <SearchResult entries={result} onInvite={handleInvite}/>
+        <List child={child} { ...state } />
       </React.Suspense>
-    </>
+    </div>
   )
 }
 
 export default Invite
 Invite.propTypes = {
-  projectId: PropTypes.string.isRequired,
+  handleSelect: PropTypes.func.isRequired,
   replication: PropTypes.object.isRequired
 }
