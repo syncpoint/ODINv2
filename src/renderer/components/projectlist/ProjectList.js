@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import * as R from 'ramda'
 import { Button } from './Button'
 // TODO: replace Card and List with simple <div/>s
 import { FilterInput } from './FilterInput'
@@ -144,20 +143,18 @@ export const ProjectList = () => {
   const fetch = React.useCallback((projectId, ephemeralProjects = []) => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
+      const localProjectIds = projects.map(p => p.id)
       const sharedProjects = replication ? (await replication.invited()) : []
-
-      const invitedProjects = [...sharedProjects, ...ephemeralProjects]
-        .filter(project => {
-          const hasAlreadyJoined = projects.includes(project.id)
-          return !hasAlreadyJoined
-        })
-        .map(project => ({ ...project, ...{ tags: ['INVITED'] } }))
 
       /*  Sometimes the replication API does not update the state immediately. In order to
           avoid duplicate entries - one from the local db and one from the replication API -
           we remove these duplicate entries.
       */
-      const allProjects = R.uniq([...projects, ...invitedProjects])
+      const invitedProjects = [...sharedProjects, ...ephemeralProjects]
+        .filter(project => !localProjectIds.includes(project.id))
+        .map(project => ({ ...project, ...{ tags: ['INVITED'] } }))
+
+      const allProjects = [...projects, ...invitedProjects]
       dispatch({ type: 'entries', entries: allProjects, candidateId: projectId })
       if (projectId) dispatch({ type: 'select', id: projectId })
     })()
