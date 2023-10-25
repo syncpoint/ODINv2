@@ -14,18 +14,23 @@ const Invite = props => {
   const [query, setQuery] = React.useState('')
   const deferredQuery = React.useDeferredValue(query)
 
-  const FQUN = /^@.*:.*/
+  const FQUN = /^@.{1,}:.{1,}/
 
   React.useEffect(() => {
     const doSearch = async () => {
-      if (!query) return
+      if (!query) {
+        dispatch({ type: 'entries', entries: [] })
+        return
+      }
       const jobs = [replication.searchUsers(query)]
       if (query.match(FQUN)) {
         jobs.push(replication.profile(query))
       }
 
       const r = (await Promise.all(jobs)).flat()
-      const modified = r.map(u => ({ ...u, id: u.userId }))
+      const modified = r
+        .filter(u => u !== null)
+        .map(u => ({ ...u, id: u.userId }))
       dispatch({ type: 'entries', entries: modified })
     }
     doSearch()
