@@ -37,7 +37,10 @@ const User = props => {
           id={props.id} >
         <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
           <Avatar entry={entry} />
-          <div className='card-title'>{[entry.displayName, entry.userId].join(' - ')}</div>
+          <div>
+            <div className='card-title'>{entry.displayName ? entry.displayName : entry.userId}</div>
+            <div className='card-content'>{entry.userId}</div>
+          </div>
           <div className={`mm-membership ${getCSSClass(entry.membership)}`}>{displayMembership(entry.membership)}</div>
         </div>
       </Card>
