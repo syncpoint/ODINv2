@@ -66,9 +66,13 @@ After you created a new layer you are free to choose to share it immediately or 
 
 ### Receiving invitations to join a layer
 
-Anyone who joined the shared project is able to share their layers. The moment a layer is shared all members of the project will receive a notification (a system notification on Windows and MacOS). Recipients may decide to either ignore the invitation or join the shared layer (it's the same principle like te one we use for projects).
+Anyone who joined the shared project is able to share their layers. The moment a layer is shared all members of the project will receive a notification (a system notification on Windows and MacOS). Recipients may decide to either ignore the invitation or join the shared layer (it's the same principle like the one we use for projects).
+
+<img src='./img/invitation-notification.jpg' width='200'>
 
 In order to join a shared layer you can either click on the invitation notification or manually switch to the `INVITED` scope. Select a shared layer and click on the `Join` button in the action bar. If you clicked on the invitation notification the layer is already selected.
+
+<img src='./img/join-layer.jpg' width='800'>
 
 After joining a shared layer the content will be fetched from the server and get rendered on the map.
 
