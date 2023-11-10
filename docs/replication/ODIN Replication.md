@@ -48,7 +48,7 @@ In order to invite people to your project just select the user entry and click `
 
 ## Working with a shared project
 
-> As of Q4/2023 the architecture of ODIN's replication does not limit wat joined members are permitted to do with layers and features. Every member can add and rename layers, add, modify and remove features. The __locked__ state for layers and features affects local manipulation only and is not replicated.
+> As of Q4/2023 the architecture of ODIN's replication does not limit what joined members are permitted to do with layers and features. Every member can add and rename layers, add, modify and remove features. The __locked__ state for layers and features affects local manipulation only and is not replicated.
 > Future version will support a simple access control (read, read + write) and selective membership management for layers.
 
 > Local changes to shared layers of features are replicated instantly. We try to reach near-realtime replication speed but are limited by the speed of the network used and the utilization of the home server. Since Matrix is a federated system 
