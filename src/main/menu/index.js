@@ -7,8 +7,9 @@ import viewMenu from './view-menu'
 import windowMenu from './window-menu'
 import collaborationMenu from './collaboration-menu'
 import Emitter from '../../shared/emitter'
+import helpMenu from './help-menu'
 
-const menus = [appMenu, fileMenu, editMenu, viewMenu, collaborationMenu, windowMenu]
+const menus = [appMenu, fileMenu, editMenu, viewMenu, collaborationMenu, windowMenu, helpMenu]
 
 /**
  * @constructor
