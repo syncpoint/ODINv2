@@ -9,13 +9,16 @@ const canCopy = id =>
   ID.isMarkerId(id) ||
   ID.isTileServiceId(id)
 
-export const writeEntries = async (entries) => {
+/**
+ * @async implicit
+ */
+export const writeEntries = entries => {
   const clipboardObject = {
     contentType: CONTENT_TYPE,
     entries
   }
 
-  navigator.clipboard.writeText(JSON.stringify(clipboardObject))
+  return navigator.clipboard.writeText(JSON.stringify(clipboardObject))
 }
 
 export const readEntries = async () => {
@@ -58,30 +61,42 @@ Clipboard.doCopy = async (store, selected) => {
   return keys
 }
 
+/**
+ * @async implicit
+ */
 Clipboard.doDelete = (store, keys) => {
-  store.delete(keys)
+  return store.delete(keys)
 }
 
-Clipboard.prototype.copy = async function () {
+/**
+ * @async implicit
+ */
+Clipboard.prototype.copy = function () {
   const selected = this.selection.selected()
-  Clipboard.doCopy(this.store, selected)
+  return Clipboard.doCopy(this.store, selected)
 }
 
 Clipboard.prototype.cut = async function () {
   const selected = this.selection.selected()
   const keys = await Clipboard.doCopy(this.store, selected)
-  Clipboard.doDelete(this.store, keys)
+  return Clipboard.doDelete(this.store, keys)
 }
 
+/**
+ * @async implicit
+ */
 Clipboard.prototype.paste = async function () {
   const entries = await readEntries()
   if (!entries) return
   const defaultLayerId = await this.store.defaultLayerId()
   const tuples = await clone(defaultLayerId, entries)
-  this.store.insert(tuples)
+  return this.store.insert(tuples)
 }
 
+/**
+ * @async implicit
+ */
 Clipboard.prototype.delete = function () {
   const selected = this.selection.selected()
-  this.store.delete(selected)
+  return this.store.delete(selected)
 }

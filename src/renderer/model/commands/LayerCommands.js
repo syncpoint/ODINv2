@@ -56,9 +56,6 @@ const ExportLayer = function (services) {
 Object.assign(ExportLayer.prototype, EventEmitter.prototype)
 
 ExportLayer.prototype.execute = async function () {
-  const layerId = this.selected()[0]
-  const layer = await this.store.value(layerId)
-
   await this.clipboard.copy()
   const entries = await readEntries()
   const content = {
@@ -66,8 +63,11 @@ ExportLayer.prototype.execute = async function () {
     entries
   }
 
+  const layerId = this.selected()[0]
+  const layer = await this.store.value(layerId)
   ipcRenderer.send('EXPORT_LAYER', layer.name, content)
 }
+
 ExportLayer.prototype.enabled = function () {
   return this.selected().length === 1
 }
