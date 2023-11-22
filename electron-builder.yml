@@ -35,4 +35,4 @@ publish:
   - provider: github
     releaseType: release
 
-electronVersion: 26.4.1
+electronVersion: 26.6.0
