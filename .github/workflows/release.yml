@@ -35,32 +35,3 @@ jobs:
         CSC_LINK: ${{ secrets.CSC_LINK }}
         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  win:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci --no-audit --no-optional
-    - run: npm run webpack:production
-    - run: npm run release:w
-      env:          
-        WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-        WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: VirusTotal Scan
-      uses: crazy-max/ghaction-virustotal@v3
-      with:
-        vt_api_key: ${{ secrets.VIRUS_TOTAL_API_KEY }}
-        files: |
-          .exe$
