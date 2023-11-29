@@ -11,11 +11,14 @@
 }
 
 .member-container {
-  min-height: 50vh;
+  height: 50vh;
   width: 75%;
   background-color: white;
   padding: 1.5rem;
   border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .mm-header {
