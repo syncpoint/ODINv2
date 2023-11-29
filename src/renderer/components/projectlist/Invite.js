@@ -3,8 +3,7 @@ import PropTypes from 'prop-types'
 import { List } from './List'
 import { useList } from '../hooks'
 import { userProvider } from './User'
-// import SearchResult from './SearchResults'
-import { FilterInput } from './FilterInput'
+import './ProjectList.css'
 
 const Invite = props => {
 
@@ -50,10 +49,8 @@ const Invite = props => {
 
   return (
     <div style={{ margin: '6px' }}>
-      <FilterInput placeholder='Search for users ...' onChange={e => setQuery(e)} value={query} />
-      <React.Suspense fallback={<h2>Loading...</h2>}>
-        <List child={child} { ...state } />
-      </React.Suspense>
+      <input className='search' placeholder='Search for users ...' onChange={e => setQuery(e.target.value)} value={query} />
+      <List child={child} { ...state } />
     </div>
   )
 }

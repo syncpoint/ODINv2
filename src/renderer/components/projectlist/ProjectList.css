@@ -50,3 +50,12 @@
   margin-bottom: 2.5rem;
 }
 
+.search {
+  font-size: medium;
+  border-color: #40a9ff;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  width: 100%;
+  padding: 4px;
+}
+
