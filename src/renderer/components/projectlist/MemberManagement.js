@@ -17,10 +17,11 @@ const MemberManagement = props => {
     const members = await replication.members(managedProject.id)
     const p = await replication.permissions(managedProject.id)
     setPermissions(p)
-    const enhancedMebersList = members
+    const enhancedMembersList = members
       .filter(m => m.membership !== 'leave')
       .map(m => ({ ...m, id: m.userId }))
-    setMemberList(enhancedMebersList)
+
+    setMemberList(enhancedMembersList)
   }
 
   const [memberList, setMemberList] = React.useState([])
