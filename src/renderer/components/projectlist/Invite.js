@@ -48,10 +48,10 @@ const Invite = props => {
   const child = userProvider(handleClick)
 
   return (
-    <div style={{ margin: '6px' }}>
+    <>
       <input className='search' placeholder='Search for users ...' onChange={e => setQuery(e.target.value)} value={query} />
       <List child={child} { ...state } />
-    </div>
+    </>
   )
 }
 
