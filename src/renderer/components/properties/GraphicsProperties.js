@@ -45,14 +45,14 @@ export default props => {
     RECTANGLE: () => (
       <ColSpan2>
         <GridAutoColumns>
-          <RectangleWidth features={features}/>
-          <Length features={features}/>
-          <Attitude features={features}/>
+          <RectangleWidth features={features} disabled={props.disabled} />
+          <Length features={features} disabled={props.disabled} />
+          <Attitude features={features} disabled={props.disabled} />
         </GridAutoColumns>
       </ColSpan2>
     ),
-    CIRCLE: () => <Radius features={features}/>,
-    CORRIDOR: () => <CorridorWidth features={features}/>
+    CIRCLE: () => <Radius features={features} disabled={props.disabled} />,
+    CORRIDOR: () => <CorridorWidth features={features} disabled={props.disabled} />
   }
 
   return (
