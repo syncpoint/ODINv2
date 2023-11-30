@@ -23,7 +23,7 @@ const PointProperties = props =>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
     <Status {...props}/>
-    <KProperty />
+    <KProperty {...props}/>
   </GridCols2>
 
 export default PointProperties

@@ -27,7 +27,7 @@ const ActivityProperties = props =>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>
     <Status {...props}/>
-    <KProperty />
+    <KProperty {...props}/>
   </GridCols2>
 
 export default ActivityProperties

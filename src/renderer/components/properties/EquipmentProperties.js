@@ -28,7 +28,7 @@ const EquipmentProperties = props =>
     <EvaluationRating {...props}/>
     <Status {...props}/>
     <Condition {...props}/>
-    <KProperty />
+    <KProperty {...props}/>
   </GridCols2>
 
 export default EquipmentProperties

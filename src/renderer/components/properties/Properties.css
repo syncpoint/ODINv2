@@ -72,3 +72,8 @@
 .properties__button:hover {
   background-color: rgb(11, 65, 100)
 }
+
+.properties__button:disabled {
+  opacity: 0.5;
+  background-color: rgb(1, 119, 169)
+}

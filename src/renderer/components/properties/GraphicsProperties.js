@@ -68,7 +68,7 @@ export default props => {
       <StaffComments {...props}/>
       <AdditionalInformation {...props}/>
       <Status {...props}/>
-      <KProperty />
+      <KProperty {...props}/>
     </GridCols2>
   )
 }

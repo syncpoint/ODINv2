@@ -33,7 +33,7 @@ const UnitProperties = props => {
       <Condition {...props}/>
       <Reinforcement {...props}/>
       <UnitModifiers {...props}/>
-      <KProperty />
+      <KProperty {...props}/>
     </GridCols2>
   )
 }
