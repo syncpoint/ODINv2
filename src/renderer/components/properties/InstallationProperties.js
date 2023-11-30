@@ -9,6 +9,7 @@ import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 import GridCols2 from './GridCols2'
+import KProperty from './KProperty'
 
 const InstallationProperties = props =>
   <GridCols2>
@@ -21,6 +22,7 @@ const InstallationProperties = props =>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>
     <Status {...props}/>
+    <KProperty />
   </GridCols2>
 
 export default InstallationProperties

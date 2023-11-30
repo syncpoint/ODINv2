@@ -14,6 +14,7 @@ import Condition from './Condition'
 import Reinforcement from './Reinforcement'
 import UnitModifiers from './UnitModifiers'
 import GridCols2 from './GridCols2'
+import KProperty from './KProperty'
 
 const UnitProperties = props => {
   return (
@@ -32,6 +33,7 @@ const UnitProperties = props => {
       <Condition {...props}/>
       <Reinforcement {...props}/>
       <UnitModifiers {...props}/>
+      <KProperty />
     </GridCols2>
   )
 }

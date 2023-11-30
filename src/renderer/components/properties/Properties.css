@@ -13,7 +13,6 @@
   box-shadow:
     rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
     rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
-  opacity: 0.78;
 }
 
 .feature-properties:hover {
@@ -44,11 +43,7 @@
   opacity: 1;
 }
 
-.feature-properties:focus-within {
-  opacity: 1;
-}
-
-.properties__button {
+.properties__icon__button {
   width: 28px;
   height: 28px;
   padding: 2px;
@@ -58,10 +53,22 @@
   background-color: white;
 }
 
-.properties__button:hover {
+.properties__icon__button:hover {
   background-color: #e0e0e0;
 }
 
-.properties__button:active {
+.properties__icon__button:active {
   background-color: #d0d0d0;
+}
+
+.properties__button {
+  font-weight: 400;
+  color: white;
+  background-color: rgb(1, 119, 169);
+  padding: 4px;
+  border-radius: 2px;
+}
+
+.properties__button:hover {
+  background-color: rgb(11, 65, 100)
 }

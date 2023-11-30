@@ -9,6 +9,7 @@ import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
 import GridCols2 from './GridCols2'
+import KProperty from './KProperty'
 
 const PointProperties = props =>
   <GridCols2>
@@ -22,6 +23,7 @@ const PointProperties = props =>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
     <Status {...props}/>
+    <KProperty />
   </GridCols2>
 
 export default PointProperties
