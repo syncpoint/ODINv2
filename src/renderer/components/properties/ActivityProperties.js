@@ -11,6 +11,7 @@ import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 import GridCols2 from './GridCols2'
+import KProperty from './KProperty'
 
 const ActivityProperties = props =>
   <GridCols2>
@@ -26,6 +27,7 @@ const ActivityProperties = props =>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>
     <Status {...props}/>
+    <KProperty {...props}/>
   </GridCols2>
 
 export default ActivityProperties

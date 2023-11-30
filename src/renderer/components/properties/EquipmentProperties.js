@@ -12,6 +12,7 @@ import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 import Condition from './Condition'
 import GridCols2 from './GridCols2'
+import KProperty from './KProperty'
 
 const EquipmentProperties = props =>
   <GridCols2>
@@ -27,6 +28,7 @@ const EquipmentProperties = props =>
     <EvaluationRating {...props}/>
     <Status {...props}/>
     <Condition {...props}/>
+    <KProperty {...props}/>
   </GridCols2>
 
 export default EquipmentProperties

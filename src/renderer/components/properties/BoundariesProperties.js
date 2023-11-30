@@ -11,6 +11,7 @@ import AdditionalInformation from './AdditionalInformation'
 import Status from './Status'
 import GridCols2 from './GridCols2'
 import Echelon from './Echelon'
+import KProperty from './KProperty'
 
 export default props => {
   return (
@@ -24,6 +25,7 @@ export default props => {
       <StaffComments {...props}/>
       <AdditionalInformation {...props}/>
       <Status {...props}/>
+      <KProperty {...props}/>
     </GridCols2>
   )
 }
