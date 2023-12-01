@@ -28,8 +28,8 @@ export default async function (id) {
     description,
     tags: [
       'SCOPE:MEASURE:NONE',
-      hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
-      locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
+      hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
+      locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline',
       ...((tags || [])).map(label => `USER:${label}:NONE`),
       'PLUS'
     ].join(' '),

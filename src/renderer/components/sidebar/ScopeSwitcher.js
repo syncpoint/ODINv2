@@ -5,8 +5,18 @@ import * as mdi from '@mdi/js'
 import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import * as ID from '../../ids'
-import { IconTag } from './IconTag'
 import { Tooltip } from 'react-tooltip'
+import Icon from '@mdi/react'
+import './ScopeSwitcher.css'
+
+/* eslint-disable react/prop-types */
+export const IconTag = props => {
+  const { path, ...rest } = props
+
+  return (
+      <Icon className='a74a-icon' path={path} {...rest}/>
+  )
+}
 
 
 /**
@@ -20,10 +30,10 @@ const ScopeSwitch = props => {
     : search.history[0].scope.split(' ').includes(props.scope)
 
   const className = props.name
-    ? 'e3de-tag e3de-tag--named'
+    ? 'a74a-named'
     : enabled
-      ? 'e3de-tag e3de-tag--scope e3de-tag--active'
-      : 'e3de-tag e3de-tag--system e3de-tag--active'
+      ? 'a74a-scope-selector a74a-scope-selector-active'
+      : 'a74a-scope-selector'
 
   const handleClick = () => {
     const findIndex = () => search.history.findIndex(entry => entry.scope === props.scope)
@@ -35,12 +45,14 @@ const ScopeSwitch = props => {
 
   return props.name
     ? <div className={className} onClick={handleClick}>
-        <div className='name'>{props.name}</div>
+        <div className='a74a-named-name'>{props.name}</div>
         <div className='label'>{props.label}</div>
       </div>
     : <>
-        <span id={`ss-${props.label}`} className={className} onClick={handleClick}>{props.label}</span>
-        <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
+        <span id={`ss-${props.label}`} className={className} onClick={handleClick}>
+          <Icon className={ enabled ? 'a74a-icon-active' : 'a74a-icon'} path={mdi[props.label]} {...props}/>
+          <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
+        </span>
       </>
 }
 
@@ -69,16 +81,16 @@ export const ScopeSwitcher = props => {
   }
 
   const SCOPES = {
-    '#pin': 'pinned',
-    [`@${ID.LAYER}`]: 'layer',
-    [`@${ID.FEATURE}`]: 'feature',
-    [`@${ID.LINK}`]: 'link',
-    [`@${ID.SYMBOL}`]: 'symbol',
-    [`@${ID.MARKER}`]: 'marker',
-    [`@${ID.BOOKMARK}`]: 'bookmark',
-    [`@${ID.PLACE}`]: 'place',
-    [`@${ID.TILE_SERVICE}`]: 'tile-service',
-    [`@${ID.MEASURE}`]: 'measure'
+    '#pin': 'mdiPinOutline',
+    [`@${ID.LAYER}`]: 'mdiLayers',
+    [`@${ID.FEATURE}`]: 'mdiFormatListBulletedType',
+    [`@${ID.SYMBOL}`]: 'mdiShapePlusOutline',
+    [`@${ID.LINK}`]: 'mdiLink',
+    [`@${ID.MARKER}`]: 'mdiCrosshairs',
+    [`@${ID.BOOKMARK}`]: 'mdiBookmarkOutline',
+    [`@${ID.PLACE}`]: 'mdiSearchWeb',
+    [`@${ID.TILE_SERVICE}`]: 'mdiEarth',
+    [`@${ID.MEASURE}`]: 'mdiAndroidStudio'
   }
 
   const TOOLTIPS = {
@@ -114,7 +126,7 @@ export const ScopeSwitcher = props => {
 
   const back = history.length > 1
     ? <><IconTag
-        path={mdi.mdiArrowUp}
+        path={mdi.mdiCloseBoxOutline}
         onClick={handleClick}
         id='scope-back'
       />
@@ -123,11 +135,9 @@ export const ScopeSwitcher = props => {
     : null
 
   return (
-    <div className='scope-container e3de-row'>
-      <div className='e3de-taglist'>
-        { defaultSwitches.concat(childSwitches) }
-        { back }
-      </div>
+    <div className='a74a-taglist'>
+      { defaultSwitches.concat(childSwitches) }
+      { back }
     </div>
   )
 }

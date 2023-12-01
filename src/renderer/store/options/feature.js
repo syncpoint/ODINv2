@@ -46,9 +46,9 @@ export default async function (id) {
     svg: icon,
     tags: [
       'SCOPE:FEATURE',
-      hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
-      locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
-      ...(links.length ? ['SYSTEM:LINK'] : []),
+      hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
+      locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline',
+      ...(links.length ? ['SYSTEM:LINK::mdiLink'] : []),
       geometryTag,
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),
