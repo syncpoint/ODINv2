@@ -295,8 +295,8 @@ export const Sidebar = () => {
         const highlighter = ['LAYER', 'FEATURE', 'MARKER', 'PLACE']
         const linker = ['LINK']
 
-        if (highlighter.includes(activeAnchor?.innerText)) return 'Click and hold to highlight'
-        if (linker.includes(activeAnchor?.innerText)) return 'Show assigned links'
+        if (highlighter.includes(activeAnchor?.innerText)) return 'Click and hold to highlight content.'
+        if (linker.includes(activeAnchor?.innerText)) return 'Show linked documents.'
         return ''
       }} />
       <Tooltip anchorSelect='.e3de-icon-tag' delayShow={750} render={({ activeAnchor }) => {
@@ -307,7 +307,7 @@ export const Sidebar = () => {
           case 'mdiLock': return 'Click to unlock.'
           case 'mdiLockOpenVariantOutline': return 'Click to lock.'
           case 'mdiLink': return 'Show linked documents.'
-          case 'mdiFolderOpenOutline': return 'Click to show child elements (content).'
+          case 'mdiFormatListBulletedType': return 'Show layer content (features)'
           default: return null
         }
       }} />

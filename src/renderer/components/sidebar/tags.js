@@ -93,6 +93,7 @@ export const SystemTag = props => {
 
   const handleClick = event => {
     event.stopPropagation()
+    console.log(props, event)
     controller.handleClick(props.id, event, props.spec)
   }
 

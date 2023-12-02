@@ -15,7 +15,7 @@ export default async function (id) {
       hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
       locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline',
       ...(links.length ? ['SYSTEM:LINK::mdiLink'] : []),
-      'SYSTEM:LAYER:OPEN:mdiFolderOpenOutline', // navigate to contained features
+      'SYSTEM:LAYER:OPEN:mdiFormatListBulletedType', // navigate to contained features
       ...((tags || [])).map(label => `USER:${label}:NONE`),
       ...(defaultFlag ? ['USER:default:NONE'] : []),
       'PLUS'
