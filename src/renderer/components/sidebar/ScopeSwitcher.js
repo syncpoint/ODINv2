@@ -81,11 +81,14 @@ const ScopeSwitch = props => {
     </div>
   }
 
-  return <span id={`ss-${props.label}`} className={className} onClick={handleClick}>
-      <Icon className={ enabled ? 'a74a-icon-active' : 'a74a-icon'} path={mdi[props.label]} {...props}/>
+  return (
+    <>
+      <span id={`ss-${props.label}`} className={className} onClick={handleClick}>
+        <Icon className={ enabled ? 'a74a-icon-active' : 'a74a-icon'} path={mdi[props.label]} />
+      </span>
       <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
-    </span>
-  /* </> */
+    </>
+  )
 }
 
 ScopeSwitch.propTypes = {
