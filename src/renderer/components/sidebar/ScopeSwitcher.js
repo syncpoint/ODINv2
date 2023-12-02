@@ -62,9 +62,6 @@ const ScopeSwitch = props => {
 
 
   if (props.name && props.handleGoBack) {
-    console.dir(props)
-    const result = props.scope.match(/link/i)
-    console.log(`result of match: ${result} in ${props.scope}`)
 
     return <div style={{ width: '100%', border: '1px solid #e9746c', borderRadius: '2px', marginTop: '3px' }} >
       <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between' }}>
