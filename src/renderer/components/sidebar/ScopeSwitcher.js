@@ -124,7 +124,6 @@ export const ScopeSwitcher = props => {
   )
 
   const childSwitches = R.drop(1, history).map(({ key, label, scope }, index, elements) => {
-    console.log(`${index} of ${elements.length}`)
     return <ScopeSwitch
       key={key}
       scope={scope}
