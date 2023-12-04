@@ -5,7 +5,6 @@ import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
 import { preventDefault } from 'ol/events/Event'
-import { Tooltip } from 'react-tooltip'
 import './FilterInput.scss'
 
 
@@ -72,12 +71,6 @@ export const FilterInput = props => {
         onClick={stopPropagation}
         id='filter-input'
       />
-      <Tooltip anchorSelect='#filter-input' delayShow={750}>
-        <div>
-          You can search for multiple phrases or #tags<br/>
-          and also combine them.
-        </div>
-      </Tooltip>
     </div>
   )
 }
