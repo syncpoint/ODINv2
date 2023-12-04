@@ -11,9 +11,9 @@ import './ScopeSwitcher.css'
 
 
 const SCOPES = {
-  [`@${ID.LAYER}`]: 'mdiLayers',
+  [`@${ID.LAYER}`]: 'mdiLayersTriple',
   [`@${ID.FEATURE}`]: 'mdiFormatListBulletedType',
-  [`@${ID.LINK}`]: 'mdiLink',
+  [`@${ID.LINK}`]: 'mdiLinkVariant',
   '#pin': 'mdiPinOutline',
   [`@${ID.SYMBOL}`]: 'mdiShapePlusOutline',
   [`@${ID.MARKER}`]: 'mdiCrosshairs',
@@ -66,7 +66,7 @@ const ScopeSwitch = props => {
     return <div style={{ width: '100%', border: '1px solid #e9746c', borderRadius: '2px', marginTop: '3px' }} >
       <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between' }}>
         <Icon className='a74a-icon-active'
-          path={props.scope.match(/LINK/i) === null ? mdi.mdiFormatListBulletedType : mdi.mdiLink }
+          path={props.scope.match(/LINK/i) === null ? mdi.mdiFormatListBulletedType : mdi.mdiLinkVariant }
         />
         <div style={{ textTransform: 'uppercase', padding: '3px', fontWeight: 400, fontSize: '0.86rem' }}>{props.name}</div>
         { props.disabled

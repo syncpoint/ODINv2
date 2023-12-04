@@ -8,7 +8,7 @@ const CreateLayer = function (services) {
   this.selection = services.selection
   this.store = services.store
   this.label = 'Create Layer'
-  this.path = 'mdiLayers'
+  this.path = 'mdiLayersTriple'
 }
 
 CreateLayer.prototype.execute = async function () {

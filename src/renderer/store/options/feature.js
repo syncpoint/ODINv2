@@ -48,7 +48,7 @@ export default async function (id) {
       'SCOPE:FEATURE',
       hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
       locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline',
-      ...(links.length ? ['SYSTEM:LINK::mdiLink'] : []),
+      ...(links.length ? ['SYSTEM:LINK::mdiLinkVariant'] : []),
       geometryTag,
       ...dimensions.map(label => `SYSTEM:${label}:NONE`),
       ...scope.map(label => `SYSTEM:${label}:NONE`),

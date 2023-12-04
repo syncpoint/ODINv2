@@ -306,7 +306,7 @@ export const Sidebar = () => {
           case 'mdiEyeOutline': return 'Click to hide.'
           case 'mdiLock': return 'Click to unlock.'
           case 'mdiLockOpenVariantOutline': return 'Click to lock.'
-          case 'mdiLink': return 'Show linked documents.'
+          case 'mdiLinkVariant': return 'Show linked documents.'
           case 'mdiFormatListBulletedType': return 'Show layer content (features)'
           default: return null
         }
