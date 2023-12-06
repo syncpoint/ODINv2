@@ -5,9 +5,36 @@ import * as mdi from '@mdi/js'
 import { useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import * as ID from '../../ids'
-import { IconTag } from './IconTag'
 import { Tooltip } from 'react-tooltip'
+import Icon from '@mdi/react'
+import './ScopeSwitcher.css'
 
+
+const SCOPES = {
+  [`@${ID.LAYER}`]: 'mdiLayersTriple',
+  [`@${ID.FEATURE}`]: 'mdiFormatListBulletedType',
+  [`@${ID.LINK}`]: 'mdiLinkVariant',
+  '#pin': 'mdiPinOutline',
+  [`@${ID.SYMBOL}`]: 'mdiShapePlusOutline',
+  [`@${ID.MARKER}`]: 'mdiCrosshairs',
+  [`@${ID.BOOKMARK}`]: 'mdiBookmarkOutline',
+  [`@${ID.PLACE}`]: 'mdiSearchWeb',
+  [`@${ID.TILE_SERVICE}`]: 'mdiEarth',
+  [`@${ID.MEASURE}`]: 'mdiAndroidStudio'
+}
+
+const TOOLTIPS = {
+  '#pin': 'Manage pinned items',
+  [`@${ID.LAYER}`]: 'Manage existing layers',
+  [`@${ID.FEATURE}`]: 'Manage existing features',
+  [`@${ID.LINK}`]: 'Manage existing links',
+  [`@${ID.SYMBOL}`]: 'Create new features based on the symbol palette',
+  [`@${ID.MARKER}`]: 'Manage existing markers',
+  [`@${ID.BOOKMARK}`]: 'Manage existing bookmarks',
+  [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
+  [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
+  [`@${ID.MEASURE}`]: 'Manage existing measurements'
+}
 
 /**
  *
@@ -20,10 +47,10 @@ const ScopeSwitch = props => {
     : search.history[0].scope.split(' ').includes(props.scope)
 
   const className = props.name
-    ? 'e3de-tag e3de-tag--named'
+    ? 'a74a-named'
     : enabled
-      ? 'e3de-tag e3de-tag--scope e3de-tag--active'
-      : 'e3de-tag e3de-tag--system e3de-tag--active'
+      ? 'a74a-scope-selector a74a-scope-selector-active'
+      : 'a74a-scope-selector'
 
   const handleClick = () => {
     const findIndex = () => search.history.findIndex(entry => entry.scope === props.scope)
@@ -33,18 +60,40 @@ const ScopeSwitch = props => {
     setSearch({ history: history(), filter: '' })
   }
 
-  return props.name
-    ? <div className={className} onClick={handleClick}>
-        <div className='name'>{props.name}</div>
-        <div className='label'>{props.label}</div>
+
+  if (props.name && props.handleGoBack) {
+
+    return <div style={{ width: '100%', border: '1px solid #e9746c', borderRadius: '2px', marginTop: '3px' }} >
+      <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between' }}>
+        <Icon className='a74a-icon-active'
+          path={props.scope.match(/LINK/i) === null ? mdi.mdiFormatListBulletedType : mdi.mdiLinkVariant }
+        />
+        <div style={{ textTransform: 'uppercase', padding: '3px', fontWeight: 400, fontSize: '0.86rem' }}>{props.name}</div>
+        { props.disabled
+          ? <div className='a74a-icon-active' style= {{ marginLeft: 'auto' }}/>
+          : <Icon className='a74a-icon-active'
+          path={mdi.mdiCloseBoxOutline}
+          onClick={props.handleGoBack}
+          style= {{ marginLeft: 'auto' }}
+        />}
       </div>
-    : <>
-        <span id={`ss-${props.label}`} className={className} onClick={handleClick}>{props.label}</span>
-        <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
-      </>
+      <div style={{ padding: '3px', fontWeight: 300, fontSize: '0.86rem' }}>{props.label}</div>
+    </div>
+  }
+
+  return (
+    <>
+      <span id={`ss-${props.label}`} className={className} onClick={handleClick}>
+        <Icon className={ enabled ? 'a74a-icon-active' : 'a74a-icon'} path={mdi[props.label]} />
+      </span>
+      <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
+    </>
+  )
 }
 
 ScopeSwitch.propTypes = {
+  disabled: PropTypes.bool,
+  handleGoBack: PropTypes.func,
   name: PropTypes.string,
   label: PropTypes.string.isRequired,
   scope: PropTypes.string.isRequired,
@@ -64,34 +113,8 @@ export const ScopeSwitcher = props => {
     setSearch({ filter: '', history })
   }, [setSearch])
 
-  const handleClick = () => {
+  const handleGoBack = () => {
     setHistory(R.dropLast(1, history))
-  }
-
-  const SCOPES = {
-    '#pin': 'pinned',
-    [`@${ID.LAYER}`]: 'layer',
-    [`@${ID.FEATURE}`]: 'feature',
-    [`@${ID.LINK}`]: 'link',
-    [`@${ID.SYMBOL}`]: 'symbol',
-    [`@${ID.MARKER}`]: 'marker',
-    [`@${ID.BOOKMARK}`]: 'bookmark',
-    [`@${ID.PLACE}`]: 'place',
-    [`@${ID.TILE_SERVICE}`]: 'tile-service',
-    [`@${ID.MEASURE}`]: 'measure'
-  }
-
-  const TOOLTIPS = {
-    '#pin': 'Manage pinned items',
-    [`@${ID.LAYER}`]: 'Manage existing layers',
-    [`@${ID.FEATURE}`]: 'Manage existing features',
-    [`@${ID.LINK}`]: 'Manage existing links',
-    [`@${ID.SYMBOL}`]: 'Create new features based on the symbol palette',
-    [`@${ID.MARKER}`]: 'Manage existing markers',
-    [`@${ID.BOOKMARK}`]: 'Manage existing bookmarks',
-    [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
-    [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
-    [`@${ID.MEASURE}`]: 'Manage existing measurements'
   }
 
   const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
@@ -103,31 +126,23 @@ export const ScopeSwitcher = props => {
     />
   )
 
-  const childSwitches = R.drop(1, history).map(({ key, label, scope }) =>
-    <ScopeSwitch
+  const childSwitches = R.drop(1, history).map(({ key, label, scope }, index, elements) => {
+    return <ScopeSwitch
       key={key}
       scope={scope}
       name={ID.scope(key)}
       label={label}
+      handleGoBack={handleGoBack}
+      disabled={elements.length > 1 && index < elements.length - 1 }
     />
+  }
   )
 
-  const back = history.length > 1
-    ? <><IconTag
-        path={mdi.mdiArrowUp}
-        onClick={handleClick}
-        id='scope-back'
-      />
-      <Tooltip anchorSelect='#scope-back' content='Return to parent scope' delayShow={750} />
-      </>
-    : null
 
   return (
-    <div className='scope-container e3de-row'>
-      <div className='e3de-taglist'>
-        { defaultSwitches.concat(childSwitches) }
-        { back }
-      </div>
+    <div className='a74a-taglist'>
+      { defaultSwitches }
+      { childSwitches }
     </div>
   )
 }

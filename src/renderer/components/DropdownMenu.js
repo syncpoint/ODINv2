@@ -29,7 +29,13 @@ export const DropdownMenu = props => {
 
   const option = ([key, command]) => {
     const handleClick = () => command.execute && command.execute()
-    return <a key={key} onClick={handleClick}>{command.label}</a>
+    const link =
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+        { command.path ? <Icon path={mdi[command.path]} size='20px' /> : null }
+        <span>{command.label}</span>
+      </div>
+
+    return <a key={key} onClick={handleClick}>{ link }</a>
   }
 
   return (

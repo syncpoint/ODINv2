@@ -103,6 +103,7 @@ export const SystemTag = props => {
     ? <IconTag
         path={mdi[props.path]}
         onClick={handleClick}
+        data-path={props.path}
       />
     : <span
         className={className}

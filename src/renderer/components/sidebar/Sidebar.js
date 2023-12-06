@@ -292,18 +292,24 @@ export const Sidebar = () => {
         */
         if (activeAnchor?.id) return null
 
-        const toggler = ['VISIBLE', 'HIDDEN', 'LOCKED', 'UNLOCKED']
         const highlighter = ['LAYER', 'FEATURE', 'MARKER', 'PLACE']
         const linker = ['LINK']
 
-        if (toggler.includes(activeAnchor?.innerText)) return 'Click to toggle value'
-        if (highlighter.includes(activeAnchor?.innerText)) return 'Click and hold to highlight'
-        if (linker.includes(activeAnchor?.innerText)) return 'Show assigned links'
+        if (highlighter.includes(activeAnchor?.innerText)) return 'Click and hold to highlight content.'
+        if (linker.includes(activeAnchor?.innerText)) return 'Show linked documents.'
         return ''
       }} />
       <Tooltip anchorSelect='.e3de-icon-tag' delayShow={750} render={({ activeAnchor }) => {
         if (activeAnchor?.id) return null
-        return 'Show content'
+        switch (activeAnchor?.dataset?.path) {
+          case 'mdiEyeOff': return 'Click to show.'
+          case 'mdiEyeOutline': return 'Click to hide.'
+          case 'mdiLock': return 'Click to unlock.'
+          case 'mdiLockOpenVariantOutline': return 'Click to lock.'
+          case 'mdiLinkVariant': return 'Show linked documents.'
+          case 'mdiFormatListBulletedType': return 'Show layer content (features)'
+          default: return null
+        }
       }} />
 
     </div>
