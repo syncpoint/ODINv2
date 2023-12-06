@@ -20,6 +20,7 @@ import CorridorWidth from './CorridorWidth'
 import * as MILSTD from '../../symbology/2525c'
 import * as GEOM from '../../model/geometry'
 import { readGeometry } from '../../store/FeatureStore'
+import KProperty from './KProperty'
 
 export default props => {
   const specializations = Object.values(props.features).reduce((acc, value) => {
@@ -44,14 +45,14 @@ export default props => {
     RECTANGLE: () => (
       <ColSpan2>
         <GridAutoColumns>
-          <RectangleWidth features={features}/>
-          <Length features={features}/>
-          <Attitude features={features}/>
+          <RectangleWidth features={features} disabled={props.disabled} />
+          <Length features={features} disabled={props.disabled} />
+          <Attitude features={features} disabled={props.disabled} />
         </GridAutoColumns>
       </ColSpan2>
     ),
-    CIRCLE: () => <Radius features={features}/>,
-    CORRIDOR: () => <CorridorWidth features={features}/>
+    CIRCLE: () => <Radius features={features} disabled={props.disabled} />,
+    CORRIDOR: () => <CorridorWidth features={features} disabled={props.disabled} />
   }
 
   return (
@@ -67,6 +68,7 @@ export default props => {
       <StaffComments {...props}/>
       <AdditionalInformation {...props}/>
       <Status {...props}/>
+      <KProperty {...props}/>
     </GridCols2>
   )
 }

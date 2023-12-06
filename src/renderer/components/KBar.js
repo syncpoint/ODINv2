@@ -73,6 +73,21 @@ const DryRunner = () => {
   }, [results, activeIndex, visualState])
 }
 
+const ToggleListener = () => {
+  const { options, query } = useKBar()
+  const { emitter } = useServices()
+
+  React.useEffect(() => {
+    const toggle = () => {
+      query.toggle()
+      // it's weird that kbar does not call onOpen on its own
+      options.callbacks?.onOpen()
+    }
+    emitter.on('KBAR/TOGGLE', toggle)
+    return () => emitter.off('KBAR/TOGGLE', toggle)
+  }, [emitter, options, query])
+}
+
 
 /**
  *
@@ -128,6 +143,7 @@ export const KBar = () => {
 
   return (
     <Provider actions={[...kbarActions.global()]} options={options}>
+      <ToggleListener />
       <Portal>
         <ActionProvider actions={contextActions}/>
         <Positioner style={positionerStyle}>

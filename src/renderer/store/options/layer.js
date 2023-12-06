@@ -12,11 +12,11 @@ export default async function (id) {
     description: layer.type === 'socket' ? layer.url : null,
     tags: [
       'SCOPE:LAYER',
-      hidden ? 'SYSTEM:HIDDEN' : 'SYSTEM:VISIBLE',
-      locked ? 'SYSTEM:LOCKED' : 'SYSTEM:UNLOCKED',
+      hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
+      locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline',
+      'SYSTEM:LAYER:OPEN:mdiFormatListBulletedType', // navigate to contained features
+      ...(links.length ? ['SYSTEM:LINK::mdiLinkVariant'] : []),      
       shared ? 'SYSTEM:SHARED:NONE' : undefined,
-      ...(links.length ? ['SYSTEM:LINK'] : []),
-      'SYSTEM:LAYER:OPEN:mdiArrowDown', // navigate to contained features
       ...((tags || [])).map(label => `USER:${label}:NONE`),
       ...(defaultFlag ? ['USER:default:NONE'] : []),
       'PLUS'

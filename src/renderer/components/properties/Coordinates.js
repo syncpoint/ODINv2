@@ -13,7 +13,7 @@ const Button = props => {
 
   return (
     <button
-      className='properties__button'
+      className='properties__icon__button'
       onClick={handleClick(props.path)}
     >
       <Icon path={mdi[props.path]} size='20px'/>

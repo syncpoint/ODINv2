@@ -2,7 +2,7 @@
 import React from 'react'
 import SortableList, { SortableItem } from 'react-easy-sort'
 import Icon from '@mdi/react'
-import { mdiDrag, mdiEye, mdiEyeOff, mdiOpacity } from '@mdi/js'
+import { mdiDrag, mdiEyeOutline, mdiEyeOff, mdiSquareOpacity } from '@mdi/js'
 import { useServices, useList } from '../hooks'
 import Range from './Range'
 import { Tooltip } from 'react-tooltip'
@@ -54,14 +54,14 @@ const Layer = props => (
           <Icon path={mdiDrag} size='24px' className='tt-tile-preset-handle'/>
           <span className='bf12-card__description'>{props.name}</span>
           <Icon
-            path={mdiOpacity}
+            path={mdiSquareOpacity}
             size='24px'
             style={{ marginLeft: 'auto' }}
             className=' tt-tile-preset-opacity'
             onClick={props.onSelect}
           />
           <Icon
-            path={props.visible ? mdiEye : mdiEyeOff}
+            path={props.visible ? mdiEyeOutline : mdiEyeOff}
             size='24px'
             onClick={props.onToggleVisible}
             className='tt-tile-preset-visibility'

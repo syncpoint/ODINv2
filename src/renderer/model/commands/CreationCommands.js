@@ -8,6 +8,7 @@ const CreateLayer = function (services) {
   this.selection = services.selection
   this.store = services.store
   this.label = 'Create Layer'
+  this.path = 'mdiLayersTriple'
 }
 
 CreateLayer.prototype.execute = async function () {
@@ -23,6 +24,7 @@ const CreateTileService = function (services) {
   this.selection = services.selection
   this.store = services.store
   this.label = 'Create Tile Service'
+  this.path = 'mdiEarth'
 }
 
 CreateTileService.prototype.execute = function () {
@@ -40,6 +42,7 @@ const CreateMarker = function (services) {
   this.store = services.store
   this.sessionStore = services.sessionStore
   this.label = 'Create Marker'
+  this.path = 'mdiCrosshairs'
 }
 
 CreateMarker.prototype.execute = async function () {
@@ -67,6 +70,7 @@ const CreateBookmark = function (services) {
   this.store = services.store
   this.sessionStore = services.sessionStore
   this.label = 'Create Bookmark'
+  this.path = 'mdiBookmarkOutline'
 }
 
 CreateBookmark.prototype.execute = async function () {
