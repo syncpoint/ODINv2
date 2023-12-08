@@ -15,8 +15,8 @@ export default async function (id) {
       hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
       locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline',
       'SYSTEM:LAYER:OPEN:mdiFormatListBulletedType', // navigate to contained features
-      ...(links.length ? ['SYSTEM:LINK::mdiLinkVariant'] : []),      
-      shared ? 'SYSTEM:SHARED:NONE' : undefined,
+      ...(links.length ? ['SYSTEM:LINK::mdiLinkVariant'] : []),
+      shared ? 'SYSTEM:SHARED:NONE:mdiCloudOutline' : undefined,
       ...((tags || [])).map(label => `USER:${label}:NONE`),
       ...(defaultFlag ? ['USER:default:NONE'] : []),
       'PLUS'
