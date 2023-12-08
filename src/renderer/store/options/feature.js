@@ -36,6 +36,7 @@ export default async function (id) {
   try {
     icon = svg(sidc)
   } catch (err) {
+    console.error(`No icon for SIDC ${sidc}`)
     console.error(err)
   }
 
