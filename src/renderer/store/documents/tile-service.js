@@ -8,7 +8,7 @@ export default async function (id) {
   const document = {
     id,
     scope: ID.TILE_SERVICE,
-    text: service.name,
+    text: service?.name || '',
     tags: [...(tags || []), service.type]
   }
 

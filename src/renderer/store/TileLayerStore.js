@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { Tile as TileLayer } from 'ol/layer'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import Collection from 'ol/Collection'
 import LayerGroup from 'ol/layer/Group'
 import * as ID from '../ids'
@@ -21,7 +21,8 @@ const fetchCapabilities = async service => {
   } catch (err) {
     return TileService.adapters.XYZ({
       url: service.url,
-      maxZoom: service.capabilities?.maxZoom || 24
+      maxZoom: service.capabilities?.maxZoom || 24,
+      contentType: service.capabilities?.contentType
     })
   }
 }
@@ -40,7 +41,17 @@ TileLayerStore.tileLayer = function (services) {
     const { type, capabilities } = services[ID.tileServiceId(id)]
     const adapter = TileService.adapters[type](capabilities)
     const source = adapter.source(ID.containedId(id))
-    return new TileLayer({ source, id, opacity, visible, zIndex: 0 - index })
+    const layerProps = {
+      source,
+      id,
+      opacity: capabilities?.contentType?.includes('terrain') ? 0 : opacity,
+      visible: capabilities?.contentType?.includes('terrain') ? true : visible,
+      zIndex: 0 - index,
+      contentType: capabilities?.contentType
+    }
+
+    const layer = new WebGLTileLayer(layerProps)
+    return layer
   }
 }
 
@@ -112,7 +123,6 @@ TileLayerStore.prototype.updateService = async function (key, service) {
     const name = service.name || title
     return { ...service, type, name, capabilities }
   }
-
   const newValue = await capabilities(service)
   this.store.update([key], [newValue], [service])
 }
@@ -216,15 +226,26 @@ TileLayerStore.prototype.updatePreset = async function () {
       : adapters[key].layerName(ID.containedId(id))
   }
 
+  const contentType = id => {
+    // eslint-disable-next-line no-unused-vars
+    const [key, service] = findService(ID.tileServiceId(id))
+    return ['XYZ'].includes(service.type)
+      ? service.capabilities.contentType
+      : undefined
+  }
+
   const layer = id => ({ id, opacity: 1.0, visible: false })
   const additions = activeLayerIds.filter(x => !currentLayers.includes(x)).map(layer)
 
   // Propagate name changes from service to preset (only for OSM, XYZ.)
-  //
   const propagateName = layer => ({ ...layer, name: layerName(layer.id) })
+  // Propagate content type (either undefined or terrain/mapbox-rgb)
+  const propagateContentType = layer => ({ ...layer, contentType: contentType(layer.id) })
+
   const preset = (currentPreset.concat(additions))
     .filter(layer => !removals.includes(layer.id))
     .map(propagateName)
+    .map(propagateContentType)
 
   this.store.update([ID.tilePresetId()], [preset])
 }
@@ -237,11 +258,16 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
   const currentLayers = this.layerCollection.getArray()
   const findLayer = id => currentLayers.find(layer => layer.get('id') === id)
   const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
+  // console.dir(preset)
 
   const updateLayer = (layer, properties, index) => {
+    /* console.dir(layer) */
+    console.dir(properties)
+
     layer.setOpacity(properties.opacity)
     layer.setVisible(properties.visible)
     layer.setZIndex(0 - index)
+    layer.set('contentType', properties.contentType)
     return layer
   }
 

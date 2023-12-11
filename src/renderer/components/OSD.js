@@ -31,6 +31,6 @@ export const OSD = () => {
     <div className='osd__cell' style={styles.C}>{ state.C2 }</div>
     <div className='osd__cell' style={styles.A}></div>
     <div className='osd__cell' style={styles.B}></div>
-    <div className='osd__cell' style={styles.C}></div>
+    <div className='osd__cell' style={styles.C}>{ state.C3 }</div>
   </div>
 }
