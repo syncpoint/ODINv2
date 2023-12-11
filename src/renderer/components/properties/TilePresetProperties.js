@@ -43,6 +43,7 @@ const Opacity = props => {
  */
 const Layer = props => {
 
+  // terrain data layers must not be invisible, thus we hide controls
   const icons = props.contentType?.includes('terrain')
     ? <Icon
         path={mdiTerrain}
@@ -81,6 +82,7 @@ const Layer = props => {
           <Tooltip anchorSelect='.tt-tile-preset-opacity' content='Change the opacity' delayShow={750}/>
           <Tooltip anchorSelect='.tt-tile-preset-handle' content='Drag to change the order of visibility' delayShow={750}/>
           <Tooltip anchorSelect='.tt-tile-preset-visibility' content='Hide/Show this map' delayShow={750}/>
+          <Tooltip anchorSelect='.tt-tile-preset-terrain' content='This layer contains terrain data' delayShow={750}/>
         </div>
         <Opacity
           opacity={props.opacity}
