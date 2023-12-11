@@ -258,14 +258,10 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
   const currentLayers = this.layerCollection.getArray()
   const findLayer = id => currentLayers.find(layer => layer.get('id') === id)
   const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
-  // console.dir(preset)
-
+ 
   const updateLayer = (layer, properties, index) => {
-    /* console.dir(layer) */
-    console.dir(properties)
-
-    layer.setOpacity(properties.opacity)
-    layer.setVisible(properties.visible)
+    layer.setOpacity(properties.contentType ? 0 : properties.opacity)
+    layer.setVisible(properties.contentType ? 1 : properties.visible)
     layer.setZIndex(0 - index)
     layer.set('contentType', properties.contentType)
     return layer
