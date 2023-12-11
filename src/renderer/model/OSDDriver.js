@@ -67,12 +67,23 @@ OSDDriver.prototype.pointermove = function ({ coordinate, map, pixel }) {
   this.emitter.emit('osd', { message, cell: 'C2' })
 
   const candids = map?.getLayerGroup().getLayersArray()
-  const terrainLayer = candids.find(l => l.get('contentType') === 'terrain/mapbox-rgb')
-  if (!terrainLayer) return
-  const data = terrainLayer.getData(pixel)
-  if (!data) return
-  const value = elevation(data)
-  const elevationMessage = value ? `${value.toFixed(1)}m` : ''
+  const terrainLayers = candids.filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
+  if (terrainLayers.length === 0) {
+    this.emitter.emit('osd', { message: '', cell: 'C3' })
+    return
+  }
+
+  const data = terrainLayers
+    .map(l => l.getData(pixel))
+    .map(d => elevation(d))
+    .filter(Boolean)
+
+  if (data.length === 0) {
+    this.emitter.emit('osd', { message: '', cell: 'C3' })
+    return
+  }
+
+  const elevationMessage = `${data[0].toFixed(1)}m`
   this.emitter.emit('osd', { message: elevationMessage, cell: 'C3' })
 }
 
