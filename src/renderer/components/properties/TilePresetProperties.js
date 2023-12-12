@@ -165,7 +165,6 @@ const LayerList = props => {
  *
  */
 const TilePresetProperties = props => {
-  console.dir(props)
   return (
   <LayerList preset={Object.entries(props.features)[0]}/>
   )
