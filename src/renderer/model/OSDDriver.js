@@ -66,25 +66,28 @@ OSDDriver.prototype.pointermove = function ({ coordinate, map, pixel }) {
   const message = formats[this.coordinatesFormat](lonLat)
   this.emitter.emit('osd', { message, cell: 'C2' })
 
-  const candids = map?.getLayerGroup().getLayersArray()
-  const terrainLayers = candids.filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
-  if (terrainLayers.length === 0) {
-    this.emitter.emit('osd', { message: '', cell: 'C3' })
-    return
+  const getElevation = async () => {
+    const candids = map?.getLayerGroup().getLayersArray()
+    const terrainLayers = candids.filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
+    if (terrainLayers.length === 0) {
+      return ''
+    }
+
+    const data = terrainLayers
+      .map(l => l.getData(pixel))
+      .map(d => elevation(d))
+      .filter(Boolean)
+
+    if (data.length === 0) {
+      return ''
+    }
+
+    const elevationMessage = `${data[0].toFixed(1)}m`
+    return elevationMessage
   }
 
-  const data = terrainLayers
-    .map(l => l.getData(pixel))
-    .map(d => elevation(d))
-    .filter(Boolean)
+  getElevation().then(message => this.emitter.emit('osd', { message, cell: 'C3' }))
 
-  if (data.length === 0) {
-    this.emitter.emit('osd', { message: '', cell: 'C3' })
-    return
-  }
-
-  const elevationMessage = `${data[0].toFixed(1)}m`
-  this.emitter.emit('osd', { message: elevationMessage, cell: 'C3' })
 }
 
 OSDDriver.prototype.updateDateTime = function () {
