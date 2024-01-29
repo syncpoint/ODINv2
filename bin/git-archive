@@ -1,0 +1,5 @@
+REPO=$(basename -s .git `git config --get remote.origin.url`)
+NOW=$(date +"%Y%m%d-%H%M%S")
+REF=$(git rev-parse --abbrev-ref HEAD)
+git archive --format=tar.gz -o $NOW-$REPO-$REF.tar.gz HEAD
+

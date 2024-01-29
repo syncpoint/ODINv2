@@ -1,0 +1,5 @@
+REPO=$(basename $1)
+NOW=$(date +"%Y%m%d-%H%M%S")
+git clone --bare $1
+tar -czf $NOW-$REPO.tar.gz $REPO
+rm -Rf $REPO
