@@ -2795,6 +2795,21 @@
     }
   },
   {
+    "sidc": "G*F*ACAPZ-*****",
+    "scope": "CONTROL",
+    "geometry": "GeometryCollection",
+    "dimensions": "FIRE",
+    "hierarchy": [
+      "Tactical Graphics",
+      "Fire Support",
+      "Command & Control Areas",
+      "Artillery Position Zones (APZ)"
+    ],
+    "parameters": {
+      "layout": "apz"
+    }
+  },
+  {
     "sidc": "G*F*AKBC--*****",
     "scope": "CONTROL",
     "dimensions": "FIRE",

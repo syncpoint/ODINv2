@@ -5,16 +5,18 @@ import LineString from './linestring'
 import Polygon from './polygon'
 import Corridor from './corridor'
 import MultiPoint from './multipoint'
+import Artillery from './artillery'
 
 export const rules = {
   Point,
   LineString,
   Polygon,
   'LineString:Point': Corridor,
-  MultiPoint
+  MultiPoint,
+  'LineString:Polygon': Artillery
 }
 
-const notEqual = (state, obj, key) => !isEqual(state[key], obj[key])
+const notEqual = (state, facts, key) => !isEqual(state[key], facts[key])
 
 const comparators = {
   globalStyle: notEqual,
@@ -24,12 +26,8 @@ const comparators = {
   modifiers: notEqual
 }
 
-const fn = rule => rule[0]
-const deps = rule => rule[1]
-
-
 /**
- *
+ * @param {int} rank corresponds to number of state.rule entries [0..n-1]
  */
 export const reduce = (state, facts, rank = 0) => {
   const next = { ...state, ...facts }
@@ -37,17 +35,29 @@ export const reduce = (state, facts, rank = 0) => {
     ? comparators[key](state, facts, key)
     : state[key] !== facts[key]
 
-  if (rank >= state.rules.length) return next
-  const changed = Object.keys(facts).filter(different)
-  if (changed.length === 0) return state
+  // All rules processed?
+  const complete = rank >= state.rules.length
+  if (complete) return next
 
-  const isStale = rule => deps(rule).some(key => changed.includes(key))
-  const isFulfilled = rule => deps(rule).every(key => !R.isNil(next[key]))
-  const head = state.rules[rank]
+  // Any changes properties?
+  const changes = Object.keys(facts).filter(different)
+  const unchanged = changes.length === 0
+  if (unchanged) {
+    console.warn('[style rule evaluation] premature end', rank)
+    return state
+  }
+
+  // Changes include some dependency of given rule?
+  const isStale = deps => deps.some(key => changes.includes(key))
+
+  // All dependencies for given rule are available?
+  const isFulfilled = deps => deps.every(key => !R.isNil(next[key]))
+
+  const [fn, deps] = state.rules[rank]
+  const evaluate = next => reduce(state, { ...next, ...fn(next) }, ++rank)
+  const skip = next => reduce(state, next, ++rank)
+
+  const tryer = next => isStale(deps) && isFulfilled(deps) ? evaluate(next) : skip(next)
   const catcher = (err, next) => reduce(state, { ...next, err }, ++rank)
-  const tryer = next => isStale(head) && isFulfilled(head)
-    ? reduce(state, { ...next, ...fn(head)(next) }, ++rank)
-    : reduce(state, next, ++rank)
-
   return R.tryCatch(tryer, catcher)(next)
 }

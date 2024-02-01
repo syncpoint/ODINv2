@@ -267,5 +267,49 @@ const geometries = [
       const D = TS.projectCoordinate(B)([angle + PI_OVER_2 - (PI_OVER_8), length / 2])
       feature.setGeometry(write(TS.multiPoint([A, B, C, D].map(TS.point))))
     }
+  },
+
+  /* GeometryCollection (Artillery Position Zones (APZ)) */
+  {
+    match: ({ geometry }) => geometry.layout === 'apz',
+    options: () => ({ type: GeometryType.LINE_STRING, maxPoints: 2 }),
+    complete: (map, feature) => {
+
+      // Construct geometry from 2-point line (baseline center to target area center):
+      const geometry = feature.getGeometry()
+      const { read, write } = format(feature)
+      const definingLine = read(geometry) // in UTM
+      const coords = TS.coordinates(definingLine)
+      const segment = TS.segment(coords)
+      const length = segment.getLength()
+      const baselineLength = length / 6
+      const targetAreaWidth = length / 2
+      const farPoint = TS.projectCoordinates(length * 1.25, segment.angle(), coords[0])([[1, 0]])
+      const baselineCoords = TS.projectCoordinates(baselineLength / 2, segment.angle() - PI_OVER_2, coords[0])([[-1, 0], [1, 0]])
+      const targetAreaBackplaneCoords = TS.projectCoordinates(targetAreaWidth / 2, segment.angle() - PI_OVER_2, farPoint[0])([[-1, 0], [1, 0]])
+      const backCircle = TS.pointBuffer(TS.startPoint(definingLine))(length * 1.25)
+      const frontCircle = TS.pointBuffer(TS.startPoint(definingLine))(length * 0.75)
+      const bcLineString = TS.lineString(backCircle.getCoordinates())
+      const fcLineString = TS.lineString(frontCircle.getCoordinates())
+      const leftBound = TS.lineString([baselineCoords[0], targetAreaBackplaneCoords[0]])
+      const rightBound = TS.lineString([baselineCoords[1], targetAreaBackplaneCoords[1]])
+
+      const intersectionCoords = TS.coordinates([
+        TS.intersection([leftBound, fcLineString]),
+        TS.intersection([leftBound, bcLineString]),
+        TS.intersection([rightBound, bcLineString]),
+        TS.intersection([rightBound, fcLineString])
+      ])
+
+      const baseline = TS.lineString(baselineCoords)
+      const targetArea = TS.polygon([...intersectionCoords, intersectionCoords[0]])
+
+      // LineString:Polygon
+      feature.setGeometry(write(TS.collect([
+        baseline,
+        targetArea
+      ])))
+    }
   }
+
 ]

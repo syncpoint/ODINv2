@@ -18,3 +18,9 @@ G*FPACAPZ-****X <-- NEW
 2.X.4.3.2.6 POSITION AREA FOR ARTILLERY - TACGRP.FSUPP.ARS.C2ARS.PAA
 
 Gefahrenzone - danger zone
+
+Defining Geometry (Collection):
+- baseline : LineString[2]
+- target area : MultiPoint[2]
+- danger zone 1 : Point
+- danger zone 2 : Point
