@@ -5,15 +5,13 @@ import LineString from './linestring'
 import Polygon from './polygon'
 import Corridor from './corridor'
 import MultiPoint from './multipoint'
-import Artillery from './artillery'
 
 export const rules = {
   Point,
   LineString,
   Polygon,
   'LineString:Point': Corridor,
-  MultiPoint,
-  'LineString:Polygon': Artillery
+  MultiPoint
 }
 
 const notEqual = (state, facts, key) => !isEqual(state[key], facts[key])
@@ -42,10 +40,7 @@ export const reduce = (state, facts, rank = 0) => {
   // Any changes properties?
   const changes = Object.keys(facts).filter(different)
   const unchanged = changes.length === 0
-  if (unchanged) {
-    console.warn('[style rule evaluation] premature end', rank)
-    return state
-  }
+  if (unchanged) return state
 
   // Changes include some dependency of given rule?
   const isStale = deps => deps.some(key => changes.includes(key))

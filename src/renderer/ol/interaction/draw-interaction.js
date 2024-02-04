@@ -301,14 +301,10 @@ const geometries = [
         TS.intersection([rightBound, fcLineString])
       ])
 
-      const baseline = TS.lineString(baselineCoords)
-      const targetArea = TS.polygon([...intersectionCoords, intersectionCoords[0]])
+      const points = TS.multiPoint([...baselineCoords, ...intersectionCoords].map(TS.point))
 
       // LineString:Polygon
-      feature.setGeometry(write(TS.collect([
-        baseline,
-        targetArea
-      ])))
+      feature.setGeometry(write(points))
     }
   }
 

@@ -1,5 +1,6 @@
 /* eslint-disable no-multi-spaces */
 
+import G_F_ACAPZ from './G_F_ACAPZ'
 import G_F_AXC from './G_F_AXC'
 import G_G_DLP from './G_G_DLP'
 import G_G_OAS from './G_G_OAS'
@@ -24,6 +25,7 @@ export default {
   DEFAULT: ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }],
   CIRCLE,
   FILLED_CIRCLE,
+  'G*F*ACAPZ-': G_F_ACAPZ,      // ARTILLERY POSITION ZONES
   'G*F*AXC---': G_F_AXC,        // SENSOR RANGE FAN
   'G*G*DLP---': G_G_DLP,        // PRINCIPLE DIRECTION OF FIRE
   'G*G*OAS---': G_G_OAS,        // SUPPORT BY FIRE POSITION

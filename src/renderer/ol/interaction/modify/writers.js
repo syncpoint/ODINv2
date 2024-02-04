@@ -82,8 +82,9 @@ Writers.LineString = options => {
   // - max points is explicitly limited to 2
   // - geometries with orbit layout
 
+  const layouts = ['orbit']
   const fix = descriptor
-    ? (descriptor.maxPoints === 2 || descriptor.layout === 'orbit')
+    ? (descriptor.maxPoints === 2 || layouts.includes(descriptor.layout))
     : false
 
   const segments = R.aperture(2, geometry.getCoordinates())
@@ -114,9 +115,9 @@ Writers.Polygon = options => {
 
   // Cases where no vertex may be added:
   // - geometries with layout rectangle
-
+  const layouts = ['rectangle']
   const fix = descriptor
-    ? descriptor.layout === 'rectangle'
+    ? layouts.includes(descriptor.layout)
     : false
 
   return geometry.getCoordinates().reduce((acc, ring, q) => {
