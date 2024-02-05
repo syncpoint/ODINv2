@@ -55,7 +55,7 @@ export default node => {
     const coords = [...TS.coordinates(baseline), ...intersections]
     const points = coords.map(TS.point)
     const geometry = write(TS.multiPoint(points))
-    return { copy, coords, coordinates: getCoordinates(geometry) }
+    return { copy, coords, center, normal, angles, coordinates: getCoordinates(geometry) }
   })(params())
 
   const baseline = {
@@ -69,16 +69,50 @@ export default node => {
     }
   }
 
-  const targetArea = {
+  const radius = coord => TS.segment(frame.center, coord).getLength()
+  const leftAngle = coord => TS.segment(frame.coords[0], coord).angle() - frame.normal.angle()
+  const rightAngle = coord => TS.segment(frame.coords[1], coord).angle() - frame.normal.angle()
+
+  const leftFront = {
     project: R.identity,
     coordinates: xs => {
-      return frame.copy({}).coordinates
+      const coord = TS.coordinate(read(new geom.Point(xs[node.index])))
+      const angles = [leftAngle(coord), frame.angles[1]]
+      return frame.copy({ angles, frontRadius: radius(coord) }).coordinates
+    }
+  }
+
+  const leftBack = {
+    project: R.identity,
+    coordinates: xs => {
+      const coord = TS.coordinate(read(new geom.Point(xs[node.index])))
+      const angles = [leftAngle(coord), frame.angles[1]]
+      return frame.copy({ angles, backRadius: radius(coord) }).coordinates
+    }
+  }
+
+  const rightBack = {
+    project: R.identity,
+    coordinates: xs => {
+      const coord = TS.coordinate(read(new geom.Point(xs[node.index])))
+      const angles = [frame.angles[0], rightAngle(coord)]
+      return frame.copy({ angles, backRadius: radius(coord) }).coordinates
+    }
+  }
+
+  const rightFront = {
+    project: R.identity,
+    coordinates: xs => {
+      const coord = TS.coordinate(read(new geom.Point(xs[node.index])))
+      const angles = [frame.angles[0], rightAngle(coord)]
+      return frame.copy({ angles, frontRadius: radius(coord) }).coordinates
     }
   }
 
   const handlers = [
     baseline, baseline,
-    targetArea, targetArea, targetArea, targetArea
+    leftFront, leftBack,
+    rightBack, rightFront
   ]
 
   return handlers[node.index]
