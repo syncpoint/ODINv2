@@ -11,8 +11,8 @@ export default ({ TS, PI_OVER_2, geometry }) => {
   const rightSegment = TS.segment(y, C)
 
   // Move B and C some more outward to permit proper intersection with ring.
-  const farB = TS.projectCoordinates(leftSegment.getLength() * 1.25, leftSegment.angle(), x)([[1, 0]])[0]
-  const farC = TS.projectCoordinates(rightSegment.getLength() * 1.25, rightSegment.angle(), y)([[1, 0]])[0]
+  const farB = TS.projectCoordinates(leftSegment.getLength() * 2, leftSegment.angle(), x)([[1, 0]])[0]
+  const farC = TS.projectCoordinates(rightSegment.getLength() * 2, rightSegment.angle(), y)([[1, 0]])[0]
 
   const frontCircle = TS.pointBuffer(TS.point(baselineCenter))(frontRadius)
   const backCircle = TS.pointBuffer(TS.point(baselineCenter))(backRadius)

@@ -155,8 +155,6 @@ export const className = sidc => {
   const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
 
-  console.log('descriptor', descriptor)
-
   if (descriptor.scope === 'UNIT') return 'UNIT'
   else if (descriptor.scope === 'INSTALLATION') return 'INSTALLATION'
   else if (descriptor.scope === 'EQUIPMENT') return 'EQUIPMENT'

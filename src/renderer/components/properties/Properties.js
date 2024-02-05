@@ -51,7 +51,6 @@ const propertiesClasses = features => Object
       ? `feature:${MILSTD.className(sidc(value)) || ''}`
       : scope(key)
 
-    console.log('className', className)
     return push(className)
   }, [])
 

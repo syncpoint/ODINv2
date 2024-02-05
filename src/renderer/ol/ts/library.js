@@ -113,6 +113,17 @@ export const segment = (...args) => {
 }
 
 /**
+ * normalSegment :: jts.geom.LineSegment -> jts.geom.LineSegment
+ */
+export const normalSegment = s => {
+  const { p0, p1 } = s
+  const center = s.midPoint()
+  const dx = center.y + (p1.x - p0.x)
+  const dy = center.x - (p1.y - p0.y)
+  return segment(center, coordinate([dy, dx]))
+}
+
+/**
  * lineString :: jts.geom.LineSegment -> jts.geom.LineString
  * lineString :: [jts.geom.Coordinate] -> jts.geom.LineString
  * lineString :: ...[jts.geom.Coordinate] -> jts.geom.LineString

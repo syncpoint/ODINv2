@@ -18,16 +18,15 @@ export default node => {
   const params = () => {
     const [x, y, A, B, C, D] = TS.coordinates(read(geometry))
     const baseline = TS.lineString([x, y])
+    const normal = TS.normalSegment(TS.segment(x, y))
     const center = midpoint(baseline)
 
-    // left/right border of target area:
-    // left/right baseline point and angle
     const angles = [
-      TS.segment(x, B).angle(),
-      TS.segment(y, C).angle()
+      TS.segment(x, B).angle() - normal.angle(),
+      TS.segment(y, C).angle() - normal.angle()
     ]
 
-    // // front/back border of target area (radii around baseline center)
+    // front/back border of target area (radii around baseline center)
     const frontRadius = TS.segment(center, A).getLength()
     const backRadius = TS.segment(center, B).getLength()
     return { baseline, frontRadius, backRadius, angles }
@@ -37,8 +36,9 @@ export default node => {
     const { baseline, frontRadius, backRadius, angles } = params
     const center = midpoint(baseline)
     const [x, y] = TS.coordinates([baseline])
-    const farB = TS.projectCoordinate(x)([angles[0], backRadius * 2])
-    const farC = TS.projectCoordinate(y)([angles[1], backRadius * 2])
+    const normal = TS.normalSegment(TS.segment(x, y))
+    const farB = TS.projectCoordinate(x)([normal.angle() + angles[0], backRadius * 2])
+    const farC = TS.projectCoordinate(y)([normal.angle() + angles[1], backRadius * 2])
     const cb = circle(point(center.x, center.y), backRadius)
     const cf = circle(point(center.x, center.y), frontRadius)
     const ls = segment(x.x, x.y, farB.x, farB.y)
