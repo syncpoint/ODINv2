@@ -1,7 +1,14 @@
 import * as R from 'ramda'
 import * as geom from 'ol/geom'
+import { point, circle, segment } from '@flatten-js/core'
 import { transform, getCoordinates } from '../../../model/geometry'
 import * as TS from '../../ts'
+
+// midpoint :: jts.geom.LineString -> jts.geom.Coordinate
+const midpoint = x => {
+  const indexedLine = TS.lengthIndexedLine(x)
+  return indexedLine.extractPoint(0.5 * indexedLine.getEndIndex())
+}
 
 export default node => {
   const geometry = node.feature.getGeometry()
@@ -11,53 +18,68 @@ export default node => {
   const params = () => {
     const [x, y, A, B, C, D] = TS.coordinates(read(geometry))
     const baseline = TS.lineString([x, y])
-    const indexedLine = TS.lengthIndexedLine(baseline)
-    const center = indexedLine.extractPoint(0.5 * indexedLine.getEndIndex())
+    const center = midpoint(baseline)
 
-    // // left/right border of target area: left/right baseline point and angle
-    const leftSegment = TS.segment(x, B)
-    const rightSegment = TS.segment(y, C)
-    const leftAngle = leftSegment.angle()
-    const rightAngle = rightSegment.angle()
+    // left/right border of target area:
+    // left/right baseline point and angle
+    const angles = [
+      TS.segment(x, B).angle(),
+      TS.segment(y, C).angle()
+    ]
 
     // // front/back border of target area (radii around baseline center)
     const frontRadius = TS.segment(center, A).getLength()
     const backRadius = TS.segment(center, B).getLength()
-    return { baseline, center, frontRadius, backRadius, leftAngle, rightAngle }
+    return { baseline, frontRadius, backRadius, angles }
   }
 
   const frame = (function create (params) {
-    const { baseline, center, frontRadius, backRadius, leftAngle, rightAngle } = params
+    const { baseline, frontRadius, backRadius, angles } = params
+    const center = midpoint(baseline)
     const [x, y] = TS.coordinates([baseline])
-    const ring = TS.difference([
-      TS.pointBuffer(TS.point(center))(backRadius),
-      TS.pointBuffer(TS.point(center))(frontRadius)]
-    )
-    const leftBack = TS.projectCoordinate(x)([leftAngle, backRadius * 2])
-    const rightBack = TS.projectCoordinate(y)([rightAngle, backRadius * 2])
-    const leftBound = TS.lineString([x, leftBack])
-    const rightBound = TS.lineString([y, rightBack])
+    const farB = TS.projectCoordinate(x)([angles[0], backRadius * 2])
+    const farC = TS.projectCoordinate(y)([angles[1], backRadius * 2])
+    const cb = circle(point(center.x, center.y), backRadius)
+    const cf = circle(point(center.x, center.y), frontRadius)
+    const ls = segment(x.x, x.y, farB.x, farB.y)
+    const rs = segment(y.x, y.y, farC.x, farC.y)
 
     const intersections = [
-      ...TS.coordinates(TS.intersection([leftBound, ring])),
-      // maintain clockwise orientation:
-      ...R.reverse(TS.coordinates(TS.intersection([rightBound, ring])))
-    ]
+      ...cf.intersect(ls),
+      ...cb.intersect(ls),
+      ...cb.intersect(rs),
+      ...cf.intersect(rs)
+    ].map(({ x, y }) => TS.coordinate([x, y]))
 
     const copy = properties => create({ ...params, ...properties })
     const coords = [...TS.coordinates(baseline), ...intersections]
     const points = coords.map(TS.point)
     const geometry = write(TS.multiPoint(points))
-    return { copy, coordinates: getCoordinates(geometry) }
+    return { copy, coords, coordinates: getCoordinates(geometry) }
   })(params())
 
-  return {
-    project: xs => {
-      return R.identity(xs)
-    },
+  const baseline = {
+    project: R.identity,
+    coordinates: xs => {
+      const currentCoords = R.take(2, frame.coords)
+      const point = read(new geom.Point(xs[node.index]))
+      currentCoords[node.index] = TS.coordinate(point)
+      const baseline = TS.lineString(currentCoords)
+      return frame.copy({ baseline }).coordinates
+    }
+  }
+
+  const targetArea = {
+    project: R.identity,
     coordinates: xs => {
       return frame.copy({}).coordinates
     }
-
   }
+
+  const handlers = [
+    baseline, baseline,
+    targetArea, targetArea, targetArea, targetArea
+  ]
+
+  return handlers[node.index]
 }

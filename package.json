@@ -57,6 +57,7 @@
     "yaml": "^2.1.3"
   },
   "dependencies": {
+    "@flatten-js/core": "^1.4.8",
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
     "@most/scheduler": "^1.3.0",

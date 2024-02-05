@@ -13,7 +13,6 @@ Dms.separator = ' '
  * D:       40.446°N 79.982°W
  * UTM:     35 N 411919 6521940
  * MGRS:    32U MV 61344 81745
- * PLUS:    9GC7XH2P+96
  */
 
 const formats = {
