@@ -294,11 +294,14 @@ Store.prototype.delete = async function (arg) {
   // [k]:
   const ids = arg
 
-  // Don't delete locked entries:
+  // Don't delete locked or restricted entries:
   const locks = Object.fromEntries(await this.tuples(ids.map(ID.lockedId)))
+  const restrictions = Object.fromEntries(await this.tuples(ids.map(ID.restrictedId)))
+
   const deletableIds = ids
     .filter(ID.isDeletableId) // symbols for example cannot be deleted.
     .filter(key => !locks[ID.lockedId(key)])
+    .filter(key => !restrictions[ID.restrictedId(key)])
 
   const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default', 'style', ID.SHARED])
   const tuples = await L.tuples(this.db, keys)
@@ -353,6 +356,30 @@ Store.prototype.unlock = async function (ids, active) {
   const operations = keys.map(key => L.delOp(ID.lockedId(key)))
   this.batch(this.jsonDB, operations)
 }
+
+/**
+ * @async
+ * restrict :: [k] -> unit
+ */
+Store.prototype.restrict = async function (ids, active) {
+  if (active !== undefined) return
+  const keys = await this.collectKeys(ids)
+  const operations = keys.map(key => L.putOp(ID.restrictedId(key), true))
+  this.batch(this.jsonDB, operations)
+}
+
+/**
+ * @sync
+ * permit :: [k] -> unit
+ */
+Store.prototype.permit = async function (ids, active) {
+  if (active !== undefined) return
+  const keys = await this.collectKeys(ids)
+  const operations = keys.map(key => L.delOp(ID.restrictedId(key)))
+  this.batch(this.jsonDB, operations)
+}
+
+
 
 
 /**
