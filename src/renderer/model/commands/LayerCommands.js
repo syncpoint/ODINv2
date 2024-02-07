@@ -12,7 +12,16 @@ const SetDefaultLayer = function (services) {
   this.store = services.store
   this.path = 'mdiCreation'
   this.toolTip = 'Make the selected layer the default layer'
-  this.selection.on('selection', () => this.emit('changed'))
+  this.selection.on('selection', async () => {
+    if (this.selected().length === 0) {
+      this.isEnabled = false
+    } else {
+      const [restricted] = await this.store.collect(this.selection.selected()[0], [ID.restrictedId])
+      this.isEnabled = !restricted
+    }
+    this.emit('changed')
+  })
+  this.isEnabled = false
 }
 
 Object.assign(SetDefaultLayer.prototype, EventEmitter.prototype)
@@ -22,7 +31,7 @@ SetDefaultLayer.prototype.execute = function () {
 }
 
 SetDefaultLayer.prototype.enabled = function () {
-  return this.selected().length === 1
+  return this.isEnabled
 }
 
 SetDefaultLayer.prototype.selected = function () {
