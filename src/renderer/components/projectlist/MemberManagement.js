@@ -15,7 +15,10 @@ const MemberManagement = props => {
 
   const getMembers = async () => {
     const members = await replication.members(managedProject.id)
-    const p = await replication.permissions(managedProject.id)
+    const p = {
+      [ACTIONS.INVITE]: true, // (['ADMINISTRATOR', 'MANAGER'].includes(managedProject.powerlevel)),
+      [ACTIONS.KICK]: true // (['ADMINISTRATOR', 'MANAGER'].includes(managedProject.powerlevel))
+    }
     setPermissions(p)
     const enhancedMembersList = members
       .filter(m => m.membership !== 'leave')
