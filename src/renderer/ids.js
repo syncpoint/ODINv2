@@ -21,6 +21,7 @@ export const TILE_LAYER = 'tile-layer'
 export const LINK = 'link'
 export const STYLE = 'style'
 export const LOCKED = 'locked'
+export const RESTRICTED = 'restricted'
 export const HIDDEN = 'hidden'
 export const DEFAULT = 'default'
 export const TAGS = 'tags'
@@ -45,6 +46,7 @@ export const MEASURE_SCOPE = MEASURE + COLON
 export const LINK_PREFIX = 'link' + PLUS
 export const STYLE_PREFIX = 'style' + PLUS
 export const LOCKED_PREFIX = 'locked' + PLUS
+export const RESTRICTED_PREFIX = RESTRICTED + PLUS
 export const HIDDEN_PREFIX = 'hidden' + PLUS
 export const DEFAULT_PREFIX = 'default' + PLUS
 export const TAGS_PREFIX = 'tags' + PLUS
@@ -68,6 +70,7 @@ export const makeId = (scope, ...uuids) => scope + COLON + uuids.join(SLASH)
  */
 export const prefix = prefix => id => `${prefix}+${id || ''}`
 export const lockedId = prefix(LOCKED)
+export const restrictedId = prefix(RESTRICTED)
 export const hiddenId = prefix(HIDDEN)
 export const stickyId = prefix(STICKY)
 export const sharedId = prefix(SHARED)
@@ -93,6 +96,7 @@ export const isStyleId = isId(STYLE_PREFIX)
 export const isLayerStyleId = isId(styleId(LAYER_SCOPE))
 export const isFeatureStyleId = isId(styleId(FEATURE_SCOPE))
 export const isLockedId = isId(LOCKED_PREFIX)
+export const isRestrictedId = isId(RESTRICTED_PREFIX)
 export const isHiddenId = isId(HIDDEN_PREFIX)
 export const isDefaultId = isId(DEFAULT_PREFIX)
 export const isTagsId = isId(TAGS_PREFIX)
@@ -103,7 +107,7 @@ export const isInvitedId = isId(INVITED)
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isViewId(id)
-export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isDefaultId, isTagsId])
+export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isRestrictedId, isDefaultId, isTagsId])
 
 export const layerUUID = R.cond([
   [isFeatureId, nthId(0)],
