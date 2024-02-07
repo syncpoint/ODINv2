@@ -302,11 +302,12 @@ export const Sidebar = () => {
       <Tooltip anchorSelect='.e3de-icon-tag' delayShow={750} render={({ activeAnchor }) => {
         if (activeAnchor?.id) return null
         switch (activeAnchor?.dataset?.path) {
-          case 'mdiEyeOff': return 'Click to show.'
-          case 'mdiEyeOutline': return 'Click to hide.'
-          case 'mdiLock': return 'Click to unlock.'
-          case 'mdiLockOpenVariantOutline': return 'Click to lock.'
-          case 'mdiLinkVariant': return 'Show linked documents.'
+          case 'mdiEyeOff': return 'Click to show'
+          case 'mdiEyeOutline': return 'Click to hide'
+          case 'mdiLock': return 'Click to unlock'
+          case 'mdiShieldLockOutline': return 'Modifying this layer is restricted'
+          case 'mdiLockOpenVariantOutline': return 'Click to lock'
+          case 'mdiLinkVariant': return 'Show linked documents'
           case 'mdiFormatListBulletedType': return 'Show layer content (features)'
           default: return null
         }
