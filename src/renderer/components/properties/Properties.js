@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import React from 'react'
 import { useServices } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
-import { isFeatureId, lockedId, associatedId, scope, isAssociatedId } from '../../ids'
+import { isFeatureId, lockedId, restrictedId, associatedId, scope, isAssociatedId } from '../../ids'
 import UnitProperties from './UnitProperties'
 import EquipmentProperties from './EquipmentProperties'
 import InstallationProperties from './InstallationProperties'
@@ -180,7 +180,8 @@ const useSelection = () => {
       // Not map features, but objects in general:
       const features = await store.dictionary(keys)
       const locks = await store.dictionary(keys.map(lockedId), key => associatedId(key))
-      dispatch({ type: 'reset', features, locks })
+      const restrictions = await store.dictionary(keys.map(restrictedId), key => associatedId(key))
+      dispatch({ type: 'reset', features, locks: { ...locks, ...restrictions } })
     }
 
     // Update component state from database update.
