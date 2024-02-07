@@ -120,18 +120,20 @@ export const SystemTag = props => {
  */
 export const UserTag = props => {
   const controller = useController()
-  const { id, label } = props
+  const { id, label, removable } = props
 
+  const isRemovable = removable !== 'false'
   const handleRemove = () => controller.removeTag(id, label)
 
   return (
     <span className={'e3de-tag e3de-tag--user e3de-tag'}>
       {label}
-      <TagIcon
+      { isRemovable && <TagIcon
         path={mdi.mdiClose}
-        removable={true}
+        removable={isRemovable}
         onClick={handleRemove}
       />
+      }
     </span>
   )
 }
