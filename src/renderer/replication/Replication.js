@@ -9,6 +9,17 @@ const CREDENTIALS = 'replication:credentials'
 const SEED = 'replication:seed'
 const CREATOR_ID = uuid()
 
+
+
+const permissionReducer = (acc, current) => {
+  if (current.powerlevel === 'READER') {
+    acc.restrict.push(current.id)
+  } else {
+    acc.permit.push(current.id)
+  }
+  return acc
+}
+
 const Replication = () => {
   /*
     Using the signal 'replication/operational' is a way to communicate the current state of the replication
@@ -92,6 +103,13 @@ const Replication = () => {
         */
         await replicationProvider.connect()
         const projectDescription = await replicatedProject.hydrate(seed)
+        /*
+          Iterate over all layers and check the permissions. if our powerlevel is READER, restrict the layers. Otherwise, permit them.
+        */
+        const permissions = projectDescription.layers.reduce(permissionReducer, { restrict: [], permit: [] })
+
+        if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
+        if (permissions.permit.length > 0) await store.permit(permissions.permit)
 
         /*
           On startup we import all invitations we already know about.
@@ -126,6 +144,7 @@ const Replication = () => {
               const operations = await replicatedProject.content(layer.id)
               console.log(`Initial sync has ${operations.length} operations`)
               await store.import(operations, { creatorId: CREATOR_ID })
+              // TODO: check the powerlevel and apply restrictions if required
               break
             }
             case 'share': {
@@ -156,8 +175,15 @@ const Replication = () => {
             const content = { type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }
             await store.import([content], { creatorId: CREATOR_ID })
           },
-          received: async (operations) => {
+          received: async ({ id, operations }) => {
+            const [restricted] = await store.collect(id, [ID.restrictedId])
             await store.import(operations, { creatorId: CREATOR_ID })
+            if (restricted) {
+              const operationKeys = operations.map(o => o.key)
+              await store.restrict(operationKeys)
+              console.log(`Layer ${id} is restricted, applying restriction to child elements as well`)
+              console.dir(operationKeys)
+            }
           },
           renamed: async (renamed) => {
             /*
@@ -168,6 +194,13 @@ const Replication = () => {
               .filter(target => ID.isLayerId(target.id))
               .map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
             await store.import(ops, { creatorId: CREATOR_ID })
+          },
+          powerlevelChanged: async (powerlevel) => {
+            console.dir(powerlevel)
+            const permissions = powerlevel.reduce(permissionReducer, { permit: [], restrict: [] })
+            console.dir(permissions)
+            if (permissions.permit.length > 0) await store.permit(permissions.permit)
+            if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
           },
           error: async (error) => {
             console.error(error)
