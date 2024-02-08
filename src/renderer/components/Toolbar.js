@@ -14,7 +14,7 @@ import { SimpleButton, CommandButton } from './ToolbarButtons'
 
 export const Toolbar = () => {
   const [properties, setProperties] = useMemento('ui.properties', '')
-  const { commandRegistry } = useServices()
+  const { commandRegistry, replicationProvider } = useServices()
 
   const commands = [
     commandRegistry.separator(),
@@ -91,6 +91,14 @@ export const Toolbar = () => {
           checked={properties === 'styles'}
           toolTip='Show styling options for selected layer'
         />
+        { !replicationProvider.disabled &&
+          <SimpleButton
+            onClick={toggleProperties('sharing')}
+            path='mdiCloudOutline'
+            checked={properties === 'sharing'}
+            toolTip='Show sharing options for selected layer'
+          />
+        }
       </div>
     </header>
   )

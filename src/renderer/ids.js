@@ -22,6 +22,7 @@ export const LINK = 'link'
 export const STYLE = 'style'
 export const LOCKED = 'locked'
 export const RESTRICTED = 'restricted'
+export const ROLE = 'role'
 export const HIDDEN = 'hidden'
 export const DEFAULT = 'default'
 export const TAGS = 'tags'
@@ -51,6 +52,7 @@ export const HIDDEN_PREFIX = 'hidden' + PLUS
 export const DEFAULT_PREFIX = 'default' + PLUS
 export const TAGS_PREFIX = 'tags' + PLUS
 export const SHARED_LAYER_PREFIX = SHARED + PLUS
+export const ROLE_PREFIX = ROLE + PLUS
 
 export const scope = s => s.split(COLON)[0]
 export const ids = s => s.split(COLON)[1]
@@ -78,6 +80,7 @@ export const invitedId = prefix(INVITED)
 export const defaultId = prefix(DEFAULT)
 export const tagsId = prefix(TAGS)
 export const styleId = prefix(STYLE)
+export const roleId = prefix(ROLE)
 
 export const isId = prefix => id => id && id.startsWith(prefix)
 export const isProjectId = isId(PROJECT_SCOPE)
@@ -103,11 +106,12 @@ export const isTagsId = isId(TAGS_PREFIX)
 export const isMeasureId = isId(MEASURE_SCOPE)
 export const isSharedLayerId = isId(sharedId(LAYER_SCOPE))
 export const isInvitedId = isId(INVITED)
+export const isRoleId = isId(ROLE_PREFIX)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => !isViewId(id)
-export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isRestrictedId, isDefaultId, isTagsId])
+export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isRestrictedId, isDefaultId, isTagsId, isRoleId])
 
 export const layerUUID = R.cond([
   [isFeatureId, nthId(0)],

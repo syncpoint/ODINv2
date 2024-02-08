@@ -128,7 +128,7 @@ const Replication = () => {
         /*
           Handler toolbar commands for for sharing and joining layers
         */
-        emitter.on('replication/:action/:id', async ({ action, id }) => {
+        emitter.on('replication/:action/:id/:parameter', async ({ action, id, parameter }) => {
           switch (action) {
             case 'join': {
               /* id looks like invited+THE_ID. So we need to remove the prefix. */
@@ -161,6 +161,14 @@ const Replication = () => {
               const operations = tuples.map(([key, value]) => ({ type: 'put', key, value }))
               replicatedProject.post(id, operations)
               break
+            }
+            case 'changeDefaultRole': {
+              console.log(`Changing default role for ${id} to ${parameter}`)
+              await replicatedProject.setDefaultRole(id, parameter)
+              break
+            }
+            default: {
+              console.log(`Unhandled action ${action}`)
             }
           }
         })

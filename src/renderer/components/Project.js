@@ -2,6 +2,7 @@ import React from 'react'
 import { Map } from './map/Map'
 import { Properties } from './properties/Properties'
 import { Styles } from './properties/Styles'
+import { Sharing } from './properties/Sharing'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './Toolbar'
 import PrintToolbar from './print/Toolbar'
@@ -38,11 +39,17 @@ export const Project = () => {
 
   const sidebar = sidebarShowing ? <Sidebar/> : null
   const toolbar = toolbarShowing ? toolbars[toolbarScope] : null
-  const propertiesPanel = properties === 'properties'
-    ? <Properties/>
-    : properties === 'styles'
-      ? <Styles/>
-      : null
+
+  const getPropertyPanel = (propertyScope) => {
+    switch (propertyScope) {
+      case 'properties': return <Properties/>
+      case 'styles': return <Styles/>
+      case 'sharing': return <Sharing/>
+      default: return null
+    }
+  }
+
+  const propertiesPanel = getPropertyPanel(properties)
 
   return (
     <div className="site-container">
