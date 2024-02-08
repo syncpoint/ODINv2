@@ -9,8 +9,6 @@ const CREDENTIALS = 'replication:credentials'
 const SEED = 'replication:seed'
 const CREATOR_ID = uuid()
 
-
-
 const rolesReducer = (acc, current) => {
   if (current.role.self === 'READER') {
     acc.restrict.push(current.id)
@@ -111,7 +109,6 @@ const Replication = () => {
         if (permissions.permit.length > 0) await store.permit(permissions.permit)
 
         const roles = projectDescription.layers.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
-        console.dir(roles)
         await store.import(roles, { creatorId: CREATOR_ID })
 
         /*
@@ -163,7 +160,6 @@ const Replication = () => {
               break
             }
             case 'changeDefaultRole': {
-              console.log(`Changing default role for ${id} to ${parameter}`)
               await replicatedProject.setDefaultRole(id, parameter)
               break
             }
@@ -192,8 +188,6 @@ const Replication = () => {
             if (restricted) {
               const operationKeys = operations.map(o => o.key)
               await store.restrict(operationKeys)
-              console.log(`Layer ${id} is restricted, applying restriction to child elements as well`)
-              console.dir(operationKeys)
             }
           },
           renamed: async (renamed) => {
@@ -207,13 +201,10 @@ const Replication = () => {
             await store.import(ops, { creatorId: CREATOR_ID })
           },
           roleChanged: async (roles) => {
-            console.dir(roles)
             const permissions = roles.reduce(rolesReducer, { permit: [], restrict: [] })
-            console.dir(permissions)
             if (permissions.permit.length > 0) await store.permit(permissions.permit)
             if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
             const rolesOperations = roles.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
-            console.dir(rolesOperations)
             await store.import(rolesOperations, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
