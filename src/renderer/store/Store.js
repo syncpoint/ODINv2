@@ -594,7 +594,6 @@ Store.prototype.removeTag = async function (id, name) {
   this.undo.apply(command)
 }
 
-
 Store.prototype.insertCommand = function (db, tuples, options = {}) {
   const apply = () => this.batch(db, tuples.map(([key, value]) => L.putOp(key, value)), options)
   const inverse = () => this.deleteCommand(db, tuples)

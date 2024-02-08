@@ -11,8 +11,8 @@ const CREATOR_ID = uuid()
 
 
 
-const permissionReducer = (acc, current) => {
-  if (current.powerlevel === 'READER') {
+const rolesReducer = (acc, current) => {
+  if (current.role.self === 'READER') {
     acc.restrict.push(current.id)
   } else {
     acc.permit.push(current.id)
@@ -104,12 +104,15 @@ const Replication = () => {
         await replicationProvider.connect()
         const projectDescription = await replicatedProject.hydrate(seed)
         /*
-          Iterate over all layers and check the permissions. if our powerlevel is READER, restrict the layers. Otherwise, permit them.
+          Iterate over all layers and check the permissions. if our role is READER, restrict the layers. Otherwise, permit them.
         */
-        const permissions = projectDescription.layers.reduce(permissionReducer, { restrict: [], permit: [] })
-
+        const permissions = projectDescription.layers.reduce(rolesReducer, { restrict: [], permit: [] })
         if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
         if (permissions.permit.length > 0) await store.permit(permissions.permit)
+
+        const roles = projectDescription.layers.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
+        console.dir(roles)
+        await store.import(roles, { creatorId: CREATOR_ID })
 
         /*
           On startup we import all invitations we already know about.
@@ -195,12 +198,15 @@ const Replication = () => {
               .map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
             await store.import(ops, { creatorId: CREATOR_ID })
           },
-          powerlevelChanged: async (powerlevel) => {
-            console.dir(powerlevel)
-            const permissions = powerlevel.reduce(permissionReducer, { permit: [], restrict: [] })
+          roleChanged: async (roles) => {
+            console.dir(roles)
+            const permissions = roles.reduce(rolesReducer, { permit: [], restrict: [] })
             console.dir(permissions)
             if (permissions.permit.length > 0) await store.permit(permissions.permit)
             if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
+            const rolesOperations = roles.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
+            console.dir(rolesOperations)
+            await store.import(rolesOperations, { creatorId: CREATOR_ID })
           },
           error: async (error) => {
             console.error(error)
@@ -288,18 +294,6 @@ const Replication = () => {
         if (error.response) {
           console.log(`http error code ${error.response.status}`)
         }
-        /* if (error.response?.status === 403) {
-          await sessionStore.del(CREDENTIALS)
-          feedback('Credentials for replication may be void, reauthenticating ...')
-          setReload(true)
-        } else if (error.response?.status === 429) {
-          feedback('Replication was rate-limited, retrying ...')
-          setReload(true)
-        } else if (!navigator.onLine) {
-          feedback('Looks like we are offline! Reconnecting ...')
-        } else {
-          feedback('Replication error!', error.message)
-        } */
         console.dir(error)
         setOffline(true)
       }
