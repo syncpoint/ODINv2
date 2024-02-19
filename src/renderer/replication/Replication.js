@@ -290,11 +290,10 @@ const Replication = () => {
         setInitialized(true)
 
       } catch (error) {
-        if (error.response) {
-          console.log(`http error code ${error.response.status}`)
-        }
-        console.dir(error)
+        console.error(error)
         setOffline(true)
+        feedback('Replication error: ', error.message)
+        await sessionStore.del(CREDENTIALS, null)
       }
     }
 

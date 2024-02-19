@@ -82,6 +82,10 @@ ProjectStore.prototype.getCredentials = async function (id) {
 }
 
 ProjectStore.prototype.putCredentials = async function (id, credentials) {
+  if (!credentials) {
+    console.log(`Deleting credentials for ${id}`)
+    return this.db.del(CREDENTIALS(id))
+  }
   const value = safeStorage.isEncryptionAvailable()
     ? safeStorage.encryptString(JSON.stringify(credentials))
     : credentials

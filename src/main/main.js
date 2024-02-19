@@ -121,6 +121,8 @@ const ready = async () => {
     await collaboration.purgeSettings()
     windowManager.reloadAll()
   })
+  ipcMain.on('COLLABORATION_REFRESH_LOGIN', () => collaboration.login())
+
   ipcMain.on('EXPORT_LAYER', exportLayer)
 
   await session.restore()

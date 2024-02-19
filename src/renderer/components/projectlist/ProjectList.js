@@ -302,6 +302,8 @@ export const ProjectList = () => {
           feedback('Looks like we are offline! Reconnecting ...')
         } else {
           feedback('Replication error: ', error.message)
+          await projectStore.putCredentials('PROJECT-LIST', null)
+          ipcRenderer.postMessage('COLLABORATION_REFRESH_LOGIN')
         }
       }
     }
