@@ -24,7 +24,7 @@ const Replication = () => {
     to other components of the application. I.e. if replication is not operational some buttons in the
     replication toolbar are disabled.
   */
-  const { emitter, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
+  const { emitter, ipcRenderer, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
 
   /* system/OS level notifications */
   const notifications = React.useRef(new Set())
@@ -294,6 +294,7 @@ const Replication = () => {
         setOffline(true)
         feedback('Replication error: ', error.message)
         await sessionStore.del(CREDENTIALS, null)
+        ipcRenderer.postMessage('RELOAD_ALL_WINDOWS')
       }
     }
 
