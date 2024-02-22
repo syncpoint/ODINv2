@@ -133,7 +133,8 @@ const Replication = () => {
               const layer = await replicatedProject.joinLayer(layerId)
               await store.import([
                 { type: 'put', key: layer.id, value: { name: layer.name, description: layer.topic } },
-                { type: 'put', key: ID.sharedId(layer.id), value: true }
+                { type: 'put', key: ID.sharedId(layer.id), value: true },
+                { type: 'put', key: ID.roleId(layer.id), value: layer.role }
               ], { creatorId: CREATOR_ID })
               await store.delete(id) // invitation ID
               /*
@@ -149,8 +150,11 @@ const Replication = () => {
             }
             case 'share': {
               const { name } = await store.value(id)
-              await replicatedProject.shareLayer(id, name)
-              await store.import([{ type: 'put', key: ID.sharedId(id), value: true }], { creatorId: CREATOR_ID })
+              const layer = await replicatedProject.shareLayer(id, name)
+              await store.import([
+                { type: 'put', key: ID.sharedId(id), value: true },
+                { type: 'put', key: ID.roleId(id), value: layer.role }
+              ], { creatorId: CREATOR_ID })
 
               /* post initial content of the layer */
               const keys = await store.collectKeys([id], [ID.STYLE, ID.LINK, ID.TAGS, ID.FEATURE])

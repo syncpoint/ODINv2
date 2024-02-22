@@ -94,7 +94,7 @@ const Sharing = props => {
           <Select
             id='sharing-default-role'
             value={sharedLayer.role.default}
-            disabled={sharedLayer.role.self !== 'ADMINISTRATOR' || !online}
+            disabled={!(['ADMINISTRATOR', 'OWNER'].includes(sharedLayer.role.self)) || !online}
             onChange={handleRoleChanged}
             >
             <option value='ADMINISTRATOR'>ADMINISTRATOR</option>
