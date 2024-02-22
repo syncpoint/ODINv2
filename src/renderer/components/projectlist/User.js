@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Card } from './Card'
 import Avatar from './Avatar'
+
 import './ProjectList.css'
 
 
@@ -35,18 +36,19 @@ const User = props => {
           onClick={handleClick}
           selected={props.selected}
           id={props.id} >
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
           <Avatar entry={entry} />
           <div>
             <div className='card-title'>{entry.displayName ? entry.displayName : entry.userId}</div>
             <div className='card-content'>{entry.userId}</div>
           </div>
-          <div className={`mm-membership ${getCSSClass(entry.membership)}`}>{displayMembership(entry.membership)}</div>
         </div>
       </Card>
     </div>
   )
 }
+// <div className={`mm-membership ${getCSSClass(entry.membership)}`}>{displayMembership(entry.membership)} ({entry.role})</div>
+
 User.propTypes = {
   entry: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,
