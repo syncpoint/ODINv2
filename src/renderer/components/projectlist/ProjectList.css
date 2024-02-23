@@ -35,6 +35,17 @@
   border-radius: 2%;
 }
 
+.mm-interaction {
+  background-color: white;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.mm-interaction:disabled {
+  cursor: initial;
+  opacity: 0.25;
+}
+
 .title {
   font-size: x-large;
   font-weight: 500;

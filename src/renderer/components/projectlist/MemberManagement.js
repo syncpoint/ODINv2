@@ -94,57 +94,61 @@ const MemberManagement = props => {
     return <Invite replication={replication} handleSelect={changeSelection}/>
   }
 
-  const notKickable = () => {
-    if (selected.length === 0) return true
-    if (!permissions[ACTIONS.KICK]) return true
-    const r = memberList
-      .filter(m => selected.includes(m.userId))
-      .some(m => m.membership === 'invite')
-    return !r
+  const isKickable = () => {
+    if (selected.length !== 1) return false
+    if (!permissions[ACTIONS.KICK]) return false
+    const current = memberList.find(m => m.userId === selected[0])
+    return !(['OWNER', 'ADMINISTRATOR'].includes(current?.role))
   }
 
-  const notInvitable = () => {
-    if (selected.length === 0) return true
-    if (!permissions[ACTIONS.INVITE]) return true
+  const isInvitable = () => {
+    if (selected.length !== 1) return false
+    if (!permissions[ACTIONS.INVITE]) return false
     const r = memberList
       .filter(m => selected.includes(m.userId))
-    return r.length > 0
+    return r.length === 0
   }
 
-  const defaultValue = (memberList.find(m => m.userId === selected[0]))?.role
+  const defaultValue = (memberList.find(m => m.userId === selected[0]))?.role || 'NONE'
+  const kickable = isKickable()
+  const invitable = isInvitable()
 
   return (
   <div className='popup-container' onClick={() => onClose()}>
   <div className='member-container' onClick={ e => e.stopPropagation() } >
     <div className='mm-header'>
       <div className='title'>{ managedProject.name } ({roles?.self})</div>
-      <Icon style={{ cursor: permissions.invite ? 'pointer' : 'initial', opacity: permissions.invite ? 1 : 0.6 }} disabled={!permissions.invite} onClick={toggleView} size={1.7} path={action === ACTIONS.KICK ? mdiAccountMultiplePlus : mdiAccountMultiple }></Icon>
+      <button className='mm-interaction' disabled={!permissions[ACTIONS.INVITE]} onClick={toggleView}>
+        <Icon size={1.7} path={action === ACTIONS.KICK ? mdiAccountMultiplePlus : mdiAccountMultiple } />
+      </button>
     </div>
     <div className='mm-header'>
       { action === ACTIONS.KICK &&
         <>
-          <select value={ defaultValue } onChange={handleRoleChange} disabled={selected.length === 0 || notKickable()} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center' }}>
+          <select value={ defaultValue } onChange={handleRoleChange} disabled={!kickable} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center' }}>
+            <option value='NONE' hidden={true}></option>
             <option value='CONTRIBUTOR'>Contributor</option>
             <option value='ADMINISTRATOR'>Administrator</option>
             <option value='OWNER' disabled={true}>Owner</option>
           </select>
-          <Icon size={1.2}
+          <button className='mm-interaction'
+            style={{ marginRight: '6px' }}
+            disabled={!kickable}
             onClick={handleKick}
-            style={{ marginRight: '6px', cursor: 'pointer', opacity: notKickable() ? 0.4 : 1 }}
-            disabled={notKickable()}
-            path={mdiAccountMinus}
-          />
+            >
+              <Icon size={1.2} path={mdiAccountMinus} />
+          </button>
         </>
-
       }
       {
-        action === ACTIONS.INVITE && <Icon size={1.2}
-                                        onClick={handleInvite}
-                                        style={{ marginLeft: 'auto', marginRight: '6px', cursor: 'pointer', opacity: notInvitable() ? 0.4 : 1 }}
-                                        disabled={notInvitable()}
-                                        path={mdiAccountPlus}
-                                        />
-
+        action === ACTIONS.INVITE &&
+          <button onClick={handleInvite}
+            className='mm-interaction'
+            style={{ marginLeft: 'auto', marginRight: '6px' }}
+            disabled={!invitable}
+            >
+              <Icon size={1.2} path={mdiAccountPlus} />
+          </button>
       }
     </div>
     { getCurrentView() }
