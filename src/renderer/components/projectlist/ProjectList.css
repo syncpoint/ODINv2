@@ -35,14 +35,6 @@
   border-radius: 2%;
 }
 
-.mm-invite {
-  border: 2px solid green;
-}
-
-.mm-join {
-  border: 2px solid #40a9ff;
-}
-
 .title {
   font-size: x-large;
   font-weight: 500;

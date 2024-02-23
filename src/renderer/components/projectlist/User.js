@@ -13,20 +13,6 @@ const User = props => {
     props.onClick(props.id)
   }
 
-  const displayMembership = membership => {
-    switch (membership) {
-      case 'invite': return 'Invited'
-      case 'join': return 'Joined'
-      case 'ban': return 'Banned'
-      default: return membership
-    }
-  }
-
-  const getCSSClass = membership => {
-    if (!membership) return ''
-    return `mm-${membership}`
-  }
-
   return (
     <div
       key={props.id}
@@ -47,7 +33,7 @@ const User = props => {
     </div>
   )
 }
-// <div className={`mm-membership ${getCSSClass(entry.membership)}`}>{displayMembership(entry.membership)} ({entry.role})</div>
+
 
 User.propTypes = {
   entry: PropTypes.object.isRequired,
