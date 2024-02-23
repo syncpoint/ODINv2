@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Tooltip } from 'react-tooltip'
 import Members from './Members'
 import Invite from './Invite'
 import './ProjectList.css'
@@ -115,45 +116,55 @@ const MemberManagement = props => {
 
   return (
   <div className='popup-container' onClick={() => onClose()}>
-  <div className='member-container' onClick={ e => e.stopPropagation() } >
-    <div className='mm-header'>
-      <div className='title'>{ managedProject.name } ({roles?.self})</div>
-      <button className='mm-interaction' disabled={!permissions[ACTIONS.INVITE]} onClick={toggleView}>
-        <Icon size={1.7} path={action === ACTIONS.KICK ? mdiAccountMultiplePlus : mdiAccountMultiple } />
-      </button>
+    <div className='member-container' onClick={ e => e.stopPropagation() } >
+      <div className='mm-header'>
+        <div className='title'>{ managedProject.name } ({roles?.self})</div>
+        <button className='mm-interaction' disabled={!permissions[ACTIONS.INVITE]} onClick={toggleView} id='mm-toogle-view'>
+          <Icon size={1.7} path={action === ACTIONS.KICK ? mdiAccountMultiplePlus : mdiAccountMultiple } />
+        </button>
+        <Tooltip anchorSelect='#mm-toogle-view' content='Toggle view (add/remove members)' style={{ zIndex: 200 }} delayShow={750}/>
+      </div>
+      <div className='mm-header'>
+        { action === ACTIONS.KICK &&
+          <>
+            <select value={ defaultValue } onChange={handleRoleChange} disabled={!kickable} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center', textAlign: 'right' }} id='mm-change-role'>
+              <option value='NONE' hidden={true}></option>
+              <option value='CONTRIBUTOR'>Contributor</option>
+              <option value='ADMINISTRATOR'>Administrator</option>
+              <option value='OWNER' disabled={true}>Owner</option>
+            </select>
+            <button className='mm-interaction'
+              style={{ marginRight: '6px' }}
+              disabled={!kickable}
+              onClick={handleKick}
+              id='mm-remove-member'
+              >
+                <Icon size={1.2} path={mdiAccountMinus} />
+            </button>
+            <Tooltip anchorSelect='#mm-change-role' content='Change the role of the selected entry' style={{ zIndex: 200 }} delayShow={750}/>
+            <Tooltip anchorSelect='#mm-remove-member' content='Remove the selected entry from the project' style={{ zIndex: 200 }} delayShow={750}/>
+          </>
+        }
+        {
+          action === ACTIONS.INVITE &&
+            <>
+              <button onClick={handleInvite}
+                className='mm-interaction'
+                style={{ marginLeft: 'auto', marginRight: '6px' }}
+                disabled={!invitable}
+                id='mm-add-member'
+              >
+                  <Icon size={1.2} path={mdiAccountPlus} />
+              </button>
+              <Tooltip anchorSelect='#mm-add-member' content='Add the selected entry to the project' style={{ zIndex: 200 }} delayShow={750} />
+            </>
+
+        }
+      </div>
+      { getCurrentView() }
     </div>
-    <div className='mm-header'>
-      { action === ACTIONS.KICK &&
-        <>
-          <select value={ defaultValue } onChange={handleRoleChange} disabled={!kickable} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center', textAlign: 'right' }}>
-            <option value='NONE' hidden={true}></option>
-            <option value='CONTRIBUTOR'>Contributor</option>
-            <option value='ADMINISTRATOR'>Administrator</option>
-            <option value='OWNER' disabled={true}>Owner</option>
-          </select>
-          <button className='mm-interaction'
-            style={{ marginRight: '6px' }}
-            disabled={!kickable}
-            onClick={handleKick}
-            >
-              <Icon size={1.2} path={mdiAccountMinus} />
-          </button>
-        </>
-      }
-      {
-        action === ACTIONS.INVITE &&
-          <button onClick={handleInvite}
-            className='mm-interaction'
-            style={{ marginLeft: 'auto', marginRight: '6px' }}
-            disabled={!invitable}
-            >
-              <Icon size={1.2} path={mdiAccountPlus} />
-          </button>
-      }
-    </div>
-    { getCurrentView() }
-  </div>
-</div>)
+
+  </div>)
 }
 
 MemberManagement.propTypes = {
