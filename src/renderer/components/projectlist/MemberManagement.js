@@ -125,7 +125,7 @@ const MemberManagement = props => {
     <div className='mm-header'>
       { action === ACTIONS.KICK &&
         <>
-          <select value={ defaultValue } onChange={handleRoleChange} disabled={!kickable} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center' }}>
+          <select value={ defaultValue } onChange={handleRoleChange} disabled={!kickable} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center', textAlign: 'right' }}>
             <option value='NONE' hidden={true}></option>
             <option value='CONTRIBUTOR'>Contributor</option>
             <option value='ADMINISTRATOR'>Administrator</option>
