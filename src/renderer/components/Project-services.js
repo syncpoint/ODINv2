@@ -67,9 +67,6 @@ export default async projectUUID => {
   const featureStore = new FeatureStore(store, selection)
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
-  // Key bindings.
-  bindings(clipboard, emitter)
-
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
   const inputFocused = () => inputTypes.some(type => (activeElement() instanceof type))
@@ -146,7 +143,10 @@ export default async projectUUID => {
 
   services.signals['replication/operational'] = Signal.of(false)
 
-  services.commandRegistry = new CommandRegistry(services)
+  const commandRegistry = new CommandRegistry(services)
+  services.commandRegistry = commandRegistry
+  // Key bindings.
+  bindings(commandRegistry, emitter)
 
   return services
 }
