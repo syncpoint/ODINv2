@@ -16,9 +16,15 @@ export default services => {
     this.selection.on('selection', async () => {
       if (this.selected().length === 0) {
         this.isEnabled = false
+      } else if (this.selected().some(ID.isSymbolId)) {
+        this.isEnabled = false
       } else {
-        const [shared] = await this.store.collect(this.selection.selected()[0], [ID.sharedId])
-        this.isEnabled = !shared ?? true
+        if (!this.selected().some(ID.isLayerId)) {
+          this.isEnabled = true
+        } else {
+          const [shared] = await this.store.collect(this.selection.selected()[0], [ID.sharedId])
+          this.isEnabled = !shared ?? true
+        }
       }
       this.emit('changed')
     })
@@ -34,7 +40,7 @@ export default services => {
   }
 
   Delete.prototype.selected = function () {
-    return this.selection.selected().filter(ID.isLayerId)
+    return this.selection.selected()
   }
 
 
