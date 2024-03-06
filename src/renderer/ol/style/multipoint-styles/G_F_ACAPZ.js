@@ -1,3 +1,5 @@
+import BufferParameters from 'jsts/org/locationtech/jts/operation/buffer/BufferParameters.js'
+
 export default ({ TS, PI_OVER_2, geometry }) => {
   const [x, y, A, B, C, D] = TS.coordinates(geometry)
   const baseline = TS.lineString([x, y])
@@ -20,11 +22,21 @@ export default ({ TS, PI_OVER_2, geometry }) => {
   const section = TS.polygon([y, x, farB, farC, y])
   const targetArea = TS.intersection([section, ring])
 
+  const securityAreaA = TS.buffer({
+    joinStyle: BufferParameters.JOIN_ROUND
+  })(targetArea)(800)
+
+  const securityAreaB = TS.buffer({
+    joinStyle: BufferParameters.JOIN_ROUND
+  })(targetArea)(1200)
+
   return [{
     id: 'style:2525c/default-stroke',
     geometry: TS.collect([
       baseline,
-      targetArea
+      targetArea,
+      securityAreaA,
+      securityAreaB,
     ])
   }]
 }
