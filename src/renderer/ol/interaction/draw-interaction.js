@@ -269,7 +269,7 @@ const geometries = [
     }
   },
 
-  /* GeometryCollection (Artillery Position Zones (APZ)) */
+  /* GeometryCollection - Artillery Position Zones (APZ) */
   {
     match: ({ geometry }) => geometry.layout === 'apz',
     options: () => ({ type: GeometryType.LINE_STRING, maxPoints: 2 }),
@@ -278,34 +278,90 @@ const geometries = [
       // Construct geometry from 2-point line (baseline center to target area center):
       const geometry = feature.getGeometry()
       const { read, write } = format(feature)
-      const definingLine = read(geometry) // in UTM
-      const coords = TS.coordinates(definingLine)
-      const segment = TS.segment(coords)
-      const length = segment.getLength()
-      const baselineLength = length / 6
-      const targetAreaWidth = length / 2
-      const farPoint = TS.projectCoordinates(length * 1.25, segment.angle(), coords[0])([[1, 0]])
-      const baselineCoords = TS.projectCoordinates(baselineLength / 2, segment.angle() - PI_OVER_2, coords[0])([[-1, 0], [1, 0]])
-      const targetAreaBackplaneCoords = TS.projectCoordinates(targetAreaWidth / 2, segment.angle() - PI_OVER_2, farPoint[0])([[-1, 0], [1, 0]])
-      const backCircle = TS.pointBuffer(TS.startPoint(definingLine))(length * 1.25)
-      const frontCircle = TS.pointBuffer(TS.startPoint(definingLine))(length * 0.75)
-      const bcLineString = TS.lineString(backCircle.getCoordinates())
-      const fcLineString = TS.lineString(frontCircle.getCoordinates())
-      const leftBound = TS.lineString([baselineCoords[0], targetAreaBackplaneCoords[0]])
-      const rightBound = TS.lineString([baselineCoords[1], targetAreaBackplaneCoords[1]])
+      const centerLine = read(geometry) // in UTM
+      const centerCoords = TS.coordinates(centerLine)
+      const centerSegment = TS.segment(centerCoords)
+      const length = centerSegment.getLength()
 
-      const intersectionCoords = TS.coordinates([
-        TS.intersection([leftBound, fcLineString]),
-        TS.intersection([leftBound, bcLineString]),
-        TS.intersection([rightBound, bcLineString]),
-        TS.intersection([rightBound, fcLineString])
+      // Defining geometry collection contains the following information:
+      // A. Baseline :: 2-Point LineString
+      // B. Target Area :: 4-Point MultiPoint (near/left, far/left, far/right, near/right)
+      // C. 4-Point MultiPoint
+      //   D. Danger Zone 1 near depth :: Point (on center line)
+      //   E. Danger Zone 1 far depth :: Point (on center line)
+      //   F. Danger Zone 1 width :: Point (orthogonal to left target area bounds median)
+      //   G. Danger Zone 2 width :: Point (orthogonal to left target area bounds median)
+
+      // Upon construction, centerline defines the complete initial geometry:
+      // - Baseline length: 1/6 of centerline length
+      // - Target Area width: 1/2 of centerline length (width at the far end, not center)
+      // - Target Area near radius: 75% of centerline length
+      // - Target Area far radius: 125% of centerline length
+      // - Danger Zone 1 near radius: Target Area near radius - 10 % of centerline length
+      // - Danger Zone 1 far radius: Target Area far radius + 15 % of centerline length
+      // - Danger Zone 1 width: 10 % of centerline length
+      // - Danger Zone 2 width: 10 % of centerline length
+
+      // A. Baseline
+      // Project centerline start point to the left and right.
+
+      const baselineLength = length / 6
+      const baselineCoords = TS.projectCoordinates(
+        baselineLength / 2, centerSegment.angle() - PI_OVER_2,
+        centerCoords[0]
+      )([[-1, 0], [1, 0]])
+
+      // B. Target Area
+      // Extend centerlines end point to double its length.
+      // Move this point to the left and right to construct a backplane.
+      // Connect backplane end points to corresponding baseline end points to
+      // construct left and right target area bounding segments.
+      // Intersect far/near circle with left/right bound to determine Target Area coordinates
+
+      const targetWidth = length / 2
+      const targetNearRadius = length * 0.75
+      const targetFarRadius = length * 1.25
+
+      const centerFarPoint = TS.extendSegment(0, 1, centerSegment).p1
+      const backplaneCoords = TS.projectCoordinates(
+        targetWidth / 2,
+        centerSegment.angle() - PI_OVER_2, centerFarPoint
+      )([[-1, 0], [1, 0]])
+
+      const targetLeft = TS.segment(baselineCoords[0], backplaneCoords[0])
+      const targetRight = TS.segment(baselineCoords[1], backplaneCoords[1])
+      const center = centerCoords[0] // circle center
+
+      const targetArea = [
+        ...TS.intersectCircle(center, targetNearRadius, targetLeft),
+        ...TS.intersectCircle(center, targetFarRadius, targetLeft),
+        ...TS.intersectCircle(center, targetFarRadius, targetRight),
+        ...TS.intersectCircle(center, targetNearRadius, targetRight)
+      ]
+
+      // D. Danger Zone 1 near depth
+      // E. Danger Zone 1 far depth
+      const dangerZone1Depth = TS.projectCoordinateY(centerCoords[0], centerSegment.angle())
+      const dangerZone1Near = dangerZone1Depth(targetNearRadius - 800)
+      const dangerZone1Far = dangerZone1Depth(targetFarRadius + 600)
+
+      // F. Danger Zone 1 width
+      // G. Danger Zone 2 width
+      // Use target area left bounds median (mid point) to move points orthogonal
+      // to the bound further to the left for respective danger zone widths.
+      const leftBound = TS.segment(targetArea[0], targetArea[1])
+      const median = leftBound.midPoint()
+      const dangerZoneWidth = TS.projectCoordinateY(median, leftBound.angle() + PI_OVER_2)
+      const dangerZone1Width = dangerZoneWidth(length * 0.1)
+      const dangerZone2Width = dangerZoneWidth(length * 0.2)
+
+      const featureGeometry = TS.collect([
+        TS.lineString(baselineCoords),
+        TS.multiPoint(targetArea),
+        TS.multiPoint([dangerZone1Near, dangerZone1Far, dangerZone1Width, dangerZone2Width])
       ])
 
-      const points = TS.multiPoint([...baselineCoords, ...intersectionCoords].map(TS.point))
-
-      // LineString:Polygon
-      feature.setGeometry(write(points))
+      feature.setGeometry(write(featureGeometry))
     }
   }
-
 ]

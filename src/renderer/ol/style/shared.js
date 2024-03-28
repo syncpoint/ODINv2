@@ -10,10 +10,16 @@ import styleRegistry from './styleRegistry'
 const rules = []
 export default rules
 
-
 /**
+ * Type for various (intermediate) products:
+ *
  * sidc :: String
  * parameterizedSIDC :: String
+ * StyleDescriptor :: { geometry: jsts/geom/geometry, id: String, ... }
+ * styles :: [StyleDescriptor]
+ */
+
+/**
  * modifiers :: [String]
  */
 export const sidc = [next => {
@@ -118,9 +124,6 @@ export const geometry = [next => {
 }, ['mode', 'smoothen', 'geometryKey', 'centerResolution']]
 
 
-/**
- * styles :: ...
- */
 export const styles = [next => {
   const { dynamicStyle, staticStyles, evalSync, placement } = next
   const styles = [
@@ -158,13 +161,13 @@ export const selectedStyles = [next => {
   return { selectedStyles }
 }, ['mode', 'simplifiedGeometry']]
 
-
 /**
  * style :: [ol/style/Style]
  */
 export const style = [next => {
   const { TS, styles, selectedStyles, effectiveStyle, rewrite } = next
   if (styles.length === 0) return { style: [] }
+
   const effectiveStyles = [...styles, ...selectedStyles]
     .map(echelon(next))
     .map(effectiveStyle)

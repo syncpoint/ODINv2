@@ -5,13 +5,15 @@ import LineString from './linestring'
 import Polygon from './polygon'
 import Corridor from './corridor'
 import MultiPoint from './multipoint'
+import Artillery from './artillery'
 
 export const rules = {
   Point,
   LineString,
   Polygon,
   'LineString:Point': Corridor,
-  MultiPoint
+  MultiPoint,
+  'LineString:MultiPoint:MultiPoint': Artillery
 }
 
 const notEqual = (state, facts, key) => !isEqual(state[key], facts[key])
@@ -53,6 +55,10 @@ export const reduce = (state, facts, rank = 0) => {
   const skip = next => reduce(state, next, ++rank)
 
   const tryer = next => isStale(deps) && isFulfilled(deps) ? evaluate(next) : skip(next)
-  const catcher = (err, next) => reduce(state, { ...next, err }, ++rank)
+  const catcher = (err, next) => {
+    console.error('[style/reduce]', err)
+    return reduce(state, { ...next, err }, ++rank)
+  }
+
   return R.tryCatch(tryer, catcher)(next)
 }

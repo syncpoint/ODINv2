@@ -4,27 +4,40 @@ import Centroid from 'jsts/org/locationtech/jts/algorithm/Centroid.js'
 import ConvexHull from 'jsts/org/locationtech/jts/algorithm/ConvexHull.js'
 import MinimumDiameter from 'jsts/org/locationtech/jts/algorithm/MinimumDiameter.js'
 import Coordinate from 'jsts/org/locationtech/jts/geom/Coordinate.js'
+import Point from 'jsts/org/locationtech/jts/geom/Point.js'
 import Envelope from 'jsts/org/locationtech/jts/geom/Envelope.js'
 import Geometry from 'jsts/org/locationtech/jts/geom/Geometry.js'
 import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js'
 import LineSegment from 'jsts/org/locationtech/jts/geom/LineSegment.js'
+import LineString from 'jsts/org/locationtech/jts/geom/LineString.js'
 import Polygon from 'jsts/org/locationtech/jts/geom/Polygon.js'
 import AffineTransformation from 'jsts/org/locationtech/jts/geom/util/AffineTransformation.js'
 import LengthIndexedLine from 'jsts/org/locationtech/jts/linearref/LengthIndexedLine.js'
 import BufferOp from 'jsts/org/locationtech/jts/operation/buffer/BufferOp.js'
 import OverlayOp from 'jsts/org/locationtech/jts/operation/overlay/OverlayOp.js'
 import RelateOp from 'jsts/org/locationtech/jts/operation/relate/RelateOp.js'
-
+import * as Flatten from '@flatten-js/core'
 
 import BufferParameters from 'jsts/org/locationtech/jts/operation/buffer/BufferParameters.js'
 
+export const isNumber = v => typeof v === 'number'
+export const isArray = Array.isArray
+export const isCoordinate = v => v instanceof Coordinate
+export const isPoint = v => v instanceof Point
+export const isLineSegment = v => v instanceof LineSegment
+export const isLineString = v => v instanceof LineString
+export const isEnvelope = v => v instanceof Envelope
+export const isPolygon = v => v instanceof Polygon
+
 const Types = {
-  isNumber: v => typeof v === 'number',
-  isArray: Array.isArray,
-  isCoordinate: v => v instanceof Coordinate,
-  isLineSegment: v => v instanceof LineSegment,
-  isEnvelope: v => v instanceof Envelope,
-  isPolygon: v => v instanceof Polygon
+  isNumber,
+  isArray,
+  isCoordinate,
+  isPoint,
+  isLineSegment,
+  isLineString,
+  isEnvelope,
+  isPolygon
 }
 
 /**
@@ -101,7 +114,7 @@ export const polygon = coordinates => geometryFactory.createPolygon(coordinates)
 /**
  * segment :: jts.geom.Coordinate m => [m, m] => jts.geom.LineSegment
  * segment :: jts.geom.Coordinate m => (m, m) => jts.geom.LineSegment
- * segment :: jts.geom.LineSegment Kt => Kt -> Kt
+ * segment :: jts.geom.LineSegment -> jts.geom.LineSegment
  */
 export const segment = (...args) => {
   switch (args.length) {
@@ -124,6 +137,18 @@ export const normalSegment = s => {
 }
 
 /**
+ * extendSegment :: Number -> Number -> jts.geom.LineSegment -> jts.geom.LineSegment
+ */
+export const extendSegment = R.curry((fa, fb, s) => {
+  const length = s.getLength()
+  const angle = s.angle()
+  return segment(
+    projectCoordinates(length * fa, angle, s.p0)([[1, 0]])[0],
+    projectCoordinates(length * fb, angle, s.p1)([[1, 0]])[0]
+  )
+})
+
+/**
  * lineString :: jts.geom.LineSegment -> jts.geom.LineString
  * lineString :: [jts.geom.Coordinate] -> jts.geom.LineString
  * lineString :: ...[jts.geom.Coordinate] -> jts.geom.LineString
@@ -142,13 +167,21 @@ export const multiLineString = lineStrings => geometryFactory.createMultiLineStr
 
 /**
  * point :: jts.geom.Coordinate -> jts.geom.Point
+ * point :: Flatten.Point -> jts.geom.Point
  */
-export const point = coordinate => geometryFactory.createPoint(coordinate)
+export const point = coordinate => {
+  if (Types.isCoordinate(coordinate)) return geometryFactory.createPoint(coordinate)
+  else return point(new Coordinate(coordinate.x, coordinate.y))
+}
 
 /**
  * multiPoint :: [jts.geom.Point] -> jts.geom.MultiPoint
+ * multiPoint :: [jts.geom.Coordinate] -> jts.geom.MultiPoint
  */
-export const multiPoint = points => geometryFactory.createMultiPoint(points)
+export const multiPoint = points =>
+  Types.isPoint(points[0])
+    ? geometryFactory.createMultiPoint(points)
+    : multiPoint(points.map(point))
 
 /**
  * lengthIndexedLine :: jts.geom.LineString -> jts.linearref.LengthIndexedLine
@@ -174,16 +207,19 @@ export const collect = geometries => geometryFactory.createGeometryCollection(ge
  */
 export const coordinates = (...args) => {
   if (Types.isArray(args[0])) return args[0].flatMap(coordinates)
-  else return args[0].getCoordinates()
+  else if (Types.isLineSegment(args[0])) return [args[0].getCoordinate(0), args[0].getCoordinate(1)]
+  return args[0].getCoordinates()
 }
 
 /**
  * coordinate :: jts.geom.Point -> jts.geom.Coordinate
+ * coordinate :: Flatten.Point -> jts.geom.Coordinate
  * coordinate :: [Number, Number] -> jts.geom.Coordinate
- * coordinate :: (Number, Number) -> jts.geom.Coordinate
+ * coordinate :: Number -> Number -> jts.geom.Coordinate
  */
 export const coordinate = (...args) => {
   if (args[0] instanceof Geometry) return args[0].getCoordinate()
+  else if (args[0] instanceof Flatten.Point) return new Coordinate(args[0].x, args[0].y)
   else if (Types.isArray(args[0])) return coordinate(...args[0])
   else if (args.length === 2) {
     if (args.every(Types.isNumber)) return new Coordinate(args[0], args[1])
@@ -210,6 +246,53 @@ export const difference = geometries => geometries.reduce(OverlayOp.difference)
  * intersection :: [jts.geom.Geometry] -> jts.geom.Geometry
  */
 export const intersection = geometries => geometries.reduce(OverlayOp.intersection)
+
+/**
+ * makePoint :: jts.geom.Coordinate -> flatten.Point
+ * makePoint :: jts.geom.Point -> flatten.Point
+ */
+const makePoint = arg =>
+  Types.isCoordinate(arg)
+    ? Flatten.point(arg.x, arg.y)
+    : makePoint(coordinate(arg))
+
+/**
+ * makeShape :: jts.geom.Geometry -> flatten.Shape
+ * makeShape :: jts.geom.LineSegment -> flatten.Shape
+ * makeShape :: (jts.geom.Coordinate, Number) -> flatten.Circle
+ * makeShape :: (jts.geom.Point, Number) -> flatten.Circle
+ */
+export const makeShape = (...args) => {
+  if (args.length === 1) {
+    const arg = args[0]
+    // 1-arg form directly converts supported geometry.
+    return R.cond([
+      [Types.isLineSegment, ({ p0, p1 }) => Flatten.segment(p0.x, p0.y, p1.x, p1.y)],
+      [Types.isLineString, lineString => Flatten.segment(...lineString.getCoordinates().map(makePoint))],
+      [Types.isCoordinate, ({ x, y }) => Flatten.point(x, y)],
+
+      [R.T, R.identity(undefined)]
+    ])(arg)
+  } else {
+    // 2-args form is reserved for circles;
+    // either point/radius or coordinate/radius.
+    return Flatten.circle(makePoint(args[0]), args[1])
+  }
+}
+
+/**
+ * intersectCircle :: jts.geom.Coordinate -> Number -> jts.geom.Geometry -> [jts.geom.Coordinate]
+ */
+export const intersectCircle = R.curry((center, radius, geometry) => {
+  const ps = makeShape(geometry).intersect(makeShape(center, radius))
+  return ps.map(coordinate)
+})
+
+export const distance = (a, b) => {
+  // distanceTo :: Flatten.Shape -> [Number, Flatten.Segment]
+  const [distance] = makeShape(a).distanceTo(makeShape(b))
+  return distance
+}
 
 /**
  * startPoint :: jts.geom.Geometry -> jts.geom.Point
@@ -245,6 +328,22 @@ export const translate = (angle, geometry) => distance => {
   return translated
 }
 
+export const translateX = R.curry((distance, angle, geometry) => {
+  // LineSegment is not a geometry: convert to LineString
+  if (Types.isLineSegment(geometry)) {
+    const line = lineString(geometry)
+    const translated = translateX(distance, angle, line)
+    return segment(translated.getCoordinates())
+  } else {
+    const α = Angle.PI_TIMES_2 - angle
+    const [tx, ty] = [-Math.cos(α) * distance, Math.sin(α) * distance]
+    const transform = AffineTransformation.translationInstance(tx, ty)
+    const translated = geometry.copy()
+    translated.apply(transform)
+    return translated
+  }
+})
+
 /**
  * reflect :: Number n => (n, n, n, n) -> jts.geom.Geometry -> jts.geom.Geometry
  */
@@ -262,6 +361,16 @@ export const projectCoordinate = ({ x, y }) => ([angle, distance]) => new Coordi
   x + Math.cos(angle) * distance,
   y + Math.sin(angle) * distance
 )
+
+export const projectCoordinateX = ([angle, distance]) => ({ x, y }) => new Coordinate(
+  x + Math.cos(angle) * distance,
+  y + Math.sin(angle) * distance
+)
+
+export const projectCoordinateY = R.curry(({ x, y }, angle, distance) => new Coordinate(
+  x + Math.cos(angle) * distance,
+  y + Math.sin(angle) * distance
+))
 
 /**
  * projectCoordinates :: Number n, jts.geom.Coordinate m => (n, n, m) -> [n] -> [m]

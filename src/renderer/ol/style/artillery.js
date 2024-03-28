@@ -1,14 +1,24 @@
+import * as R from 'ramda'
 import * as shared from './shared'
+import dynamic from './artillery-styles'
 import { transform } from '../../model/geometry'
-import styles from './artillery-position'
-import { styleFactory } from './styleFactory'
 
+/**
+ * dynamicStyle
+ * staticStyles
+ */
 const collectStyles = [next => {
   const { parameterizedSIDC: sidc } = next
-  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
-  return { dynamicStyle }
+  const fn = (dynamic[sidc] || dynamic.DEFAULT)
+  const descriptors = fn(next)
+  return { styles: descriptors }
 }, ['parameterizedSIDC']]
 
+/**
+ * geometry :: jsts/geom/geometry
+ * rewrite :: ...
+ * resolution :: Number
+ */
 const geometry = [next => {
   const { definingGeometry, centerResolution } = next
 
@@ -16,28 +26,35 @@ const geometry = [next => {
   //
   const { read, write, pointResolution } = transform(definingGeometry)
   const geometry = read(definingGeometry)
-  const simplifiedGeometry = geometry
   const resolution = pointResolution(centerResolution)
   const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
-  return { geometry, simplifiedGeometry, rewrite, resolution }
+  return { geometry, rewrite, resolution }
 }, ['mode', 'geometryKey', 'centerResolution']]
 
-export const style = [next => {
-  const { dynamicStyle, selectedStyles, rewrite, effectiveStyle } = next
-  const style = [...dynamicStyle(next), ...selectedStyles]
-    .map(effectiveStyle)
-    .map(rewrite)
-    .flatMap(styleFactory)
+/**
+ * selectedStyles
+ */
+const selectedStyles = [next => {
+  const { TS, mode, geometry } = next
 
-  return { style }
-}, ['dynamicStyle', 'selectedStyles', 'rewrite', 'effectiveStyle']]
+  const selectedStyles = []
+  const points = R.take(2, TS.geometries(geometry)).flatMap(TS.points)
 
-// Rules must be executed from top to bottom (rank = 0 .. n - 1)
+  const handles = mode !== 'default'
+    ? mode === 'singleselect'
+      ? { id: 'style:circle-handle', geometry: TS.multiPoint(points) }
+      : { id: 'style:rectangle-handle', geometry: points()[0] }
+    : null
+
+  handles && selectedStyles.push(handles)
+  return { selectedStyles }
+}, ['mode', 'geometry']]
+
 export default [
   shared.sidc,
   geometry,
   collectStyles,
   shared.effectiveStyle,
-  shared.selectedStyles,
-  style
+  selectedStyles,
+  shared.style
 ]
