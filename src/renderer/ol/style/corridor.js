@@ -34,9 +34,6 @@ const labelPlacement = [() => {
 }, ['geometry']]
 
 
-/**
- * style :: [ol/style/Style]
- */
 const error = [next => {
   return { styles: styles.ERROR(next) }
 }, ['err']]

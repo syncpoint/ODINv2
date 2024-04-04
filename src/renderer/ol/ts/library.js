@@ -115,11 +115,16 @@ export const polygon = coordinates => geometryFactory.createPolygon(coordinates)
  * segment :: jts.geom.Coordinate m => [m, m] => jts.geom.LineSegment
  * segment :: jts.geom.Coordinate m => (m, m) => jts.geom.LineSegment
  * segment :: jts.geom.LineSegment -> jts.geom.LineSegment
+ * segment :: jts.geom.LineString -> jts.geom.LineSegment
  */
 export const segment = (...args) => {
   switch (args.length) {
-    case 1: return Types.isLineSegment(args[0]) ? args[0] : new LineSegment(args[0][0], args[0][1])
-    case 2: return new LineSegment(args[0], args[1])
+    case 1: return Types.isLineSegment(args[0])
+      ? args[0] // jts.geom.LineSegment
+      : Types.isLineString(args[0])
+        ? segment(args[0].getCoordinates()) // jts.geom.LineString
+        : new LineSegment(args[0][0], args[0][1]) // [m, m]
+    case 2: return new LineSegment(args[0], args[1]) // (m, m)
     // handle map(current, index, array):
     case 3: return segment(args[0])
   }
@@ -127,13 +132,29 @@ export const segment = (...args) => {
 
 /**
  * normalSegment :: jts.geom.LineSegment -> jts.geom.LineSegment
+ * normalSegment :: jts.geom.LineString -> jts.geom.LineSegment
  */
 export const normalSegment = s => {
-  const { p0, p1 } = s
-  const center = s.midPoint()
-  const dx = center.y + (p1.x - p0.x)
-  const dy = center.x - (p1.y - p0.y)
-  return segment(center, coordinate([dy, dx]))
+  if (Types.isLineString(s)) return normalSegment(segment(s))
+  else {
+    const { p0, p1 } = s
+    const center = s.midPoint()
+    const dx = center.y + (p1.x - p0.x)
+    const dy = center.x - (p1.y - p0.y)
+    return segment(center, coordinate([dy, dx]))
+  }
+}
+
+/**
+ * midPoint :: jts.geom.LineString -> jts.geom.Coordinate
+ * midPoint :: jts.geom.LineSegment -> jts.geom.Coordinate
+ */
+export const midPoint = x => {
+  if (Types.isLineSegment(x)) return midPoint(lineString(x))
+  else {
+    const indexedLine = lengthIndexedLine(x)
+    return indexedLine.extractPoint(0.5 * indexedLine.getEndIndex())
+  }
 }
 
 /**
@@ -288,6 +309,9 @@ export const intersectCircle = R.curry((center, radius, geometry) => {
   return ps.map(coordinate)
 })
 
+/**
+ * distance :: jts.geom.Coordinate -> jts.geom.LineSegment -> Number
+ */
 export const distance = (a, b) => {
   // distanceTo :: Flatten.Shape -> [Number, Flatten.Segment]
   const [distance] = makeShape(a).distanceTo(makeShape(b))

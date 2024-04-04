@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as shared from './shared'
-import dynamic from './artillery-styles'
+import dynamicStyles from './artillery-styles'
 import { transform } from '../../model/geometry'
 
 /**
@@ -9,10 +9,16 @@ import { transform } from '../../model/geometry'
  */
 const collectStyles = [next => {
   const { parameterizedSIDC: sidc } = next
-  const fn = (dynamic[sidc] || dynamic.DEFAULT)
-  const descriptors = fn(next)
-  return { styles: descriptors }
+  const dynamicStyle = (dynamicStyles[sidc] || dynamicStyles.DEFAULT)
+  return { dynamicStyle }
 }, ['parameterizedSIDC']]
+
+const styles = [next => {
+  const { dynamicStyle } = next
+  const styles = dynamicStyle(next)
+  return { styles }
+}, ['dynamicStyle', 'geometry']]
+
 
 /**
  * geometry :: jsts/geom/geometry
@@ -56,5 +62,6 @@ export default [
   collectStyles,
   shared.effectiveStyle,
   selectedStyles,
+  styles,
   shared.style
 ]

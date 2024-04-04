@@ -12,7 +12,7 @@ Hooks['LineString:Point-orbit'] = corridor
 Hooks['MultiPoint-fan'] = fan
 Hooks['MultiPoint-circle'] = fan
 Hooks['Polygon-rectangle'] = rectangle
-Hooks['MultiPoint-apz'] = apz // artillery position zones
+Hooks['LineString:MultiPoint:MultiPoint-apz'] = apz // artillery position zones
 Hooks.GeometryCollection = collection
 
 const NullHooks = {

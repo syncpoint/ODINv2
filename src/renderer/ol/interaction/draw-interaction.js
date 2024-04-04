@@ -297,8 +297,8 @@ const geometries = [
       // - Target Area width: 1/2 of centerline length (width at the far end, not center)
       // - Target Area near radius: 75% of centerline length
       // - Target Area far radius: 125% of centerline length
-      // - Danger Zone 1 near radius: Target Area near radius - 10 % of centerline length
-      // - Danger Zone 1 far radius: Target Area far radius + 15 % of centerline length
+      // - Danger Zone 1 near radius: Target Area near radius - 20 % of centerline length
+      // - Danger Zone 1 far radius: Target Area far radius + 25 % of centerline length
       // - Danger Zone 1 width: 10 % of centerline length
       // - Danger Zone 2 width: 10 % of centerline length
 
@@ -352,8 +352,8 @@ const geometries = [
       const leftBound = TS.segment(targetArea[0], targetArea[1])
       const median = leftBound.midPoint()
       const dangerZoneWidth = TS.projectCoordinateY(median, leftBound.angle() + PI_OVER_2)
-      const dangerZone1Width = dangerZoneWidth(length * 0.1)
-      const dangerZone2Width = dangerZoneWidth(length * 0.2)
+      const dangerZone1Width = dangerZoneWidth(length * 0.2)
+      const dangerZone2Width = dangerZoneWidth(length * 0.25)
 
       const featureGeometry = TS.collect([
         TS.lineString(baselineCoords),

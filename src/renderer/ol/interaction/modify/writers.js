@@ -28,7 +28,9 @@ export const writeIndex = feature => {
   if (!geometry) return rbush
 
   const type = geometry.getType()
-  const segments = Writers[type]({
+  const writer = Writers[signature(feature)] || Writers[type]
+
+  const segments = writer({
     feature,
     geometry,
     signature: signature(feature),
@@ -82,19 +84,22 @@ Writers.LineString = options => {
   // - max points is explicitly limited to 2
   // - geometries with orbit layout
 
-  const layouts = ['orbit']
+  const layouts = ['orbit', 'apz']
   const fix = descriptor
     ? (descriptor.maxPoints === 2 || layouts.includes(descriptor.layout))
     : false
 
-  const segments = R.aperture(2, geometry.getCoordinates())
-  return segments.map((vertices, index) => ({
-    ...options,
-    splittable: !fix,
-    index,
-    vertices,
-    extent: Extent.boundingExtent(vertices)
-  }))
+  const pairs = R.aperture(2, geometry.getCoordinates())
+  const segments = pairs
+    .map((vertices, index) => ({
+      ...options,
+      splittable: !fix,
+      index,
+      vertices,
+      extent: Extent.boundingExtent(vertices)
+    }))
+
+  return segments
 }
 
 Writers.MultiLineString = options => {
@@ -153,6 +158,18 @@ Writers.GeometryCollection = options => {
     const geometryType = geometry.getType()
     const write = Writers[geometryType]
     return acc.concat(write({ ...options, geometry }))
+  }, [])
+}
+
+Writers['LineString:MultiPoint:MultiPoint-apz'] = options => {
+  const { geometry } = options
+  // Only index line string and first multipoint, i.e. first two geometries.
+  const geometries = R.take(2, geometry.getGeometriesArray())
+  return geometries.reduce((acc, geometry) => {
+    const geometryType = geometry.getType()
+    const write = Writers[geometryType]
+    const segments = write({ ...options, geometry })
+    return acc.concat(segments)
   }, [])
 }
 
