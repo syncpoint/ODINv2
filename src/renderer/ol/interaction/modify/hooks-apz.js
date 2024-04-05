@@ -38,6 +38,7 @@ export default node => {
 
     params.taNear = TS.segment(center, A).getLength()
     params.taFar = TS.segment(center, B).getLength()
+
     params.dz1NearDepth = params.taNear - TS.segment(center, dzCoordinate[0]).getLength()
     params.dz1FarDepth = TS.segment(center, dzCoordinate[1]).getLength() - params.taFar
     params.dz1Width = TS.distance(dzCoordinate[2], TS.segment(x, B))
@@ -47,6 +48,21 @@ export default node => {
   }
 
   const frame = (function create (params) {
+
+    // Flip target area radii if necessary:
+    if (params.taNear > params.taFar) {
+      const radius = params.taNear
+      params.taNear = params.taFar
+      params.taFar = radius
+    }
+
+    // Flip angles if necessary:
+    if (params.angles[0] - params.angles[1] < 0) {
+      const angle = params.angles[0]
+      params.angles[0] = params.angles[1]
+      params.angles[1] = angle
+    }
+
     const center = TS.midPoint(params.baseline)
     const [x, y] = TS.coordinates(params.baseline)
     const centerNormal = TS.normalSegment(params.baseline)
