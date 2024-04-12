@@ -50,6 +50,7 @@ export const Toolbar = () => {
     commandRegistry.separator(),
     commandRegistry.command('REPLICATION_LAYER_SHARE'),
     commandRegistry.command('REPLICATION_LAYER_JOIN'),
+    commandRegistry.command('REPLICATION_LAYER_LEAVE'),
     commandRegistry.separator()
   ]
 

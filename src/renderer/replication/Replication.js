@@ -163,6 +163,21 @@ const Replication = () => {
               replicatedProject.post(id, operations)
               break
             }
+            case 'leave': {
+              const reJoinOffer = await replicatedProject.leaveLayer(id)
+
+              const replicatedKeys = await store.collectKeys([id], [ID.SHARED, ID.ROLE, ID.RESTRICTED])
+              await store.import(replicatedKeys.map(key => ({ type: 'del', key })))
+
+              /* since the layer is not shared anymore this bacth does not trigger replication */
+              const layerKeys = await store.collectKeys([id], [ID.LINK, ID.HIDDEN, ID.TAGS, ID.FEATURE, ID.STYLE])
+              await store.import(layerKeys.map(key => ({ type: 'del', key })))
+
+              const candidate = { type: 'put', key: ID.makeId(ID.INVITED, reJoinOffer.id), value: { name: reJoinOffer.name, description: reJoinOffer.topic } }
+              await store.import([candidate])
+
+              break
+            }
             case 'changeDefaultRole': {
               await replicatedProject.setDefaultRole(id, parameter)
               break
@@ -241,15 +256,6 @@ const Replication = () => {
             .filter(op => op.type === 'put')
             .map(op => ({ id: op.key, name: op.value.name }))
             .forEach(op => replicatedProject.setLayerName(op.id, op.name))
-
-          /* LAYER REMOVED so the original layer does not exist anymore. Thus, we need to filter for the "shared+layer:" key */
-          /* TODO: If we remove a shared layer, should we create a new invitation? */
-          operations.filter(op => ID.isSharedLayerId(op.key))
-            .filter(op => op.type === 'del')
-            .map(op => ID.containerId(op.key))
-            .forEach(id => replicatedProject.leaveLayer(id))
-
-          /* TODO: Deleting a layer is UNDOable! How dow we support re-joining after undo? */
 
           const predicates = [
             ID.isFeatureId,
