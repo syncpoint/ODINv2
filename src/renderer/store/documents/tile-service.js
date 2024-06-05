@@ -5,10 +5,12 @@ export default async function (id) {
   const keys = [R.identity, ID.tagsId]
   const [service, tags] = await this.store.collect(id, keys)
 
+  if (!service) return null
+
   const document = {
     id,
     scope: ID.TILE_SERVICE,
-    text: service.name,
+    text: service.name || '',
     tags: [...(tags || []), service.type]
   }
 

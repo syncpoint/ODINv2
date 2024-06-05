@@ -25,6 +25,13 @@ const formats = {
   UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString()
 }
 
+const elevation = rgb => {
+  if (!rgb) return null
+  const value = -10000 + (((rgb[0] << 16) + (rgb[1] << 8) + rgb[2]) * 0.1)
+  if (value === -10000) return null
+  return value
+}
+
 export const OSDDriver = function (projectUUID, emitter, preferencesStore, projectStore, store) {
   this.projectUUID = projectUUID
   this.emitter = emitter
@@ -51,13 +58,36 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
   })
 }
 
-OSDDriver.prototype.pointermove = function ({ coordinate }) {
+OSDDriver.prototype.pointermove = function ({ coordinate, map, pixel }) {
   this.lastCoordinate = coordinate
 
   if (!this.coordinatesFormat) return
   const lonLat = toLonLat(coordinate)
   const message = formats[this.coordinatesFormat](lonLat)
   this.emitter.emit('osd', { message, cell: 'C2' })
+
+  const getElevation = async () => {
+    const candids = map?.getLayerGroup().getLayersArray()
+    const terrainLayers = candids.filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
+    if (terrainLayers.length === 0) {
+      return ''
+    }
+
+    const data = terrainLayers
+      .map(l => l.getData(pixel))
+      .map(d => elevation(d))
+      .filter(Boolean)
+
+    if (data.length === 0) {
+      return ''
+    }
+
+    const elevationMessage = `${data[0].toFixed(1)}m`
+    return elevationMessage
+  }
+
+  getElevation().then(message => this.emitter.emit('osd', { message, cell: 'C3' }))
+
 }
 
 OSDDriver.prototype.updateDateTime = function () {
