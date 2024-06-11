@@ -87,6 +87,7 @@ WindowManager.prototype.createWindow = function (options) {
     })
 
     this.windows[window.id] = handle
+    const webContents = window.webContents
 
     window.once('close', () => {
       delete this.windows[window.id]
@@ -97,12 +98,12 @@ WindowManager.prototype.createWindow = function (options) {
     // See: https://www.electronjs.org/docs/api/browser-window#event-page-title-updated
     window.on('page-title-updated', event => event.preventDefault())
 
-    window.on('enter-full-screen', ({ sender }) => {
-      sender.webContents.send('IPC_ENTER_FULLSCREEN')
+    window.on('enter-full-screen', () => {
+      webContents.send('IPC_ENTER_FULLSCREEN')
     })
 
-    window.on('leave-full-screen', ({ sender }) => {
-      sender.webContents.send('IPC_LEAVE_FULLSCREEN')
+    window.on('leave-full-screen', () => {
+      webContents.send('IPC_LEAVE_FULLSCREEN')
     })
 
     window.on('focus', () => {

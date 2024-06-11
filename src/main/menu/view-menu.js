@@ -4,8 +4,8 @@ export default options => {
   const preferences = options.preferences || {}
   const coordinatesFormat = preferences['coordinates-format'] || 'MGRS'
   const graticule = preferences.graticule
-  const sidebarShowing = preferences['ui.sidebar.showing']
-  const toolbarShowing = preferences['ui.toolbar.showing']
+  const sidebarShowing = preferences['ui.sidebar.showing'] ?? true
+  const toolbarShowing = preferences['ui.toolbar.showing'] ?? true
 
   return [{
     label: 'View',
