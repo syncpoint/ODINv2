@@ -9099,6 +9099,16 @@
     ]
   },
   {
+    "sidc": "O*O*------*****",
+    "scope": "ACTIVITY",
+    "geometry": "Point",
+    "dimensions": "SO",
+    "hierarchy": [
+      "Stability Operations",
+      "Generic / Unspecified"
+    ]
+  },
+  {
     "sidc": "O*G*------*****",
     "scope": "ACTIVITY",
     "geometry": "Point",
@@ -9760,7 +9770,8 @@
     "dimensions": "AIR",
     "hierarchy": [
       "Warfighting Symbols",
-      "Air Track"
+      "Air Track",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -11354,7 +11365,8 @@
     "geometry": "Point",
     "hierarchy": [
       "Warfighting Symbols",
-      "Ground Track"
+      "Ground Track",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -11364,7 +11376,8 @@
     "dimensions": "LAND",
     "hierarchy": [
       "Warfighting Symbols",
-      "Ground Track Equipment"
+      "Ground Track Equipment",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -13418,7 +13431,8 @@
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
-      "Installation"
+      "Installation",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -13897,7 +13911,8 @@
     "hierarchy": [
       "Warfighting Symbols",
       "Ground Track",
-      "Unit"
+      "Unit",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -18757,7 +18772,8 @@
     "dimensions": "SPACE",
     "hierarchy": [
       "Warfighting Symbols",
-      "Space Track"
+      "Space Track",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -18811,7 +18827,8 @@
     "dimensions": "SURFACE",
     "hierarchy": [
       "Warfighting Symbols",
-      "Sea Surface Track"
+      "Sea Surface Track",
+      "Generic / Unspecified"
     ]
   },
   {
@@ -19694,7 +19711,8 @@
     "dimensions": "SUBSURFACE",
     "hierarchy": [
       "Warfighting Symbols",
-      "Subsurface Track"
+      "Subsurface Track",
+      "Generic / Unspecified"
     ]
   },
   {
