@@ -89,8 +89,11 @@ const linestringStyle = feature => {
   const styles = []
   const geometry = feature.getGeometry()
 
+  let numberOfSegments = 0
+
   geometry.forEachSegment((start, end) => {
     const segment = new LineString([start, end])
+    numberOfSegments++
     styles.push(new Style({
       geometry: segment,
       text: new TextStyle({
@@ -124,7 +127,8 @@ const linestringStyle = feature => {
   const lastSegment = new LineString(getLastSegmentCoordinates(geometry))
   const alpha = radiansAngle(lastSegment)
 
-  /* set style and label for last point */
+  /* set style and label for last point but only if we have more than one segment */
+
   styles.push(
     new Style({
       geometry: new Point(geometry.getLastCoordinate()),
@@ -134,25 +138,28 @@ const linestringStyle = feature => {
           color: 'red'
         })
       }),
-      text: new TextStyle({
-        text: length(geometry),
-        font: FONT,
-        fill: new Fill({
-          color: 'black'
-        }),
-        stroke: new Stroke({
-          color: 'white',
-          width: 5
-        }),
-        offsetX: 25 * Math.cos(alpha),
-        offsetY: -25 * Math.sin(alpha),
-        placement: 'point',
-        textAlign: Math.abs(alpha) < Math.PI / 2 ? 'left' : 'right',
-        overflow: true,
-        textBaseline: 'ideographic'
-      })
+      text: (numberOfSegments === 1)
+        ? ''
+        : new TextStyle({
+          text: length(geometry),
+          font: FONT,
+          fill: new Fill({
+            color: 'black'
+          }),
+          stroke: new Stroke({
+            color: 'white',
+            width: 5
+          }),
+          offsetX: 25 * Math.cos(alpha),
+          offsetY: -25 * Math.sin(alpha),
+          placement: 'point',
+          textAlign: Math.abs(alpha) < Math.PI / 2 ? 'left' : 'right',
+          overflow: true,
+          textBaseline: 'ideographic'
+        })
     })
   )
+
 
   return styles
 }
