@@ -6,7 +6,7 @@ export const Q = {} // queries
 Q.ids = R.pluck('id')
 Q.id = (index, entries) => entries[index].id
 Q.comparator = R.comparator(R.lt)
-Q.index = (id, entries) => R.findIndex(R.propEq('id', id), entries)
+Q.index = (id, entries) => R.findIndex(R.propEq(id, 'id'), entries)
 Q.clamp = (index, entries) => Math.min(Math.max(index, 0), entries.length - 1)
 Q.append = (xs, x) => xs.includes(x) ? xs : [...xs, x]
 Q.isEmpty = xs => xs.length === 0
