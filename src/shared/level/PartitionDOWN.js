@@ -143,10 +143,10 @@ PartitionDOWN.prototype._get = async function (key, options, callback) {
     const others = await safeget(this.jsonDB, key)
 
     if (isGeometry(geometry)) {
-      if (!others) return this._nextTick(callback, null, geometry)
+      if (others === undefined) return this._nextTick(callback, null, geometry)
       else return this._nextTick(callback, null, { geometry, ...others })
     } else {
-      if (!others) return this._nextTick(callback, new Error('NotFound'))
+      if (others === undefined) return this._nextTick(callback, new Error('NotFound'))
       else return this._nextTick(callback, null, others)
     }
   } catch (err) {

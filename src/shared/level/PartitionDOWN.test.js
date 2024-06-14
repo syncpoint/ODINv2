@@ -3,7 +3,30 @@ import * as R from 'ramda'
 import { PartitionDOWN } from './PartitionDOWN'
 import { leveldb, jsonDB, wkbDB } from '.'
 
-describe('PartitionDOWN', function () {
+const fixture = (() => {
+  const geometry = {
+    geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
+  }
+
+  const properties = {
+    type: 'Feature',
+    name: 'PzGrenKp Lipsch',
+    properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+  }
+
+  return [
+    [{}, 'empty'],
+    [0, 'Number (0)'],
+    [1, 'Number (1)'],
+    ['', 'String ("")'],
+    ['XYZ', 'String ("XYZ")'],
+    [{ ...properties }, 'properties only'],
+    [{ ...geometry }, 'geometry only'],
+    [{ ...properties, ...geometry }, 'properties/geometry']
+  ]
+})()
+
+describe.only('PartitionDOWN', function () {
 
   const createdb = () => {
     const db = leveldb({})
@@ -204,89 +227,40 @@ describe('PartitionDOWN', function () {
     }
   })
 
-
-  it('batch - value :: string', async function () {
-    const db = createdb()
-
-    const expected = 'value'
-    await db.batch([{ type: 'put', key: 'key', value: expected }])
-    const actual = await db.get('key')
-    assert.strictEqual(actual, expected)
-
-    await db.batch([{ type: 'del', key: 'key' }])
-
-    try {
-      await db.get('key')
-    } catch (err) {
-      const expected = 'Key not found in database [key]'
-      assert.deepEqual(err.message, expected)
-    }
+  ;[
+    [undefined, 'undefined'],
+    ['', 'String'],
+    [0, 'Number'],
+    [{}, 'Object'],
+  ].forEach(([value, type]) => {
+    it(`batch - requires an array argument [${type}]`, async function () {
+      try {
+        const db = createdb()
+        await db.batch(value)
+      } catch (actual) {
+        assert.strictEqual(actual.message, 'batch(array) requires an array argument')
+      }
+    })
   })
 
-  it('batch - geometry', async function () {
-    const db = createdb()
-
-    const expected = { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
-    await db.batch([{ type: 'put', key: 'key', value: expected }])
-    const actual = await db.get('key')
-    assert.deepStrictEqual(actual, expected)
-
-    await db.batch([{ type: 'del', key: 'key' }])
-
-    try {
-      await db.get('key')
-    } catch (err) {
-      const expected = 'Key not found in database [key]'
-      assert.deepEqual(err.message, expected)
-    }
+  fixture.forEach(([expected, description]) => {
+    it(`batch/put [${description}]`, async function () {
+      const db = createdb()
+      await db.batch([{ type: 'put', key: 'key', value: expected }])
+      const actual = await db.get('key')
+      assert.deepStrictEqual(actual, expected)
+    })
   })
 
-  it('batch - w/o geometry property', async function () {
-    const db = createdb()
-    const expected = {
-      type: 'Feature',
-      name: 'PzGrenKp Lipsch',
-      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-    }
-
-    await db.batch([{ type: 'put', key: 'key', value: expected }])
-    const actual = await db.get('key')
-    assert.deepStrictEqual(actual, expected)
-
-    await db.batch([{ type: 'del', key: 'key' }])
-
-    try {
-      await db.get('key')
-    } catch (err) {
-      const expected = 'Key not found in database [key]'
-      assert.deepEqual(err.message, expected)
-    }
+  fixture.forEach(([expected, description]) => {
+    it(`batch/del [${description}]`, async function () {
+      const db = createdb()
+      await db.batch([{ type: 'put', key: 'key', value: expected }])
+      await db.batch([{ type: 'del', key: 'key' }])
+      const actual = await db.getMany(['key'])
+      assert.deepStrictEqual(actual, [undefined])
+    })
   })
-
-
-  it('batch - w/ geometry property', async function () {
-    const db = createdb()
-    const expected = {
-      type: 'Feature',
-      name: 'PzGrenKp Lipsch',
-      geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
-      properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-    }
-
-    await db.batch([{ type: 'put', key: 'key', value: expected }])
-    const actual = await db.get('key')
-    assert.deepStrictEqual(actual, expected)
-
-    await db.batch([{ type: 'del', key: 'key' }])
-
-    try {
-      await db.get('key')
-    } catch (err) {
-      const expected = 'Key not found in database [key]'
-      assert.deepEqual(err.message, expected)
-    }
-  })
-
 
   const list = (db, options) => new Promise((resolve, reject) => {
     const acc = []
@@ -297,51 +271,26 @@ describe('PartitionDOWN', function () {
   })
 
   describe('createReadStream', function () {
-    const expected = [
-      {
-        key: 'a',
-        value: 'value'
-      },
-      {
-        key: 'b',
-        value: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
-      },
-      {
-        key: 'c',
-        value: {
-          type: 'Feature',
-          name: 'PzGrenKp Lipsch',
-          properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-        }
-      },
-      {
-        key: 'd',
-        value: {
-          type: 'Feature',
-          name: 'PzGrenKp Lipsch',
-          geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] },
-          properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-        }
-      }
-    ]
-
     it('{ keys: true, value: true }', async function () {
       const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
+      const expected = fixture.map(([value], i) => ({ key: String(100 + i), value }))
+      await db.batch(expected.map(kv => ({ type: 'put', ...kv })))
       const actual = await list(db, {})
       assert.deepStrictEqual(actual, expected)
     })
 
     it('{ keys: false, value: true }', async function () {
       const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
+      const expected = fixture.map(([value], i) => ({ key: String(100 + i), value }))
+      await db.batch(expected.map(kv => ({ type: 'put', ...kv })))
       const actual = await list(db, { keys: false })
       assert.deepStrictEqual(actual, expected.map(R.prop('value')))
     })
 
     it('{ keys: true, value: false }', async function () {
       const db = createdb()
-      await db.batch(expected.map(({ key, value }) => ({ type: 'put', key, value })))
+      const expected = fixture.map(([value], i) => ({ key: String(100 + i), value }))
+      await db.batch(expected.map(kv => ({ type: 'put', ...kv })))
       const actual = await list(db, { values: false })
       assert.deepStrictEqual(actual, expected.map(R.prop('key')))
     })
