@@ -3,7 +3,9 @@ import * as proj from 'ol/proj'
 import MGRS, { LatLon } from 'geodesy/mgrs.js'
 import UTM from 'geodesy/utm.js'
 import Dms from 'geodesy/dms.js'
-import convert from 'geo-coordinates-parser' // DMS
+import { convert } from 'geo-coordinates-parser' // DMS
+
+console.log('convert', convert)
 
 Dms.separator = ' '
 
