@@ -7,9 +7,12 @@ import { AbstractLevelDOWN, AbstractIterator } from 'abstract-leveldown'
 function Iterator (db, options) {
   AbstractIterator.call(this, db)
   this.options_ = options // remember if keys are requested
-  this.propertiesIterator_ = options.propertiesIterator
-  this.geometriesIterator_ = options.geometriesIterator
-  this.lastCompare_ = 0
+  this.properties = options.properties
+  this.geometry = options.geometry
+
+  // synched :: Boolean
+  // Whether properties/geometry keys are in sync.
+  this.insync = true
 }
 
 util.inherits(Iterator, AbstractIterator)
@@ -21,33 +24,26 @@ const next = it => new Promise((resolve, reject) => {
   })
 })
 
+const consumed = it => it.key === undefined
+
 Iterator.prototype._next = async function (callback) {
 
   try {
-    // Depending on last key compare, take either one (!== 0) or both (=== 0) iterators:
-    if (this.lastCompare_ <= 0) this.geometriesRecord_ = await next(this.geometriesIterator_)
-    if (this.lastCompare_ >= 0) this.propertiesRecord_ = await next(this.propertiesIterator_)
+    // Fetch properties unconditionally and geometry only when keys matched.
+    this.propertiesKV = await next(this.properties)
+    if (this.insync) this.geometryKV = await next(this.geometry)
 
-    // Encode four cases:
-    const path =
-      (this.geometriesRecord_.key === undefined ? 0x01 : 0x02) |
-      (this.propertiesRecord_.key === undefined ? 0x04 : 0x08)
-
-    switch (path) {
-      case 0x05: return this._nextTick(callback)
-      case 0x06: this.lastCompare_ = -1; break
-      case 0x09: this.lastCompare_ = 1; break
-      case 0x0a: this.lastCompare_ = this.geometriesRecord_.key.localeCompare(this.propertiesRecord_.key); break
+    // We are done, when both iterators are consumed.
+    if (consumed(this.geometryKV) && consumed(this.propertiesKV)) {
+      return this._nextTick(callback)
     }
 
-    const { key, value } = (() => {
-      if (this.lastCompare_ === 0) {
-        const key = this.geometriesRecord_.key
-        const value = { geometry: this.geometriesRecord_.value, ...this.propertiesRecord_.value }
-        return { key, value }
-      } else if (this.lastCompare_ < 0) return this.geometriesRecord_
-      else return this.propertiesRecord_
-    })()
+    this.insync = this.propertiesKV.key === this.geometryKV.key
+
+    const key = this.propertiesKV.key
+    const value = this.insync
+      ? { ...this.propertiesKV.value, geometry: this.geometryKV.value }
+      : this.propertiesKV.value
 
     this._nextTick(callback, null, key, value)
   } catch (err) {
@@ -57,7 +53,9 @@ Iterator.prototype._next = async function (callback) {
 
 
 /**
- *
+ * AbstractLevelDOWN which splits values into two different databases.
+ * The value's optional `geometry` property is encoded as WKB to `wkbDB`.
+ * All other properties are written as JSON to `jsonDB`.
  */
 export const PartitionDOWN = function (jsonDB, wkbDB) {
   const manifest = { getMany: true }
@@ -246,11 +244,9 @@ PartitionDOWN.prototype._batch = async function (array, options, callback) {
  */
 PartitionDOWN.prototype._iterator = function (options) {
   // Keys are necessary to synchronize iterators:
-  const propertiesIterator = this.jsonDB.iterator({ ...options, keys: true })
-  const geometriesIterator = this.wkbDB.iterator({ ...options, keys: true })
   return new Iterator(this, {
     ...options,
-    propertiesIterator,
-    geometriesIterator
+    properties: this.jsonDB.iterator({ ...options, keys: true }),
+    geometry: this.wkbDB.iterator({ ...options, keys: true })
   })
 }

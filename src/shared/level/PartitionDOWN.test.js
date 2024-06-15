@@ -3,30 +3,28 @@ import * as R from 'ramda'
 import { PartitionDOWN } from './PartitionDOWN'
 import { leveldb, jsonDB, wkbDB } from '.'
 
-const fixture = (() => {
-  const geometry = {
-    geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
-  }
+const geometry = {
+  geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }
+}
 
-  const properties = {
-    type: 'Feature',
-    name: 'PzGrenKp Lipsch',
-    properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
-  }
+const properties = {
+  type: 'Feature',
+  name: 'PzGrenKp Lipsch',
+  properties: { sidc: 'SHGPUCIZ--*E***', f: '(+)', n: 'ENY' }
+}
 
-  return [
-    [{}, 'empty'],
-    [0, 'Number (0)'],
-    [1, 'Number (1)'],
-    ['', 'String ("")'],
-    ['XYZ', 'String ("XYZ")'],
-    [{ ...properties }, 'properties only'],
-    [{ ...geometry }, 'geometry only'],
-    [{ ...properties, ...geometry }, 'properties/geometry']
-  ]
-})()
+const fixture = [
+  [{}, 'empty'],
+  [0, 'Number (0)'],
+  [1, 'Number (1)'],
+  ['', 'String ("")'],
+  ['XYZ', 'String ("XYZ")'],
+  [{ ...properties }, 'properties only'],
+  [{ ...geometry }, 'geometry only'],
+  [{ ...properties, ...geometry }, 'properties/geometry']
+]
 
-describe.only('PartitionDOWN', function () {
+describe('PartitionDOWN', function () {
 
   const createdb = () => {
     const db = leveldb({})
