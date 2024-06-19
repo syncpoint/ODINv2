@@ -1,6 +1,6 @@
 /* eslint-disable quotes */
 import { autoUpdater } from 'electron-updater'
-import { app, dialog, Notification } from 'electron'
+import { app, dialog } from 'electron'
 
 const DELAY_CHECK_AFTER_APP_READY = 30000
 
@@ -40,7 +40,7 @@ SelfUpdate.prototype.checkForUpdates = function () {
       type: 'info',
       message: `
         A new version of ODINv2 is ready to install!
-        
+
         Do you want to install version ${updateInfo.version} now?`,
       buttons: ['Install now!', 'Not now!'],
       cancelId: 1
@@ -53,10 +53,7 @@ SelfUpdate.prototype.checkForUpdates = function () {
   })
 
   autoUpdater.on('error', (error) => {
-    (new Notification({
-      title: 'Update error',
-      body: error.message
-    })).show()
+    console.log(`[SelfUpdate] ${error.message}`)
   })
 
   setTimeout(() => autoUpdater.checkForUpdates(), DELAY_CHECK_AFTER_APP_READY)
