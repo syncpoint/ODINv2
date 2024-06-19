@@ -6,6 +6,7 @@ import DateTimeGroup from './DateTimeGroup'
 import Speed from './Speed'
 import Direction from './Direction'
 import AdditionalInformation from './AdditionalInformation'
+import Coordinates from './Coordinates'
 import UnitModifiers from './UnitModifiers'
 import GridCols2 from './GridCols2'
 
@@ -16,6 +17,7 @@ const SKKMUnitProperties = props => {
       <UniqueDesignationHigherFormation {...props}/>
       <SpecialC2HQEchelon {...props}/>
       <DateTimeGroup {...props}/>
+      <Coordinates {...props}/>
       <Speed {...props}/>
       <Direction {...props}/>
       <AdditionalInformation {...props}/>

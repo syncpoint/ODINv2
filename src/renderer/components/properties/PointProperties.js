@@ -7,6 +7,7 @@ import EffectiveDateTime from './EffectiveDateTime'
 import Altitude from './Altitude'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
+import Coordinates from './Coordinates'
 import Status from './Status'
 import GridCols2 from './GridCols2'
 import KProperty from './KProperty'
@@ -18,6 +19,7 @@ const PointProperties = props =>
       <UniqueDesignation {...props}/>
     </ColSpan2>
     <HostilityStatus {...props}/>
+    <Coordinates {...props}/>
     <EffectiveDateTime {...props}/>
     <Altitude {...props}/>
     <StaffComments {...props}/>

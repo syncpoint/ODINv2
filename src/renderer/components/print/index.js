@@ -37,6 +37,8 @@ const print = ({ map, services, options = {} }) => {
     const targetElement = document.getElementById('map-container')
     const display = targetElement.parentElement.getBoundingClientRect()
 
+    const centerOfMap = map.getView().getCenter()
+
     const paper = paperSizes[printSettings.paperSize][printSettings.orientation]
     const virtualPaper = {
       width: Math.round(paper.width * DEFAULT_QUALITY / INCH_TO_MM),
@@ -62,6 +64,7 @@ const print = ({ map, services, options = {} }) => {
     map.updateSize()
     const viewResolution = printSettings.scale / getPointResolution(map.getView().getProjection(), DEFAULT_QUALITY / INCH_TO_MM, map.getView().getCenter())
     map.getView().setResolution(viewResolution)
+    map.getView().setCenter(centerOfMap)
   }
 
   const removePrintStyling = targetElement => {

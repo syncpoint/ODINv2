@@ -11,6 +11,7 @@ import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 import GridCols2 from './GridCols2'
+import Coordinates from './Coordinates'
 import KProperty from './KProperty'
 
 const ActivityProperties = props =>
@@ -21,6 +22,7 @@ const ActivityProperties = props =>
     </ColSpan2>
     <HostilityStatus {...props}/>
     <DateTimeGroup {...props}/>
+    <Coordinates {...props}/>
     <Speed {...props}/>
     <Direction {...props}/>
     <StaffComments {...props}/>

@@ -14,6 +14,7 @@ import Condition from './Condition'
 import Reinforcement from './Reinforcement'
 import UnitModifiers from './UnitModifiers'
 import GridCols2 from './GridCols2'
+import Coordinates from './Coordinates'
 import KProperty from './KProperty'
 
 const UnitProperties = props => {
@@ -24,6 +25,7 @@ const UnitProperties = props => {
       <SpecialC2HQEchelon {...props}/>
       <HostilityStatus {...props}/>
       <DateTimeGroup {...props}/>
+      <Coordinates {...props}/>
       <Speed {...props}/>
       <Direction {...props}/>
       <StaffComments {...props}/>
