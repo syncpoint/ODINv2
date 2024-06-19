@@ -387,7 +387,7 @@ describe('multiselect', function () {
       const actual = multiselect.click(state, { id: 'y', shiftKey: true })
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
-        selected: ['x', 'y'], // FIXME: selection is empty
+        selected: ['x', 'y'],
         scroll: 'none'
       }
 
@@ -400,7 +400,7 @@ describe('multiselect', function () {
       const actual = multiselect.click(state, { id: 'y', shiftKey: true })
       const expected = {
         entries: [{ id: 'x' }, { id: 'y' }, { id: 'z' }],
-        selected: ['z', 'y'], // FIXME: selection is empty
+        selected: ['z', 'y'],
         scroll: 'none'
       }
 

@@ -119,7 +119,6 @@ const ALL_LINES = title => title
 
 const G_G_PM = [
   ...TLBR('"M"'),
-  // FIXME: noshow! don't know why.
   { 'symbol-code': 'GFGPPD----', 'symbol-anchor': 'center', 'symbol-size': 100 }
 ]
 
@@ -143,7 +142,7 @@ labels['G*G*AAMH--'] = C(ALL_LINES('HIMEZ')) // HIGH ALTITUDE MEZ
 labels['G*G*AAW---'] = C(ALL_LINES('WFZ'), { 'text-halo-color': 'white', 'text-halo-width': 5 }) // WEAPONS FREE ZONE
 labels['G*G*PM----'] = G_G_PM // DECOY MINED AREA
 labels['G*G*PY----'] = G_G_PM // DECOY MINED AREA, FENCED
-// TODO: G*G*PC---- : DUMMY MINEFIELD (DYNAMIC)
+// G*G*PC---- : DUMMY MINEFIELD (DYNAMIC)
 labels['G*G*DAB---'] = C(ALL_LINES()) // BATTLE POSITION
 labels['G*G*DABP--'] = C('modifiers.t ? "(P) " + modifiers.t : (P)') // BATTLE POSITION / PREPARED BUT NOT OCCUPIED
 labels['G*G*DAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA (DEFENSE)
@@ -160,7 +159,7 @@ labels['G*M*OGB---'] = C(['t', 't1']) // BELT (OBSTACLES)
 labels['G*M*OGZ---'] = C(ALL_LINES()) // GENERAL ZONE (OBSTACLES)
 labels['G*M*OGF---'] = C(ALL_LINES('FREE')) // OBSTACLE FREE AREA
 labels['G*M*OGR---'] = C(ALL_LINES(), { 'text-clipping': 'none', 'text-halo-color': 'white', 'text-halo-width': 5 }) // OBSTACLE RESTRICTED AREA
-// TODO: G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
+// G*M*OFD--- : MINEFIELDS / DYNAMIC DEPICTION
 labels['G*M*OFA---'] = TLBR('"M"') // MINED AREA
 labels['G*M*OU----'] = LR('"UXO"') // UNEXPLODED ORDNANCE AREA (UXO)
 labels['G*M*SP----'] = C('t') // STRONG POINT

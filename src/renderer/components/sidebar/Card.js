@@ -153,7 +153,6 @@ export const Card = React.forwardRef((props, ref) => {
 
   const tag = spec => {
     const [variant, label, action, path] = spec.split(':')
-    // TODO: use generic Tag component
     return TAG[variant]({
       key: spec,
       id,

@@ -39,7 +39,6 @@ export const pointer = (options, rbush, event) => {
   // This is essential to disambiguate vertices sharing
   // the same coordinate. This is especially important
   // for corridors.
-  // TODO: reference to test procedure
 
   const segments = extent => extent
     ? rbush.getInExtent(extent).reverse()

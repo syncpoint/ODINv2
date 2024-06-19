@@ -46,7 +46,6 @@ const unitSquare = TS.polygon([
 
 /**
  * rectangle :: JTS/Geometry -> {k: v} -> JTS/Geometry
- * FIXME: duplicate code: hooks-rectangle.js
  */
 export const rectangle = (geometry, { am, am1, an }) => {
   const linearRing = geometry.getExteriorRing()

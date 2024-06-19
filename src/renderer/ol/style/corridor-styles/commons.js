@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 
-// TODO: replace with TS.projectCoordinate
 export const arrowCoordinates = (TS, width, line, offset = 1) => {
   const coordinates = R.last(R.aperture(2, TS.coordinates([line])))
   const segment = TS.segment(coordinates)

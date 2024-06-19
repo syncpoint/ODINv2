@@ -136,9 +136,6 @@ const print = ({ map, services, options = {} }) => {
         H2Right: dateTimeOfPrinting
       }
       await toPDF(canvasDataUrl, { ...settings, pdfFileName: `ODINv2-MAP-${dateTimeOfPrinting}.pdf`, text })
-    } catch (err) {
-      // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
-      console.error('print', err.message)
     } finally {
       printMarker.remove()
       canvas?.remove()

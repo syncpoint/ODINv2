@@ -55,9 +55,6 @@ const sendPreview = (services, map) => {
   try {
     const url = canvas.toDataURL()
     ipcRenderer.send('PREVIEW', url)
-  } catch (err) {
-    // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
-    // console.error('[PREVIEW]', err.message)
   } finally {
     canvas.remove()
   }
@@ -120,9 +117,6 @@ const ipcHandlers = (services, sources) => {
 }
 
 
-/**
- * FIXME: Wrong place: Move somewhere else.
- */
 const emitterHandlers = services => {
   const { emitter, selection, store } = services
   emitter.on('command/delete', () => store.delete(selection.selected()))

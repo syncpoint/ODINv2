@@ -44,7 +44,6 @@ ProjectStore.prototype.addTag = async function (id, tag) {
 }
 
 ProjectStore.prototype.removeTag = async function (id, tag) {
-  // FIXME: On shutdown, might run into ReadError: Database is not open.
   const tags = project => (project.tags || []).filter(x => x !== tag.toUpperCase())
   await L.tap(this.db, id, project => ({ ...project, tags: tags(project) }))
 }

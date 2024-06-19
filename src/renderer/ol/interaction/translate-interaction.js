@@ -32,7 +32,6 @@ export default options => {
 
   interaction.on('translateend', async event => {
     // Deep compare geometry and only update when changed:
-    // TODO: move to feature store
     const { features } = writeFeatureCollection(event.features.getArray())
     const keys = features.map(R.prop('id'))
     const merge = (feature, index) => ({ ...snapshot[index], geometry: feature.geometry })

@@ -25,8 +25,6 @@ export const DropdownMenu = props => {
     setTimeout(hide, 200)
   }
 
-  // TODO: handle ESCAPE key to close menu
-
   const option = ([key, command]) => {
     const handleClick = () => command.execute && command.execute()
     const link =
