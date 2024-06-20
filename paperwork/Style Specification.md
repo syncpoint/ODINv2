@@ -87,7 +87,6 @@ shape-line-width :: number
 shape-offset :: [number, number]
 shape-points :: number
 shape-radius :: number
-shape-radius-1 :: number
 shape-radius-2 :: number
 shape-rotate :: number
 shape-scale :: [number, number]
