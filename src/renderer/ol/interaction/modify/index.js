@@ -5,56 +5,68 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import Point from 'ol/geom/Point'
 import * as style from 'ol/style'
-import * as Subject from 'most-subject'
-import * as M from '@most/core'
-import { runEffects } from '@most/core'
-import { newDefaultScheduler, currentTime } from '@most/scheduler'
-import { writeIndex } from './writers'
-import { setCoordinates } from '../../../model/geometry'
+import Signal from '@syncpoint/signal'
 import * as Events from './events'
-import { ModifyEvent, pipe, fromListeners, replace, orElse, op, flat } from './events'
 import { selected } from './states'
+import { ModifyEvent } from './events'
+import { writeIndex } from './writers'
 
 /**
  * Sink for vertex feature overlay.
  * Accept coordinate events and update feature accordingly.
  */
-export class OverlaySink {
-  constructor (style, options) {
+class OverlaySink {
+  constructor (style, options, coordinate) {
     const source = new VectorSource({
       useSpatialIndex: false,
       wrapX: !!options.wrapX
     })
 
-    this.style = style
     this.layer = new VectorLayer({
       source,
       updateWhileAnimating: true,
       updateWhileInteracting: true
     })
+
+    this.dispose = Signal.on(coordinate => {
+      const feature = source.getFeatureById('feature:pointer')
+      if (coordinate && !feature) {
+        const pointer = new Feature(new Point(coordinate))
+        pointer.setId('feature:pointer')
+        pointer.setStyle(style)
+        source.addFeature(pointer)
+      } else if (coordinate && feature) {
+        const geometry = feature.getGeometry()
+        geometry.setCoordinates(coordinate)
+      } else if (!coordinate && feature) {
+        source.removeFeature(feature)
+      }
+    }, coordinate)
   }
 
-  setMap (map) { this.layer.setMap(map) }
-  end (time) { console.log('[OverlaySink] end') }
-  error (time, err) { console.error('[OverlaySink] error', err) }
-
-  event (time, coordinate) {
-    const source = this.layer.getSource()
-    const feature = source.getFeatureById('feature:pointer')
-
-    if (coordinate && !feature) {
-      const pointer = new Feature(new Point(coordinate))
-      pointer.setId('feature:pointer')
-      pointer.setStyle(this.style)
-      source.addFeature(pointer)
-    } else if (coordinate && feature) {
-      const geometry = feature.getGeometry()
-      geometry.setCoordinates(coordinate)
-    } else if (!coordinate && feature) {
-      source.removeFeature(feature)
-    }
+  setMap (map) {
+    if (!map) this.dispose()
+    this.layer.setMap(map)
   }
 }
+
+/**
+ * rbush :: ol/Feature => Signal ol/structs/RBush
+ */
+const rbush = (() => {
+  let changeEvent
+
+  return feature => {
+    if (changeEvent) changeEvent.dispose()
+    changeEvent = Signal.fromListeners(['change'], feature)
+    return R.compose(
+      Signal.startWith(() => writeIndex(feature)),
+      R.map(({ target }) => writeIndex(target)),
+      R.reject(({ target }) => target.internalChange())
+    )(changeEvent)
+  }
+})()
+
 
 /**
  *
@@ -64,148 +76,77 @@ export class Modify extends Interaction {
   constructor (options) {
     super(options)
 
-    this.overlay = new OverlaySink(pointerStyles.DEFAULT, options)
+    // this.mapEvent :: Signal ol/MapBrowserEvent
+    // Receive map browser (mouse, keyboard) events.
+    this.mapEvent = Signal.of()
 
-    // Setup subject to receive map browser events:
-    const [sink, event$] = Subject.create()
-    this.next = event => Subject.event(currentTime(scheduler), event, sink)
+    // feature :: [ol/Feature] => ol/Feature
+    // Single feature or placeholder feature without geometry.
+    const feature = features =>
+      features.length === 1
+        ? features[0]
+        : new Feature()
 
-    // Apply (rbush, event) to current state and update state accordingly.
-    const eventLoop = (state, [rbush, event]) => {
+    // isSymbol :: ol/Feature => Boolean
+    const isSymbol = feature => feature?.getGeometry()?.getType() === 'Point'
 
+    // sourceEvent :: Signal ol/source/Vector.VectorSourceEvent
+    // Track feature add/remove events to update spatial index.
+    const sourceEvent = Signal.fromListeners(['addfeature', 'removefeature'], options.source)
+
+    // spatialIndex :: Signal ol/structs/RBush
+    const spatialIndex = R.compose(
+      R.chain(rbush),
+      R.reject(isSymbol),
+      R.map(feature),
+      R.map(({ target }) => target.getFeatures())
+    )(sourceEvent)
+
+    // spatialEvent :: Signal [ol/structs/RBush, ol/MapBrowserEvent]
+    // Map browser event in context of current spatial index.
+    const spatialEvent =
+      Signal.lift((rbush, event) => [rbush, event], spatialIndex, this.mapEvent)
+
+    // eventHandler :: Coordinate [Number, Number] =>
+    //   State -> [ol/structs/RBush, ol/MapBrowserEvent] -> [State, Coordinate]
+    const eventHandler = (state, [rbush, event]) => {
       // For empty index, reset to loaded state:
-      if (rbush.isEmpty()) return { seed: selected(true), value: Events.coordinate(null) }
-
+      if (rbush.isEmpty()) return [selected(true), Events.coordinate(null)]
       const pointer = Events.pointer(options, rbush, event)
       const handler = state[event.type]
-      const [seed, value] = (handler && handler(pointer)) || [state, null]
-      return { seed, value }
+      return (handler && handler(pointer)) || [state, null]
     }
 
-    // Setup RBush stream from vector source add/remove
-    // feature and feature change events:
-    const rbush$ = Modify.rbush(options.source)
+    // stateLoop :: Signal { type: 'coordinate, ... } | ModifyEvent
+    const stateLoop = R.compose(
+      R.reject(R.isNil),
+      Signal.loop(eventHandler, selected(true))
+    )(spatialEvent)
 
-    const pipeline$ = pipe([
+    // coordinate :: Coordinate [Number, Number] => Signal Coordinate
+    // Filter coordinates from state loop.
+    const coordinate = R.compose(
+      R.map(({ coordinate }) => coordinate),
+      R.filter(event => event.type === 'coordinate'),
+    )(stateLoop)
 
-      // combine :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
-      // Apply a function to the most recent event from each Stream
-      // when a new event arrives on any Stream.
-      M.combine((rbush, event) => [rbush, event], rbush$),
-      M.loop(eventLoop, selected(true)),
-      M.filter(R.identity),
-      flat,
-      M.multicast
-    ])(event$)
+    // modifyEvent :: Signal
+    // Filter ModifyEvent to be dispatched from state loop.
+    const modifyEvent = R.compose(
+      Signal.filter(event => event instanceof ModifyEvent)
+    )(stateLoop)
 
-    // Coordinate path. Pipe coordinate events to overlay.
-    const coordinate$ = pipe([
-      M.filter(event => event.type === 'coordinate'),
-      M.map(({ coordinate }) => coordinate),
-      op(() => this.overlay)
-    ])(pipeline$)
-
-    // Update path. Pipe update events to store (indirectly).
-    const update$ = pipe([
-      M.filter(event => event instanceof ModifyEvent),
-      M.tap(event => this.dispatchEvent(event))
-    ])(pipeline$)
-
-    const scheduler = newDefaultScheduler()
-    runEffects(coordinate$, scheduler)
-    runEffects(update$, scheduler)
+    // Effects: Update overlay feature coordinate, dispatch modify event
+    this.overlay = new OverlaySink(pointerStyles.DEFAULT, options, coordinate)
+    Signal.link(event => this.dispatchEvent(event), modifyEvent)
   }
 
   handleEvent (event) {
-    this.next(event)
+    this.mapEvent(event)
 
     // Returning true will propagate event to next interaction,
     // unless stopPropagation() was called on event.
     return true
-  }
-
-  /**
-   * rbush :: RBush a => ol/VectorSource -> Stream a
-   */
-  static rbush (source) {
-
-    const isSymbol = feature =>
-      feature.getGeometry() &&
-      feature.getGeometry().getType() === 'Point'
-
-    const pipeline = pipe([
-      M.map(({ target }) => target.getFeatures()),
-
-      // Only one selected feature allowed:
-      M.map(features => features.length === 1 ? features[0] : null),
-
-      // Replace null with dummy feature without geometry:
-      orElse(new Feature()),
-
-      // Exclude 1-point symbols from modify:
-      M.filter(feature => R.not(isSymbol(feature))),
-
-      M.skipRepeats,
-
-      // map :: RBush a => ol.Feature -> Stream a
-      // Higher-order stream of RBush events.
-      M.map(Modify.featureProxy),
-
-      // Switch to new RBush stream as it arrives,
-      // ending the previous stream. RBush events
-      // are piped/flattened to output stream.
-      replace
-    ])
-
-    const source$ = fromListeners(['addfeature', 'removefeature'], source)
-    return pipeline(source$)
-  }
-
-  /**
-   * createProxy :: RBush a => ol/Feature -> Stream a
-   * Feature proxy with
-   * @property coordinates - writable, geometry coordinates
-   * @property commit - emit change event for feature
-   */
-  static featureProxy (feature) {
-    // feature change event: false -> external, true -> internal
-    let internalChange = false
-
-    const handlers = {
-      set (target, property, value) {
-        // coordinates setter on feature proxy:
-        if (property === 'coordinates') {
-          internalChange = true
-          setCoordinates(target.getGeometry(), value)
-          internalChange = false
-          return true
-        } else {
-          return Reflect.set(target, property, value)
-        }
-      }
-    }
-
-    const proxy = new Proxy(feature, handlers)
-
-    // Simulate external change by emitting change event explicitly.
-    proxy.commit = () => {
-      // Must not happen inside this stack frame:
-      const event = { type: 'change', target: feature }
-      const dispatch = () => feature.dispatchEvent(event)
-      setTimeout(dispatch, 0)
-    }
-
-    // Create new spatial index for each external change event:
-    const pipeline = pipe([
-      M.filter(() => !internalChange),
-      M.map(() => writeIndex(proxy)),
-
-      // Initial spatial index:
-      M.startWith(writeIndex(proxy))
-    ])
-
-    const change$ = fromListeners(['change'], feature)
-    return pipeline(change$)
   }
 
   setMap (map) {
