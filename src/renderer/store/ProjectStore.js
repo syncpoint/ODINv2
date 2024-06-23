@@ -4,7 +4,7 @@
 
 import util from 'util'
 import { DateTime } from 'luxon'
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
 
