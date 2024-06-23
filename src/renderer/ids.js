@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import uuid from 'uuid-random'
+import uuid from '../shared/uuid'
 
 export const isUUID = uuid.test
 

@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import React from 'react'
 import Icon from '@mdi/react'
 import * as mdi from '@mdi/js'
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 import {
   KBarProvider as Provider,
   KBarPortal as Portal,

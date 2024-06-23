@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Tooltip } from 'react-tooltip'
 import * as mdi from '@mdi/js'
 import Icon from '@mdi/react'
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 import './DropdownMenu.css'
 
 export const DropdownMenu = props => {
