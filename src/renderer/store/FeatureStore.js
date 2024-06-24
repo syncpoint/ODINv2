@@ -5,7 +5,6 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
 import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
-import { debounce, batch } from '../../shared/debounce'
 import { geometryType, setCoordinates } from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from '../ol/style/rules'
@@ -13,6 +12,21 @@ import crosshair from '../ol/style/crosshair'
 import { stylist as measurementStyler } from '../ol/interaction/measure/style'
 import * as TS from '../ol/ts'
 import * as Math from '../../shared/Math'
+
+Signal.split = (conditions, signal) => {
+  const outputs = conditions.map(() => Signal.of())
+  signal.on(value => {
+    const match = condition => condition(value)
+    outputs[conditions.findIndex(match)]?.(value)
+  })
+  return outputs
+}
+
+Signal.flatten = signal => {
+  const output = Signal.of()
+  signal.on(v => (Array.isArray(v) ? v : [v]).forEach(output))
+  return output
+}
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -32,6 +46,20 @@ export const writeGeometryObject = geometry => format.writeGeometryObject(geomet
 export const writeFeatureCollection = features => format.writeFeaturesObject(features)
 export const writeFeatureObject = feature => format.writeFeatureObject(feature)
 
+const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
+
+const isGeometry = value => {
+  if (!value) return false
+  else if (typeof value !== 'object') return false
+  else {
+    if (!value.type) return false
+    else if (!value.coordinates && !value.geometries) return false
+    return true
+  }
+}
+
+const apply = options => feature => feature && feature.apply(options, true)
+
 
 /**
  *
@@ -42,8 +70,99 @@ export function FeatureStore (store, selection) {
   this.features = {}
   this.styleProps = {}
 
-  const debouncedHandler = batch(debounce(32), this.batch.bind(this))
-  store.on('batch', ({ operations }) => debouncedHandler(operations))
+  // FIXME: Signal should support on/off
+  store.addEventListener = (type, handler) => store.on(type, handler)
+  store.removeEventListener = (type, handler) => store.off(type, handler)
+  selection.addEventListener = (type, handler) => selection.on(type, handler)
+  selection.removeEventListener = (type, handler) => selection.off(type, handler)
+
+  const $operations = R.compose(
+    Signal.flatten,
+    R.map(R.prop('operations'))
+  )(Signal.fromListeners(['batch'], store))
+
+  const [
+    $globalStyle,
+    $featureStyle,
+    $layerStyle,
+    $feature
+  ] = Signal.split([
+    R.propEq(ID.defaultStyleId, 'key'),
+    R.compose(ID.isFeatureStyleId, R.prop('key')),
+    R.compose(ID.isLayerStyleId, R.prop('key')),
+    R.compose(isCandidateId, R.prop('key'))
+  ], $operations)
+
+  $globalStyle.on(({ value }) => Object.values(this.features).forEach(apply({ globalStyle: value })))
+  $featureStyle.on(({ key, value }) => apply({ featureStyle: value })(this.features[ID.featureId(key)]))
+
+  $featureStyle.on(console.log)
+
+  $layerStyle.on(({ type, key, value }) => {
+    if (type === 'put') this.styleProps[key] = value
+    else delete this.styleProps[key]
+    const layerStyle = type === 'put' ? value : {}
+    const layerId = ID.layerId(key)
+    Object
+      .keys(this.features)
+      .filter(key => ID.layerId(key) === layerId)
+      .forEach(key => apply({ layerStyle })(this.features[key]))
+  })
+
+  const [
+    $removal,
+    $update,
+    $addition
+  ] = Signal.split([
+    R.propEq('del', 'type'),
+    ({ key }) => this.features[key],
+    R.T
+  ], $feature)
+
+  const isValid = feature => feature?.type === 'Feature' && feature.geometry
+
+  const trim = properties => {
+    const { geometry, ...rest } = properties
+    return geometry
+      ? properties
+      : rest
+  }
+
+  $removal.on(({ key }) => {
+    const features = [this.features[key]]
+    delete this.features[key]
+    this.emit('removefeatures', ({ features }))
+  })
+
+  $addition.on(({ key, value }) => {
+    if (isValid) this.addFeatures([readFeature({ id: key, ...value })])
+  })
+
+  $update.on(({ key, value }) => {
+    const properties = isGeometry(value)
+      ? { geometry: readGeometry(value) }
+      : trim(readFeature(value).getProperties())
+
+    const feature = this.features[key]
+    feature.setProperties({ ...feature.getProperties(), ...properties })
+  })
+
+  const $selection = Signal.fromListeners(['selection'], selection)
+  const modes = ({ deselected }) => {
+    const selected = selection.selected()
+    const mode = selected.length > 1 ? 'multiselect' : 'singleselect'
+    return [
+      ...deselected.map(key => [key, 'default']),
+      ...selected.map(key => [key, mode])
+    ]
+  }
+
+  const $mode = R.compose(
+    Signal.flatten,
+    R.map(modes)
+  )($selection)
+
+  $mode.on(console.log)
 
   selection.on('selection', ({ deselected, selected }) => {
     deselected.forEach(key => {
@@ -87,120 +206,6 @@ FeatureStore.prototype.loadFeatures = async function (scope) {
   this.addFeatures(readFeatures({ type: 'FeatureCollection', features: valid }))
 }
 
-
-/**
- *
- */
-FeatureStore.prototype.batch = function (operations) {
-  const features = Object.values(this.features)
-  const apply = obj => feature => feature.apply(obj, true)
-
-  operations
-    .filter(({ key }) => key === ID.defaultStyleId)
-    .forEach(({ value }) => features.forEach(apply({ globalStyle: value })))
-
-  operations
-    .filter(({ key }) => ID.isFeatureStyleId(key))
-    .forEach(({ key, value }) => apply({ featureStyle: value })(this.features[ID.featureId(key)]))
-
-  // Apply new/updated layer styles:
-  //
-  operations
-    .filter(({ type }) => type === 'put')
-    .filter(({ key }) => ID.isLayerStyleId(key))
-    .forEach(({ key, value }) => {
-      this.styleProps[key] = value
-      const layerId = ID.layerId(key)
-      Object
-        .keys(this.features)
-        .filter(key => ID.layerId(key) === layerId)
-        .forEach(key => apply({ layerStyle: value })(this.features[key]))
-    })
-
-  // Remove deleted layer styles:
-  //
-  operations
-    .filter(({ type }) => type === 'del')
-    .filter(({ key }) => ID.isLayerStyleId(key))
-    .forEach(({ key }) => {
-      delete this.styleProps[key]
-      const layerId = ID.layerId(key)
-      Object
-        .keys(this.features)
-        .filter(key => ID.layerId(key) === layerId)
-        .forEach(key => apply({ layerStyle: {} })(this.features[key]))
-    })
-
-  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
-  const candidates = operations.filter(({ key }) => isCandidateId(key))
-  const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
-  const [updates, additions] = R.partition(({ key }) => this.features[key], other)
-  this.handleRemovals(removals)
-  this.handleAdditions(additions)
-  this.handleUpdates(updates)
-}
-
-
-/**
- *
- */
-FeatureStore.prototype.handleAdditions = function (additions) {
-  if (additions.length === 0) return
-  const isValid = feature => feature?.type === 'Feature' && feature.geometry
-  const features = additions
-    .filter(({ value }) => isValid(value))
-    .map(({ key, value }) => readFeature({ id: key, ...value }))
-
-  this.addFeatures(features)
-}
-
-
-/**
- *
- */
-FeatureStore.prototype.handleRemovals = function (removals) {
-  if (removals.length === 0) return
-  const features = removals.map(({ key }) => this.features[key])
-  removals.forEach(({ key }) => delete this.features[key])
-  this.emit('removefeatures', ({ features }))
-}
-
-
-const isGeometry = value => {
-  if (!value) return false
-  else if (typeof value !== 'object') return false
-  else {
-    if (!value.type) return false
-    else if (!value.coordinates && !value.geometries) return false
-    return true
-  }
-}
-
-
-/**
- *
- */
-FeatureStore.prototype.handleUpdates = function (updates) {
-
-  // We don't want null geometry overwrite existing one
-  // in case only feature properties were updated (JSON).
-  //
-  const trim = properties => {
-    const { geometry, ...rest } = properties
-    return geometry
-      ? properties
-      : rest
-  }
-
-  updates.forEach(({ key, value }) => {
-    const properties = isGeometry(value)
-      ? { geometry: readGeometry(value) }
-      : trim(readFeature(value).getProperties())
-
-    const feature = this.features[key]
-    feature.setProperties({ ...feature.getProperties(), ...properties })
-  })
-}
 
 /**
  *
