@@ -171,8 +171,8 @@ const makeIcon = props => {
 const makeImage = props => {
   if (props['circle-radius']) return makeCircle(props)
   else if (props['shape-radius']) return makeShape(props)
-  else if (props['symbol-code']) return makeSymbol(props)
   else if (props['icon-url']) return makeIcon(props)
+  else if (props['symbol-code']) return makeSymbol(props)
   else return null
 }
 

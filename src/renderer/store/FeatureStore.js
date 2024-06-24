@@ -92,7 +92,15 @@ FeatureStore.prototype.loadFeatures = async function (scope) {
  */
 FeatureStore.prototype.batch = function (operations) {
   const features = Object.values(this.features)
-  const apply = obj => feature => feature.apply(obj, true)
+  const apply = obj => feature => feature && feature.apply(obj, true)
+
+  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
+  const candidates = operations.filter(({ key }) => isCandidateId(key))
+  const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
+  const [updates, additions] = R.partition(({ key }) => this.features[key], other)
+  this.handleRemovals(removals)
+  this.handleAdditions(additions)
+  this.handleUpdates(updates)
 
   operations
     .filter(({ key }) => key === ID.defaultStyleId)
@@ -129,14 +137,6 @@ FeatureStore.prototype.batch = function (operations) {
         .filter(key => ID.layerId(key) === layerId)
         .forEach(key => apply({ layerStyle: {} })(this.features[key]))
     })
-
-  const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
-  const candidates = operations.filter(({ key }) => isCandidateId(key))
-  const [removals, other] = R.partition(({ type }) => type === 'del', candidates)
-  const [updates, additions] = R.partition(({ key }) => this.features[key], other)
-  this.handleRemovals(removals)
-  this.handleAdditions(additions)
-  this.handleUpdates(updates)
 }
 
 

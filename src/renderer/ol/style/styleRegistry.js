@@ -34,7 +34,9 @@ export default ({ PI_OVER_4 }, props) => {
     'symbol-icon': props['symbol-icon'],
     'symbol-line-width': props['symbol-line-width'],
     'symbol-size': props['symbol-size'],
-    'icon-scale': props['icon-scale']
+    'icon-scale': props['icon-scale'],
+    'icon-rotate': props['icon-rotate'],
+    'icon-url': props['icon-url']
   }
 
   registry['style:2525c/default-stroke'] = {
