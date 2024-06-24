@@ -15,6 +15,10 @@ export default async function (id) {
   const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.tagsId]
   const [feature, layer, hidden, locked, tags] = await this.store.collect(id, keys)
   const links = await this.store.keys(ID.prefix('link')(id))
+  const styles = await this.store.values(ID.prefix('style')(id))
+  const iconURL = styles.length === 1
+    ? styles[0]['icon-url']
+    : undefined
 
   const properties = feature.properties || {}
   const sidc = properties.sidc
@@ -44,6 +48,7 @@ export default async function (id) {
     title: feature.name || properties.t || null, // might be undefined
     description,
     svg: icon,
+    iconURL,
     tags: [
       'SCOPE:FEATURE',
       hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
