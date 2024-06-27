@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import uuid from 'uuid-random'
+import uuid from '../../../shared/uuid'
 import './Checkbox.css'
 
 export default ({ label, id = uuid(), disabled, ...rest }) =>

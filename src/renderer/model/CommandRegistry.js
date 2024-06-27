@@ -1,4 +1,4 @@
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 import globalCommands from './commands/GlobalCommands'
 import undoCommands from './commands/UndoCommands'
 import clipboardCommands from './commands/ClipboardCommands'

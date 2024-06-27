@@ -136,19 +136,6 @@ const ready = async () => {
 
 
 /**
- * Emitted when the application is activated.
- * Various actions can trigger this event, such as launching
- * the application for the first time, attempting to re-launch
- * the application when it's already running, or clicking on
- * the application's dock or taskbar icon.
- */
-const activate = () => {
-  console.log('activate')
-  // TODO: 81c8e77a-3181-421f-8a64-8bb5590c2d34 - main: show project selection on activation (macOS)
-}
-
-
-/**
  * Emitted when all windows have been closed.
  */
 const windowAllClosed = () => {
@@ -164,7 +151,6 @@ const windowAllClosed = () => {
  */
 const run = () => {
   app.once('ready', ready)
-  app.on('activate', activate)
   app.on('window-all-closed', windowAllClosed)
 }
 

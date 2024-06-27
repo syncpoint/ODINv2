@@ -44,7 +44,10 @@ export const reduce = (state, facts, rank = 0) => {
   const isStale = rule => deps(rule).some(key => changed.includes(key))
   const isFulfilled = rule => deps(rule).every(key => !R.isNil(next[key]))
   const head = state.rules[rank]
-  const catcher = (err, next) => reduce(state, { ...next, err }, ++rank)
+  const catcher = (err, next) => {
+    console.error(err)
+    return reduce(state, { ...next, err }, ++rank)
+  }
   const tryer = next => isStale(head) && isFulfilled(head)
     ? reduce(state, { ...next, ...fn(head)(next) }, ++rank)
     : reduce(state, next, ++rank)

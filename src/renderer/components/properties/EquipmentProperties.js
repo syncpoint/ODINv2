@@ -12,6 +12,7 @@ import EvaluationRating from './EvaluationRating'
 import Status from './Status'
 import Condition from './Condition'
 import GridCols2 from './GridCols2'
+import Coordinates from './Coordinates'
 import KProperty from './KProperty'
 
 const EquipmentProperties = props =>
@@ -21,6 +22,7 @@ const EquipmentProperties = props =>
     <TypeMobility {...props}/>
     <HostilityStatus {...props}/>
     <DateTimeGroup {...props}/>
+    <Coordinates {...props}/>
     <Speed {...props}/>
     <Direction {...props}/>
     <StaffComments {...props}/>

@@ -113,7 +113,6 @@ export const multiselect = {
     B.adjustFocus
   )(state),
 
-  // TODO: what if entry is already available?
   focus: (state, { id }) => R.ifElse(
     () => R.isNil(id),
     B.focusHead,

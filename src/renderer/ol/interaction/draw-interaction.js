@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import Draw from 'ol/interaction/Draw'
-import uuid from 'uuid-random'
+import uuid from '../../../shared/uuid'
 import * as MILSTD from '../../symbology/2525c'
 import { writeFeatureObject } from '../../store/FeatureStore'
 import * as TS from '../ts'

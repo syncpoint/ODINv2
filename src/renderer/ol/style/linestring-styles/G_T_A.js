@@ -6,7 +6,6 @@ export default ({ TS, geometry }) => {
   const angle = segment.angle()
   const length = segment.getLength()
 
-  // TODO: pequeño gordito tiene que peder peso rápidamente
   const xs = TS.projectCoordinates(length, angle, coords[0])([
     [0, 0.08], [0, -0.08], [0.32, -0.08], [0.4, 0], [0.32, 0.08],
     [0.8, 0.2], [1, 0], [0.8, -0.2], [0.8, -0.16], [0.96, 0], [0.8, 0.16],

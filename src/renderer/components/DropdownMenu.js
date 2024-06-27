@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Tooltip } from 'react-tooltip'
 import * as mdi from '@mdi/js'
 import Icon from '@mdi/react'
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 import './DropdownMenu.css'
 
 export const DropdownMenu = props => {
@@ -24,8 +24,6 @@ export const DropdownMenu = props => {
     }
     setTimeout(hide, 200)
   }
-
-  // TODO: handle ESCAPE key to close menu
 
   const option = ([key, command]) => {
     const handleClick = () => command.execute && command.execute()

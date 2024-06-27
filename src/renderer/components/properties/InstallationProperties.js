@@ -7,6 +7,7 @@ import DateTimeGroup from './DateTimeGroup'
 import StaffComments from './StaffComments'
 import AdditionalInformation from './AdditionalInformation'
 import EvaluationRating from './EvaluationRating'
+import Coordinates from './Coordinates'
 import Status from './Status'
 import GridCols2 from './GridCols2'
 import KProperty from './KProperty'
@@ -18,6 +19,7 @@ const InstallationProperties = props =>
     <SpecialC2HQ {...props}/>
     <HostilityStatus {...props}/>
     <DateTimeGroup {...props}/>
+    <Coordinates {...props}/>
     <StaffComments {...props}/>
     <AdditionalInformation {...props}/>
     <EvaluationRating {...props}/>

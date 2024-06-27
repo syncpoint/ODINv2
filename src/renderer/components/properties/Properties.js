@@ -33,7 +33,6 @@ const propertiesPanels = {
   'feature:SKKM/K': props => <SKKMStandardProperties {...props}/>,
   'feature:SKKM/KU': props => <SKKMUnitProperties {...props}/>,
   'feature:SKKM/KC': props => <SKKMCommandProperties {...props}/>
-
 }
 
 const singletons = ['tile-service', 'tile-layers']
@@ -51,7 +50,6 @@ const propertiesClasses = features => Object
       ? `feature:${MILSTD.className(sidc(value)) || ''}`
       : scope(key)
 
-    console.log('className', className)
     return push(className)
   }, [])
 

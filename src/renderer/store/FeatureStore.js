@@ -41,7 +41,6 @@ export function FeatureStore (store, selection) {
   this.features = {}
   this.styleProps = {}
 
-  // TODO: rather debounce in sources?
   const debouncedHandler = batch(debounce(32), this.batch.bind(this))
   store.on('batch', ({ operations }) => debouncedHandler(operations))
 
@@ -166,9 +165,6 @@ FeatureStore.prototype.handleRemovals = function (removals) {
 }
 
 
-/**
- * FIXME: redundant code
- */
 const isGeometry = value => {
   if (!value) return false
   else if (typeof value !== 'object') return false
@@ -200,7 +196,6 @@ FeatureStore.prototype.handleUpdates = function (updates) {
       ? { geometry: readGeometry(value) }
       : trim(readFeature(value).getProperties())
 
-    // FIXME: properties with null value won't override initial properties.
     const feature = this.features[key]
     feature.setProperties({ ...feature.getProperties(), ...properties })
   })

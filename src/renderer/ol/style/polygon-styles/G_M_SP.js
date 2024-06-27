@@ -1,7 +1,6 @@
 import * as R from 'ramda'
 
 export default ({ TS, PI_OVER_2, resolution, geometry }) => {
-  // TODO: import: force polygon 'right hand rule'
   const coordinates = geometry.getCoordinates()
   const lineString = TS.lineString(coordinates)
   const indexedLine = TS.lengthIndexedLine(lineString)

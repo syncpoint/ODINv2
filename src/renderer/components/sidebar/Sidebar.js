@@ -92,7 +92,7 @@ const useModel = () => {
     const unpin = id => store.removeTag(id, 'pin')
 
     const link = id => {
-      const entry = R.find(R.propEq('id', id), state.entries)
+      const entry = R.find(R.propEq(id, 'id'), state.entries)
       setHistory([...search.history, {
         key: id,
         label: entry.title,
@@ -101,7 +101,7 @@ const useModel = () => {
     }
 
     const polygon = async id => {
-      const entry = R.find(R.propEq('id', id), state.entries)
+      const entry = R.find(R.propEq(id, 'id'), state.entries)
       const geometry = await store.geometry(id)
       setHistory([...search.history, {
         scope: `@feature &geometry:${JSON.stringify(geometry)}`,
@@ -111,7 +111,7 @@ const useModel = () => {
     }
 
     const layerOpen = id => {
-      const entry = R.find(R.propEq('id', id), state.entries)
+      const entry = R.find(R.propEq(id, 'id'), state.entries)
       setHistory([...search.history, {
         scope: `@feature !feature:${ID.layerUUID(id)}`,
         key: id,

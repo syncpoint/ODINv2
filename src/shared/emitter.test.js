@@ -60,8 +60,6 @@ describe('EventEmitter', function () {
 
     await (async () => {
       await linger()
-
-      // TODO: investigate - should listener be removed before event is emitted?
       assert.strictEqual(emitter.emit('event'), false)
       assert.deepStrictEqual(acc, ['event'])
     })()

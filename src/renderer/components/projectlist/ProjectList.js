@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from './Button'
-// TODO: replace Card and List with simple <div/>s
 import { FilterInput } from './FilterInput'
 import { List } from './List'
 import { Card } from './Card'

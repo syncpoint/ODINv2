@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import uuid from 'uuid-random'
+import uuid from '../shared/uuid'
 
 export const isUUID = uuid.test
 
@@ -58,7 +58,6 @@ export const scope = s => s.split(COLON)[0]
 export const ids = s => s.split(COLON)[1]
 export const nthId = R.curry((n, s) => ids(s).split(SLASH)[n])
 
-// TODO: generalize to more than one scope
 export const dropScope = s => s.split(PLUS)[1]
 export const makeScope = (scope, prefix) => R.isNil(prefix)
   ? scope + COLON

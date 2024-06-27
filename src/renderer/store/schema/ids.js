@@ -16,7 +16,6 @@ const upgrade = async jsonDB => {
 }
 
 const downgrade = async jsonDB => {
-  // TODO: limit to scopes originally carrying ids in values
   const tuples = await L.readTuples(jsonDB, '')
   const ops = tuples
     .map(([key, value]) => L.putOp(key, { ...value, id: key }))
