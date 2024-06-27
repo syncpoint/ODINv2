@@ -62,7 +62,7 @@ export default async projectUUID => {
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
-  const featureStore = new FeatureStore(store, selection)
+  const featureStore = new FeatureStore(store, selection, emitter)
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   // Key bindings.

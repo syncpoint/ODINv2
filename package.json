@@ -65,7 +65,7 @@
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
     "@syncpoint/signal": "github:syncpoint/signal#vite",
-    "@syncpoint/signs": "^1.0.1",
+    "@syncpoint/signs": "github:syncpoint/signs#vite",
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.2.0",
     "color": "^4.2.3",
@@ -97,6 +97,7 @@
     "sanitize-filename": "^1.6.3",
     "subleveldown": "^6.0.1",
     "throttle-debounce": "^5.0.0",
-    "typeface-roboto": "^1.1.13"
+    "typeface-roboto": "^1.1.13",
+    "uniqolor": "^1.1.1"
   }
 }

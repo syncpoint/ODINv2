@@ -71,7 +71,7 @@ export const effectiveStyle = [next => {
 
   return {
     smoothen: !!smoothen,
-    effectiveStyle: styleRegistry(next, props)
+    effectiveStyle: styleRegistry(props)
   }
 }, ['sidc', 'globalStyle', 'layerStyle', 'featureStyle']]
 
