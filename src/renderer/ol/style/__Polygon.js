@@ -8,6 +8,10 @@ const simplifyGeometry = (geometry, resolution) =>
     : geometry
 
 export const Polygon = feature => {
+  feature.$properties = Signals.$properties(feature)
+  feature.$modifiers = Signals.$modifiers(feature)
+  feature.$sidc = Signals.$sidc(feature)
+  feature.$parameterizedSIDC = Signals.$parameterizedSIDC(feature)
   feature.$colorScheme = Signals.$colorScheme(feature)
   feature.$schemeStyle = Signals.$schemeStyle(feature)
   feature.$effectiveStyle = Signals.$effectiveStyle(feature)

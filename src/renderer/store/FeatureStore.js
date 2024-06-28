@@ -5,13 +5,12 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
 import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
+import { flatten, select } from '../../shared/signal'
 import * as Geometry from '../model/geometry'
 import * as ID from '../ids'
 import { reduce, rules } from '../ol/style/rules'
 import crosshair from '../ol/style/crosshair'
 import { stylist as measurementStyler } from '../ol/interaction/measure/style'
-import * as TS from '../ol/ts'
-import * as Math from '../../shared/Math'
 import uniqolor from 'uniqolor'
 import {Circle, Fill, Stroke, Style} from 'ol/style'
 import uuid from '../../shared/uuid'
@@ -29,21 +28,6 @@ const randomStyle = () => {
     fill: fill,
     stroke: stroke,
   })
-}
-
-Signal.split = (conditions, signal) => {
-  const outputs = conditions.map(() => Signal.of())
-  signal.on(value => {
-    const match = condition => condition(value)
-    outputs[conditions.findIndex(match)]?.(value)
-  })
-  return outputs
-}
-
-Signal.flatten = signal => {
-  const output = Signal.of()
-  signal.on(v => (Array.isArray(v) ? v : [v]).forEach(output))
-  return output
 }
 
 const format = new GeoJSON({
@@ -121,7 +105,7 @@ export function FeatureStore (store, selection, emitter) {
   emitter.removeEventListener = (type, handler) => emitter.off(type, handler)
 
   const $operations = R.compose(
-    Signal.flatten,
+    flatten,
     R.map(R.sort((a, b) => ord(a) - ord(b))),
     R.map(R.prop('operations'))
   )(Signal.fromListeners(['batch'], store))
@@ -131,7 +115,7 @@ export function FeatureStore (store, selection, emitter) {
     $featureStyle,
     $layerStyle,
     $feature
-  ] = Signal.split([
+  ] = select([
     R.propEq(ID.defaultStyleId, 'key'),
     R.compose(ID.isFeatureStyleId, R.prop('key')),
     R.compose(ID.isLayerStyleId, R.prop('key')),
@@ -156,7 +140,7 @@ export function FeatureStore (store, selection, emitter) {
     $featureRemoval,
     $featureUpdate,
     $featureAddition
-  ] = Signal.split([
+  ] = select([
     R.propEq('del', 'type'),
     ({ key }) => this.features[key],
     R.T
@@ -207,7 +191,7 @@ export function FeatureStore (store, selection, emitter) {
   }
 
   const $mode = R.compose(
-    Signal.flatten,
+    flatten,
     R.map(modes)
   )($selection)
 
@@ -285,8 +269,6 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   feature.$globalStyle = Signal.of({})
   feature.$layerStyle = Signal.of({})
   feature.$featureStyle = Signal.of({})
-  feature.$sidc = Signal.map(feature => feature.getProperties().sidc, feature.$feature)
-  feature.$properties = Signal.map(feature => feature.getProperties(), feature.$feature)
   feature.$resolution = Signal.of()
 
   const geometryType = Geometry.geometryType(feature.getGeometry())
@@ -294,8 +276,8 @@ FeatureStore.prototype.wrapFeature = function (feature) {
 
   feature.$style.on(feature.setStyle.bind(feature))
 
-  // if (feature.$effectiveStyle) {
-  //   feature.$effectiveStyle.on(console.log)
+  // if (feature.$labels) {
+  //   feature.$labels.on(console.log)
   // }
 
   // Use dedicated function to update feature coordinates from within

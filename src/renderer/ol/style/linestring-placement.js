@@ -1,6 +1,7 @@
 import * as R from 'ramda'
+import * as TS from '../ts'
 
-export const placement = ({ TS, geometry }) => {
+export const placement = (geometry) => {
   const segments = TS.segments(geometry)
   const line = TS.lengthIndexedLine(geometry)
   const endIndex = line.getEndIndex()

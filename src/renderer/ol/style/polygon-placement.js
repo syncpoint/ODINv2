@@ -1,3 +1,4 @@
+import * as TS from '../ts'
 
 const lazy = function (fn) {
   let evaluated = false
@@ -11,7 +12,7 @@ const lazy = function (fn) {
   }
 }
 
-export const placement = ({ TS, geometry }) => {
+export const placement = (geometry) => {
   const ring = geometry.getExteriorRing()
   const envelope = ring.getEnvelopeInternal()
   const centroid = TS.centroid(ring)

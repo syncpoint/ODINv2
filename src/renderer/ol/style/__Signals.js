@@ -6,7 +6,10 @@ import styleRegistry from './styleRegistry'
 import { smooth } from './chaikin'
 import { MODIFIERS } from '../../symbology/2525c'
 
-
+export const $properties = feature => feature.$feature.map(feature => feature.getProperties())
+export const $sidc = feature => feature.$properties.map(R.prop('sidc'), )
+export const $parameterizedSIDC = feature => feature.$sidc.map(parameterized)
+export const $modifiers = feature => feature.$properties.map(({ sidc, ...rest }) => rest)
 export const $definingGeometry = feature => feature.$feature.map(feature => feature.getGeometry())
 
 export const $smoothenedGeometry = feature => Signal.link((geometry, lineSmoothing) => {

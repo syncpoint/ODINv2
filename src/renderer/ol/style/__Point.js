@@ -16,6 +16,10 @@ const $style = feature => Signal.link((geometry, symbolModifiers, sidc, styleReg
 }, [feature.$definingGeometry, feature.$symbolModifiers, feature.$sidc, feature.$styleRegistry])
 
 export const Point = feature => {
+  feature.$properties = Signals.$properties(feature)
+  feature.$modifiers = Signals.$modifiers(feature)
+  feature.$sidc = Signals.$sidc(feature)
+  feature.$parameterizedSIDC = Signals.$parameterizedSIDC(feature)
   feature.$definingGeometry = Signals.$definingGeometry(feature)
   feature.$colorScheme = Signals.$colorScheme(feature)
   feature.$schemeStyle = Signals.$schemeStyle(feature)
