@@ -6,8 +6,8 @@ export const style = geometry => {
   const stroke = new Stroke({ color: strokeColor, width: 1.25 })
   return new Style({
     geometry,
-    image: new Circle({ fill: fill, stroke: stroke, radius: 5 }),
-    fill: fill,
-    stroke: stroke,
+    image: new Circle({ fill, stroke, radius: 5 }),
+    fill,
+    stroke,
   })
 }

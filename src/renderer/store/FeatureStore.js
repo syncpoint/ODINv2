@@ -5,30 +5,10 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
 import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
-import { flatten, select } from '../../shared/signal'
-import * as Geometry from '../model/geometry'
+import { flatten, select, split } from '../../shared/signal'
 import * as ID from '../ids'
-import { reduce, rules } from '../ol/style/rules'
-import crosshair from '../ol/style/crosshair'
-import { stylist as measurementStyler } from '../ol/interaction/measure/style'
-import uniqolor from 'uniqolor'
-import {Circle, Fill, Stroke, Style} from 'ol/style'
-import uuid from '../../shared/uuid'
+import { $style } from '../ol/style/__styles'
 
-import { styles } from '../ol/style/__styles'
-
-
-const randomStyle = () => {
-  const fill = new Fill({ color: 'rgba(255,255,255,0.4)' })
-  const { color: strokeColor } = uniqolor(uuid())
-  const stroke = new Stroke({ color: strokeColor, width: 1.25 })
-
-  return new Style({
-    image: new Circle({ fill: fill, stroke: stroke, radius: 5 }),
-    fill: fill,
-    stroke: stroke,
-  })
-}
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -271,14 +251,9 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   feature.$featureStyle = Signal.of({})
   feature.$resolution = Signal.of()
 
-  const geometryType = Geometry.geometryType(feature.getGeometry())
-  ;(styles[geometryType] ?? styles.other)(feature)
-
+  feature.$style = $style(feature)
   feature.$style.on(feature.setStyle.bind(feature))
 
-  // if (feature.$labels) {
-  //   feature.$labels.on(console.log)
-  // }
 
   // Use dedicated function to update feature coordinates from within
   // modify interaction. Such internal changes must not trigger ModifyEvent.
@@ -296,39 +271,6 @@ FeatureStore.prototype.wrapFeature = function (feature) {
     // to update to a new state (drag -> selected).
     setTimeout(() => feature.dispatchEvent({ type: 'change', target: feature }))
   }
-
-  // feature.$sidc.on(x => console.log('[$sidc]', x))
-
-  // let state = {
-  //   TS,
-  //   ...Math,
-  //   mode: 'default',
-  //   rules: rules[type] || [],
-  //   globalStyle: this.styleProperties[ID.defaultStyleId] ?? {},
-  //   layerStyle: this.styleProperties['style+' + layerId] ?? {},
-  //   featureStyle: this.styleProperties['style+' + featureId] ?? {}
-  // }
-
-
-  // const styleFN = (feature, resolution) => {
-  //   const { geometry: definingGeometry, ...properties } = feature.getProperties()
-  //   state = reduce(state, {
-  //     definingGeometry,
-  //     properties,
-  //     centerResolution: resolution,
-  //     geometryKey: `${definingGeometry.ol_uid}:${definingGeometry.getRevision()}`,
-  //     geometryType: type
-  //   })
-
-  //   return state.style
-  // }
-
-  // feature.setStyle(randomStyle())
-
-  // feature.apply = (obj, forceUpdate) => {
-  //   state = reduce(state, obj)
-  //   if (forceUpdate) feature.changed()
-  // }
 
   return feature
 }
