@@ -198,7 +198,8 @@ util.inherits(FeatureStore, Emitter)
  */
 FeatureStore.prototype.bootstrap = async function () {
 
-  // TODO: pre-load and store global style
+  // pre-load and store global style
+  this.globalStyle = await this.store.value(ID.defaultStyleId)
 
   const reduce = async (prefix, fn, acc) => {
     const db = this.store.db
@@ -243,12 +244,13 @@ FeatureStore.prototype.wrapFeature = function (feature) {
 
   feature.$ = {
     feature: Signal.of(feature),
-    globalStyle: Signal.of(),
+    globalStyle: Signal.of(this.globalStyle),
     layerStyle: Signal.of({}),
     featureStyle: Signal.of({}),
     centerResolution: Signal.of()
   }
 
+  feature.setStyle([]) // no initial style
   style(feature).on(feature.setStyle.bind(feature))
 
   // Use dedicated function to update feature coordinates from within

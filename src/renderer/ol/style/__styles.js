@@ -15,7 +15,8 @@ import schemeStyle from './_schemeStyle'
 import effectiveStyle from './_effectiveStyle'
 import smoothenedGeometry from './_smoothenedGeometry'
 import transform from './_transform'
-import labelEval from './_labelReplacements'
+import evalSync from './_evalSync'
+import labelStyles from './_labelStyles'
 
 const other = {
   simplifyGeometry: R.identity,
@@ -58,7 +59,7 @@ export const style = feature => {
   $.properties = $.feature.map(feature => feature.getProperties())
   $.modifiers = $.properties.map(({ sidc, ...modifiers }) => modifiers)
   $.sidc = $.properties.map(R.prop('sidc'))
-  $.evalSync = Signal.link(labelEval, [$.sidc, $.modifiers])
+  $.evalSync = Signal.link(evalSync, [$.sidc, $.modifiers])
   $.parameterizedSIDC = $.sidc.map(parameterized)
   $.symbolModifiers = Signal.link(symbolModifiers, [$.properties])
   $.labels = $.parameterizedSIDC.map(hooks.labels).map(xs => xs.flat())
@@ -77,14 +78,17 @@ export const style = feature => {
   $.resolution = $.centerResolution.ap(pointResolution)
   $.jtsSimplifiedGeometry = $.olSimplifiedGeometry.ap(read)
   $.geometry = $.olSmoothenedGeometry.ap(read)
-  $.placement = $.geometry.map(hooks.labelPlacement)
+  $.labelPlacement = $.geometry.map(hooks.labelPlacement)
   $.mainStyles = hooks.mainStyles($)
+  $.labelStyles = Signal.link(labelStyles, [$.labels, $.labelPlacement])
+  $.allStyles = Signal.link((mainStyles, labelStyles, ) => mainStyles.concat(labelStyles), [$.mainStyles, $.labelStyles])
 
-  return Signal.link((mainStyles, write, styleRegistry) => {
-    return mainStyles
+  return Signal.link((styles, evalSync, write, styleRegistry) => {
+    return styles
       .map(styleRegistry)
+      .flatMap(evalSync)
       .map(({ geometry, ...rest }) => ({ geometry: write(geometry), ...rest }))
       .flatMap(styleFactory)
 
-  }, [$.mainStyles, $.write, $.styleRegistry])
+  }, [$.allStyles, $.evalSync, $.write, $.styleRegistry])
 }
