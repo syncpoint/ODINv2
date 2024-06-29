@@ -7,7 +7,7 @@ import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
 import { flatten, select, split } from '../../shared/signal'
 import * as ID from '../ids'
-import { $style } from '../ol/style/__styles'
+import { style } from '../ol/style/__styles'
 
 
 const format = new GeoJSON({
@@ -40,9 +40,6 @@ const isGeometry = value => {
   }
 }
 
-const apply = options => feature => feature && feature.apply(options, true)
-
-
 // Batch operations order:
 //   0 - (del, style+)
 //   1 - (del, feature)
@@ -55,11 +52,6 @@ const ord = R.cond([
   [R.both(R.propEq('del', 'type'), R.compose(R.startsWith('style+'), R.prop('key'))), R.always(3)],
   [R.T, R.always(4)]
 ])
-
-const assign = (acc, [key, value]) => {
-  acc[key] = value
-  return acc
-}
 
 const push = (acc, [key, value]) => {
   acc.push({ type: 'put', key, value })
@@ -84,47 +76,49 @@ export function FeatureStore (store, selection, emitter) {
   emitter.addEventListener = (type, handler) => emitter.on(type, handler)
   emitter.removeEventListener = (type, handler) => emitter.off(type, handler)
 
-  const $operations = R.compose(
+  const operations = R.compose(
     flatten,
     R.map(R.sort((a, b) => ord(a) - ord(b))),
     R.map(R.prop('operations'))
   )(Signal.fromListeners(['batch'], store))
 
   const [
-    $globalStyle,
-    $featureStyle,
-    $layerStyle,
-    $feature
+    globalStyle,
+    featureStyle,
+    layerStyle,
+    feature
   ] = select([
     R.propEq(ID.defaultStyleId, 'key'),
     R.compose(ID.isFeatureStyleId, R.prop('key')),
     R.compose(ID.isLayerStyleId, R.prop('key')),
     R.compose(isCandidateId, R.prop('key'))
-  ], $operations)
+  ], operations)
 
-  // $globalStyle.on(({ value }) => Object.values(this.features).forEach(apply({ globalStyle: value })))
-
-  $featureStyle.on(({ type, key, value }) => {
-    const feature = this.features[ID.featureId(key)]
-    if (feature) feature.$featureStyle(type === 'put' ? value : {})
+  globalStyle.on(({ value }) => {
+    Object.values(this.features).forEach(feature => feature.$.globalStyle(value))
   })
 
-  $layerStyle.on(({ type, key, value }) => {
+  featureStyle.on(({ type, key, value }) => {
+    const feature = this.features[ID.featureId(key)]
+    if (feature) feature.$.featureStyle(type === 'put' ? value : {})
+  })
+
+  layerStyle.on(({ type, key, value }) => {
     const layerId = ID.layerId(key)
     Object.entries(this.features)
-      .filter(([key, ]) => ID.layerId(key) === layerId)
-      .forEach(([, feature]) => feature.$layerStyle(type === 'put' ? value : {}))
+      .filter(([key]) => ID.layerId(key) === layerId)
+      .forEach(([, feature]) => feature.$.layerStyle(type === 'put' ? value : {}))
   })
 
   const [
-    $featureRemoval,
-    $featureUpdate,
-    $featureAddition
+    featureRemoval,
+    featureUpdate,
+    featureAddition
   ] = select([
     R.propEq('del', 'type'),
     ({ key }) => this.features[key],
     R.T
-  ], $feature)
+  ], feature)
 
   const isValid = feature => feature?.type === 'Feature' && feature.geometry
 
@@ -135,13 +129,13 @@ export function FeatureStore (store, selection, emitter) {
       : rest
   }
 
-  $featureRemoval.on(({ key }) => {
+  featureRemoval.on(({ key }) => {
     const features = [this.features[key]]
     delete this.features[key]
     this.emit('removefeatures', ({ features }))
   })
 
-  $featureAddition
+  featureAddition
     .map(({ key, value }) => ({ id: key, ...value }))
     .map(readFeature)
     // .filter(feature => Geometry.geometryType(feature) === 'Polygon')
@@ -150,7 +144,7 @@ export function FeatureStore (store, selection, emitter) {
     .map(this.wrapFeature.bind(this))
     .on(feature => this.features[feature.getId()] = feature)
 
-  $featureUpdate.on(({ key, value }) => {
+  featureUpdate.on(({ key, value }) => {
     const properties = isGeometry(value)
       ? { geometry: readGeometry(value) }
       : trim(readFeature(value).getProperties())
@@ -191,9 +185,9 @@ export function FeatureStore (store, selection, emitter) {
   //   })
   // })
 
-  const $resolution = Signal.fromListeners(['view/resolution'], emitter)
-  $resolution.on(({ resolution }) => {
-    Object.values(this.features).forEach(feature => feature.$resolution(resolution))
+  const $centerResolution = Signal.fromListeners(['view/resolution'], emitter)
+  $centerResolution.on(({ resolution }) => {
+    Object.values(this.features).forEach(feature => feature.$.centerResolution(resolution))
   })
 }
 
@@ -203,6 +197,8 @@ util.inherits(FeatureStore, Emitter)
  *
  */
 FeatureStore.prototype.bootstrap = async function () {
+
+  // TODO: pre-load and store global style
 
   const reduce = async (prefix, fn, acc) => {
     const db = this.store.db
@@ -245,15 +241,15 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
 
-  feature.$feature = Signal.of(feature)
-  feature.$globalStyle = Signal.of({})
-  feature.$layerStyle = Signal.of({})
-  feature.$featureStyle = Signal.of({})
-  feature.$resolution = Signal.of()
+  feature.$ = {
+    feature: Signal.of(feature),
+    globalStyle: Signal.of(),
+    layerStyle: Signal.of({}),
+    featureStyle: Signal.of({}),
+    centerResolution: Signal.of()
+  }
 
-  feature.$style = $style(feature)
-  feature.$style.on(feature.setStyle.bind(feature))
-
+  style(feature).on(feature.setStyle.bind(feature))
 
   // Use dedicated function to update feature coordinates from within
   // modify interaction. Such internal changes must not trigger ModifyEvent.

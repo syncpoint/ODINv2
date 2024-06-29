@@ -37,3 +37,15 @@ export const split = R.curry((fns, signal) => {
   signal.on(value => fns.forEach((fn, i) => outputs[i](fn(value))))
   return outputs
 })
+
+/**
+ * destructure :: Signal S => [String] -> S { k: v } -> [S Any]
+ *
+ * Split input object signal into ordered list of value signals
+ * based on entry keys.
+ */
+export const destructure = R.curry((keys, signal) => {
+  const outputs = keys.map(() => Signal.of())
+  signal.on(object => keys.forEach((key, i) => outputs[i](object[key])))
+  return outputs
+})

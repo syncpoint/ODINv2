@@ -34,9 +34,3 @@ export default [
   shared.styles,
   shared.style
 ]
-
-
-// ==> label specifications and placement
-
-
-

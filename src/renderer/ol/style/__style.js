@@ -8,6 +8,6 @@ export const style = geometry => {
     geometry,
     image: new Circle({ fill, stroke, radius: 5 }),
     fill,
-    stroke,
+    stroke
   })
 }
