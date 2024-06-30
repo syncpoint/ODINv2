@@ -5,9 +5,10 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
 import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
+import { setCoordinates } from '../model/geometry'
 import { flatten, select, split, once } from '../../shared/signal'
 import * as ID from '../ids'
-import { style } from '../ol/style/__styles'
+import style from '../ol/style/styles'
 
 
 const format = new GeoJSON({
@@ -243,11 +244,6 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
 
-  // console.log('higherFormation', feature.getProperties())
-
-  const t = feature.getProperties().t
-  if (t === '1 EST') console.log(featureId)
-
   feature.$ = {
     feature: Signal.of(feature),
     globalStyle: Signal.of(this.globalStyle),
@@ -256,17 +252,10 @@ FeatureStore.prototype.wrapFeature = function (feature) {
     centerResolution: Signal.of(this.resolution)
   }
 
-  // feature.setStyle([]) // no initial style
   const $style = style(feature)
+  $style.on(feature.setStyle.bind(feature))
   once(() => this.emit('addfeatures', { features: [feature] }), $style)
-  $style.on(style => {
-    if (featureId === 'feature:2ea57605-8e1e-4c46-9ec1-8e7b162af538/7feeea69-074a-4fb3-8515-4cfd74b717d6') {
-      console.log(style)
-    }
-    feature.setStyle(style)
-    // feature.setStyle.bind(feature)
 
-  })
 
   // Use dedicated function to update feature coordinates from within
   // modify interaction. Such internal changes must not trigger ModifyEvent.
