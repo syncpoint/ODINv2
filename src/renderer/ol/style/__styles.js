@@ -57,10 +57,10 @@ export const style = feature => {
 
   $.definingGeometry = $.feature.map(feature => feature.getGeometry())
   $.properties = $.feature.map(feature => feature.getProperties())
-  $.modifiers = $.properties.map(({ sidc, ...modifiers }) => modifiers)
+  $.modifiers = $.properties.map(({ sidc, geometry, ...modifiers }) => modifiers)
   $.sidc = $.properties.map(R.prop('sidc'))
-  $.evalSync = Signal.link(evalSync, [$.sidc, $.modifiers])
   $.parameterizedSIDC = $.sidc.map(parameterized)
+  $.evalSync = Signal.link(evalSync, [$.sidc, $.modifiers])
   $.symbolModifiers = Signal.link(symbolModifiers, [$.properties])
   $.labels = $.parameterizedSIDC.map(hooks.labels).map(xs => xs.flat())
   $.colorScheme = Signal.link(colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
@@ -70,6 +70,7 @@ export const style = feature => {
   $.styleRegistry = $.effectiveStyle.map(styleRegistry)
   $.olSimplifiedGeometry = Signal.link(hooks.simplifyGeometry, [$.definingGeometry, $.centerResolution])
   $.olSmoothenedGeometry = Signal.link(smoothenedGeometry(hooks), [$.olSimplifiedGeometry, $.lineSmoothing])
+
 
   const [read, write, pointResolution] = transform($.olSmoothenedGeometry)
   $.read = read
@@ -81,7 +82,9 @@ export const style = feature => {
   $.labelPlacement = $.geometry.map(hooks.labelPlacement)
   $.mainStyles = hooks.mainStyles($)
   $.labelStyles = Signal.link(labelStyles, [$.labels, $.labelPlacement])
-  $.allStyles = Signal.link((mainStyles, labelStyles, ) => mainStyles.concat(labelStyles), [$.mainStyles, $.labelStyles])
+  $.allStyles = Signal.link((mainStyles, labelStyles) => mainStyles.concat(labelStyles), [$.mainStyles, $.labelStyles])
+
+
 
   return Signal.link((styles, evalSync, write, styleRegistry) => {
     return styles

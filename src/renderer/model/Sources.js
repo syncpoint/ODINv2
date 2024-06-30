@@ -14,8 +14,8 @@ export const featureSource = (featureStore, scope) => {
     ? ID.isId(scope)(feature.getId())
     : false
 
-  const features = Object.values(featureStore.features).filter(matchesScope)
-  const source = new VectorSource({ features })
+  // const features = Object.values(featureStore.features).filter(matchesScope)
+  const source = new VectorSource({ features: [] })
 
   featureStore.on('addfeatures', ({ features }) => {
     source.addFeatures(features.filter(matchesScope))

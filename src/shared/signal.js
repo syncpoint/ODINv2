@@ -49,3 +49,10 @@ export const destructure = R.curry((keys, signal) => {
   signal.on(object => keys.forEach((key, i) => outputs[i](object[key])))
   return outputs
 })
+
+export const once = (fn, signal) => {
+  const dispose = signal.on(value => {
+    setImmediate(() => dispose())
+    fn(value)
+  })
+}

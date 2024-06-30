@@ -5,7 +5,7 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as Extent from 'ol/extent'
 import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
-import { flatten, select, split } from '../../shared/signal'
+import { flatten, select, split, once } from '../../shared/signal'
 import * as ID from '../ids'
 import { style } from '../ol/style/__styles'
 
@@ -185,8 +185,9 @@ export function FeatureStore (store, selection, emitter) {
   //   })
   // })
 
-  const $centerResolution = Signal.fromListeners(['view/resolution'], emitter)
-  $centerResolution.on(({ resolution }) => {
+  const centerResolution = Signal.fromListeners(['view/resolution'], emitter)
+  centerResolution.on(({ resolution }) => {
+    this.resolution = resolution
     Object.values(this.features).forEach(feature => feature.$.centerResolution(resolution))
   })
 }
@@ -242,16 +243,30 @@ FeatureStore.prototype.wrapFeature = function (feature) {
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
 
+  // console.log('higherFormation', feature.getProperties())
+
+  const t = feature.getProperties().t
+  if (t === '1 EST') console.log(featureId)
+
   feature.$ = {
     feature: Signal.of(feature),
     globalStyle: Signal.of(this.globalStyle),
     layerStyle: Signal.of({}),
     featureStyle: Signal.of({}),
-    centerResolution: Signal.of()
+    centerResolution: Signal.of(this.resolution)
   }
 
-  feature.setStyle([]) // no initial style
-  style(feature).on(feature.setStyle.bind(feature))
+  // feature.setStyle([]) // no initial style
+  const $style = style(feature)
+  once(() => this.emit('addfeatures', { features: [feature] }), $style)
+  $style.on(style => {
+    if (featureId === 'feature:2ea57605-8e1e-4c46-9ec1-8e7b162af538/7feeea69-074a-4fb3-8515-4cfd74b717d6') {
+      console.log(style)
+    }
+    feature.setStyle(style)
+    // feature.setStyle.bind(feature)
+
+  })
 
   // Use dedicated function to update feature coordinates from within
   // modify interaction. Such internal changes must not trigger ModifyEvent.
