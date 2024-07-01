@@ -25,7 +25,7 @@ const highlightLayer = (sources, styles) => {
 
 
 export default (sources, styles) => {
-  const { deselectedSource, selectedSource, experimentalSource } = sources
+  const { deselectedSource, selectedSource, featureSource } = sources
   const declutter = false
   const vectorLayer = source => new VectorLayer({
     source,
@@ -34,9 +34,9 @@ export default (sources, styles) => {
   })
 
   return {
-    featureLayer: vectorLayer(deselectedSource),
+    // featureLayer: vectorLayer(deselectedSource),
+    featureLayer: vectorLayer(featureSource),
     highlightLayer: highlightLayer(sources, styles),
     selectedLayer: vectorLayer(selectedSource),
-    experimentalLayer: vectorLayer(experimentalSource)
   }
 }

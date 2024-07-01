@@ -6,6 +6,7 @@ import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
 import GeoJSON from 'ol/format/GeoJSON'
 import * as ID from '../ids'
+import styles from '../ol/style/styles'
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -14,20 +15,24 @@ const format = new GeoJSON({
 
 
 export const experimentalSource = services => {
-  const { store, emitter } = services
+  const { store } = services
   const state = { loaded: false }
 
   const readFeature = source => {
-    console.log(state)
     const feature = format.readFeature(source)
+    const featureId = feature.getId()
+    const layerId = ID.layerId(featureId)
 
     feature.$ = {
       feature: Signal.of(feature),
-      globalStyle: Signal.of(state.globalStyle),
-      layerStyle: Signal.of({}),
-      featureStyle: Signal.of({}),
+      globalStyle: Signal.of(state.styles[ID.defaultStyleId]),
+      layerStyle: Signal.of(state.styles[ID.styleId(layerId)] ?? {}),
+      featureStyle: Signal.of(state.styles[ID.styleId(featureId)] ?? {}),
       centerResolution: Signal.of(state.resolution)
     }
+
+    feature.$.styles = styles(feature)
+    feature.$.styles.on(feature.setStyle.bind(feature))
 
     return feature
   }
@@ -46,49 +51,54 @@ export const experimentalSource = services => {
 
   const index = new VectorSource({
     useSpatialIndex: true,
-    features: [],
-    loader: async (extent, resolution, projection, success, failure) => {
-      console.log('[index] loading...')
-    }
+    features: []
   })
 
-  const loader = async (extent, resolution, projection, success) => {
-    const now = Date.now()
-
-    state.extent = extent
-    state.resolution = resolution
-    state.projection = projection
-
+  const customLoader = async (extent) => {
     if (!state.loaded) {
-      // pre-load and store global style
-      state.globalStyle = await store.value(ID.defaultStyleId)
+      state.loaded = true
+      // Pre-load all styles for later use.
+      state.styles = await reduce('style+', (acc, [key, value]) => {
+        acc[key] = value
+        return acc
+      }, {})
+
       const features = await reduce(ID.FEATURE_SCOPE, push, [])
       index.addFeatures(features)
-      state.loaded = true
-      console.log('loaded features', features.length)
     }
 
-    const features = index.getFeaturesInExtent(extent)
-    source.clear()
-    if (success) success(features)
-    else source.addFeatures(features)
-    console.log('features in view', features.length, 'time', (Date.now() - now), 'ms')
+    const loaded = source.getFeatures()
+    const loading = index.getFeaturesInExtent(extent)
+    const difference = R.differenceWith((f1, f2) => f1.getId() === f2.getId())
+    source.removeFeatures(difference(loaded, loading))
+    source.addFeatures(difference(loading, loaded))
+
+    // Apply resolution to all features currently in view:
+    source.getFeatures()
+      .filter(feature => feature.$.resolution)
+      .forEach(feature => feature.$.resolution(state.resolution))
   }
+
+  // NOTE: Standard bbox strategy only trigger loader if extent increases.
+  // This way features are never removed.
+  // See also: https://gis.stackexchange.com/questions/322681/openlayers-refresh-vector-source-with-bbox-strategy-after-map-moved
 
   const strategy = (extent, resolution) => {
     const bbox = extent.join(',')
-    if (!state.projection) return [extent]
-
-    if (bbox !== state.bbox) {
-      state.bbox = bbox
-      loader(extent, resolution, state.projection)
-      source.clear()
-    }
-
-    return [extent]
+    if (bbox === state.bbox) return []
+    state.bbox = bbox
+    state.resolution = resolution
+    customLoader(extent)
+    return []
   }
 
-  const source = new VectorSource({ useSpatialIndex: false, loader, strategy })
+  const source = new VectorSource({
+    features: [],
+    useSpatialIndex: false,
+    loader: () => {},
+    strategy
+  })
+
   return source
 }
 
@@ -101,8 +111,6 @@ export const featureSource = (featureStore, scope) => {
     : false
 
   const source = new VectorSource({ features: [] })
-
-  console.log('[featureSource] registering listeners...')
 
   featureStore.on('addfeatures', ({ features }) => {
     source.addFeatures(features.filter(matchesScope))
