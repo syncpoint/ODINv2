@@ -6,7 +6,7 @@ import * as Extent from 'ol/extent'
 import Signal from '@syncpoint/signal'
 import Emitter from '../../shared/emitter'
 import { setCoordinates } from '../model/geometry'
-import { flatten, select, split, once } from '../../shared/signal'
+import { flatten, select, once } from '../../shared/signal'
 import * as ID from '../ids'
 import style from '../ol/style/styles'
 

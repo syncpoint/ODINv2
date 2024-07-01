@@ -3,8 +3,73 @@ import Collection from 'ol/Collection'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Event from 'ol/events/Event'
+import GeoJSON from 'ol/format/GeoJSON'
 import * as ID from '../ids'
 
+const reduce = async (store, prefix, fn, acc) => {
+  const db = store.db
+  const it = db.iterator({ gte: `${prefix}`, lte: `${prefix}\xff` })
+  for await (const entry of it) acc = fn(acc, entry)
+  return acc
+}
+
+const push = (acc, [key, value]) => {
+  acc.push(readFeature(({ id: key, ...value })))
+  return acc
+}
+
+const format = new GeoJSON({
+  dataProjection: 'EPSG:3857',
+  featureProjection: 'EPSG:3857'
+})
+
+export const readFeature = source => format.readFeature(source)
+export const readFeatures = source => format.readFeatures(source)
+export const readGeometry = source => format.readGeometry(source)
+export const writeGeometry = geometry => format.writeGeometry(geometry)
+export const writeGeometryObject = geometry => format.writeGeometryObject(geometry)
+
+// writeFeatureCollection :: [ol/Feature] -> GeoJSON/FeatureCollection
+export const writeFeatureCollection = features => format.writeFeaturesObject(features)
+export const writeFeatureObject = feature => format.writeFeatureObject(feature)
+
+export const experimentalSource = store => {
+  const state = {}
+
+  const index = new VectorSource({ useSpatialIndex: true, features: [] })
+
+  ;(async () => {
+    const now = Date.now()
+    const features = await reduce(store, ID.FEATURE_SCOPE, push, [])
+    index.addFeatures(features)
+    console.log((Date.now() - now), 'ms', features.length)
+  })()
+
+  const loader = (extent, resolution, projection) => {
+    const now = Date.now()
+    state.projection = projection
+    const features = index.getFeaturesInExtent(extent)
+    source.clear()
+    source.addFeatures(features)
+    console.log((Date.now() - now), 'ms', features.length)
+  }
+
+  const strategy = (extent, resolution) => {
+    const bbox = extent.join(',')
+    if (!state.projection) return [extent]
+
+    if (bbox !== state.bbox) {
+      state.bbox = bbox
+      loader(extent, resolution, state.projection)
+      source.clear()
+    }
+
+    return [extent]
+  }
+
+  const source = new VectorSource({ useSpatialIndex: false, loader, strategy })
+  return source
+}
 
 /**
  *

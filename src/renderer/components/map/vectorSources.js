@@ -3,6 +3,9 @@ import * as ID from '../../ids'
 
 export default async services => {
   const { store, featureStore, emitter, sessionStore, selection } = services
+
+  const experimentalSource = Sources.experimentalSource(store)
+
   const featureSource = Sources.union(
     Sources.featureSource(featureStore, ID.FEATURE_SCOPE),
     Sources.featureSource(featureStore, ID.MARKER_SCOPE),
@@ -17,6 +20,7 @@ export default async services => {
   const modifiableSource = Sources.intersect(unlockedSource, selectedSource)
 
   return {
+    experimentalSource,
     featureSource,
     highlightSource,
     selectedSource,
