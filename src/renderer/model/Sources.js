@@ -1,4 +1,5 @@
 import * as R from 'ramda'
+import Signal from '@syncpoint/signal'
 import Collection from 'ol/Collection'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
@@ -6,52 +7,72 @@ import Event from 'ol/events/Event'
 import GeoJSON from 'ol/format/GeoJSON'
 import * as ID from '../ids'
 
-const reduce = async (store, prefix, fn, acc) => {
-  const db = store.db
-  const it = db.iterator({ gte: `${prefix}`, lte: `${prefix}\xff` })
-  for await (const entry of it) acc = fn(acc, entry)
-  return acc
-}
-
-const push = (acc, [key, value]) => {
-  acc.push(readFeature(({ id: key, ...value })))
-  return acc
-}
-
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
   featureProjection: 'EPSG:3857'
 })
 
-export const readFeature = source => format.readFeature(source)
-export const readFeatures = source => format.readFeatures(source)
-export const readGeometry = source => format.readGeometry(source)
-export const writeGeometry = geometry => format.writeGeometry(geometry)
-export const writeGeometryObject = geometry => format.writeGeometryObject(geometry)
 
-// writeFeatureCollection :: [ol/Feature] -> GeoJSON/FeatureCollection
-export const writeFeatureCollection = features => format.writeFeaturesObject(features)
-export const writeFeatureObject = feature => format.writeFeatureObject(feature)
+export const experimentalSource = services => {
+  const { store, emitter } = services
+  const state = { loaded: false }
 
-export const experimentalSource = store => {
-  const state = {}
+  const readFeature = source => {
+    console.log(state)
+    const feature = format.readFeature(source)
 
-  const index = new VectorSource({ useSpatialIndex: true, features: [] })
+    feature.$ = {
+      feature: Signal.of(feature),
+      globalStyle: Signal.of(state.globalStyle),
+      layerStyle: Signal.of({}),
+      featureStyle: Signal.of({}),
+      centerResolution: Signal.of(state.resolution)
+    }
 
-  ;(async () => {
+    return feature
+  }
+
+  const reduce = async (prefix, fn, acc) => {
+    const db = store.db
+    const it = db.iterator({ gte: `${prefix}`, lte: `${prefix}\xff` })
+    for await (const entry of it) acc = fn(acc, entry)
+    return acc
+  }
+
+  const push = (acc, [key, value]) => {
+    acc.push(readFeature(({ id: key, ...value })))
+    return acc
+  }
+
+  const index = new VectorSource({
+    useSpatialIndex: true,
+    features: [],
+    loader: async (extent, resolution, projection, success, failure) => {
+      console.log('[index] loading...')
+    }
+  })
+
+  const loader = async (extent, resolution, projection, success) => {
     const now = Date.now()
-    const features = await reduce(store, ID.FEATURE_SCOPE, push, [])
-    index.addFeatures(features)
-    console.log((Date.now() - now), 'ms', features.length)
-  })()
 
-  const loader = (extent, resolution, projection) => {
-    const now = Date.now()
+    state.extent = extent
+    state.resolution = resolution
     state.projection = projection
+
+    if (!state.loaded) {
+      // pre-load and store global style
+      state.globalStyle = await store.value(ID.defaultStyleId)
+      const features = await reduce(ID.FEATURE_SCOPE, push, [])
+      index.addFeatures(features)
+      state.loaded = true
+      console.log('loaded features', features.length)
+    }
+
     const features = index.getFeaturesInExtent(extent)
     source.clear()
-    source.addFeatures(features)
-    console.log((Date.now() - now), 'ms', features.length)
+    if (success) success(features)
+    else source.addFeatures(features)
+    console.log('features in view', features.length, 'time', (Date.now() - now), 'ms')
   }
 
   const strategy = (extent, resolution) => {

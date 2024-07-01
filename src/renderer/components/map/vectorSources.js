@@ -4,7 +4,7 @@ import * as ID from '../../ids'
 export default async services => {
   const { store, featureStore, emitter, sessionStore, selection } = services
 
-  const experimentalSource = Sources.experimentalSource(store)
+  const experimentalSource = Sources.experimentalSource(services)
 
   const featureSource = Sources.union(
     Sources.featureSource(featureStore, ID.FEATURE_SCOPE),
