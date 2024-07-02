@@ -37,6 +37,6 @@ export default (sources, styles) => {
     // featureLayer: vectorLayer(deselectedSource),
     featureLayer: vectorLayer(featureSource),
     highlightLayer: highlightLayer(sources, styles),
-    selectedLayer: vectorLayer(selectedSource),
+    selectedLayer: vectorLayer(selectedSource)
   }
 }

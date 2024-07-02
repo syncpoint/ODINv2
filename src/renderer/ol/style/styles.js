@@ -23,5 +23,5 @@ export default feature => {
   const geometryType = Geometry.geometryType(feature.getGeometry())
   return geometryType === 'Point'
     ? point($)
-    : graphic($)
+    : graphic(geometryType, $)
 }
