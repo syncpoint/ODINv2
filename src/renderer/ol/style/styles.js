@@ -14,6 +14,7 @@ export default feature => {
 
   $.properties = $.feature.map(feature => feature.getProperties())
   $.geometry = $.properties.map(({ geometry }) => geometry)
+  $.geometryType = $.geometry.map(geometry => Geometry.geometryType(geometry))
   $.sidc = $.properties.map(R.prop('sidc'))
   $.colorScheme = Signal.link(colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
   $.schemeStyle = Signal.link(schemeStyle, [$.sidc, $.colorScheme])

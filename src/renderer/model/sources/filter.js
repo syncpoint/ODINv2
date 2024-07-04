@@ -9,7 +9,11 @@ export const filter = predicate => source => {
   // Supply empty collection which will be kept in sync with source.
   // This is neccessary for interactions which only accept feature collections
   // instead of sources (e.g. translate, clone).
-  const destination = new VectorSource({ features: new Collection() })
+  const destination = new VectorSource({
+    features: new Collection(),
+    // Hack to delegate load request upstream:
+    strategy: (extent, resolution) => source.strategy_(extent, resolution)
+  })
 
   source.on('addfeature', ({ feature: addition }) => {
     if (destination.getFeatureById(addition.getId())) return

@@ -5,6 +5,7 @@ import GeoJSON from 'ol/format/GeoJSON'
 import * as ID from '../../ids'
 import styles from '../../ol/style/styles'
 import { flatten, select } from '../../../shared/signal'
+import { setCoordinates } from '../geometry'
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -30,6 +31,23 @@ const readFeature = R.curry((state, source) => {
 
   feature.$.styles = styles(feature)
   feature.$.styles.on(feature.setStyle.bind(feature))
+
+  // Use dedicated function to update feature coordinates from within
+  // modify interaction. Such internal changes must not trigger ModifyEvent.
+
+  feature.internalChange = Signal.of(false)
+
+  feature.updateCoordinates = coordinates => {
+    feature.internalChange(true)
+    setCoordinates(feature.getGeometry(), coordinates)
+    feature.internalChange(false)
+  }
+
+  feature.commit = () => {
+    // Event must be deferred so that event handler has a chance
+    // to update to a new state (drag -> selected).
+    setTimeout(() => feature.dispatchEvent({ type: 'change', target: feature }))
+  }
 
   return feature
 })
@@ -57,9 +75,7 @@ export const featureSource = services => {
   const { store } = services
   const state = { loaded: false }
 
-  // FIXME: Signal should support on/off
-  store.addEventListener = (type, handler) => store.on(type, handler)
-  store.removeEventListener = (type, handler) => store.off(type, handler)
+  // ==> batch event handling
 
   const operations = R.compose(
     flatten,
@@ -91,9 +107,12 @@ export const featureSource = services => {
   })
 
   featureStyle.on(({ type, key, value }) => {
-    const feature = indexedSource.getFeatureById(key)
+    const featureId = ID.featureId(key)
+    const feature = indexedSource.getFeatureById(featureId)
     if (feature) feature.$.featureStyle(type === 'put' ? value : {})
   })
+
+  // <== batch event handling
 
   // Source with spatial index holding all features.
   const indexedSource = new VectorSource({
@@ -134,6 +153,7 @@ export const featureSource = services => {
     const bbox = extent.join(',')
     if (bbox === state.bbox) return []
     state.bbox = bbox
+    state.previousResolution = state.resolution
     state.resolution = resolution
     loader(extent)
     return []

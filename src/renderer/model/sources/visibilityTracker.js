@@ -32,7 +32,6 @@ export const visibilityTracker = async (source, store, emitter) => {
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
       additions.forEach(({ key }) => keySet.add(key))
       removals.forEach(({ key }) => keySet.delete(key))
-
       const keys = candidates.map(({ key }) => key)
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
