@@ -17,11 +17,6 @@ const pointBuffer = geometry => {
 }
 
 export default $ => {
-
-  if ($.utmSmoothenedGeometry) {
-    $.utmSmoothenedGeometry.on(console.log)
-  }
-
   const placement = $.geometryType.map(geometryType => PLACEMENT[geometryType] || R.identity)
   const geometry = $.geometryType.chain(geometryType => {
     return R.cond([

@@ -3,7 +3,8 @@ import Signal from '@syncpoint/signal'
 import * as Geometry from '../../model/geometry'
 import styleRegistry from './styleRegistry'
 import point from './point'
-import graphic from './graphics'
+import polygon from './polygon'
+import defaultStyle from './defaultStyle'
 
 import colorScheme from './_colorScheme'
 import schemeStyle from './_schemeStyle'
@@ -14,7 +15,6 @@ export default feature => {
 
   $.properties = $.feature.map(feature => feature.getProperties())
   $.geometry = $.properties.map(({ geometry }) => geometry)
-  $.geometryType = $.geometry.map(geometry => Geometry.geometryType(geometry))
   $.sidc = $.properties.map(R.prop('sidc'))
   $.colorScheme = Signal.link(colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
   $.schemeStyle = Signal.link(schemeStyle, [$.sidc, $.colorScheme])
@@ -22,7 +22,7 @@ export default feature => {
   $.styleRegistry = $.effectiveStyle.map(styleRegistry)
 
   const geometryType = Geometry.geometryType(feature.getGeometry())
-  return geometryType === 'Point'
-    ? point($)
-    : graphic(geometryType, $)
+  if (geometryType === 'Point') return point($)
+  else if (geometryType === 'Polygon') return polygon($)
+  else return Signal.of(defaultStyle())
 }
