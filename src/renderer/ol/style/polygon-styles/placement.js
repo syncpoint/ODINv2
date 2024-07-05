@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import * as TS from '../../ts'
 
 const lazy = function (fn) {
@@ -49,14 +50,22 @@ const placement = geometry => {
     right: lazy(() => TS.point(xIntersection()[1]))
   }
 
-  return properties => {
+  const tryer = properties => {
     const anchor = properties['text-anchor']
     const geometry = Number.isFinite(anchor)
       ? fraction(anchor)
       : anchors[anchor || 'center']()
-
     return { geometry, ...properties }
   }
+
+  const catcher = (err, properties) => console.warn(err, properties)
+
+  const calculate = arg => {
+    if (!Array.isArray(arg)) return calculate([arg])
+    else return arg.map(R.tryCatch(tryer, catcher)).filter(Boolean)
+  }
+
+  return calculate
 }
 
 export default placement

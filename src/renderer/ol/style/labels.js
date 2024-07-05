@@ -101,9 +101,9 @@ export const evalSync = context => {
     ? textField.map(evalSync).filter(Boolean).join('\n')
     : jexl.evalSync(textField, context)
 
-  return props => {
-    props = Array.isArray(props) ? props : [props]
-    return props.reduce((acc, spec) => {
+  const replaceOne = properties => {
+    properties = Array.isArray(properties) ? properties : [properties]
+    return properties.reduce((acc, spec) => {
       if (!spec['text-field']) acc.push(spec)
       else {
         const textField = evalSync(spec['text-field'])
@@ -113,4 +113,11 @@ export const evalSync = context => {
       return acc
     }, [])
   }
+
+  const replaceAll = arg => {
+    if (!Array.isArray(arg)) return replaceAll(arg)
+    return arg.flatMap(replaceOne)
+  }
+
+  return replaceAll
 }
