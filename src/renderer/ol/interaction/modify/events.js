@@ -119,7 +119,13 @@ export const pointer = (options, rbush, event) => {
   pointer.pick = () => {
     const [segment] = sortedSegments()
     const [coordinate, index] = vertex(segment)
-    return { segment, coordinate, index }
+
+    // Coordinate must never be undefined in order
+    // to be handled correctly as a signal.
+    return coordinate === undefined
+      ? ({ segment, coordinate: null, index })
+      : ({ segment, coordinate, index })
+
   }
 
   return pointer

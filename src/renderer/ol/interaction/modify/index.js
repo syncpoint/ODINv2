@@ -127,7 +127,7 @@ export class Modify extends Interaction {
     // Filter coordinates from state loop.
     const coordinate = R.compose(
       R.map(({ coordinate }) => coordinate),
-      R.filter(event => event.type === 'coordinate'),
+      R.filter(event => event.type === 'coordinate')
     )(stateLoop)
 
     // modifyEvent :: Signal
