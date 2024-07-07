@@ -6,6 +6,7 @@ import point from './point'
 import polygon from './polygon'
 import defaultStyle from './defaultStyle'
 import isEqual from 'react-fast-compare'
+import keyequals from './keyequals'
 
 import colorScheme from './_colorScheme'
 import schemeStyle from './_schemeStyle'
@@ -13,15 +14,13 @@ import effectiveStyle from './_effectiveStyle'
 
 export default feature => {
   const { $ } = feature
-  const createkey = target => `${target.ol_uid}:${target.getRevision()}`
-  const distinct = (key, target) => key === createkey(target)
-    ? [key, undefined]
-    : [createkey(target), target]
 
   $.properties = $.feature.map(feature => feature.getProperties())
   $.properties.equals = isEqual
-  $.geometry = Signal.loop((key, feature) => distinct(key, feature.getGeometry()), null, $.feature)
-  $.geometry.equals = R.F
+
+  $.geometry = $.feature.map(feature => feature.getGeometry())
+  $.geometry.equals = keyequals() // currently no other way to set equals for map
+
   $.sidc = $.properties.map(R.prop('sidc'))
   $.colorScheme = Signal.link(colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
   $.schemeStyle = Signal.link(schemeStyle, [$.sidc, $.colorScheme])

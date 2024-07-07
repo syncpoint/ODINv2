@@ -6,8 +6,8 @@ import { styleFactory } from './styleFactory'
 /**
  *
  */
-export default $ => Signal.link((feature, styleRegistry) => {
-  const { geometry, sidc, ...properties } = feature.getProperties()
+export default $ => Signal.link((properties, geometry, styleRegistry) => {
+  const sidc = properties.sidc
 
   const modifiers = Object.entries(properties)
     .filter(([key, value]) => MODIFIERS[key] && value)
@@ -21,4 +21,4 @@ export default $ => Signal.link((feature, styleRegistry) => {
   }]
     .map(styleRegistry)
     .flatMap(styleFactory)
-}, [$.feature, $.styleRegistry])
+}, [$.properties, $.geometry, $.styleRegistry])

@@ -56,3 +56,19 @@ export const once = (fn, signal) => {
     fn(value)
   })
 }
+
+export const circuitBreaker = (input) => {
+  let last = 0
+  let count = 0
+
+  return input.map(x => {
+    if ((Date.now() - last) < 10) count++
+    last = Date.now()
+
+    if (count > 10) {
+      console.warn('frequency too high', x)
+      return undefined
+    }
+    else return x
+  })
+}

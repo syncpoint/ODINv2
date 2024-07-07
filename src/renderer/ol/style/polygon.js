@@ -25,7 +25,6 @@ const simplifiedGeometry = (geometry, resolution) => {
 }
 
 export default $ => {
-  $.resolution = Signal.of()
   const [read, write, pointResolution] = transform($.geometry)
   $.read = read
   $.write = write
