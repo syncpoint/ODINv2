@@ -22,7 +22,7 @@ const readFeature = R.curry((state, source) => {
   const layerId = ID.layerId(featureId)
 
   feature.$ = {
-    feature: Signal.of(feature),
+    feature: Signal.of(feature, { equals: R.F }),
     globalStyle: Signal.of(state.styles[ID.defaultStyleId]),
     layerStyle: Signal.of(state.styles[ID.styleId(layerId)] ?? {}),
     featureStyle: Signal.of(state.styles[ID.styleId(featureId)] ?? {}),
@@ -48,6 +48,11 @@ const readFeature = R.curry((state, source) => {
     // to update to a new state (drag -> selected).
     setTimeout(() => feature.dispatchEvent({ type: 'change', target: feature }))
   }
+
+  feature.on('change', ({ target }) => {
+    console.log(target)
+    target.$.feature(target)
+  })
 
   return feature
 })
