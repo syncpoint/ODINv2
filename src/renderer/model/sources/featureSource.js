@@ -104,8 +104,11 @@ export const featureSource = services => {
   const source = new VectorSource({
     features: [],
     useSpatialIndex: false,
-    strategy: (extent, resolution) => {
-      state.resolution = resolution
+    strategy: function (extent, resolution) {
+      if (state.resolution !== resolution) {
+        state.resolution = resolution
+        this.getFeatures().map(feature => feature.$.resolution(resolution))
+      }
       return [extent]
     }
   })
@@ -124,7 +127,6 @@ export const featureSource = services => {
   const [globalStyle, layerStyle, featureStyle, feature] = selectEvent(events)
 
   globalStyle.on(({ value }) => {
-    console.log(value)
     source.getFeatures().forEach(feature => feature.$.globalStyle(value))
   })
 
