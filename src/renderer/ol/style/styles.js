@@ -7,6 +7,7 @@ import point from './point'
 import polygon from './polygon'
 import linestring from './linestring'
 import multipoint from './multipoint'
+import corridor from './corridor'
 import fallback from './fallback'
 import isEqual from 'react-fast-compare'
 import keyequals from './keyequals'
@@ -50,6 +51,7 @@ export default feature => {
   else if (geometryType === 'Polygon') polygon($)
   else if (geometryType === 'LineString') linestring($)
   else if (geometryType === 'MultiPoint') multipoint($)
+  else if (geometryType === 'LineString:Point') corridor($)
   else fallback($)
 
   return Signal.link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])

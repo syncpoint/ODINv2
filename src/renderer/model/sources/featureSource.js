@@ -155,7 +155,12 @@ export const featureSource = services => {
       ? 'multiselect'
       : 'singleselect'
 
-    const apply = mode => feature => feature.$.selectionMode(mode)
+    const apply = mode => feature => {
+      // FIXME: know sure why this may happen, but it does.
+      if (!feature || !feature.$) return
+      feature.$.selectionMode(mode)
+    }
+
     deselected.map(source.getFeatureById.bind(source)).map(apply('default'))
     selection.selected().map(source.getFeatureById.bind(source)).map(apply(mode))
   })
