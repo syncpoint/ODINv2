@@ -1,9 +1,9 @@
 import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
 import { parameterized } from '../../symbology/2525c'
-import labels from './polygon-styles/labels'
-import styles from './polygon-styles/index'
-import placement from './polygon-styles/placement'
+import labels from './linestring-styles/labels'
+import styles from './linestring-styles/index'
+import placement from './linestring-styles/placement'
 import { styleFactory } from './styleFactory'
 
 import _evalSync from './_evalSync'
@@ -16,7 +16,7 @@ import _selection from './_selection'
 
 const _simplifiedGeometry = (geometry, resolution) => {
   const coordinates = geometry.getCoordinates()
-  return coordinates[0].length > 50
+  return coordinates.length > 50
     ? geometry.simplify(resolution)
     : geometry
 }
@@ -46,6 +46,7 @@ export default $ => {
 
   // <== Mandatory slots
 
+  $.styleFactory = Signal.of(styleFactory)
   $.styles = link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
 
   return link((styles, styleRegistry, write) => {

@@ -35,7 +35,8 @@ const readFeature = R.curry((state, source) => {
     globalStyle: Signal.of(state.styles[ID.defaultStyleId]),
     layerStyle: Signal.of(state.styles[ID.styleId(layerId)] ?? {}),
     featureStyle: Signal.of(state.styles[ID.styleId(featureId)] ?? {}),
-    resolution: Signal.of(state.resolution)
+    centerResolution: Signal.of(state.resolution),
+    selectionMode: Signal.of('default')
   }
 
   feature.$.styles = styles(feature)
@@ -98,7 +99,7 @@ const selectEvent = select([
  *
  */
 export const featureSource = services => {
-  const { store } = services
+  const { store, selection } = services
   const state = {}
 
   const source = new VectorSource({
@@ -107,7 +108,7 @@ export const featureSource = services => {
     strategy: function (extent, resolution) {
       if (state.resolution !== resolution) {
         state.resolution = resolution
-        this.getFeatures().map(feature => feature.$.resolution(resolution))
+        this.getFeatures().map(feature => feature.$.centerResolution(resolution))
       }
       return [extent]
     }
@@ -148,6 +149,16 @@ export const featureSource = services => {
   })
 
   // <== batch event handling
+
+  selection.on('selection', ({ deselected }) => {
+    const mode = selection.selected().length > 1
+      ? 'multiselect'
+      : 'singleselect'
+
+    const apply = mode => feature => feature.$.selectionMode(mode)
+    deselected.map(source.getFeatureById.bind(source)).map(apply('default'))
+    selection.selected().map(source.getFeatureById.bind(source)).map(apply(mode))
+  })
 
   return source
 }

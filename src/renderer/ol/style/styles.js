@@ -4,9 +4,11 @@ import * as Geometry from '../../model/geometry'
 import styleRegistry from './styleRegistry'
 import point from './point'
 import polygon from './polygon'
+import linestring from './linestring'
 import defaultStyle from './defaultStyle'
 import isEqual from 'react-fast-compare'
 import keyequals from './keyequals'
+import transform from './_transform'
 
 import colorScheme from './_colorScheme'
 import schemeStyle from './_schemeStyle'
@@ -17,9 +19,14 @@ export default feature => {
 
   $.properties = $.feature.map(feature => feature.getProperties())
   $.properties.equals = isEqual
-
   $.geometry = $.feature.map(feature => feature.getGeometry())
   $.geometry.equals = keyequals() // currently no other way to set equals for map
+  $.geometryType = $.geometry.map(Geometry.geometryType)
+
+  const [read, write, pointResolution] = transform($.geometry)
+  $.read = read
+  $.write = write
+  $.pointResolution = pointResolution
 
   $.sidc = $.properties.map(R.prop('sidc'))
   $.colorScheme = Signal.link(colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
@@ -30,5 +37,6 @@ export default feature => {
   const geometryType = Geometry.geometryType(feature.getGeometry())
   if (geometryType === 'Point') return point($)
   else if (geometryType === 'Polygon') return polygon($)
+  else if (geometryType === 'LineString') return linestring($)
   else return Signal.of(defaultStyle())
 }

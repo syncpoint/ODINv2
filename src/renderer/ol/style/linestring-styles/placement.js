@@ -37,7 +37,7 @@ const placement = geometry => {
 
   const normalize = angle => TS.Angle.normalize(TS.Angle.PI_TIMES_2 - angle)
 
-  return properties => {
+  const tryer = properties => {
     const rotate = properties['text-field'] ? 'text-rotate' : 'icon-rotate'
     const anchor = properties['text-anchor'] ||
       properties['icon-anchor'] ||
@@ -50,6 +50,15 @@ const placement = geometry => {
       [rotate]: normalize(angle(anchor))
     }
   }
+
+  const catcher = (err, properties) => console.warn(err, properties)
+
+  const calculate = arg => {
+    if (!Array.isArray(arg)) return calculate([arg])
+    else return arg.map(R.tryCatch(tryer, catcher)).filter(Boolean)
+  }
+
+  return calculate
 }
 
 export default placement

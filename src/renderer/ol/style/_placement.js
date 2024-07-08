@@ -20,8 +20,8 @@ export default $ => {
   const placement = $.geometryType.map(geometryType => PLACEMENT[geometryType] || R.identity)
   const geometry = $.geometryType.chain(geometryType => {
     return R.cond([
-      [R.equals('LineString'), R.always($.utmSmoothenedGeometry)],
-      [R.equals('Polygon'), R.always($.utmSmoothenedGeometry)],
+      [R.equals('LineString'), R.always($.jtsSmoothenedGeometry)],
+      [R.equals('Polygon'), R.always($.jtsSmoothenedGeometry)],
       [R.equals('MultiPoint'), R.always($.geometry.ap($.read).map(pointBuffer))]
     ])(geometryType)
   })
