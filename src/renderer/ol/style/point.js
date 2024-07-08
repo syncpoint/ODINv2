@@ -12,7 +12,7 @@ export default $ => {
   //
   $.jtsSimplifiedGeometry = $.geometry.ap($.read)
 
-  // ==> Mandatory slots to fill to derive resulting style:
+  // ==> Mandatory slots to derive resulting style:
 
   $.labels = Signal.of([])
   $.selection = Signal.of([])
