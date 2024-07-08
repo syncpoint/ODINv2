@@ -1,7 +1,6 @@
 import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
 import { MODIFIERS } from '../../symbology/2525c'
-import { styleFactory } from './styleFactory'
 
 /**
  *
@@ -17,10 +16,7 @@ export default $ => {
 
   $.labels = Signal.of([])
   $.selection = Signal.of([])
-
-  // <== Mandatory slots
-
-  return Signal.link((properties, geometry, styleRegistry) => {
+  $.shape = Signal.link((properties, geometry) => {
     const sidc = properties.sidc
 
     const modifiers = Object.entries(properties)
@@ -33,7 +29,7 @@ export default $ => {
       'symbol-code': sidc,
       'symbol-modifiers': modifiers
     }]
-      .map(styleRegistry)
-      .flatMap(styleFactory)
-  }, [$.properties, $.geometry, $.styleRegistry])
+  }, [$.properties, $.jtsSimplifiedGeometry])
+
+  // <== Mandatory slots
 }

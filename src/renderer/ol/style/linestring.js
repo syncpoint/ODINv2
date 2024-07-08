@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
 import { parameterized } from '../../symbology/2525c'
 import labels from './linestring-styles/labels'
@@ -44,9 +43,4 @@ export default $ => {
     .ap($.placement)
 
   // <== Mandatory slots
-
-  return link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
-    .ap($.styleRegistryX)
-    .ap($.rewrite)
-    .ap($.styleFactory)
 }

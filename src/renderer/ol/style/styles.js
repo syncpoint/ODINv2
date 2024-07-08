@@ -5,15 +5,16 @@ import styleRegistry from './styleRegistry'
 import point from './point'
 import polygon from './polygon'
 import linestring from './linestring'
-import defaultStyle from './defaultStyle'
+import fallback from './fallback'
 import isEqual from 'react-fast-compare'
 import keyequals from './keyequals'
 import transform from './_transform'
 import { styleFactory } from './styleFactory'
 
-import colorScheme from './_colorScheme'
-import schemeStyle from './_schemeStyle'
-import effectiveStyle from './_effectiveStyle'
+import _colorScheme from './_colorScheme'
+import _schemeStyle from './_schemeStyle'
+import _effectiveStyle from './_effectiveStyle'
+import _rewrite from './_rewrite'
 
 export default feature => {
   const { $ } = feature
@@ -26,23 +27,24 @@ export default feature => {
 
   const [read, write, pointResolution] = transform($.geometry)
   $.read = read
-  $.write = write
-  $.rewrite = write.map(fn => xs => xs.map(({ geometry, ...rest }) => ({ geometry: fn(geometry), ...rest })))
-
+  $.rewrite = write.map(fn => xs => xs.map(_rewrite(fn)))
   $.pointResolution = pointResolution
-
   $.sidc = $.properties.map(R.prop('sidc'))
-  $.colorScheme = Signal.link(colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
-  $.schemeStyle = Signal.link(schemeStyle, [$.sidc, $.colorScheme])
-  $.effectiveStyle = Signal.link(effectiveStyle, [$.globalStyle, $.schemeStyle, $.layerStyle, $.featureStyle])
+  $.colorScheme = Signal.link(_colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
+  $.schemeStyle = Signal.link(_schemeStyle, [$.sidc, $.colorScheme])
+  $.effectiveStyle = Signal.link(_effectiveStyle, [$.globalStyle, $.schemeStyle, $.layerStyle, $.featureStyle])
   $.styleRegistry = $.effectiveStyle.map(styleRegistry)
   $.styleRegistryX = $.styleRegistry.map(fn => xs => xs.map(fn))
   $.styleFactory = Signal.of(xs => xs.flatMap(styleFactory))
 
-
   const geometryType = Geometry.geometryType(feature.getGeometry())
-  if (geometryType === 'Point') return point($)
-  else if (geometryType === 'Polygon') return polygon($)
-  else if (geometryType === 'LineString') return linestring($)
-  else return Signal.of(defaultStyle())
+  if (geometryType === 'Point') point($)
+  else if (geometryType === 'Polygon') polygon($)
+  else if (geometryType === 'LineString') linestring($)
+  else fallback($)
+
+  return Signal.link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
+    .ap($.styleRegistryX)
+    .ap($.rewrite)
+    .ap($.styleFactory)
 }
