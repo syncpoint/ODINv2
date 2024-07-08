@@ -9,6 +9,7 @@ import defaultStyle from './defaultStyle'
 import isEqual from 'react-fast-compare'
 import keyequals from './keyequals'
 import transform from './_transform'
+import { styleFactory } from './styleFactory'
 
 import colorScheme from './_colorScheme'
 import schemeStyle from './_schemeStyle'
@@ -26,6 +27,8 @@ export default feature => {
   const [read, write, pointResolution] = transform($.geometry)
   $.read = read
   $.write = write
+  $.rewrite = write.map(fn => xs => xs.map(({ geometry, ...rest }) => ({ geometry: fn(geometry), ...rest })))
+
   $.pointResolution = pointResolution
 
   $.sidc = $.properties.map(R.prop('sidc'))
@@ -33,6 +36,9 @@ export default feature => {
   $.schemeStyle = Signal.link(schemeStyle, [$.sidc, $.colorScheme])
   $.effectiveStyle = Signal.link(effectiveStyle, [$.globalStyle, $.schemeStyle, $.layerStyle, $.featureStyle])
   $.styleRegistry = $.effectiveStyle.map(styleRegistry)
+  $.styleRegistryX = $.styleRegistry.map(fn => xs => xs.map(fn))
+  $.styleFactory = Signal.of(xs => xs.flatMap(styleFactory))
+
 
   const geometryType = Geometry.geometryType(feature.getGeometry())
   if (geometryType === 'Point') return point($)

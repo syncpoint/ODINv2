@@ -4,7 +4,6 @@ import { parameterized } from '../../symbology/2525c'
 import labels from './linestring-styles/labels'
 import styles from './linestring-styles/index'
 import placement from './linestring-styles/placement'
-import { styleFactory } from './styleFactory'
 
 import _evalSync from './_evalSync'
 import _smoothenedGeometry from './_smoothenedGeometry'
@@ -46,13 +45,8 @@ export default $ => {
 
   // <== Mandatory slots
 
-  $.styleFactory = Signal.of(styleFactory)
-  $.styles = link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
-
-  return link((styles, styleRegistry, write) => {
-    return styles
-      .map(styleRegistry)
-      .map(({ geometry, ...rest }) => ({ geometry: write(geometry), ...rest }))
-      .flatMap(styleFactory)
-  }, [$.styles, $.styleRegistry, $.write, $.evalSync])
+  return link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
+    .ap($.styleRegistryX)
+    .ap($.rewrite)
+    .ap($.styleFactory)
 }

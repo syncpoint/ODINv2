@@ -46,12 +46,8 @@ export default $ => {
 
   // <== Mandatory slots
 
-  $.styles = link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
-
-  return link((styles, styleRegistry, write) => {
-    return styles
-      .map(styleRegistry)
-      .map(({ geometry, ...rest }) => ({ geometry: write(geometry), ...rest }))
-      .flatMap(styleFactory)
-  }, [$.styles, $.styleRegistry, $.write, $.evalSync])
+  return link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
+    .ap($.styleRegistryX)
+    .ap($.rewrite)
+    .ap($.styleFactory)
 }
