@@ -6,20 +6,20 @@ import Signal from '@syncpoint/signal'
 /**
  * select :: Signal S => [a -> Boolean] -> S a -> [S a]
  *
- * Split one input signal into multiply output signals based on conditions.
+ * Split one input signal into multiply output signals based on predicates.
  * Each input value is either forwarded to one output signal or dropped if
  * no condition matches.
  */
-export const select = R.curry((conditions, signal) => {
-  const outputs = conditions.map(() => Signal.of())
+export const select = R.curry((predicates, signal) => {
+  const outputs = predicates.map(() => Signal.of())
   signal.on(value => {
     const match = condition => condition(value)
-    outputs[conditions.findIndex(match)]?.(value)
+    outputs[predicates.findIndex(match)]?.(value)
   })
   return outputs
 })
 
-export const flatten = signal => {
+export const flat = signal => {
   const output = Signal.of()
   signal.on(v => (Array.isArray(v) ? v : [v]).forEach(output))
   return output
@@ -37,6 +37,8 @@ export const split = R.curry((fns, signal) => {
   signal.on(value => fns.forEach((fn, i) => outputs[i](fn(value))))
   return outputs
 })
+
+// TODO: rename - properties?
 
 /**
  * destructure :: Signal S => [String] -> S { k: v } -> [S Any]

@@ -9,8 +9,6 @@ import linestring from './linestring'
 import multipoint from './multipoint'
 import corridor from './corridor'
 import fallback from './fallback'
-import isEqual from 'react-fast-compare'
-import keyequals from './keyequals'
 import transform from './_transform'
 import { styleFactory } from './styleFactory'
 
@@ -24,12 +22,8 @@ import _clip from './_clip'
 export default feature => {
   const { $ } = feature
 
-  $.properties = $.feature.map(feature => feature.getProperties())
-  $.properties.equals = isEqual
   $.sidc = $.properties.map(R.prop('sidc'))
   $.parameterizedSIDC = $.sidc.map(parameterized)
-  $.geometry = $.feature.map(feature => feature.getGeometry())
-  $.geometry.equals = keyequals() // currently no other way to set equals for map
   $.geometryType = $.geometry.map(Geometry.geometryType)
 
   const [read, write, pointResolution] = transform($.geometry)

@@ -6,7 +6,8 @@ const keyequals = () => {
   let last
   return (_, b) => {
     if (last === key(b)) return true
-    else last = key(b); return false
+    else last = key(b)
+    return false
   }
 }
 

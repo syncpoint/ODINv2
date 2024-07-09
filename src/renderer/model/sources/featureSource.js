@@ -4,9 +4,10 @@ import VectorSource from 'ol/source/Vector'
 import GeoJSON from 'ol/format/GeoJSON'
 import * as ID from '../../ids'
 import styles from '../../ol/style/styles'
-import { flatten, select } from '../../../shared/signal'
+import { flat, select } from '../../../shared/signal'
 import { setCoordinates } from '../geometry'
 import keyequals from '../../ol/style/keyequals'
+import isEqual from 'react-fast-compare'
 
 const format = new GeoJSON({
   dataProjection: 'EPSG:3857',
@@ -21,6 +22,7 @@ const readFeature = R.curry((state, source) => {
   const feature = format.readFeature(source)
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
+  const { geometry, ...properties } = feature.getProperties()
 
   feature.$ = {
 
@@ -31,7 +33,8 @@ const readFeature = R.curry((state, source) => {
     // new signals which conversely are only updated when this information
     // has actually changed.
     //
-    feature: Signal.of(feature, { equals: keyequals() }),
+    properties: Signal.of(properties, { equals: isEqual }),
+    geometry: Signal.of(geometry, { equals: keyequals() }),
     globalStyle: Signal.of(state.styles[ID.defaultStyleId]),
     layerStyle: Signal.of(state.styles[ID.styleId(layerId)] ?? {}),
     featureStyle: Signal.of(state.styles[ID.styleId(featureId)] ?? {}),
@@ -60,7 +63,7 @@ const readFeature = R.curry((state, source) => {
   }
 
   feature.on('change', ({ target }) => {
-    target.$.feature(target)
+    target.$.geometry(target.getGeometry())
   })
 
   return feature
@@ -83,7 +86,7 @@ const ord = R.cond([
 const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
 
 const operations = R.compose(
-  flatten,
+  flat,
   R.map(R.sort((a, b) => ord(a) - ord(b))),
   R.map(R.prop('operations'))
 )
@@ -133,6 +136,7 @@ export const featureSource = services => {
 
   layerStyle.on(({ type, key, value }) => {
     const layerId = ID.layerId(key)
+    if (type === 'del') delete state.styles[key]
     source.getFeatures()
       .filter(feature => ID.layerId(feature.getId()) === layerId)
       .forEach(feature => feature.$.layerStyle(type === 'put' ? value : {}))
@@ -141,11 +145,14 @@ export const featureSource = services => {
   featureStyle.on(({ type, key, value }) => {
     const featureId = ID.featureId(key)
     const feature = source.getFeatureById(featureId)
+    if (type === 'del') delete state.styles[key]
     if (feature) feature.$.featureStyle(type === 'put' ? value : {})
   })
 
   feature.on(({ type, key, value }) => {
-    // TODO: ...
+    const feature = source.getFeatureById(key)
+    if (type === 'del') source.removeFeature(feature)
+    else feature.$.properties(value.properties)
   })
 
   // <== batch event handling
