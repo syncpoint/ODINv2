@@ -26,7 +26,6 @@ export default $ => {
   $.selection = Signal.link(_selection, [$.selectionMode, $.jtsGeometry])
   $.labels = $.parameterizedSIDC
     .map(_labels(labels))
-    .ap($.evalSync)
     .ap($.placement)
 
   // <== Mandatory slots

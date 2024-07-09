@@ -19,16 +19,18 @@ import _schemeStyle from './_schemeStyle'
 import _effectiveStyle from './_effectiveStyle'
 import _rewrite from './_rewrite'
 import _evalSync from './_evalSync'
+import _clip from './_clip'
 
 export default feature => {
   const { $ } = feature
 
   $.properties = $.feature.map(feature => feature.getProperties())
   $.properties.equals = isEqual
+  $.sidc = $.properties.map(R.prop('sidc'))
+  $.parameterizedSIDC = $.sidc.map(parameterized)
   $.geometry = $.feature.map(feature => feature.getGeometry())
   $.geometry.equals = keyequals() // currently no other way to set equals for map
   $.geometryType = $.geometry.map(Geometry.geometryType)
-  $.evalSync = Signal.link(_evalSync, [$.sidc, $.properties])
 
   const [read, write, pointResolution] = transform($.geometry)
   $.read = read
@@ -36,8 +38,7 @@ export default feature => {
   $.pointResolution = pointResolution
   $.resolution = $.centerResolution.ap($.pointResolution)
 
-  $.sidc = $.properties.map(R.prop('sidc'))
-  $.parameterizedSIDC = $.sidc.map(parameterized)
+  $.evalSync = Signal.link(_evalSync, [$.sidc, $.properties])
   $.colorScheme = Signal.link(_colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
   $.schemeStyle = Signal.link(_schemeStyle, [$.sidc, $.colorScheme])
   $.effectiveStyle = Signal.link(_effectiveStyle, [$.globalStyle, $.schemeStyle, $.layerStyle, $.featureStyle])
@@ -54,8 +55,14 @@ export default feature => {
   else if (geometryType === 'LineString:Point') corridor($)
   else fallback($)
 
-  return Signal.link((...styles) => styles.reduce(R.concat), [$.labels, $.shape, $.selection])
+  // Primary shape style must go first because of clipping:
+  $.styles = Signal.link((...styles) => styles.reduce(R.concat), [$.shape, $.labels, $.selection])
+  $.clip = $.resolution.map(_clip)
+
+  return $.styles
     .ap($.styleRegistry)
+    .ap($.evalSync)
+    .ap($.clip)
     .ap($.rewrite)
     .ap($.styleFactory)
 }
