@@ -2,14 +2,12 @@ import { echelonCode } from '../../symbology/2525c'
 import { echelons } from './echelon'
 import { Jexl } from 'jexl'
 
-
 const jexl = new Jexl()
 
 /**
  *
  */
 const evalSync = context => {
-
   const evalSync = textField => Array.isArray(textField)
     ? textField.map(evalSync).filter(Boolean).join('\n')
     : jexl.evalSync(textField, context)
