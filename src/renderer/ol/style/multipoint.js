@@ -3,6 +3,7 @@ import * as TS from '../ts'
 import labels from './multipoint-styles/labels'
 import styles from './multipoint-styles/index'
 import placement from './polygon-styles/placement'
+import graphics from './graphics'
 
 import _context from './_context'
 import _labels from './_labels'
@@ -20,13 +21,11 @@ export default $ => {
   $.context = Signal.link(_context, [$.jtsGeometry, $.resolution])
   $.placement = $.jtsGeometry.map(_pointBuffer).map(placement)
 
-  // ==> Mandatory slots to derive resulting style:
-
   $.shape = $.context.ap($.parameterizedSIDC.map(_shape(styles)))
   $.selection = Signal.link(_selection, [$.selectionMode, $.jtsGeometry])
   $.labels = $.parameterizedSIDC
     .map(_labels(labels))
     .ap($.placement)
 
-  // <== Mandatory slots
+  return graphics($)
 }

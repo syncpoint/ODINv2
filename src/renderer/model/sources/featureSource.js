@@ -119,7 +119,13 @@ export const featureSource = services => {
 
   ;(async () => {
     state.styles = await store.dictionary('style+')
-    const features = (await store.tuples(ID.FEATURE_SCOPE))
+    const tuples = [
+      ...await store.tuples(ID.FEATURE_SCOPE),
+      ...await store.tuples(ID.MARKER_SCOPE),
+      ...await store.tuples(ID.MEASURE_SCOPE)
+    ]
+
+    const features = tuples
       .map(([id, value]) => ({ id, ...value }))
       .map(readFeature(state))
     source.addFeatures(features)
