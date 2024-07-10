@@ -70,7 +70,6 @@ export const circuitBreaker = (input) => {
     if (count > 10) {
       console.warn('frequency too high', x)
       return undefined
-    }
-    else return x
+    } else return x
   })
 }
