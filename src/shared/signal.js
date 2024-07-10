@@ -1,8 +1,6 @@
 import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
 
-// TODO: move to @syncpoint/signal
-
 /**
  * select :: Signal S => [a -> Boolean] -> S a -> [S a]
  *
@@ -37,8 +35,6 @@ export const split = R.curry((fns, signal) => {
   signal.on(value => fns.forEach((fn, i) => outputs[i](fn(value))))
   return outputs
 })
-
-// TODO: rename - properties?
 
 /**
  * destructure :: Signal S => [String] -> S { k: v } -> [S Any]
