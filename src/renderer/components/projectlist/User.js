@@ -15,7 +15,6 @@ const User = props => {
 
   return (
     <div
-      key={props.id}
       style={{ padding: '3px 6px' }}
     >
       <Card
@@ -45,7 +44,7 @@ User.propTypes = {
 const userProvider = onClick => props => {
 
   const injected = { ...props, onClick }
-  return <User {...injected} />
+  return <User key={props.id} {...injected} />
 }
 
 export default User
