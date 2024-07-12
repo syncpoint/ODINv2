@@ -16,7 +16,7 @@ const _pointBuffer = geometry => {
   return TS.pointBuffer(TS.point(C))(segment.getLength())
 }
 
-export default $ => {
+const specifics = $ => {
   $.jtsGeometry = $.geometry.ap($.read)
   $.context = Signal.link(_context, [$.jtsGeometry, $.resolution])
   $.placement = $.jtsGeometry.map(_pointBuffer).map(placement)
@@ -29,3 +29,5 @@ export default $ => {
 
   return graphics($)
 }
+
+export default graphics(specifics)

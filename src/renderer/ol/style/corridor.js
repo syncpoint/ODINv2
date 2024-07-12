@@ -6,13 +6,12 @@ import _context from './_context'
 import _shape from './_shape'
 import _selection from './_selection'
 
-export default $ => {
+const specifics = $ => {
   $.jtsGeometry = $.geometry.ap($.read)
   $.context = Signal.link(_context, [$.jtsGeometry, $.resolution])
-
   $.shape = $.context.ap($.parameterizedSIDC.map(_shape(styles)))
   $.selection = Signal.link(_selection, [$.selectionMode, $.jtsGeometry])
   $.labels = Signal.of([])
-
-  return graphics($)
 }
+
+export default graphics(specifics)

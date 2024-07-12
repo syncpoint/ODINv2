@@ -12,7 +12,7 @@ import _shape from './_shape'
 import _lineSmoothing from './_lineSmoothing'
 import _selection from './_selection'
 
-export default $ => {
+const specifics = $ => {
   $.simplifiedGeometry = Signal.link(_simplifiedGeometry, [$.geometry, $.centerResolution])
   $.jtsSimplifiedGeometry = $.simplifiedGeometry.ap($.read)
   $.lineSmoothing = $.effectiveStyle.map(_lineSmoothing)
@@ -29,3 +29,5 @@ export default $ => {
 
   return graphics($)
 }
+
+export default graphics(specifics)
