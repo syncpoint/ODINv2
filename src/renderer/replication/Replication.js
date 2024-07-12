@@ -3,20 +3,12 @@ import { useServices } from '../components/hooks'
 import * as ID from '../ids'
 import uuid from 'uuid-random'
 
+import { KEYS, rolesReducer } from './shared'
+import storeHandler from './handler/store'
+import toolbarHandler from './handler/toolbar'
+import upstreamHandler from './handler/upstream'
 
-const STREAM_TOKEN = 'replication:streamToken'
-const CREDENTIALS = 'replication:credentials'
-const SEED = 'replication:seed'
 const CREATOR_ID = uuid()
-
-const rolesReducer = (acc, current) => {
-  if (current.role.self === 'READER') {
-    acc.restrict.push(current.id)
-  } else {
-    acc.permit.push(current.id)
-  }
-  return acc
-}
 
 const Replication = () => {
   /*
@@ -73,20 +65,20 @@ const Replication = () => {
           Replication credentials are (access, refresh) tokens that are used to authenticate the current SESSION
           to the replication server. Credentials do not contain the user's password.
         */
-        const credentials = await sessionStore.get(CREDENTIALS, null)
+        const credentials = await sessionStore.get(KEYS.CREDENTIALS, null)
         const replicatedProject = await replicationProvider.project(credentials)
 
         if (!credentials) {
           const currentCredentials = replicatedProject.credentials()
-          await sessionStore.put(CREDENTIALS, currentCredentials)
+          await sessionStore.put(KEYS.CREDENTIALS, currentCredentials)
         }
 
         /*
-          Whenever a access and a refresh token a renewed we store/update them
+          Whenever an access and a refresh token are renewed we store/update them
           for the next time the replication is started.
         */
         replicatedProject.tokenRefreshed(credentials => {
-          sessionStore.put(CREDENTIALS, credentials)
+          sessionStore.put(KEYS.CREDENTIALS, credentials)
         })
 
         /*
@@ -94,7 +86,7 @@ const Replication = () => {
           At least the matrix room id must be persisted while joining the project.
           See project-list where this is done.
         */
-        const seed = await sessionStore.get(SEED)
+        const seed = await sessionStore.get(KEYS.SEED)
 
         /*
           connect() waits 'till infinity
@@ -125,165 +117,11 @@ const Replication = () => {
         /*
           Handler toolbar commands for for sharing and joining layers
         */
-        emitter.on('replication/:action/:id/:parameter', async ({ action, id, parameter }) => {
-          switch (action) {
-            case 'join': {
-              /* id looks like invited+THE_ID. So we need to remove the prefix. */
-              const layerId = id.replace('invited:', '')
-              const layer = await replicatedProject.joinLayer(layerId)
-              await store.import([
-                { type: 'put', key: layer.id, value: { name: layer.name, description: layer.topic } },
-                { type: 'put', key: ID.sharedId(layer.id), value: true },
-                { type: 'put', key: ID.roleId(layer.id), value: layer.role }
-              ], { creatorId: CREATOR_ID })
-              await store.delete(id) // invitation ID
-              /*
-                We load the entire existing content. This may be huge, especially
-                if you join long running rooms. Unless we have a solid solution
-                for managing snapshots: this is the way.
-              */
-              const operations = await replicatedProject.content(layer.id)
-              console.log(`Initial sync has ${operations.length} operations`)
-              await store.import(operations, { creatorId: CREATOR_ID })
-              // TODO: check the powerlevel and apply restrictions if required
-              break
-            }
-            case 'share': {
-              const { name } = await store.value(id)
-              const layer = await replicatedProject.shareLayer(id, name)
-              await store.import([
-                { type: 'put', key: ID.sharedId(id), value: true },
-                { type: 'put', key: ID.roleId(id), value: layer.role }
-              ], { creatorId: CREATOR_ID })
-
-              /* post initial content of the layer */
-              const keys = await store.collectKeys([id], [ID.STYLE, ID.LINK, ID.TAGS, ID.FEATURE])
-              const tuples = await store.tuples(keys)
-              const operations = tuples.map(([key, value]) => ({ type: 'put', key, value }))
-              replicatedProject.post(id, operations)
-              break
-            }
-            case 'leave': {
-              const reJoinOffer = await replicatedProject.leaveLayer(id)
-
-              const replicatedKeys = await store.collectKeys([id], [ID.SHARED, ID.ROLE, ID.RESTRICTED])
-              await store.import(replicatedKeys.map(key => ({ type: 'del', key })))
-
-              /* since the layer is not shared anymore this bacth does not trigger replication */
-              const layerKeys = await store.collectKeys([id], [ID.LINK, ID.HIDDEN, ID.TAGS, ID.FEATURE, ID.STYLE])
-              await store.import(layerKeys.map(key => ({ type: 'del', key })))
-
-              const candidate = { type: 'put', key: ID.makeId(ID.INVITED, reJoinOffer.id), value: { name: reJoinOffer.name, description: reJoinOffer.topic } }
-              await store.import([candidate])
-
-              break
-            }
-            case 'changeDefaultRole': {
-              await replicatedProject.setDefaultRole(id, parameter)
-              break
-            }
-            default: {
-              console.log(`Unhandled action ${action}`)
-            }
-          }
-        })
-
-        /*
-          Handling upstream events triggered by the timeline API
-        */
-        const upstreamHandler = {
-          streamToken: async (streamToken) => {
-            console.log(`PERSISTING STREAM_TOKEN: ${streamToken}`)
-            sessionStore.put(STREAM_TOKEN, streamToken)
-            setOffline(false)
-          },
-          invited: async (invitation) => {
-            const content = { type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }
-            await store.import([content], { creatorId: CREATOR_ID })
-          },
-          received: async ({ id, operations }) => {
-            const [restricted] = await store.collect(id, [ID.restrictedId])
-            await store.import(operations, { creatorId: CREATOR_ID })
-            if (restricted) {
-              const operationKeys = operations.map(o => o.key)
-              await store.restrict(operationKeys)
-            }
-          },
-          renamed: async (renamed) => {
-            /*
-              Since we must monitor the project itself for child added events we also may receive
-              renamed events regarding the project. We ignore these for now.
-            */
-            const ops = renamed
-              .filter(target => ID.isLayerId(target.id))
-              .map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
-            await store.import(ops, { creatorId: CREATOR_ID })
-          },
-          roleChanged: async (roles) => {
-            const permissions = roles.reduce(rolesReducer, { permit: [], restrict: [] })
-            if (permissions.permit.length > 0) await store.permit(permissions.permit)
-            if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
-            const rolesOperations = roles.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
-            await store.import(rolesOperations, { creatorId: CREATOR_ID })
-          },
-          error: async (error) => {
-            console.error(error)
-            setOffline(true)
-          }
-        }
-
+        emitter.on('replication/:action/:id/:parameter', toolbarHandler({ replicatedProject, store, CREATOR_ID }))
         /*
           Handle events emitted by the local store.
         */
-        store.on('batch', async ({ operations, creatorId }) => {
-          if (CREATOR_ID === creatorId) return
-          console.dir(operations)
-
-          /* helper */
-          const sharedLayerIDs = async () => {
-            const keys = await store.keys('shared+layer:')
-            return store.tuples(keys.map(key => ID.layerId(key)))
-          }
-
-          const sharedLayersOnly = async (ops) => {
-            const sharedLayers = (await sharedLayerIDs()).map(([key]) => key)
-            return ops.filter(op => sharedLayers.includes(ID.layerId(ID.containerId(op.key))))
-          }
-
-          const structuralOperations = await sharedLayersOnly(operations.filter(op => ID.isLayerId(op.key)))
-          /* LAYER RENAMED */
-          structuralOperations
-            .filter(op => op.type === 'put')
-            .map(op => ({ id: op.key, name: op.value.name }))
-            .forEach(op => replicatedProject.setLayerName(op.id, op.name))
-
-          const predicates = [
-            ID.isFeatureId,
-            ID.isLinkId,
-            ID.isTagsId,
-            ID.isStyleId
-          ]
-          const operationsToBeReplicated = operations.filter(op => predicates.some(test => test(op.key)))
-
-          const sharedContent = await sharedLayersOnly(operationsToBeReplicated)
-          if (sharedContent.length) {
-            console.dir(sharedContent)
-
-            const operationsByLayer = sharedContent
-              .filter(op => op !== null)
-              .reduce((acc, op) => {
-                const layerId = ID.layerId(ID.containerId(op.key))
-                acc[layerId] = acc[layerId] || []
-                acc[layerId].push(op)
-                return acc
-              }, {})
-
-            Object.entries(operationsByLayer)
-              .forEach(([layerId, operations]) => replicatedProject.post(layerId, operations))
-          }
-
-        }) // store.on('batch') ....
-
+        store.on('batch', storeHandler({ replicatedProject, store, CREATOR_ID }))
 
         window.addEventListener('online', () => {
           console.log('Browser thinks we are back online. Let\'s give it a try ...')
@@ -293,8 +131,8 @@ const Replication = () => {
         /*
           Start the timeline sync process with the most recent stream token
         */
-        const mostRecentStreamToken = await sessionStore.get(STREAM_TOKEN, null)
-        replicatedProject.start(mostRecentStreamToken, upstreamHandler)
+        const mostRecentStreamToken = await sessionStore.get(KEYS.STREAM_TOKEN, null)
+        replicatedProject.start(mostRecentStreamToken, upstreamHandler({ sessionStore, setOffline, store, CREATOR_ID }))
         feedback(null)
         signals['replication/operational'](true)
         setInitialized(true)
@@ -303,7 +141,7 @@ const Replication = () => {
         console.error(error)
         setOffline(true)
         feedback('Replication error: ', error.message)
-        await sessionStore.del(CREDENTIALS, null)
+        await sessionStore.del(KEYS.CREDENTIALS, null)
         ipcRenderer.postMessage('RELOAD_ALL_WINDOWS')
       }
     }
