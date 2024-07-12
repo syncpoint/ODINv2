@@ -2,6 +2,7 @@ import Signal from '@syncpoint/signal'
 import labels from './linestring-styles/labels'
 import styles from './linestring-styles/index'
 import placement from './linestring-styles/placement'
+import graphics from './graphics'
 
 import _smoothenedGeometry from './_smoothenedGeometry'
 import _simplifiedGeometry from './_simplifiedGeometry'
@@ -20,13 +21,11 @@ export default $ => {
   $.context = Signal.link(_context, [$.jtsSmoothenedGeometry, $.resolution])
   $.placement = $.jtsSmoothenedGeometry.map(placement)
 
-  // ==> Mandatory slots to derive resulting style:
-
   $.shape = $.context.ap($.parameterizedSIDC.map(_shape(styles)))
   $.selection = Signal.link(_selection, [$.selectionMode, $.jtsSimplifiedGeometry])
   $.labels = $.parameterizedSIDC
     .map(_labels(labels))
     .ap($.placement)
 
-  // <== Mandatory slots
+  return graphics($)
 }

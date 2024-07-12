@@ -33,8 +33,15 @@ const evalSync = context => {
   return replaceAll
 }
 
-export default (sidc, properties) => {
-  const sizeCode = echelonCode(sidc)
-  const echelonText = (sizeCode === '*' || sizeCode === '-') ? '' : echelons[sizeCode]?.text
-  return evalSync({ modifiers: properties, echelon: echelonText })
+export default (sidc, modifiers) => {
+  const code = echelonCode(sidc)
+  const echelon =
+    (code === '*' || code === '-')
+      ? ''
+      : echelons[code]?.text
+
+  return evalSync({
+    modifiers,
+    echelon
+  })
 }
