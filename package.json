@@ -67,7 +67,7 @@
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
     "@most/scheduler": "^1.3.0",
-    "@syncpoint/matrix-client-api": "^1.10.0",
+    "@syncpoint/matrix-client-api": "^1.11.0",
     "@syncpoint/signal": "^1.1.0",
     "@syncpoint/signs": "^1.0.1",
     "@syncpoint/wkx": "^0.5.2",
