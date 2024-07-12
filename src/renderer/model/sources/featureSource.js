@@ -150,9 +150,13 @@ export const featureSource = services => {
   })
 
   feature.on(({ type, key, value }) => {
-    const feature = source.getFeatureById(key)
+    let feature = source.getFeatureById(key)
     if (type === 'del') source.removeFeature(feature)
-    else feature.$.properties(value.properties)
+    else if (feature) feature.$.properties(value.properties)
+    else {
+      feature = readFeature(state, { id: key, ...value })
+      source.addFeature(feature)
+    }
   })
 
   // <== batch event handling
