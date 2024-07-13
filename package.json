@@ -49,6 +49,7 @@
     "mocha": "^10.6.0",
     "sass": "^1.77.6",
     "sass-loader": "^14.2.1",
+    "source-map-loader": "^5.0.0",
     "style-loader": "^4.0.0",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.0.0",
