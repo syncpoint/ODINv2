@@ -6,7 +6,7 @@ import { MODIFIERS } from '../../symbology/2525c'
  *
  */
 export default $ => {
-  $.shape = Signal.link((properties, geometry) => {
+  $.shape = $.properties.map(properties => {
     const sidc = properties.sidc
     const modifiers = Object.entries(properties)
       .filter(([key, value]) => MODIFIERS[key] && value)
@@ -14,14 +14,26 @@ export default $ => {
 
     return [{
       id: 'style:2525c/symbol',
-      geometry,
       'symbol-code': sidc,
       'symbol-modifiers': modifiers
     }]
+  }, [])
 
-  }, [$.properties, $.geometry])
+  $.selection = $.selectionMode.map(mode =>
+    mode === 'multiselect'
+      ? [{ id: 'style:rectangle-handle' }]
+      : []
+  )
 
-  return $.shape
+  $.styles = Signal.link(
+    (...styles) => styles.reduce(R.concat),
+    [
+      $.shape,
+      $.selection
+    ]
+  )
+
+  return $.styles
     .ap($.styleRegistry)
     .ap($.styleFactory)
 }

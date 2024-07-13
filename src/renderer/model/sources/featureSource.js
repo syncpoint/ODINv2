@@ -117,6 +117,8 @@ export const featureSource = services => {
     }
   })
 
+  const getFeatureById = source.getFeatureById.bind(source)
+
   ;(async () => {
     state.styles = await store.dictionary('style+')
     const tuples = [
@@ -150,13 +152,13 @@ export const featureSource = services => {
 
   featureStyle.on(({ type, key, value }) => {
     const featureId = ID.featureId(key)
-    const feature = source.getFeatureById(featureId)
+    const feature = getFeatureById(featureId)
     if (type === 'del') delete state.styles[key]
     if (feature) feature.$.featureStyle(type === 'put' ? value : {})
   })
 
   feature.on(({ type, key, value }) => {
-    let feature = source.getFeatureById(key)
+    let feature = getFeatureById(key)
     if (type === 'del') source.removeFeature(feature)
     else if (feature) feature.$.properties(value.properties)
     else {
@@ -173,13 +175,11 @@ export const featureSource = services => {
       : 'singleselect'
 
     const apply = mode => feature => {
-      // FIXME: know sure why this may happen, but it does.
-      if (!feature || !feature.$) return
       feature.$.selectionMode(mode)
     }
 
-    deselected.map(source.getFeatureById.bind(source)).map(apply('default'))
-    selection.selected().map(source.getFeatureById.bind(source)).map(apply(mode))
+    deselected.map(getFeatureById).map(apply('default'))
+    selection.selected().map(getFeatureById).map(apply(mode))
   })
 
   return source
