@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import textProperty from './textProperty'
-import { readGeometry, writeGeometryObject } from '../../store/FeatureStore'
+import { readGeometry, writeGeometryObject } from '../../ol/format'
 import * as geom from './geometries'
 
 const TextProperty = textProperty({

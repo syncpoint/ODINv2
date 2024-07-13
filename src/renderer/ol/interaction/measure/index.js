@@ -11,7 +11,7 @@ import { styleFN } from './style'
 import { getLastSegmentCoordinates } from './tools'
 import { militaryFormat } from '../../../../shared/datetime'
 import * as ID from '../../../ids'
-import { writeFeatureObject } from '../../../store/FeatureStore'
+import { writeFeatureObject } from '../../../ol/format'
 
 export default ({ map, services }) => {
 

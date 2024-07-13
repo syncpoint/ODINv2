@@ -62,7 +62,7 @@ export default async projectUUID => {
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
-  const featureStore = new FeatureStore(store, selection, emitter)
+  const featureStore = new FeatureStore(store)
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   // Key bindings.
@@ -128,7 +128,6 @@ export default async projectUUID => {
   await schema.bootstrap()
   await tileLayerStore.bootstrap()
   await searchIndex.bootstrap()
-  await featureStore.bootstrap()
   await spatialIndex.bootstrap()
 
   return services

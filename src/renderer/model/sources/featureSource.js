@@ -1,18 +1,13 @@
 import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
 import VectorSource from 'ol/source/Vector'
-import GeoJSON from 'ol/format/GeoJSON'
 import * as ID from '../../ids'
 import styles from '../../ol/style/styles'
+import { format } from '../../ol/format'
 import { flat, select } from '../../../shared/signal'
 import { setCoordinates } from '../geometry'
 import keyequals from '../../ol/style/keyequals'
 import isEqual from 'react-fast-compare'
-
-const format = new GeoJSON({
-  dataProjection: 'EPSG:3857',
-  featureProjection: 'EPSG:3857'
-})
 
 /**
  * Read features from GeoJSON to ol/Feature and
@@ -175,11 +170,18 @@ export const featureSource = services => {
       : 'singleselect'
 
     const apply = mode => feature => {
+      console.log(feature, feature.$)
       feature.$.selectionMode(mode)
     }
 
-    deselected.map(getFeatureById).map(apply('default'))
-    selection.selected().map(getFeatureById).map(apply(mode))
+    deselected
+      .map(getFeatureById)
+      .map(apply('default'))
+
+    selection.selected()
+      .map(getFeatureById)
+      .filter(Boolean)
+      .map(apply(mode))
   })
 
   return source
