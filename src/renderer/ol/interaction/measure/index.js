@@ -5,8 +5,9 @@ import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import Circle from 'ol/geom/Circle'
 import uuid from '../../../../shared/uuid'
-import GeometryType from './GeometryType'
-import { baseStyle, stylefunctionForGeometryType } from './style'
+import GeometryType from '../GeometryType'
+import { baseStyle } from './baseStyle'
+import { styleFN } from './style'
 import { getLastSegmentCoordinates } from './tools'
 import { militaryFormat } from '../../../../shared/datetime'
 import * as ID from '../../../ids'
@@ -55,7 +56,7 @@ export default ({ map, services }) => {
     })
 
     drawInteraction.once('drawstart', ({ feature }) => {
-      feature.setStyle(stylefunctionForGeometryType(geometryType, () => true))
+      feature.setStyle(styleFN(() => true))
       if (geometryType !== GeometryType.LINE_STRING) return
 
       /* circle helper is only supported when measuring distances */

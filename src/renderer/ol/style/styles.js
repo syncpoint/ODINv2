@@ -9,6 +9,7 @@ import linestring from './linestring'
 import multipoint from './multipoint'
 import corridor from './corridor'
 import marker from './marker'
+import measure from './measure'
 import fallback from './fallback'
 import { styleFactory } from './styleFactory'
 import * as ID from '../../ids'
@@ -20,6 +21,7 @@ import _effectiveStyle from './_effectiveStyle'
 export default feature => {
   const { $ } = feature
 
+  $.geometryType = $.geometry.map(geometry => geometry.getType())
   $.sidc = $.properties.map(R.prop('sidc'))
   $.parameterizedSIDC = $.sidc.map(parameterized)
   $.colorScheme = Signal.link(_colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
@@ -34,7 +36,7 @@ export default feature => {
   const geometryType = Geometry.geometryType(feature.getGeometry())
 
   if (ID.isMarkerId(featureId)) return marker($)
-  // else if (ID.isMeasureId(featureId)) console.log('MEASURE')
+  else if (ID.isMeasureId(featureId)) return measure($)
   else if (geometryType === 'Point') return symbol($)
   else if (geometryType === 'Polygon') return polygon($)
   else if (geometryType === 'LineString') return linestring($)
