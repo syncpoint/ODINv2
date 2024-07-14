@@ -113,6 +113,7 @@ export const featureSource = services => {
   })
 
   const getFeatureById = source.getFeatureById.bind(source)
+  const getFeaturesById = ids => ids.map(getFeatureById).filter(Boolean)
 
   ;(async () => {
     state.styles = await store.dictionary('style+')
@@ -169,19 +170,9 @@ export const featureSource = services => {
       ? 'multiselect'
       : 'singleselect'
 
-    const apply = mode => feature => {
-      console.log(feature, feature.$)
-      feature.$.selectionMode(mode)
-    }
-
-    deselected
-      .map(getFeatureById)
-      .map(apply('default'))
-
-    selection.selected()
-      .map(getFeatureById)
-      .filter(Boolean)
-      .map(apply(mode))
+    const apply = mode => feature => feature.$.selectionMode(mode)
+    getFeaturesById(deselected).map(apply('default'))
+    getFeaturesById(selection.selected()).map(apply(mode))
   })
 
   return source
