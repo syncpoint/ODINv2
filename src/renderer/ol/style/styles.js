@@ -21,7 +21,6 @@ import _effectiveStyle from './_effectiveStyle'
 export default feature => {
   const { $ } = feature
 
-  $.geometryType = $.geometry.map(geometry => geometry.getType())
   $.sidc = $.properties.map(R.prop('sidc'))
   $.parameterizedSIDC = $.sidc.map(parameterized)
   $.colorScheme = Signal.link(_colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
