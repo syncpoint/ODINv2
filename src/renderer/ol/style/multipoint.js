@@ -17,10 +17,8 @@ const _pointBuffer = geometry => {
 }
 
 const specifics = $ => {
-  $.jtsGeometry = $.geometry.ap($.read)
   $.context = Signal.link(_context, [$.jtsGeometry, $.resolution])
   $.placement = $.jtsGeometry.map(_pointBuffer).map(placement)
-
   $.shape = $.context.ap($.parameterizedSIDC.map(_shape(styles)))
   $.selection = Signal.link(_selection, [$.selectionMode, $.jtsGeometry])
   $.labels = $.parameterizedSIDC

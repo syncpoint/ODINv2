@@ -33,7 +33,7 @@ const evalSync = context => {
   return replaceAll
 }
 
-export default (sidc, modifiers) => {
+export default (sidc, props1, props2) => {
   const code = echelonCode(sidc)
   const echelon =
     (code === '*' || code === '-')
@@ -41,7 +41,7 @@ export default (sidc, modifiers) => {
       : echelons[code]?.text
 
   return evalSync({
-    modifiers,
+    modifiers: { ...props1, ...props2 },
     echelon
   })
 }

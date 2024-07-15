@@ -58,7 +58,9 @@ const readFeature = R.curry((state, source) => {
   }
 
   feature.on('change', ({ target }) => {
-    target.$.geometry(target.getGeometry())
+    const { geometry, ...properties } = target.getProperties()
+    target.$.properties(properties)
+    target.$.geometry(geometry)
   })
 
   return feature
@@ -156,7 +158,10 @@ export const featureSource = services => {
   feature.on(({ type, key, value }) => {
     let feature = getFeatureById(key)
     if (type === 'del') source.removeFeature(feature)
-    else if (feature) feature.$.properties(value.properties)
+    else if (feature) {
+      feature.setProperties(value.properties)
+      feature.setGeometry(format.readGeometry(value.geometry))
+    }
     else {
       feature = readFeature(state, { id: key, ...value })
       source.addFeature(feature)
