@@ -161,8 +161,7 @@ export const featureSource = services => {
     else if (feature) {
       feature.setProperties(value.properties)
       feature.setGeometry(format.readGeometry(value.geometry))
-    }
-    else {
+    } else {
       feature = readFeature(state, { id: key, ...value })
       source.addFeature(feature)
     }
