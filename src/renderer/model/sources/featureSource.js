@@ -23,7 +23,7 @@ const readFeature = R.curry((state, source) => {
 
     // A word of caution: It is strongly adviced to NOT use feature signal
     // DIRECTLY to derive style! Setting the featues style will update the
-    // feature's revision and thus lead to a infinate loop.
+    // feature's revision and thus lead to an infinite loop.
     // Always make sure to extract relevant information from feature into
     // new signals which conversely are only updated when this information
     // has actually changed.
@@ -37,8 +37,8 @@ const readFeature = R.curry((state, source) => {
     selectionMode: Signal.of('default')
   }
 
-  feature.$.styles = styles(feature)
-  feature.$.styles.on(feature.setStyle.bind(feature))
+  const setStyle = feature.setStyle.bind(feature)
+  styles(feature).on(setStyle)
 
   // Use dedicated function to update feature coordinates from within
   // modify interaction. Such internal changes must not trigger ModifyEvent.
@@ -117,6 +117,7 @@ export const featureSource = services => {
   const getFeatureById = source.getFeatureById.bind(source)
   const getFeaturesById = ids => ids.map(getFeatureById).filter(Boolean)
 
+  // Load styles and features.
   ;(async () => {
     state.styles = await store.dictionary('style+')
     const tuples = [
@@ -160,7 +161,10 @@ export const featureSource = services => {
     if (type === 'del') source.removeFeature(feature)
     else if (feature) {
       feature.setProperties(value.properties)
-      feature.setGeometry(format.readGeometry(value.geometry))
+      // It is possible that only properties have changed.
+      // Don't set null/undefined geometry!
+      const geometry = format.readGeometry(value.geometry)
+      if (geometry) feature.setGeometry(geometry)
     } else {
       feature = readFeature(state, { id: key, ...value })
       source.addFeature(feature)
