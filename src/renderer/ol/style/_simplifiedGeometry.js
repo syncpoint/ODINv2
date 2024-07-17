@@ -11,5 +11,5 @@ export default (geometry, resolution) => {
 
   return simplify
     ? geometry.simplify(resolution)
-    : geometry
+    : geometry.clone()
 }
