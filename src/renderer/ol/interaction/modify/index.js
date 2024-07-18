@@ -10,6 +10,7 @@ import * as Events from './events'
 import { selected } from './states'
 import { ModifyEvent } from './events'
 import { writeIndex } from './writers'
+import { flat } from '../../../../shared/signal'
 
 /**
  * Sink for vertex feature overlay.
@@ -114,12 +115,13 @@ export class Modify extends Interaction {
       if (rbush.isEmpty()) return [selected(true), Events.coordinate(null)]
       const pointer = Events.pointer(options, rbush, event)
       const handler = state[event.type]
-      return (handler && handler(pointer)) || [state, null]
+      return (handler && handler(pointer)) || [state, undefined]
     }
 
     // stateLoop :: Signal { type: 'coordinate, ... } | ModifyEvent
     const stateLoop = R.compose(
       R.reject(R.isNil),
+      flat,
       Signal.loop(eventHandler, selected(true))
     )(spatialEvent)
 
