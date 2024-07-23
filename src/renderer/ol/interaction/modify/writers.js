@@ -6,7 +6,7 @@ import { geometryType } from '../../../model/geometry'
 import { Hooks } from './hooks'
 
 /**
- * signature :: ol.Feature -> String
+ * signature :: ol/Feature -> String
  * Geometry type plus optional layout from feature descriptors.
  */
 const signature = feature => {
@@ -19,7 +19,7 @@ const signature = feature => {
 }
 
 /**
- * writeIndex :: ol.Feature => ol.structs.RBush
+ * writeIndex :: ol/Feature => ol/structs/RBush
  * Create new spatial index (R-Bush) from feature.
  */
 export const writeIndex = feature => {

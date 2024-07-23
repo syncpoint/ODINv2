@@ -40,6 +40,12 @@ export const corridorProperties = geometry => {
   }
 }
 
+export const GeometryProperties = {
+  RECTANGLE: rectangleProperties,
+  CIRCLE: circleProperties,
+  CORRIDOR: corridorProperties
+}
+
 const unitSquare = TS.polygon([
   [-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]
 ].map(TS.coordinate))

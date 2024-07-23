@@ -1,55 +1,16 @@
-/* eslint-disable camelcase */
-import * as shared from './shared'
-import styles from './corridor-styles'
-import { transform } from '../../model/geometry'
+import Signal from '@syncpoint/signal'
+import styles from './corridor-styles/index'
+import graphics from './graphics'
 
-const collectStyles = [next => {
-  const { parameterizedSIDC: sidc } = next
-  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
-  const staticStyles = []
-  return { dynamicStyle, staticStyles }
-}, ['parameterizedSIDC']]
+import _context from './_context'
+import _shape from './_shape'
+import _selection from './_selection'
 
-/**
- * geometry :: jsts/geom/geometry
- * write :: jsts/geom/geometry -> ol/geom/geometry
- * resolution :: Number
- */
-const geometry = [next => {
-  const { definingGeometry, centerResolution } = next
+const specifics = $ => {
+  $.context = Signal.link(_context, [$.jtsGeometry, $.resolution])
+  $.shape = $.context.ap($.parameterizedSIDC.map(_shape(styles)))
+  $.selection = Signal.link(_selection, [$.selectionMode, $.jtsGeometry])
+  $.labels = Signal.of([])
+}
 
-  // Transform (TS/UTM).
-  //
-  const { read, write, pointResolution } = transform(definingGeometry)
-  const geometry = read(definingGeometry)
-  const simplifiedGeometry = geometry
-  const resolution = pointResolution(centerResolution)
-  const rewrite = ({ geometry, ...props }) => ({ geometry: write(geometry), ...props })
-  return { geometry, simplifiedGeometry, rewrite, resolution }
-}, ['mode', 'smoothen', 'geometryKey', 'centerResolution']]
-
-
-const labelPlacement = [() => {
-  return { placement: x => x }
-}, ['geometry']]
-
-
-/**
- * style :: [ol/style/Style]
- */
-const error = [next => {
-  return { styles: styles.ERROR(next) }
-}, ['err']]
-
-export default [
-  shared.sidc,
-  shared.evalSync,
-  collectStyles,
-  shared.effectiveStyle,
-  geometry,
-  labelPlacement,
-  shared.selectedStyles,
-  shared.styles,
-  error,
-  shared.style
-]
+export default graphics(specifics)

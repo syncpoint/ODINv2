@@ -64,7 +64,7 @@ export default async projectUUID => {
   const coordinatesFormat = new CoordinatesFormat(emitter, preferencesStore)
   const optionStore = new OptionStore(coordinatesFormat, store, sessionStore)
   const nominatim = new Nominatim(store)
-  const featureStore = new FeatureStore(store, selection)
+  const featureStore = new FeatureStore(store)
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
@@ -127,7 +127,6 @@ export default async projectUUID => {
   await schema.bootstrap()
   await tileLayerStore.bootstrap()
   await searchIndex.bootstrap()
-  await featureStore.bootstrap()
   await spatialIndex.bootstrap()
 
   const projectTags = (await projectStore.getProject(`project:${projectUUID}`)).tags || []

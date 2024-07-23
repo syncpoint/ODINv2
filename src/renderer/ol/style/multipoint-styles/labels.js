@@ -7,7 +7,7 @@ const ALL_LINES = title => title
   ? [`"${title}"`, 'modifiers.t', 'modifiers.h', ALT_LINE, DTG_LINE]
   : ['modifiers.t', 'modifiers.h', ALT_LINE, DTG_LINE]
 
-export const labels = {
+const labels = {
   'G*F*ATC---': C(ALL_LINES()),                // CIRCULAR TARGET
   'G*F*ACSC--': C(ALL_LINES('FSA')),           // FIRE SUPPORT AREA (FSA) CIRCULAR
   'G*F*ACAC--': C(ALL_LINES('ACA')),           // AIRSPACE COORDINATION AREA (ACA) CIRCULAR
@@ -23,3 +23,5 @@ export const labels = {
   'G*F*AKBC--': C(ALL_LINES('BKB'), HALO),     // KILL BOX BLUE CIRCULAR
   'G*F*AKPC--': C(ALL_LINES('PKB'), HALO)      // KILL BOX PURPLE CIRCULAR
 }
+
+export default labels

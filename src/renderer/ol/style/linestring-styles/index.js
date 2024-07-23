@@ -36,8 +36,12 @@ import G_T_A from './G_T_A'
 import G_T_AS from './G_T_AS'
 import G_T_F from './G_T_F'
 
+const DEFAULT = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
+const ERROR = ({ geometry }) => [{ id: 'style:wasp-stroke', geometry }]
+
 export default {
-  DEFAULT: ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }],
+  DEFAULT,
+  ERROR,
   'G*F*LT----': G_F_LT,     // LINEAR TARGET
   'G*F*LTF---': G_F_LT,     // FINAL PROTECTIVE FIRE (FPF)
   'G*F*LTS---': G_F_LT,     // LINEAR SMOKE TARGET

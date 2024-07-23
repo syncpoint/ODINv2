@@ -1,45 +1,32 @@
-/* eslint-disable camelcase */
-import * as shared from './shared'
-import styles from './polygon-styles'
-import { placement } from './polygon-placement'
-import { labels } from './polygon-styles/labels'
+import Signal from '@syncpoint/signal'
+import labels from './polygon-styles/labels'
+import styles from './polygon-styles/index'
+import placement from './polygon-styles/placement'
+import graphics from './graphics'
+import keyequals from './keyequals'
 
-/**
- * dynamicStyle
- * staticStyles
- */
-const collectStyles = [next => {
-  const { parameterizedSIDC: sidc } = next
-  const dynamicStyle = (styles[sidc] || styles.DEFAULT)
-  const staticStyles = (labels[sidc] || [])
-  return { dynamicStyle, staticStyles }
-}, ['parameterizedSIDC']]
+import _smoothenedGeometry from './_smoothenedGeometry'
+import _simplifiedGeometry from './_simplifiedGeometry'
+import _context from './_context'
+import _labels from './_labels'
+import _shape from './_shape'
+import _lineSmoothing from './_lineSmoothing'
+import _selection from './_selection'
 
+const specifics = $ => {
+  $.simplifiedGeometry = Signal.link(_simplifiedGeometry, [$.geometry, $.centerResolution], { equals: keyequals() })
+  $.jtsSimplifiedGeometry = $.simplifiedGeometry.ap($.read)
+  $.lineSmoothing = $.effectiveStyle.map(_lineSmoothing)
+  $.smoothenedGeometry = Signal.link(_smoothenedGeometry, [$.simplifiedGeometry, $.lineSmoothing])
+  $.jtsSmoothenedGeometry = $.smoothenedGeometry.ap($.read)
+  $.context = Signal.link(_context, [$.jtsSmoothenedGeometry, $.resolution])
+  $.placement = $.jtsSmoothenedGeometry.map(placement)
 
-/**
- * placement
- */
-const labelPlacement = [next => {
-  return { placement: placement(next) }
-}, ['geometry']]
+  $.shape = $.context.ap($.parameterizedSIDC.map(_shape(styles)))
+  $.selection = Signal.link(_selection, [$.selectionMode, $.jtsSimplifiedGeometry])
+  $.labels = $.parameterizedSIDC
+    .map(_labels(labels))
+    .ap($.placement)
+}
 
-
-/**
- * style :: [ol/style/Style]
- */
-const error = [next => {
-  return { styles: styles.ERROR(next) }
-}, ['err']]
-
-export default [
-  shared.sidc,
-  shared.evalSync,
-  collectStyles,
-  shared.effectiveStyle,
-  shared.geometry,
-  labelPlacement,
-  shared.selectedStyles,
-  shared.styles,
-  error,
-  shared.style
-]
+export default graphics(specifics)
