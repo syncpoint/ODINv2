@@ -66,11 +66,13 @@
   "dependencies": {
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
+    "@syncpoint/matrix-client-api": "^1.11.0",
     "@syncpoint/signal": "^1.2.0",
     "@syncpoint/signs": "^1.1.0",
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.2.0",
     "color": "^4.2.3",
+    "dotenv": "^16.4.5",
     "fuse.js": "^7.0.0",
     "geo-coordinates-parser": "^1.7.3",
     "geodesy": "^2.4.0",

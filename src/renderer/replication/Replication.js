@@ -1,7 +1,7 @@
 import React from 'react'
 import { useServices } from '../components/hooks'
 import * as ID from '../ids'
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 
 import { KEYS, rolesReducer } from './shared'
 import storeHandler from './handler/store'
