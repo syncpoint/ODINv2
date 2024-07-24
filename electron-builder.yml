@@ -20,10 +20,12 @@ mac:
   target: default
   entitlements: 'build/entitlements.mac.plist'
   entitlementsInherit: 'build/entitlements.mac.plist'
+  notarize:
+    teamId: 4KRG6BGC37
 
 linux:
   target:
-    - target: deb
+    - target: AppImage
   icon: 'build/icons'
   category: 'Office'
   files:
@@ -33,4 +35,4 @@ publish:
   - provider: github
     releaseType: release
 
-electronVersion: 26.6.0
+electronVersion: 31.2.1

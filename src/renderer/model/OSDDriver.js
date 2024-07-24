@@ -2,7 +2,7 @@ import { toLonLat } from 'ol/proj'
 import { LatLon } from 'geodesy/mgrs.js'
 import Dms from 'geodesy/dms.js'
 import { militaryFormat } from '../../shared/datetime'
-import { isDefaultId } from '../ids'
+import { isDefaultId, isLayerId } from '../ids'
 
 Dms.separator = ' '
 
@@ -39,16 +39,16 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
   this.projectStore = projectStore
   this.store = store
 
-  ;(async () => {
+  emitter.on('osd-mounted', async () => {
     this.coordinatesFormat = await preferencesStore.get('coordinates-format', 'MGRS')
     this.updateProjectName()
     this.updateDefaultLayer()
-  })()
+  })
 
   setInterval(this.updateDateTime.bind(this), 1000)
 
   store.on('batch', ({ operations }) => {
-    const update = operations.some(({ key }) => isDefaultId(key))
+    const update = operations.some(({ key }) => isDefaultId(key) || isLayerId(key))
     if (update) this.updateDefaultLayer()
   })
 
@@ -102,11 +102,9 @@ OSDDriver.prototype.updateProjectName = async function () {
 }
 
 OSDDriver.prototype.updateDefaultLayer = async function () {
-  const { store } = this
-
-  const layerId = await store.defaultLayerId()
+  const layerId = await this.store.defaultLayerId()
   if (layerId) {
-    const layer = await store.value(layerId)
+    const layer = await this.store.value(layerId)
     this.emitter.emit('osd', { message: layer.name, cell: 'A2' })
   } else {
     this.emitter.emit('osd', { message: '', cell: 'A2' })

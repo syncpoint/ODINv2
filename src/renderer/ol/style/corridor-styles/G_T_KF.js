@@ -38,7 +38,7 @@ export default ({ TS, geometry, resolution }) => {
       id: 'style:default-text',
       geometry: TS.point(aps[3]),
       'text-field': '"CATK"',
-      'text-font': font, // FIXME: only suppy size
+      'text-font': font,
       'text-anchor': 'center',
       'text-justify': 'end',
       'text-padding': 5,

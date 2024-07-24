@@ -55,9 +55,6 @@ const sendPreview = (services, map) => {
   try {
     const url = canvas.toDataURL()
     ipcRenderer.send('PREVIEW', url)
-  } catch (err) {
-    // FIXME: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.
-    // console.error('[PREVIEW]', err.message)
   } finally {
     canvas.remove()
   }
@@ -71,7 +68,7 @@ const sendPreview = (services, map) => {
  *
  */
 const mapHandlers = (services, map) => {
-  const { selection, osdDriver, dragAndDrop } = services
+  const { selection, osdDriver, dragAndDrop, emitter } = services
 
   map.addEventListener('keydown', event => {
     const { key } = event.originalEvent
@@ -86,6 +83,15 @@ const mapHandlers = (services, map) => {
     const exclude = [ID.isFeatureId, ID.isMarkerId, ID.isMeasureId]
     const deselect = selection.selected(x => !exclude.some(p => p(x)))
     if (deselect.length) selection.deselect(deselect)
+  })
+
+  let resolution
+  map.on('moveend', () => {
+    const updated = map.getView().getResolution()
+    if (updated !== resolution) {
+      resolution = updated
+      emitter.emit('view/resolution', { resolution })
+    }
   })
 
   // Note: Neither dragstart nor dragend events are fired when dragging
@@ -120,9 +126,6 @@ const ipcHandlers = (services, sources) => {
 }
 
 
-/**
- * FIXME: Wrong place: Move somewhere else.
- */
 const emitterHandlers = services => {
   const { emitter, selection, store } = services
   emitter.on('command/delete', () => store.delete(selection.selected()))

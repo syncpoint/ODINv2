@@ -112,7 +112,6 @@ const makeShape = props => {
     fill,
     stroke,
     radius: props['shape-radius'],
-    radius1: props['shape-radius-1'],
     radius2: props['shape-radius-2'],
     points: props['shape-points'],
     angle: props['shape-angle'],

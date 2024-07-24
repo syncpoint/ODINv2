@@ -10,7 +10,6 @@ const upgrade = async (jsonDB) => {
 }
 
 const downgrade = async jsonDB => {
-  // TODO: only delete 2525-C symbols.
   await L.mdel(jsonDB, 'symbol:')
 }
 

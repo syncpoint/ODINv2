@@ -19,7 +19,7 @@ import GridCols2 from './GridCols2'
 import CorridorWidth from './CorridorWidth'
 import * as MILSTD from '../../symbology/2525c'
 import * as GEOM from '../../model/geometry'
-import { readGeometry } from '../../store/FeatureStore'
+import { readGeometry } from '../../ol/format'
 import KProperty from './KProperty'
 
 export default props => {

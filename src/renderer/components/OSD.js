@@ -20,6 +20,7 @@ export const OSD = () => {
 
   React.useEffect(() => {
     emitter.on('osd', dispatch)
+    emitter.emit('osd-mounted')
   }, [emitter])
 
   return <div className="osd" id="osd">

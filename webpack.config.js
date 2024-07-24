@@ -47,6 +47,23 @@ const RULES = {
   font: {
     test: /\.(eot|svg|ttf|woff|woff2)$/,
     type: 'asset/resource'
+  },
+
+  sourcemap: {
+    test: /\.js$/,
+    enforce: "pre",
+    use: [
+      {
+        loader: "source-map-loader",
+        options: {
+          filterSourceMappingUrl: (url, resourcePath) => {
+            // Consume own (@syncpoint) sourcemaps; remove others.
+            if (/@syncpoint/g.test(resourcePath)) return 'consume'
+            else return 'remove'
+          }
+        }
+      }
+    ]
   }
 }
 
@@ -123,10 +140,8 @@ const devServer = env => {
 }
 
 const devtool = env => {
-  if (env.production) return ({}) // no source maps for production
-  return ({
-    devtool: 'source-map'
-  })
+  if (env.production) return ({ devtool: 'source-map' })
+  else return ({ devtool: 'eval-source-map' })
 }
 
 module.exports = (env, argv) => {

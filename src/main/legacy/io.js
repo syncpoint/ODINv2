@@ -2,7 +2,7 @@ import { existsSync, promises as fs } from 'fs'
 import path from 'path'
 import * as R from 'ramda'
 import proj4 from 'proj4'
-import uuid from 'uuid-random'
+import uuid from '../../shared/uuid'
 import { reproject } from 'reproject'
 import * as paths from '../paths'
 

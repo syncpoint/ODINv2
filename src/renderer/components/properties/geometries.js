@@ -40,13 +40,18 @@ export const corridorProperties = geometry => {
   }
 }
 
+export const GeometryProperties = {
+  RECTANGLE: rectangleProperties,
+  CIRCLE: circleProperties,
+  CORRIDOR: corridorProperties
+}
+
 const unitSquare = TS.polygon([
   [-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]
 ].map(TS.coordinate))
 
 /**
  * rectangle :: JTS/Geometry -> {k: v} -> JTS/Geometry
- * FIXME: duplicate code: hooks-rectangle.js
  */
 export const rectangle = (geometry, { am, am1, an }) => {
   const linearRing = geometry.getExteriorRing()

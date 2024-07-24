@@ -36,7 +36,6 @@ const TextProperty = props => {
       const coordinates = coordinatesFormat.parse(value, format)
       feature.geometry.coordinates = coordinates
     } catch (err) {
-      /* TODO: handle parse error */
       console.error(err)
     }
 

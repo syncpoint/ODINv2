@@ -32,18 +32,11 @@ export default async function (id) {
     ? `SYSTEM:${geometryType.toLowerCase()}`
     : `SYSTEM:${geometryType.toLowerCase()}:NONE`
 
-  let icon
-  try {
-    icon = svg(sidc)
-  } catch (err) {
-    console.error(err)
-  }
-
   return {
     id,
     title: feature.name || properties.t || null, // might be undefined
     description,
-    svg: icon,
+    svg: svg(sidc),
     tags: [
       'SCOPE:FEATURE',
       hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',

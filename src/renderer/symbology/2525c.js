@@ -126,7 +126,6 @@ export const symbols = data
 
 /**
  * 2525-C + SKKM
- * TODO: This is a hack. Separate symbol usage in interactions and otherwise.
  */
 export const descriptors = Object.entries(skkm.symbols).reduce((acc, [k, v]) => {
   acc[k] = v
@@ -155,13 +154,10 @@ export const className = sidc => {
   const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
 
-  console.log('descriptor', descriptor)
-
   if (descriptor.scope === 'UNIT') return 'UNIT'
   else if (descriptor.scope === 'INSTALLATION') return 'INSTALLATION'
   else if (descriptor.scope === 'EQUIPMENT') return 'EQUIPMENT'
   else if (descriptor.scope === 'ACTIVITY') return 'ACTIVITY'
-  // FIXME: hack - treat SKKM differently
   else if (descriptor.scope === 'SKKM') return `SKKM/${descriptor.class}`
   // No geometry type defaults to POINT:
   else if (!descriptor.geometry) return 'POINT'
@@ -181,5 +177,5 @@ export const specialization = sidc => {
   else if (geometry && geometry.layout === 'rectangle') return 'RECTANGLE'
   else if (geometry && geometry.layout === 'circle') return 'CIRCLE'
   else if (geometry && geometry.layout === 'corridor') return 'CORRIDOR'
-  else return null
+  else return
 }

@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from './Button'
-// TODO: replace Card and List with simple <div/>s
 import { FilterInput } from './FilterInput'
 import { List } from './List'
 import { Card } from './Card'
@@ -114,7 +113,6 @@ ButtonBar.propTypes = {
  *
  */
 const Project = React.forwardRef((props, ref) => {
-  // TODO: remove dependencies on ipc and store if possible
   const { ipcRenderer, projectStore } = useServices()
   const { project, selected } = props
   const send = message => () => ipcRenderer.send(message, project.id)
@@ -164,7 +162,6 @@ Project.propTypes = {
   onDoubleClick: PropTypes.func
 }
 
-// TODO: move state menagement to useModel()
 
 /**
  *

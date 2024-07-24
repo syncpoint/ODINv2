@@ -5,6 +5,7 @@ import DateTimeGroup from './DateTimeGroup'
 import Speed from './Speed'
 import Direction from './Direction'
 import AdditionalInformation from './AdditionalInformation'
+import Coordinates from './Coordinates'
 import GridCols2 from './GridCols2'
 import ColSpan2 from './ColSpan2'
 
@@ -15,6 +16,7 @@ const SKKMStandardProperties = props => {
       <Name {...props}/>
       <ColSpan2><UniqueDesignation {...props}/></ColSpan2>
       <DateTimeGroup {...props}/>
+      <Coordinates {...props}/>
       <Speed {...props}/>
       <Direction {...props}/>
       <AdditionalInformation {...props}/>

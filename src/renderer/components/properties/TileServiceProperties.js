@@ -116,8 +116,6 @@ const TileServiceProperties = props => {
     return () => map.setTarget(null)
   }, [service, list.selected, sessionStore])
 
-  // TODO: prevent default for ArrowUp/-Down keys in list
-
   const handleUrlChange = ({ target }) => {
     if (url.value === target.value) return
     setUrl({ dirty: true, value: target.value })
