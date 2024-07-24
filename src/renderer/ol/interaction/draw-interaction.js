@@ -2,22 +2,11 @@ import * as R from 'ramda'
 import Draw from 'ol/interaction/Draw'
 import uuid from '../../../shared/uuid'
 import * as MILSTD from '../../symbology/2525c'
-import { writeFeatureObject } from '../../store/FeatureStore'
+import { writeFeatureObject } from '../../ol/format'
 import * as TS from '../ts'
 import * as EPSG from '../../epsg'
 import { PI_OVER_2, PI_OVER_4, SQRT_2 } from '../../../shared/Math'
-
-const GeometryType = {
-  POINT: 'Point',
-  LINE_STRING: 'LineString',
-  LINEAR_RING: 'LinearRing',
-  POLYGON: 'Polygon',
-  MULTI_POINT: 'MultiPoint',
-  MULTI_LINE_STRING: 'MultiLineString',
-  MULTI_POLYGON: 'MultiPolygon',
-  GEOMETRY_COLLECTION: 'GeometryCollection',
-  CIRCLE: 'Circle'
-}
+import GeometryType from './GeometryType'
 
 export default options => {
   const { services, map } = options

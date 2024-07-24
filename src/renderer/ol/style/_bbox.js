@@ -1,20 +1,21 @@
-import * as R from 'ramda'
-import { Jexl } from 'jexl'
+import * as TS from '../ts'
+import { PI_OVER_2 } from '../../../shared/Math'
+
 const canvas = document.createElement('canvas')
 const context = canvas.getContext('2d')
 
 /**
  *
  */
-const textBoundingBox = ({ TS, PI_OVER_2, resolution }, props) => {
-  const textField = props['text-field']
+const textBoundingBox = (resolution, style) => {
+  const textField = style['text-field']
   if (!textField) return null
-  if (props['text-clipping'] === 'none') return null
+  if (style['text-clipping'] === 'none') return null
 
   // Prepare bounding box geometry (dimensions only, including padding).
   const lines = textField.split('\n')
   const [maxWidthPx, maxHeightPx] = lines.reduce((acc, line) => {
-    context.font = props['text-font']
+    context.font = style['text-font']
     const metrics = context.measureText(line)
     const width = metrics.width
     const height = 1.2 * lines.length * ((metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent))
@@ -23,8 +24,8 @@ const textBoundingBox = ({ TS, PI_OVER_2, resolution }, props) => {
     return acc
   }, [0, 0])
 
-  const { x, y } = props.geometry.getCoordinates()[0]
-  const padding = props['text-padding'] || 0
+  const { x, y } = style.geometry.getCoordinates()[0]
+  const padding = style['text-padding'] || 0
   const dx = (maxWidthPx / 2 + padding) * resolution
   const dy = (maxHeightPx / 2 + padding) * resolution
 
@@ -38,9 +39,9 @@ const textBoundingBox = ({ TS, PI_OVER_2, resolution }, props) => {
   // Transform geometry (rotate/translate) to match
   // label options offset, justify and rotate.
 
-  const rotate = props['text-rotate'] || 0
-  const justify = props['text-justify'] || 'center'
-  const [offsetX, offsetY] = props['text-offset'] || [0, 0]
+  const rotate = style['text-rotate'] || 0
+  const justify = style['text-justify'] || 'center'
+  const [offsetX, offsetY] = style['text-offset'] || [0, 0]
 
   const flipX = { start: -1, end: 1, center: 0 }
   const flipY = rotate < -PI_OVER_2 || rotate > PI_OVER_2 ? -1 : 1
@@ -59,15 +60,15 @@ const textBoundingBox = ({ TS, PI_OVER_2, resolution }, props) => {
 /**
  *
  */
-const iconBoundingBox = ({ TS, resolution }, props) => {
-  const scale = props['icon-scale']
+const iconBoundingBox = (resolution, style) => {
+  const scale = style['icon-scale']
   if (!scale) return null
 
-  const width = props['icon-width'] * scale / 4
-  const height = props['icon-height'] * scale / 4
-  const rotate = props['icon-rotate'] || 0
-  const padding = props['icon-padding'] || 0
-  const { x, y } = props.geometry.getCoordinates()[0]
+  const width = style['icon-width'] * scale / 4
+  const height = style['icon-height'] * scale / 4
+  const rotate = style['icon-rotate'] || 0
+  const padding = style['icon-padding'] || 0
+  const { x, y } = style.geometry.getCoordinates()[0]
 
   const x1 = x - (width + padding) * resolution
   const x2 = x + (width + padding) * resolution
@@ -80,37 +81,15 @@ const iconBoundingBox = ({ TS, resolution }, props) => {
   return rotation.transform(geometry)
 }
 
-
-/**
- *
- */
-export const boundingBox = R.curry((context, style) => {
-  if (style['text-field']) return textBoundingBox(context, style)
-  else if (style['icon-image']) return iconBoundingBox(context, style)
+const bbox = resolution => style => {
+  if (style['text-field']) return textBoundingBox(resolution, style)
+  else if (style['icon-image']) return iconBoundingBox(resolution, style)
   else return null
-})
-
-const jexl = new Jexl()
+}
 
 /**
  *
  */
-export const evalSync = context => {
-
-  const evalSync = textField => Array.isArray(textField)
-    ? textField.map(evalSync).filter(Boolean).join('\n')
-    : jexl.evalSync(textField, context)
-
-  return props => {
-    props = Array.isArray(props) ? props : [props]
-    return props.reduce((acc, spec) => {
-      if (!spec['text-field']) acc.push(spec)
-      else {
-        const textField = evalSync(spec['text-field'])
-        if (textField) acc.push({ ...spec, 'text-field': textField })
-      }
-
-      return acc
-    }, [])
-  }
-}
+export default (resolution, styles) => styles
+  .map(bbox(resolution))
+  .filter(Boolean)

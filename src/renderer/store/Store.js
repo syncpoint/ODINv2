@@ -6,7 +6,7 @@ import * as L from '../../shared/level'
 import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
 import * as TS from '../ol/ts'
 import { transform, geometryType } from '../model/geometry'
-import { readGeometry } from '../store/FeatureStore'
+import { readGeometry } from '../ol/format'
 import { bbox } from './geometry'
 
 /**

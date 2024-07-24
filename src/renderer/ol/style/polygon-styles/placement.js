@@ -1,3 +1,5 @@
+import * as R from 'ramda'
+import * as TS from '../../ts'
 
 const lazy = function (fn) {
   let evaluated = false
@@ -11,7 +13,10 @@ const lazy = function (fn) {
   }
 }
 
-export const placement = ({ TS, geometry }) => {
+/**
+ * placement :: jts/geom/Geometry => Style => Style
+ */
+const placement = geometry => {
   const ring = geometry.getExteriorRing()
   const envelope = ring.getEnvelopeInternal()
   const centroid = TS.centroid(ring)
@@ -45,12 +50,22 @@ export const placement = ({ TS, geometry }) => {
     right: lazy(() => TS.point(xIntersection()[1]))
   }
 
-  return props => {
-    const anchor = props['text-anchor']
+  const tryer = properties => {
+    const anchor = properties['text-anchor']
     const geometry = Number.isFinite(anchor)
       ? fraction(anchor)
       : anchors[anchor || 'center']()
-
-    return { geometry, ...props }
+    return { geometry, ...properties }
   }
+
+  const catcher = (err, properties) => console.warn(err, properties)
+
+  const calculate = arg => {
+    if (!Array.isArray(arg)) return calculate([arg])
+    else return arg.map(R.tryCatch(tryer, catcher)).filter(Boolean)
+  }
+
+  return calculate
 }
+
+export default placement

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import textProperty from './textProperty'
-import { readGeometry, writeGeometryObject } from '../../store/FeatureStore'
+import { readGeometry, writeGeometryObject } from '../../ol/format'
 import * as geom from './geometries'
 
 const TextProperty = textProperty({
@@ -20,10 +20,11 @@ const TextProperty = textProperty({
     const properties = geom.circleProperties(jtsGeometry)
     properties.am = value
     const circle = geom.circle(jtsGeometry, properties)
+    const geometry = writeGeometryObject(write(circle))
 
     return {
       ...feature,
-      geometry: writeGeometryObject(write(circle)),
+      geometry,
       properties: {
         ...feature.properties,
         am: value

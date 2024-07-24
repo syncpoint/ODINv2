@@ -1,6 +1,10 @@
 import * as R from 'ramda'
+import * as TS from '../../ts'
 
-export const placement = ({ TS, geometry }) => {
+/**
+ * placement :: jts/geom/Geometry => Style => Style
+ */
+const placement = geometry => {
   const segments = TS.segments(geometry)
   const line = TS.lengthIndexedLine(geometry)
   const endIndex = line.getEndIndex()
@@ -33,17 +37,28 @@ export const placement = ({ TS, geometry }) => {
 
   const normalize = angle => TS.Angle.normalize(TS.Angle.PI_TIMES_2 - angle)
 
-  return props => {
-    const rotate = props['text-field'] ? 'text-rotate' : 'icon-rotate'
-    const anchor = props['text-anchor'] ||
-      props['icon-anchor'] ||
-      props['symbol-anchor'] ||
-      (props['text-field'] ? 'center' : null)
+  const tryer = properties => {
+    const rotate = properties['text-field'] ? 'text-rotate' : 'icon-rotate'
+    const anchor = properties['text-anchor'] ||
+      properties['icon-anchor'] ||
+      properties['symbol-anchor'] ||
+      (properties['text-field'] ? 'center' : null)
 
     return {
       geometry: anchors(anchor),
-      ...props,
+      ...properties,
       [rotate]: normalize(angle(anchor))
     }
   }
+
+  const catcher = (err, properties) => console.warn(err, properties)
+
+  const calculate = arg => {
+    if (!Array.isArray(arg)) return calculate([arg])
+    else return arg.map(R.tryCatch(tryer, catcher)).filter(Boolean)
+  }
+
+  return calculate
 }
+
+export default placement

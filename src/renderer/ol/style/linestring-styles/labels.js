@@ -46,7 +46,7 @@ const BND_3 = { id: 'style:default-text', 'text-field': 'echelon', 'text-anchor'
 
 const BND = [BND_1, BND_2, BND_3]
 
-export const labels = {}
+const labels = {}
 labels['G*T*A-----'] = [{ 'text-field': 'modifiers.t', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND ASSUME
 labels['G*T*AS----'] = [{ 'text-field': 'modifiers.t', 'text-anchor': 0.15, 'text-clipping': 'none' }] // FOLLOW AND SUPPORT
 labels['G*G*GLB---'] = BND // BOUNDARIES
@@ -80,3 +80,5 @@ labels['G*O*BE----'] = MM('"E"') // BEARING LINE / ELECTRONIC
 labels['G*O*BA----'] = MM('"A"') // BEARING LINE / ACOUSTIC
 labels['G*O*BT----'] = MM('"T"') // BEARING LINE / TORPEDO
 labels['G*O*BO----'] = MM('"O"') // BEARING LINE / ELECTRO-OPTICAL INTERCEPT
+
+export default labels

@@ -18,7 +18,7 @@ const G_G_PM = [
   { 'symbol-code': 'GFGPPD----', 'symbol-anchor': 'center', 'symbol-size': 100 }
 ]
 
-export const labels = {}
+const labels = {}
 labels['G*G*GAG---'] = C(ALL_LINES()) // GENERAL AREA
 labels['G*G*GAA---'] = C(ALL_LINES('AA')) // ASSEMBLY AREA
 labels['G*G*GAE---'] = C(ALL_LINES('EA')) // ENGAGEMENT AREA
@@ -109,3 +109,5 @@ labels['G*S*ASR---'] = C(ALL_LINES('RSA')) // SUPPORT AREAS / REGIMENTAL (DSA)
 labels['G*M*NR----'] = [{ 'symbol-code': 'GFMPNZ----', 'symbol-anchor': 'center' }] // RADIOACTIVE AREA
 labels['G*M*NB----'] = [{ 'symbol-code': 'GFMPNEB---', 'symbol-anchor': 'center' }] // BIOLOGICALLY CONTAMINATED AREA
 labels['G*M*NC----'] = [{ 'symbol-code': 'GFMPNEC---', 'symbol-anchor': 'center' }] // CHEMICALLY CONTAMINATED AREA
+
+export default labels

@@ -1,6 +1,6 @@
 import { Stroke, Circle, RegularShape, Style } from 'ol/style'
 
-export default (color, radius = 30) => {
+const crosshair = (color, radius = 30) => {
   const stroke = new Stroke({ color, width: 2 })
   const bigCircle = new Circle({ stroke, radius: 30 })
   const smallCircle = new Circle({ stroke, radius: radius / 15 })
@@ -18,3 +18,10 @@ export default (color, radius = 30) => {
       })
     }))]
 }
+
+export default $ =>
+  $.selectionMode.map(mode =>
+    mode === 'default'
+      ? crosshair('black')
+      : crosshair('red')
+)

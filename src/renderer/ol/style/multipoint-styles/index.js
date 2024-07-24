@@ -17,11 +17,12 @@ const circle = id => ({ TS, geometry }) => {
   return [{ id, geometry: buffer }]
 }
 
+const DEFAULT = ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }]
 const CIRCLE = circle('style:2525c/default-stroke')
 const FILLED_CIRCLE = circle('style:2525c/hatch-fill')
 
 export default {
-  DEFAULT: ({ geometry }) => [{ id: 'style:2525c/default-stroke', geometry }],
+  DEFAULT,
   CIRCLE,
   FILLED_CIRCLE,
   'G*F*AXC---': G_F_AXC,        // SENSOR RANGE FAN

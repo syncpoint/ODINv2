@@ -1,3 +1,5 @@
+import { PI_OVER_4 } from '../../../shared/Math'
+
 const COLOR_WHITE = 'white'
 const COLOR_BLACK = 'black'
 const COLOR_YELLOW = 'yellow'
@@ -6,85 +8,88 @@ const DASH_ARRAY_10_10 = [10, 10]
 const DASH_ARRAY_14_6 = [14, 6]
 const DASH_ARRAY_20_8_2_8 = [20, 8, 2, 8]
 
-export default ({ PI_OVER_4 }, props) => {
+/**
+ * Registry of predefined styles.
+ */
+export default (options) => {
 
-  const font = props['text-font'] || [
-    props['text-font-style'],
-    props['text-font-variant'],
-    props['text-font-weight'],
-    props['text-font-size'],
-    props['text-font-family']
+  const font = options['text-font'] || [
+    options['text-font-style'],
+    options['text-font-variant'],
+    options['text-font-weight'],
+    options['text-font-size'],
+    options['text-font-family']
   ].filter(Boolean).join(' ')
 
   const registry = {}
 
   registry['style:2525c/symbol'] = {
-    'color-scheme': props['color-scheme'],
-    'symbol-color': props['symbol-color'],
-    'symbol-halo-color': props['symbol-halo-color'],
-    'symbol-halo-width': props['symbol-halo-width'],
-    'symbol-text-color': props['symbol-text-color'],
-    'symbol-text-halo-color': props['symbol-text-halo-color'],
-    'symbol-text-halo-width': props['symbol-text-halo-width'],
-    'symbol-text-size': props['symbol-text-size'],
-    'symbol-text': props['symbol-text'],
-    'symbol-fill': props['symbol-fill'],
-    'symbol-fill-opacity': props['symbol-fill-opacity'],
-    'symbol-frame': props['symbol-frame'],
-    'symbol-icon': props['symbol-icon'],
-    'symbol-line-width': props['symbol-line-width'],
-    'symbol-size': props['symbol-size'],
-    'icon-scale': props['icon-scale']
+    'color-scheme': options['color-scheme'],
+    'symbol-color': options['symbol-color'],
+    'symbol-halo-color': options['symbol-halo-color'],
+    'symbol-halo-width': options['symbol-halo-width'],
+    'symbol-text-color': options['symbol-text-color'],
+    'symbol-text-halo-color': options['symbol-text-halo-color'],
+    'symbol-text-halo-width': options['symbol-text-halo-width'],
+    'symbol-text-size': options['symbol-text-size'],
+    'symbol-text': options['symbol-text'],
+    'symbol-fill': options['symbol-fill'],
+    'symbol-fill-opacity': options['symbol-fill-opacity'],
+    'symbol-frame': options['symbol-frame'],
+    'symbol-icon': options['symbol-icon'],
+    'symbol-line-width': options['symbol-line-width'],
+    'symbol-size': options['symbol-size'],
+    'icon-scale': options['icon-scale']
   }
 
   registry['style:2525c/default-stroke'] = {
-    'line-cap': props['line-cap'],
-    'line-join': props['line-join'],
-    'line-color': props['line-color'],
-    'line-width': props['line-width'],
-    'line-dash-array': props['line-dash-array'],
-    'line-halo-color': props['line-halo-color'],
-    'line-halo-width': props['line-halo-width'],
-    'line-halo-dash-array': props['line-halo-dash-array']
+    'line-cap': options['line-cap'],
+    'line-join': options['line-join'],
+    'line-color': options['line-color'],
+    'line-width': options['line-width'],
+    'line-dash-array': options['line-dash-array'],
+    'line-halo-color': options['line-halo-color'],
+    'line-halo-width': options['line-halo-width'],
+    'line-halo-dash-array': options['line-halo-dash-array']
   }
 
   registry['style:2525c/solid-stroke'] = {
-    'line-cap': props['line-cap'],
-    'line-join': props['line-join'],
-    'line-color': props['line-color'],
-    'line-width': props['line-width'],
-    'line-halo-color': props['line-halo-color'],
-    'line-halo-width': props['line-halo-width']
+    'line-cap': options['line-cap'],
+    'line-join': options['line-join'],
+    'line-color': options['line-color'],
+    'line-width': options['line-width'],
+    'line-halo-color': options['line-halo-color'],
+    'line-halo-width': options['line-halo-width']
   }
 
   registry['style:2525c/dashed-stroke'] = {
-    'line-cap': props['line-cap'],
-    'line-join': props['line-join'],
-    'line-color': props['line-color'],
-    'line-width': props['line-width'],
+    'line-cap': options['line-cap'],
+    'line-join': options['line-join'],
+    'line-color': options['line-color'],
+    'line-width': options['line-width'],
     'line-dash-array': DASH_ARRAY_14_6,
-    'line-halo-color': props['line-halo-color'],
-    'line-halo-width': props['line-halo-width'],
+    'line-halo-color': options['line-halo-color'],
+    'line-halo-width': options['line-halo-width'],
     'line-halo-dash-array': DASH_ARRAY_14_6
   }
 
   registry['style:2525c/solid-fill'] = {
-    'line-cap': props['line-cap'],
-    'line-join': props['line-join'],
-    'line-color': props['line-color'],
-    'line-width': props['line-width'],
-    'line-halo-color': props['line-halo-color'],
-    'line-halo-width': props['line-halo-width'],
-    'fill-color': props['fill-color']
+    'line-cap': options['line-cap'],
+    'line-join': options['line-join'],
+    'line-color': options['line-color'],
+    'line-width': options['line-width'],
+    'line-halo-color': options['line-halo-color'],
+    'line-halo-width': options['line-halo-width'],
+    'fill-color': options['fill-color']
   }
 
   registry['style:2525c/hatch-fill'] = {
-    'line-cap': props['line-cap'],
-    'line-join': props['line-join'],
-    'line-color': props['line-color'],
-    'line-width': props['line-width'],
-    'line-halo-color': props['line-halo-color'],
-    'line-halo-width': props['line-halo-width'],
+    'line-cap': options['line-cap'],
+    'line-join': options['line-join'],
+    'line-color': options['line-color'],
+    'line-width': options['line-width'],
+    'line-halo-color': options['line-halo-color'],
+    'line-halo-width': options['line-halo-width'],
     'fill-pattern': 'hatch',
     'fill-pattern-angle': 45,
     'fill-pattern-size': 2,
@@ -93,24 +98,24 @@ export default ({ PI_OVER_4 }, props) => {
 
   registry['style:default-text'] = {
     'text-font': font,
-    'text-color': props['text-color'],
-    'text-fill-color': props['text-fill-color'],
-    'text-line-color': props['text-line-color'],
-    'text-line-width': props['text-line-width'],
-    'text-halo-color': props['text-halo-color'],
-    'text-halo-width': props['text-halo-width'],
+    'text-color': options['text-color'],
+    'text-fill-color': options['text-fill-color'],
+    'text-line-color': options['text-line-color'],
+    'text-line-width': options['text-line-width'],
+    'text-halo-color': options['text-halo-color'],
+    'text-halo-width': options['text-halo-width'],
     'text-justify': 'center',
     'text-rotation-anchor': 'auto'
   }
 
   registry['style:2525c/fence-stroke'] = {
     'line-cap': 'square',
-    'line-color': props['binary-color'],
+    'line-color': options['binary-color'],
     'line-width': 2
   }
 
   registry['style:2525c/fence-o'] = {
-    'shape-line-color': props['binary-color'],
+    'shape-line-color': options['binary-color'],
     'shape-line-width': 2,
     'shape-points': 8,
     'shape-radius': 8,
@@ -120,7 +125,7 @@ export default ({ PI_OVER_4 }, props) => {
   }
 
   registry['style:2525c/fence-x'] = {
-    'shape-line-color': props['binary-color'],
+    'shape-line-color': options['binary-color'],
     'shape-line-width': 2,
     'shape-points': 4,
     'shape-radius': 8,
@@ -131,10 +136,10 @@ export default ({ PI_OVER_4 }, props) => {
 
   registry['style:wasp-stroke'] = {
     'line-color': COLOR_YELLOW,
-    'line-width': props['line-width'],
+    'line-width': options['line-width'],
     'line-dash-array': DASH_ARRAY_10_10,
     'line-halo-color': COLOR_BLACK,
-    'line-halo-width': props['line-halo-width'],
+    'line-halo-width': options['line-halo-width'],
     'line-halo-dash-array': null
   }
 

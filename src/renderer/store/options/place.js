@@ -3,7 +3,7 @@ import * as Extent from 'ol/extent'
 import * as Sphere from 'ol/sphere'
 import { toLonLat } from 'ol/proj'
 import * as ID from '../../ids'
-import { readGeometry } from '../../store/FeatureStore'
+import { readGeometry } from '../../ol/format'
 
 export default async function (id) {
   const keys = [R.identity, ID.tagsId]

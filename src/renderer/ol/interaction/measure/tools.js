@@ -1,4 +1,4 @@
-import GeometryType from './GeometryType'
+import GeometryType from '../GeometryType'
 import { getArea, getLength } from 'ol/sphere'
 
 const meterFormatter = new Intl.NumberFormat(window.navigator.userLanguage || window.navigator.language, { maximumFractionDigits: 1, style: 'unit', unit: 'meter' })

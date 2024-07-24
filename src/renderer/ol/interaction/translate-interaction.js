@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { Translate } from 'ol/interaction'
-import { writeFeatureCollection } from '../../store/FeatureStore'
+import { writeFeatureCollection } from '../../ol/format'
 import { noModifierKeys, shiftKeyOnly } from 'ol/events/condition'
 
 /**

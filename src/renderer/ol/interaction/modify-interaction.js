@@ -1,5 +1,5 @@
 import { Modify } from './modify'
-import { writeGeometryObject } from '../../store/FeatureStore'
+import { writeGeometryObject } from '../../ol/format'
 
 /**
  * @param {*} store
