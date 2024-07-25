@@ -224,8 +224,9 @@ WindowManager.prototype.showLogin = function () {
     url: url(app),
     minimizable: false,
     maximizable: false,
-    resizable: false,
+    resizable: true,
     alwaysOnTop: true,
+    titleBarStyle: 'hidden',
     width: 640,
     height: 480,
     additionalArguments
@@ -240,8 +241,9 @@ WindowManager.prototype.showLogout = function () {
     url: url(app),
     minimizable: false,
     maximizable: false,
-    resizable: false,
+    resizable: true,
     alwaysOnTop: true,
+    titleBarStyle: 'hidden',
     width: 640,
     height: 480,
     additionalArguments
