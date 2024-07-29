@@ -37,8 +37,8 @@ const readFeature = R.curry((state, source) => {
     selectionMode: Signal.of('default')
   }
 
-  feature.$.style = styles(feature)
-  feature.setStyle(feature => feature.$.style())
+  const setStyle = feature.setStyle.bind(feature)
+  styles(feature).on(setStyle)
 
   // Use dedicated function to update feature coordinates from within
   // modify interaction. Such internal changes must not trigger ModifyEvent.
