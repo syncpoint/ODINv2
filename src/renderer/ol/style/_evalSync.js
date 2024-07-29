@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { echelonCode } from '../../symbology/2525c'
 import { echelons } from './echelon'
 import { Jexl } from 'jexl'
@@ -12,7 +13,7 @@ const evalSync = context => {
     ? textField.map(evalSync).filter(Boolean).join('\n')
     : jexl.evalSync(textField, context)
 
-  const replaceOne = properties => {
+  const replace = properties => {
     properties = Array.isArray(properties) ? properties : [properties]
     return properties.reduce((acc, spec) => {
       if (!spec['text-field']) acc.push(spec)
@@ -25,12 +26,7 @@ const evalSync = context => {
     }, [])
   }
 
-  const replaceAll = arg => {
-    if (!Array.isArray(arg)) return replaceAll(arg)
-    return arg.flatMap(replaceOne)
-  }
-
-  return replaceAll
+  return R.chain(replace)
 }
 
 export default (sidc, props1, props2) => {
