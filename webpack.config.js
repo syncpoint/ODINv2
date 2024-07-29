@@ -51,10 +51,10 @@ const RULES = {
 
   sourcemap: {
     test: /\.js$/,
-    enforce: "pre",
+    enforce: 'pre',
     use: [
       {
-        loader: "source-map-loader",
+        loader: 'source-map-loader',
         options: {
           filterSourceMappingUrl: (url, resourcePath) => {
             // Consume own (@syncpoint) sourcemaps; remove others.
