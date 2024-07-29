@@ -11,12 +11,23 @@ import upstreamHandler from './handler/upstream'
 const CREATOR_ID = uuid()
 
 const Replication = () => {
+
   /*
-    Using the signal 'replication/operational' is a way to communicate the current state of the replication
-    to other components of the application. I.e. if replication is not operational some buttons in the
+    Using the signal 'replication/operational' is a way to communicate
+    the current state of the replication to other components of the
+    application. I.e. if replication is not operational some buttons in the
     replication toolbar are disabled.
   */
-  const { emitter, ipcRenderer, preferencesStore, selection, sessionStore, signals, store, replicationProvider } = useServices()
+  const {
+    emitter,
+    ipcRenderer,
+    preferencesStore,
+    selection,
+    sessionStore,
+    signals,
+    store,
+    replicationProvider
+  } = useServices()
 
   /* system/OS level notifications */
   const notifications = React.useRef(new Set())
@@ -62,8 +73,9 @@ const Replication = () => {
       try {
         feedback('Initializing replication ...')
         /*
-          Replication credentials are (access, refresh) tokens that are used to authenticate the current SESSION
-          to the replication server. Credentials do not contain the user's password.
+          Replication credentials are (access, refresh) tokens that are used
+          to authenticate the current SESSION to the replication server.
+          Credentials do not contain the user's password.
         */
         const credentials = await sessionStore.get(KEYS.CREDENTIALS, null)
         const replicatedProject = await replicationProvider.project(credentials)
@@ -94,7 +106,8 @@ const Replication = () => {
         await replicationProvider.connect()
         const projectDescription = await replicatedProject.hydrate(seed)
         /*
-          Iterate over all layers and check the permissions. if our role is READER, restrict the layers. Otherwise, permit them.
+          Iterate over all layers and check the permissions. if our role is
+          READER, restrict the layers. Otherwise, permit them.
         */
         const permissions = projectDescription.layers.reduce(rolesReducer, { restrict: [], permit: [] })
         if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
@@ -105,7 +118,8 @@ const Replication = () => {
 
         /*
           On startup we import all invitations we already know about.
-          18apr23: We need to check if this is still required because we may receive the invitations via the upstream handler.
+          18apr23: We need to check if this is still required because we may
+          receive the invitations via the upstream handler.
         */
         const allInvitations = await store.keys(ID.INVITED)
         const invitations = projectDescription.invitations
@@ -211,4 +225,3 @@ const Replication = () => {
 export {
   Replication
 }
-

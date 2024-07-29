@@ -102,8 +102,6 @@ export default async projectUUID => {
   services.optionStore = optionStore
   services.searchIndex = searchIndex
 
-  services.signals = {}
-
   services.kbarActions = new KBarActions({
     store,
     emitter,
@@ -140,6 +138,7 @@ export default async projectUUID => {
     })
     : { disabled: true }
 
+  services.signals = {}
   services.signals['replication/operational'] = Signal.of(false)
 
   const commandRegistry = new CommandRegistry(services)

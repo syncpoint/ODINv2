@@ -25,9 +25,10 @@ export default ({ sessionStore, setOffline, store, CREATOR_ID }) => {
     },
     renamed: async (renamed) => {
       /*
-                Since we must monitor the project itself for child added events we also may receive
-                renamed events regarding the project. We ignore these for now.
-              */
+        Since we must monitor the project itself for child added events we
+        also may receive renamed events regarding the project.
+        We ignore these for now.
+      */
       const ops = renamed
         .filter(target => ID.isLayerId(target.id))
         .map(layer => ({ type: 'put', key: layer.id, value: { name: layer.name } }))
