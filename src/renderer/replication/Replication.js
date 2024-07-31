@@ -117,18 +117,6 @@ const Replication = () => {
         await store.import(roles, { creatorId: CREATOR_ID })
 
         /*
-          On startup we import all invitations we already know about.
-          18apr23: We need to check if this is still required because we may
-          receive the invitations via the upstream handler.
-        */
-        const allInvitations = await store.keys(ID.INVITED)
-        const invitations = projectDescription.invitations
-          .filter(invitation => (!allInvitations.includes(ID.makeId(ID.INVITED, invitation.id))))
-          .map(invitation => ([{ type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }]))
-          .flat()
-        await store.import(invitations, { creatorId: CREATOR_ID })
-
-        /*
           Handler toolbar commands for for sharing and joining layers
         */
         emitter.on('replication/:action/:id/:parameter', toolbarHandler({ replicatedProject, store, CREATOR_ID }))

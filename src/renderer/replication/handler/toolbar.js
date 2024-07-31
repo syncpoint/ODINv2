@@ -46,7 +46,7 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         await store.import(replicatedKeys.map(key => ({ type: 'del', key })))
 
         /* since the layer is not shared anymore this bacth does not trigger replication */
-        const layerKeys = await store.collectKeys([id], [ID.LINK, ID.HIDDEN, ID.TAGS, ID.FEATURE, ID.STYLE])
+        const layerKeys = await store.collectKeys([id], [ID.LINK, ID.HIDDEN, ID.TAGS, ID.FEATURE, ID.STYLE, ID.DEFAULT])
         await store.import(layerKeys.map(key => ({ type: 'del', key })))
 
         const candidate = { type: 'put', key: ID.makeId(ID.INVITED, reJoinOffer.id), value: { name: reJoinOffer.name, description: reJoinOffer.topic } }
