@@ -65,7 +65,7 @@
   "dependencies": {
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
-    "@syncpoint/matrix-client-api": "^1.11.0",
+    "@syncpoint/matrix-client-api": "^1.11.1",
     "@syncpoint/signal": "^1.3.0",
     "@syncpoint/signs": "^1.1.0",
     "@syncpoint/wkx": "^0.5.2",
