@@ -75,6 +75,7 @@
     "fuse.js": "^7.0.0",
     "geo-coordinates-parser": "^1.7.3",
     "geodesy": "^2.4.0",
+    "geojson-bbox": "^0.0.1",
     "jexl": "^2.3.0",
     "jspdf": "^2.5.1",
     "jsts": "^2.9.3",

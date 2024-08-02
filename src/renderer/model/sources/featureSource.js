@@ -1,6 +1,8 @@
 import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
 import VectorSource from 'ol/source/Vector'
+import RBush from 'rbush'
+import bbox from 'geojson-bbox'
 import * as ID from '../../ids'
 import styles from '../../ol/style/styles'
 import { format } from '../../ol/format'
@@ -95,6 +97,12 @@ const selectEvent = select([
   R.compose(isCandidateId, R.prop('key'))
 ])
 
+class FlatRBush extends RBush {
+  toBBox = item => ({ minX: item[0], minY: item[1], maxX: item[2], maxY: item[3] })
+  compareMinX = (a, b) => a[0] - b[0]
+  compareMinY = (a, b) => a[1] - b[1]
+}
+
 /**
  *
  */
@@ -102,35 +110,60 @@ export const featureSource = services => {
   const { store, selection } = services
   const state = {}
 
+  const fetch = async (extent, resolution) => {
+
+    if (!state.styles) {
+      state.styles = await store.dictionary('style+')
+    }
+
+    if (!state.rbush) {
+      state.rbush = new FlatRBush()
+      const bboxes = [
+        ...await store.tuples(ID.FEATURE_SCOPE),
+        ...await store.tuples(ID.MARKER_SCOPE),
+        ...await store.tuples(ID.MEASURE_SCOPE)
+      ].map(([id, feature]) => [...bbox(feature), id])
+      state.rbush.load(bboxes)
+    }
+
+    if (source.getFeatures().length !== 0 && state.extent === extent.toString()) return
+    state.extent = extent.toString()
+
+    const hits = state.rbush.search({
+      minX: extent[0],
+      minY: extent[1],
+      maxX: extent[2],
+      maxY: extent[3]
+    }).map(R.last)
+
+    const loaded = source.getFeatures().map(x => x.getId())
+    const removals = R.difference(loaded, hits).map(id => source.getFeatureById(id))
+    source.removeFeatures(removals)
+
+    const additions = hits.filter(id => !source.getFeatureById(id))
+    const tuples = await store.tuples(additions)
+    const features = tuples
+      .map(([id, value]) => ({ id, ...value }))
+      .map(readFeature(state))
+    source.addFeatures(features)
+
+    if (state.resolution !== resolution) {
+      state.resolution = resolution
+      source.getFeatures().map(feature => feature.$.centerResolution(resolution))
+    }
+  }
+
   const source = new VectorSource({
     features: [],
     useSpatialIndex: false,
     strategy: function (extent, resolution) {
-      if (state.resolution !== resolution) {
-        state.resolution = resolution
-        this.getFeatures().map(feature => feature.$.centerResolution(resolution))
-      }
+      fetch(extent, resolution)
       return [extent]
     }
   })
 
   const getFeatureById = source.getFeatureById.bind(source)
   const getFeaturesById = ids => ids.map(getFeatureById).filter(Boolean)
-
-  // Load styles and features.
-  ;(async () => {
-    state.styles = await store.dictionary('style+')
-    const tuples = [
-      ...await store.tuples(ID.FEATURE_SCOPE),
-      ...await store.tuples(ID.MARKER_SCOPE),
-      ...await store.tuples(ID.MEASURE_SCOPE)
-    ]
-
-    const features = tuples
-      .map(([id, value]) => ({ id, ...value }))
-      .map(readFeature(state))
-    source.addFeatures(features)
-  })()
 
   // ==> batch event handling
 
@@ -157,16 +190,21 @@ export const featureSource = services => {
   })
 
   feature.on(({ type, key, value }) => {
-    let feature = getFeatureById(key)
-    if (type === 'del') source.removeFeature(feature)
-    else if (feature) {
-      feature.setProperties(value.properties)
+    const loadedFeature = getFeatureById(key)
+    if (type === 'del') {
+      const item = [...loadedFeature.getGeometry().getExtent(), loadedFeature.getId()]
+      state.rbush.remove(item, (a, b) => a[4] === b[4])
+      source.removeFeature(loadedFeature)
+    } else if (loadedFeature) {
+      loadedFeature.setProperties(value.properties)
       // It is possible that only properties have changed.
       // Don't set null/undefined geometry!
       const geometry = format.readGeometry(value.geometry)
-      if (geometry) feature.setGeometry(geometry)
+      if (geometry) loadedFeature.setGeometry(geometry)
     } else {
-      feature = readFeature(state, { id: key, ...value })
+      const feature = readFeature(state, { id: key, ...value })
+      const item = [...feature.getGeometry().getExtent(), feature.getId()]
+      state.rbush.insert(item)
       source.addFeature(feature)
     }
   })

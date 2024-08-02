@@ -11,7 +11,7 @@ export const bindings = (commandRegistry, emitter) => {
 
 
   // Note: bindGlobal() is used to also trap inside input elements.
-  Mousetrap.bind(cmdOrCtrl('backspace'), () => { console.log('CMD+CTRL+Backspace key binding'); if (deleteCommand.enabled()) deleteCommand.execute() })
+  Mousetrap.bind(cmdOrCtrl('backspace'), () => { if (deleteCommand.enabled()) deleteCommand.execute() })
   Mousetrap.bind('del', () => { console.log('DEL key binding'); if (deleteCommand.enabled()) deleteCommand.execute() })
   Mousetrap.bind('esc', () => emitter.emit('command/draw/cancel'))
 }
