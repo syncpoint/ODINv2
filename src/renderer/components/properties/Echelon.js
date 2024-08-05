@@ -35,8 +35,6 @@ export default props => {
     const { value } = event.target
     setState(value)
     store.update(props.features, set(value))
-    console.log(`updating with value ${value}`)
-    console.dir(props.features, { depth: 5 })
   }
 
   return (
