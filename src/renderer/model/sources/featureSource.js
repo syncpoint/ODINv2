@@ -40,7 +40,7 @@ export const featureSource = services => {
     useSpatialIndex: false,
     // like ol/loadingstrategy/bbox
     strategy: function (extent, resolution) {
-      ;(async () => {
+      (async () => {
         await loadStyles(state)
         updateResolution(state, resolution)
         $extent(extent)
@@ -50,8 +50,8 @@ export const featureSource = services => {
     }
   })
 
-  const getFeaturesById = ids =>
-    ids.map(source.getFeatureById.bind(source))
+  const getFeaturesById = ids => ids
+    .map(source.getFeatureById.bind(source))
     .filter(Boolean)
 
   const $extent = Signal.of([], { equals: isEqual })
