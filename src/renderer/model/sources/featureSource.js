@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import Signal from '@syncpoint/signal'
-import VectorSource from 'ol/source/Vector'
 import isEqual from 'react-fast-compare'
 import * as ID from '../../ids'
 import { format } from '../../ol/format'
@@ -11,6 +10,7 @@ import { select } from '../../../shared/signal'
 import loadRBush from './loadRBush'
 import updateRBush from './updateRBush'
 import searchRBush from './searchRBush'
+import vectorSource from './vectorSource'
 
 /**
  *
@@ -18,70 +18,53 @@ import searchRBush from './searchRBush'
 export const featureSource = services => {
   const { store, selection } = services
 
-  /**
-   * styles :: String k, Object v => { k: v }
-   * resolution :: Number
-   */
-  const state = {}
+  const $styles = Signal.deferred(store.dictionary('style+'))
+  const $extent = Signal.of(undefined, { equals: isEqual })
+  const $resolution = Signal.of()
 
-  const loadStyles = async state => {
-    if (state.styles) return
-    state.styles = await store.dictionary('style+')
+  const callback = (extent, resolution) => {
+    $extent(extent)
+    $resolution(resolution)
   }
 
-  const updateResolution = (state, resolution) => {
-    if (state.resolution === resolution) return
-    state.resolution = resolution
-    source.getFeatures().map(feature => feature.$.centerResolution(resolution))
-  }
+  const $readFeature =
+    Signal
+      .link(R.unapply(R.identity), [$styles, $resolution])
+      .map(([styles, resolution]) => ({ styles, resolution }))
+      .map(readFeature) // partially applied
 
-  const source = new VectorSource({
-    features: [],
-    useSpatialIndex: false,
-    // like ol/loadingstrategy/bbox
-    strategy: function (extent, resolution) {
-      (async () => {
-        await loadStyles(state)
-        updateResolution(state, resolution)
-        $extent(extent)
-      })()
+  const $indexUpdater = Signal.of({ type: 'noop' })
+  const $initialIndex = Signal.deferred(loadRBush(store))
 
-      return [extent]
-    }
-  })
+  // RBush stays the same and is only mutated.
+  const $currentIndex = Signal.options(
+    Signal.lift(updateRBush, $initialIndex, $indexUpdater),
+    { equals: R.F }
+  )
+
+  const $search = $currentIndex.map(searchRBush)
+  const $featuresInExtent = $extent.ap($search)
+  const source = vectorSource(callback)
 
   const getFeaturesById = ids => ids
     .map(source.getFeatureById.bind(source))
     .filter(Boolean)
 
-  const $extent = Signal.of([], { equals: isEqual })
-  const $indexEvent = Signal.of({ type: 'noop' })
-  const $initialIndex = Signal.deferred(loadRBush(store))
+  // Add features in extent to source.
+  R.compose(
+    R.map(tuples => tuples.map(([id, value]) => ({ id, ...value }))),
+    Signal.await,
+    R.map(ids => store.tuples(ids)),
+    R.map(ids => ids.filter(id => !source.getFeatureById(id)))
+  )($featuresInExtent)
+    .ap($readFeature)
+    .on(async features => source.addFeatures(await features))
 
-  // RBush stays the same and is only mutated.
-  const $updatedIndex = Signal.lift(updateRBush, $initialIndex, $indexEvent)
-  Signal.options($updatedIndex, { equals: R.F })
-
-  const $search = $updatedIndex.map(searchRBush)
-  const $featuresInExtent = $extent.ap($search)
-
-  const $additions = Signal.transduce(
-    R.compose(
-      R.map(ids => ids.filter(id => !source.getFeatureById(id))),
-      R.map(ids => store.tuples(ids)),
-      R.map(async tuples => (await tuples).map(([id, value]) => ({ id, ...value }))),
-      R.map(async entries => (await entries).map(readFeature(state)))
-    ),
-    $featuresInExtent
-  )
-
-  const $removals = $featuresInExtent.map(ids => {
+  // Remove features no longer in extent from source.
+  $featuresInExtent.map(ids => {
     const loaded = source.getFeatures().map(x => x.getId())
-    return R.difference(loaded, ids).map(source.getFeatureById.bind(source))
-  })
-
-  $additions.on(async features => source.addFeatures(await features))
-  $removals.on(source.removeFeatures.bind(source))
+    return R.difference(loaded, ids).map(id => source.getFeatureById(id))
+  }).on(features => source.removeFeatures(features))
 
   // ==> batch event handling
 
@@ -93,14 +76,13 @@ export const featureSource = services => {
     R.T
   ], $feature)
 
-
   $globalStyle.on(({ value }) => {
     source.getFeatures().forEach(feature => feature.$.globalStyle(value))
   })
 
   $layerStyle.on(({ type, key, value }) => {
     const layerId = ID.layerId(key)
-    if (type === 'del') delete state.styles[key]
+    if (type === 'del') delete $styles()[key]
     source.getFeatures()
       .filter(feature => ID.layerId(feature.getId()) === layerId)
       .forEach(feature => feature.$.layerStyle(type === 'put' ? value : {}))
@@ -109,14 +91,14 @@ export const featureSource = services => {
   $featureStyle.on(({ type, key, value }) => {
     const featureId = ID.featureId(key)
     const feature = source.getFeatureById(featureId)
-    if (type === 'del') delete state.styles[key]
+    if (type === 'del') delete $styles()[key]
     if (feature) feature.$.featureStyle(type === 'put' ? value : {})
   })
 
   $removeFeature.on(({ key }) => {
     const feature = source.getFeatureById(key)
     const item = [...feature.getGeometry().getExtent(), feature.getId()]
-    $indexEvent({ type: 'remove', item, equals: (a, b) => a[4] === b[4] })
+    $indexUpdater({ type: 'remove', item, equals: (a, b) => a[4] === b[4] })
     source.removeFeature(feature)
   })
 
@@ -130,9 +112,9 @@ export const featureSource = services => {
   })
 
   $addFeature.on(({ key, value }) => {
-    const feature = readFeature(state, { id: key, ...value })
+    const feature = $readFeature()({ id: key, ...value })
     const item = [...feature.getGeometry().getExtent(), feature.getId()]
-    $indexEvent({ type: 'insert', item })
+    $indexUpdater({ type: 'insert', item })
     source.addFeature(feature)
   })
 
