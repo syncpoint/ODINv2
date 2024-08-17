@@ -15,7 +15,6 @@ import { setCoordinates } from '../geometry'
  * create input signals for style calculation.
  */
 const readFeature = R.curry((state, source) => {
-
   const read = (source) => {
     const feature = format.readFeature(source)
     const featureId = feature.getId()
