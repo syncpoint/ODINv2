@@ -99,8 +99,8 @@ export const featureSource = services => {
 
   // ==> batch event handling
 
-  const $events = operations(Signal.fromListeners(['batch'], store))
-  const [$globalStyle, $layerStyle, $featureStyle, $feature] = selectEvent($events)
+  const $batchOps = operations(Signal.fromListeners(['batch'], store))
+  const [$globalStyle, $layerStyle, $featureStyle, $feature] = selectEvent($batchOps)
   const [$removeFeature, $updateFeature, $addFeature] = select([
     ({ type }) => type === 'del',
     ({ key }) => Boolean(source.getFeatureById(key)),
