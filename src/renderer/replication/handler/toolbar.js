@@ -27,6 +27,10 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
       case 'share': {
         const { name } = await store.value(id)
         const layer = await replicatedProject.shareLayer(id, name)
+        if (!layer) {
+          console.log('layer is already shared')
+          return
+        }
         await store.import([
           { type: 'put', key: ID.sharedId(id), value: true },
           { type: 'put', key: ID.roleId(id), value: layer.role }
