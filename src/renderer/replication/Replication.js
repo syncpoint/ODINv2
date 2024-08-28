@@ -116,6 +116,13 @@ const Replication = () => {
         const roles = projectDescription.layers.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
         await store.import(roles, { creatorId: CREATOR_ID })
 
+        const allInvitations = await store.keys(ID.INVITED)
+        const invitations = projectDescription.invitations
+          .filter(invitation => (!allInvitations.includes(ID.makeId(ID.INVITED, invitation.id))))
+          .map(invitation => ([{ type: 'put', key: ID.makeId(ID.INVITED, invitation.id), value: { name: invitation.name, description: invitation.topic } }]))
+          .flat()
+        await store.import(invitations, { creatorId: CREATOR_ID })
+
         /*
           Handler toolbar commands for for sharing and joining layers
         */
