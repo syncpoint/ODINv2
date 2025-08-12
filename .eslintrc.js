@@ -10,7 +10,7 @@ module.exports = {
     node: true,
     mocha: true
   },
-  extends: ['eslint:recommended', 'plugin:react/recommended', 'standard'],
+  extends: ['eslint:recommended', 'plugin:react/recommended', 'standard', 'prettier'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
@@ -23,9 +23,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: [
-    'react', 'react-hooks'
-  ],
+  plugins: ['react', 'react-hooks'],
   rules: {
     'no-console': 'off',
     'no-multiple-empty-lines': 'off',
