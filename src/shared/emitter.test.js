@@ -76,7 +76,8 @@ describe('EventEmitter', function () {
 
   it('#off - noop (/wo handler)', function () {
     const emitter = new EventEmitter()
-    emitter.off('event', () => {})
+    assert.doesNotThrow(() => emitter.off('event', () => {}))
+    assert.strictEqual(emitter.emit('event'), false)
   })
 
   const errorCode = fn => R.tryCatch(fn, err => err.code)()
