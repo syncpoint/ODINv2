@@ -6,18 +6,26 @@ import { MODIFIERS } from '../../symbology/2525c'
  *
  */
 export default $ => {
-  $.shape = $.properties.map(properties => {
-    const sidc = properties.sidc
-    const modifiers = Object.entries(properties)
-      .filter(([key, value]) => MODIFIERS[key] && value)
-      .reduce((acc, [key, value]) => R.tap(acc => (acc[MODIFIERS[key]] = value), acc), {})
+  $.shape = Signal.link(
+    (properties, show) => {
+      const sidc = properties.sidc
+      const modifiers = show
+        ? Object.entries(properties)
+            .filter(([key, value]) => MODIFIERS[key] && value)
+            .reduce((acc, [key, value]) => {
+              acc[MODIFIERS[key]] = value
+              return acc
+            }, {})
+        : {}
 
-    return [{
-      id: 'style:2525c/symbol',
-      'symbol-code': sidc,
-      'symbol-modifiers': modifiers
-    }]
-  }, [])
+      return [{
+        id: 'style:2525c/symbol',
+        'symbol-code': sidc,
+        'symbol-modifiers': modifiers
+      }]
+    },
+    [$.properties, $.symbolPropertiesShowing]
+  )
 
   $.selection = $.selectionMode.map(mode =>
     mode === 'multiselect'
