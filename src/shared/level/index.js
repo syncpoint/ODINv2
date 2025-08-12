@@ -131,7 +131,7 @@ export const mgetTuples = mget((key, value) => [key, value])
 export const mgetKeys = mget((key, _) => key)
 
 /**
- * mgetKeys :: (levelup, [k]) -> [v]
+ * mgetValues :: (levelup, [k]) -> [v]
  */
 export const mgetValues = defaultValue => mget((_, value) => value, defaultValue)
 
@@ -141,8 +141,8 @@ export const mgetValues = defaultValue => mget((_, value) => value, defaultValue
 export const mgetEntities = mget((key, value) => ({ id: key, ...value }))
 
 /**
- * tuples :: [k] -> [[k, v]]
- * tuples :: String -> [[k, v]]
+ * tuples :: levelup -> [k] -> [[k, v]]
+ * tuples :: levelup -> String -> [[k, v]]
  */
 export const tuples = (db, arg) => Array.isArray(arg)
   ? mgetTuples(db, arg)
@@ -151,8 +151,8 @@ export const tuples = (db, arg) => Array.isArray(arg)
     : readTuples(db, {})
 
 /**
- * keys :: [k] -> [k]
- * keys :: String -> [k]
+ * keys :: levelup -> [k] -> [k]
+ * keys :: levelup -> String -> [k]
  */
 export const keys = (db, arg) => Array.isArray(arg)
   ? mgetKeys(db, arg)
