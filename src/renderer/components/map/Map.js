@@ -31,7 +31,7 @@ export const Map = () => {
     const key = 'ui.symbolProperties.showing'
 
     ;(async () => {
-      const showing = await services.preferencesStore.get(key, true)
+      const showing = await services.preferencesStore.getSymbolPropertiesShowing()
       symbolPropertiesShowing(showing)
     })()
 
