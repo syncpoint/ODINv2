@@ -13,7 +13,8 @@ import isEqual from 'react-fast-compare'
  * Read features from GeoJSON to ol/Feature and
  * create input signals for style calculation.
  */
-const readFeature = R.curry((state, source) => {
+const readFeature = R.curry((state, services, source) => {
+  const { symbolPropertiesShowing } = services
   const feature = format.readFeature(source)
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
@@ -34,7 +35,8 @@ const readFeature = R.curry((state, source) => {
     layerStyle: Signal.of(state.styles[ID.styleId(layerId)] ?? {}),
     featureStyle: Signal.of(state.styles[ID.styleId(featureId)] ?? {}),
     centerResolution: Signal.of(state.resolution),
-    selectionMode: Signal.of('default')
+    selectionMode: Signal.of('default'),
+    symbolPropertiesShowing
   }
 
   const setStyle = feature.setStyle.bind(feature)
@@ -128,7 +130,7 @@ export const featureSource = services => {
 
     const features = tuples
       .map(([id, value]) => ({ id, ...value }))
-      .map(readFeature(state))
+      .map(readFeature(state, services))
     source.addFeatures(features)
   })()
 
@@ -166,7 +168,7 @@ export const featureSource = services => {
       const geometry = format.readGeometry(value.geometry)
       if (geometry) feature.setGeometry(geometry)
     } else {
-      feature = readFeature(state, { id: key, ...value })
+      feature = readFeature(state, services, { id: key, ...value })
       source.addFeature(feature)
     }
   })
