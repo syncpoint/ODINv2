@@ -101,7 +101,7 @@ export default options => {
             type: 'checkbox',
             checked: symbolPropertiesShowing,
             click: ({ checked }, browserWindow) => {
-              if (browserWindow) browserWindow.webContents.send('VIEW_SHOW_SYMBOL_PROPERTIES', checked)
+              if (browserWindow) browserWindow.webContents.send('VIEW_SYMBOL_PROPERTIES', checked)
             }
           }
         ]

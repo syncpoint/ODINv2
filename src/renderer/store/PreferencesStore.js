@@ -31,7 +31,7 @@ export default function PreferencesStore (preferencesDB, ipcRenderer) {
   ipcRenderer.on('VIEW_GRATICULE', (_, type, checked) => this.setGraticule(type, checked))
   ipcRenderer.on('VIEW_SHOW_SIDEBAR', (_, checked) => this.showSidebar(checked))
   ipcRenderer.on('VIEW_SHOW_TOOLBAR', (_, checked) => this.showToolbar(checked))
-  ipcRenderer.on('VIEW_SHOW_SYMBOL_PROPERTIES', (_, checked) => this.showSymbolProperties(checked))
+  ipcRenderer.on('VIEW_SYMBOL_PROPERTIES', (_, checked) => this.showSymbolProperties(checked))
 }
 
 util.inherits(PreferencesStore, Emitter)
