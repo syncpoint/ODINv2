@@ -26,3 +26,7 @@ Copyright (c) Syncpoint GmbH. All rights reserved.
 Licensed under the [GNU Affero GPL v3](LICENSE.md) License.
 
 When using the ODIN or other GitHub logos, be sure to follow the [GitHub logo guidelines](https://github.com/logos).
+
+## Performance
+
+Recent updates improve rendering performance on large maps by caching symbol style modifiers and reusing style instances. Style updates are throttled using a circuit breaker to avoid excessive recomputation when text visibility is toggled rapidly.
