@@ -35,7 +35,7 @@ const Strategy = {
       ]
     })
 
-    store.import(removals.concat(additions))
+    await store.import(removals.concat(additions))
   },
 
   /**
@@ -43,7 +43,7 @@ const Strategy = {
    */
   sticky: store => async places => {
     const additions = places.map(([key, value]) => ({ type: 'put', key, value }))
-    store.import(additions.concat(additions))
+    await store.import(additions.concat(additions))
   }
 }
 
@@ -88,7 +88,7 @@ Nominatim.prototype.sync = async function (query) {
   }
 
   const places = response.map(R.compose(place, pretty))
-  this.strategy(places)
+  await this.strategy(places)
 }
 
 Nominatim.prototype.request = function (query) {

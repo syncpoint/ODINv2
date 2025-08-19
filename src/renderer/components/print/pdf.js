@@ -6,14 +6,14 @@ import RobotoMediumFont from './Roboto-Medium'
 
 const toPDF = async (dataURL, settings) => {
   /*
-    settings may contain a text opject, that adresses 4 text areas in the header of the
+    settings may contain a text object that addresses four text areas in the header of the
     PDF document:
 
     "H1Left"        "H1Right"
     "H2Left"        "H2Right"
 
-    H1 texts have a text size of 16px, H2 are 10px
-    left is left aligned, right is right aligned
+    H1 texts have a text size of 16px; H2 texts are 10px.
+    Left is left aligned; right is right aligned.
   */
 
 

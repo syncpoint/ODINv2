@@ -6,6 +6,7 @@ export default options => {
   const graticule = preferences.graticule
   const sidebarShowing = preferences['ui.sidebar.showing'] ?? true
   const toolbarShowing = preferences['ui.toolbar.showing'] ?? true
+  const symbolPropertiesShowing = preferences['ui.symbolProperties.showing'] ?? true
 
   return [{
     label: 'View',
@@ -93,6 +94,14 @@ export default options => {
             checked: toolbarShowing,
             click: ({ checked }, browserWindow) => {
               if (browserWindow) browserWindow.webContents.send('VIEW_SHOW_TOOLBAR', checked)
+            }
+          },
+          {
+            label: 'Show Symbol Properties',
+            type: 'checkbox',
+            checked: symbolPropertiesShowing,
+            click: ({ checked }, browserWindow) => {
+              if (browserWindow) browserWindow.webContents.send('VIEW_SYMBOL_PROPERTIES', checked)
             }
           }
         ]

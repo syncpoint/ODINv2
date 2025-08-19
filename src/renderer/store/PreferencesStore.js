@@ -5,6 +5,7 @@ import * as L from '../../shared/level'
 const COORDINATES_FORMAT = 'coordinates-format'
 const GRATICULE = 'graticule'
 const TILE_LAYERS = 'tile-layers'
+const SYMBOL_PROPERTIES_SHOWING = 'ui.symbolProperties.showing'
 
 export default function PreferencesStore (preferencesDB, ipcRenderer) {
   Emitter.call(this)
@@ -30,6 +31,7 @@ export default function PreferencesStore (preferencesDB, ipcRenderer) {
   ipcRenderer.on('VIEW_GRATICULE', (_, type, checked) => this.setGraticule(type, checked))
   ipcRenderer.on('VIEW_SHOW_SIDEBAR', (_, checked) => this.showSidebar(checked))
   ipcRenderer.on('VIEW_SHOW_TOOLBAR', (_, checked) => this.showToolbar(checked))
+  ipcRenderer.on('VIEW_SYMBOL_PROPERTIES', (_, checked) => this.showSymbolProperties(checked))
 }
 
 util.inherits(PreferencesStore, Emitter)
@@ -51,6 +53,14 @@ PreferencesStore.prototype.showSidebar = function (checked) {
 
 PreferencesStore.prototype.showToolbar = function (checked) {
   this.put('ui.toolbar.showing', checked)
+}
+
+PreferencesStore.prototype.showSymbolProperties = function (checked) {
+  this.put(SYMBOL_PROPERTIES_SHOWING, checked)
+}
+
+PreferencesStore.prototype.getSymbolPropertiesShowing = function () {
+  return this.get(SYMBOL_PROPERTIES_SHOWING, true)
 }
 
 /**

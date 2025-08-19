@@ -238,8 +238,8 @@ Store.prototype.insert = function (tuples) {
 /**
  * import :: (operations, {k: v}) -> unit
  */
-Store.prototype.import = function (operations, options = {}) {
-  this.batch(this.db, operations, options)
+Store.prototype.import = async function (operations, options = {}) {
+  await this.batch(this.db, operations, options)
 }
 
 
