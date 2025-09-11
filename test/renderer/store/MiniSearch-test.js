@@ -1,7 +1,7 @@
 import assert from 'assert'
-import { createIndex, parseQuery } from './MiniSearch'
-import * as _default from './data/MiniSearch.default'
-import * as _3OSC from './data/MiniSearch.3OSC'
+import { createIndex, parseQuery } from '../../../src/renderer/store/MiniSearch'
+import * as _default from '../../../src/renderer/store/data/MiniSearch.default'
+import * as _3OSC from '../../../src/renderer/store/data/MiniSearch.3OSC'
 
 describe('MiniSearch', function () {
   describe('default', function () {

@@ -1,7 +1,7 @@
 import assert from 'assert'
 import * as R from 'ramda'
-import { PartitionDOWN } from './PartitionDOWN'
-import { leveldb, jsonDB, wkbDB } from '.'
+import { PartitionDOWN } from '../../../src/shared/level/PartitionDOWN'
+import { leveldb, jsonDB, wkbDB } from '../../../src/shared/level'
 
 const geometry = {
   geometry: { type: 'Point', coordinates: [1742867.2027975845, 5905160.9281057175] }

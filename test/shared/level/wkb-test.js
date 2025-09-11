@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { leveldb, wkbDB } from '.'
+import { leveldb, wkbDB } from '../../../src/shared/level'
 
 describe('WKB encoding', function () {
   it('encodes/decodes GeoJSON geometry as WKB', async function () {

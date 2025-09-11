@@ -1,6 +1,6 @@
 import assert from 'assert'
 import * as R from 'ramda'
-import { Disposable } from './disposable'
+import { Disposable } from '../../src/shared/disposable'
 
 describe('Disposable', function () {
 

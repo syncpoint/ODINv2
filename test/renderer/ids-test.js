@@ -1,5 +1,5 @@
 import assert from 'assert'
-import * as ID from './ids'
+import * as ID from '../../src/renderer/ids'
 
 const assertFeatureId = s => {
   const [scope, uuids] = s.split(ID.COLON)

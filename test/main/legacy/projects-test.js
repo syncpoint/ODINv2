@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { resolve } from 'path'
-import { readJSON } from './io'
-import { readProjects } from './projects'
+import { readJSON } from '../../../src/main/legacy/io'
+import { readProjects } from '../../../src/main/legacy/projects'
 
 const pathname = dir => resolve(__dirname, dir)
 

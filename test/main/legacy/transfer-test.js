@@ -1,8 +1,8 @@
 import assert from 'assert'
 import { resolve } from 'path'
-import { readJSON } from './io'
-import { transferProject } from './transfer'
-import * as L from '../../shared/level'
+import { readJSON } from '../../../src/main/legacy/io'
+import { transferProject } from '../../../src/main/legacy/transfer'
+import * as L from '../../../src/shared/level'
 
 const pathname = dir => resolve(__dirname, dir)
 

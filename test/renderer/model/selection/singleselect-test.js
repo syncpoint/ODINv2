@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { singleselect } from './singleselect'
+import { singleselect } from '../../../../src/renderer/model/selection/singleselect'
 
 describe('singleselect', function () {
 

@@ -1,6 +1,6 @@
 import assert from 'assert'
-import { ProjectStore } from './ProjectStore'
-import { leveldb } from '../../shared/level'
+import { ProjectStore } from '../../../src/main/stores/ProjectStore'
+import { leveldb } from '../../../src/shared/level'
 
 describe('ProjectStore', async function () {
 

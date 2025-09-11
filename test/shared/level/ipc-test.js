@@ -1,6 +1,6 @@
 import assert from 'assert'
-import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from './ipc'
-import { leveldb } from '.'
+import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from '../../../src/shared/level/ipc'
+import { leveldb } from '../../../src/shared/level'
 
 describe('IPCDownClient', function () {
   it('GET', async function () {

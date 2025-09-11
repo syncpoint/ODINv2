@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { Undo } from './Undo'
+import { Undo } from '../../src/renderer/Undo'
 
 const command = (queue, name, inverse = false) => {
   return {

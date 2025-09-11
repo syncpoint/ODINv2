@@ -1,8 +1,8 @@
 import assert from 'assert'
 import * as R from 'ramda'
-import * as L from '../../../shared/level'
-import Schema from './Schema'
-import options from './fixtures'
+import * as L from '../../../../src/shared/level'
+import Schema from '../../../../src/renderer/store/schema/Schema'
+import options from '../../../../src/renderer/store/schema/fixtures'
 
 const createSchemaDB = async (db, kvs = []) => {
   const schema = L.schemaDB(db)

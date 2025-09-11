@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { resolve } from 'path'
-import * as io from './io'
+import * as io from '../../../src/main/legacy/io'
 
 const pathname = dir => resolve(__dirname, dir)
 
