@@ -1,18 +1,7 @@
 const assert = require('assert')
-const { resolve } = require('path')
-const { readFileSync } = require('fs')
 const RBush = require('rbush').default
-
-const pathname = dir => resolve(__dirname, dir)
-
-/**
- * Read point features.
- */
-const readFeatures = () => {
-  const content = readFileSync(pathname('./layer.json'), 'utf8')
-  const { features } = JSON.parse(content)
-  return features.filter(({ geometry }) => geometry.type === 'Point')
-}
+const readFeatures = require('./_readFeatures')
+const pointGeometry = require('./_pointGeometry')
 
 const entry = feature => ({
   id: feature.id,
@@ -31,13 +20,13 @@ const load = features => {
 
 describe('rbush (regression)', function () {
   it('all :: () -> Entry[]', function () {
-    const features = readFeatures()
+    const features = readFeatures(pointGeometry)
     const rbush = load(features)
     assert.strictEqual(11, rbush.all().length)
   })
 
   it('search :: Extent -> Entry[]', function () {
-    const rbush = load(readFeatures())
+    const rbush = load(readFeatures(pointGeometry))
     const data = rbush.data
     const [dx, dy] = [data.maxX - data.minX, data.maxY - data.minY]
 
@@ -59,14 +48,14 @@ describe('rbush (regression)', function () {
   })
 
   it('remove :: Entry -> Unit', function () {
-    const rbush = load(readFeatures())
+    const rbush = load(readFeatures(pointGeometry))
     const entry =  rbush.all()[0]
     rbush.remove(entry)
     assert.strictEqual(10, rbush.all().length)
   })
 
   it('insert :: Entry -> Unit', function () {
-    const [head, ...tail] = readFeatures()
+    const [head, ...tail] = readFeatures(pointGeometry)
     const rbush = load(tail)
     rbush.insert(head)
     assert.strictEqual(11, rbush.all().length)
