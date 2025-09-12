@@ -33,7 +33,13 @@ describe('EventEmitter', function () {
     })()
   })
 
-  it('#emit - on (/w regex)', async function () {
+  /**
+   * RegEx pattern no longer supported (path-to-regexp v8.0.0+):
+   * https://github.com/pillarjs/path-to-regexp?tab=readme-ov-file#unexpected-----etc
+   *
+   * Luckily this feature is not used in the current codebase.
+   */
+  it.skip('#emit - on (/w regex)', async function () {
     const emitter = new EventEmitter()
     const acc = []
     const PATTERN = '[0-9a-f-]{36}'
