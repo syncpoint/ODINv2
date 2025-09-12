@@ -1,9 +1,6 @@
 import * as R from 'ramda'
 
 export const defs = proj4 => {
-
-  console.log(proj4)
-
   predef.forEach(projection => {
     proj4.defs(projection.code, projection.definition)
   })
