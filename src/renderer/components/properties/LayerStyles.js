@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import React from 'react'
 import Color from 'color'
 import { useServices } from '../hooks'
 import { Palette } from '../colors/Palette'
