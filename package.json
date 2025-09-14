@@ -76,7 +76,7 @@
     "geo-coordinates-parser": "^1.7.4",
     "geodesy": "^2.4.0",
     "jexl": "^2.3.0",
-    "jspdf": "^2.5.1",
+    "jspdf": "^3.0.2",
     "jsts": "^2.12.1",
     "kbar": "^0.1.0-beta.43",
     "leveldown": "^6.1.1",
