@@ -68,7 +68,7 @@
     "@syncpoint/signs": "^1.1.0",
     "@syncpoint/wkx": "^0.5.2",
     "abstract-leveldown": "^7.2.0",
-    "color": "^5.0.0",
+    "color": "^5.0.2",
     "dotenv": "^17.2.2",
     "fuse.js": "^7.1.0",
     "geo-coordinates-parser": "^1.7.4",
