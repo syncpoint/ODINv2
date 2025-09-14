@@ -1,8 +1,9 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import { leveldb, sessionDB } from '../shared/level'
+import * as paths from './paths'
 
-export const ipc = (databases, ipcMain, projectStore) => {
+export const ipc = (ipcMain, projectStore) => {
 
   ipcMain.handle('ipc:get:project', (_, id) => {
     return projectStore.getProject(id)
@@ -23,7 +24,7 @@ export const ipc = (databases, ipcMain, projectStore) => {
   ipcMain.handle('ipc:post:project', async (_, project) => {
     // Create and close project database:
     const uuid = project.id.split(':')[1]
-    const location = path.join(databases, uuid)
+    const location = path.join(paths.databases, uuid)
     const db = leveldb({ location })
     await db.close()
 
@@ -33,8 +34,8 @@ export const ipc = (databases, ipcMain, projectStore) => {
   ipcMain.handle('ipc:delete:project', async (_, id) => {
     // Delete project database:
     const uuid = id.split(':')[1]
-    const location = path.join(databases, uuid)
-    await fs.rmdir(location, { recursive: true })
+    const location = path.join(paths.databases, uuid)
+    await fs.rm(location, { recursive: true })
 
     return projectStore.deleteProject(id)
   })
@@ -70,7 +71,7 @@ export const ipc = (databases, ipcMain, projectStore) => {
   ipcMain.handle('ipc:put:project:replication/seed', async (_, id, seed) => {
     try {
       const uuid = id.split(':')[1]
-      const location = path.join(databases, uuid)
+      const location = path.join(paths.databases, uuid)
       const db = leveldb({ location })
       const session = sessionDB(db)
       await session.put('replication:seed', seed)

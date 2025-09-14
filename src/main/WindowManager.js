@@ -1,9 +1,9 @@
 import util from 'util'
-import { BrowserWindow, app } from 'electron'
+import { BrowserWindow } from 'electron'
 import * as paths from './paths'
 import Emitter from '../shared/emitter'
 
-const url = app => {
+const url = (() => {
   const notCold = process.argv.indexOf('--cold') === -1
   const hot = process.defaultApp ||
     /[\\/]electron-prebuilt[\\/]/.test(paths.execPath) ||
@@ -11,8 +11,8 @@ const url = app => {
 
   return (hot && notCold)
     ? new URL('index.html', 'http://localhost:8080')
-    : new URL(paths.staticIndexPage(app), 'file:')
-}
+    : new URL(paths.staticIndexPage, 'file:')
+})()
 
 
 /**
@@ -188,13 +188,13 @@ WindowManager.prototype.reloadAll = function () {
 WindowManager.prototype.showProject = function (key, project) {
   const additionalArguments = [
     `--page=${key}`,
-    `--databases=${paths.databases(app)}`
+    `--databases=${paths.databases}`
   ]
 
   return this.createWindow({
     handle: key,
     title: project.name,
-    url: url(app),
+    url,
     ...project.bounds,
     additionalArguments
   })
@@ -211,7 +211,7 @@ WindowManager.prototype.showSplash = function () {
   return this.createWindow({
     handle: 'splash',
     title: 'ODIN - Projects',
-    url: url(app),
+    url,
     additionalArguments
   })
 }
@@ -221,7 +221,7 @@ WindowManager.prototype.showLogin = function () {
   return this.createWindow({
     handle: 'login',
     title: 'Login and enable collaboration',
-    url: url(app),
+    url,
     minimizable: false,
     maximizable: false,
     resizable: true,
@@ -238,7 +238,7 @@ WindowManager.prototype.showLogout = function () {
   return this.createWindow({
     handle: 'logout',
     title: 'Logout and disable collaboration',
-    url: url(app),
+    url,
     minimizable: false,
     maximizable: false,
     resizable: true,
@@ -249,4 +249,3 @@ WindowManager.prototype.showLogout = function () {
     additionalArguments
   })
 }
-

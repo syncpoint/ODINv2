@@ -5,6 +5,7 @@
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
+import { app } from 'electron'
 
 export const execPath = process.execPath
 
@@ -18,36 +19,40 @@ export const execPath = process.execPath
  * Note: Currently unused; included only for documentation purpose.
  */
 /* eslint-disable no-unused-vars */
-const appData = app => app.getPath('appData')
+const appData = app.getPath('appData')
 /* eslint-enable no-unused-vars */
 
 /**
  * The directory for storing your app's configuration files,
  * which by default it is the appData directory appended
  * with your app's name.
+ *
+ * NOTE: Starting with v32.x Electron unconditionally deletes 'databases' directory
+ * where we used to store all databases.
+ * REFERENCE: https://github.com/electron/electron/issues/45396
  */
-const userData = app => app.getPath('userData')
+const userData = app.getPath('userData')
 
 /**
  * The current application directory.
  */
-const appPath = app => app.getAppPath()
+const appPath = app.getAppPath()
 
 /**
  * Directory to store all main/renderer databases.
  */
-export const databases = app => path.join(userData(app), 'databases')
+export const databases = path.join(userData, 'leveldb')
+const databasesLegacy = path.join(userData, 'databases')
 
 /**
  * Directory to store main/master database.
  */
-export const master = app => path.join(databases(app), 'master')
+export const master = path.join(databases, 'master')
 
 /**
  * .env file for providing user related environment settings
- *
  */
-export const dotenv = app => path.join(userData(app), '.env')
+export const dotenv = path.join(userData, '.env')
 
 /**
  * (Recusively) create directory for given path.
@@ -95,4 +100,15 @@ export const metadata = (location, uuid) => path.join(projects(location), uuid, 
  */
 export const preferences = (location, uuid) => path.join(projects(location), uuid, 'preferences.json')
 
-export const staticIndexPage = app => path.join(appPath(app), 'dist', 'index.html')
+export const staticIndexPage = path.join(appPath, 'dist', 'index.html')
+
+/**
+ *
+ */
+export const initStorageLocation = () => {
+  if (fs.existsSync(databasesLegacy)) {
+    fs.renameSync(databasesLegacy, databases)
+  } else if (!fs.existsSync(databases)) {
+    mkdir(databases)
+  }
+}

@@ -21,16 +21,11 @@ import { isEnabled } from './environment'
  */
 const ready = async () => {
   // read environment variables from .env file and add to process.env
-  console.log(`looking for .env file ${paths.dotenv(app)}`)
-  dotenv.config({ debug: true, path: paths.dotenv(app) })
-
-  // loadReactChromeExtension()
+  dotenv.config({ debug: false, quiet: true, path: paths.dotenv })
 
   // Open/create master database.
-  const databases = paths.databases(app)
-  console.log('databases directory:', databases)
-  paths.mkdir(databases)
-  const db = leveldb({ location: paths.master(app), encoding: 'json' })
+  paths.initStorageLocation()
+  const db = leveldb({ location: paths.master, encoding: 'json' })
 
   /* eslint-disable no-new */
   new IPCServer(db, ipcMain)
@@ -39,12 +34,14 @@ const ready = async () => {
   const projectStore = new ProjectStore(db)
   const sessionStore = new SessionStore(db)
   const legacyStore = new LegacyStore(db)
-  ipc(databases, ipcMain, projectStore)
+
+  ipc(ipcMain, projectStore)
 
   // Transfer legacy data if not already done.
   if (await legacyStore.getTransferred() === false) {
     const location = paths.odinHome
-    await transferLegacy(location, legacyStore, databases)
+    // TODO: remove databases parameter and directly use paths instead
+    await transferLegacy(location, legacyStore)
   }
 
   const windowManager = new WindowManager()

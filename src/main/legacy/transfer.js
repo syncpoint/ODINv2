@@ -2,6 +2,7 @@ import path from 'path'
 import { readSources } from './io'
 import { readProjects } from './projects'
 import * as L from '../../shared/level'
+import * as paths from '../paths'
 
 
 /**
@@ -63,14 +64,14 @@ export const transferProject = async (db, project) => {
  * @param {Master} legacyStore master/main database
  * @param {String} databases directory to store project databases
  */
-export const transferLegacy = async (location, legacyStore, databases) => {
+export const transferLegacy = async (location, legacyStore) => {
   await legacyStore.transferSources(await readSources(location))
   const projects = await readProjects(location)
   await legacyStore.transferMetadata(projects)
 
   await Promise.all(projects.map(async project => {
     const uuid = project.id.split(':')[1]
-    const location = path.join(databases, uuid)
+    const location = path.join(paths.databases, uuid)
     const db = L.leveldb({ location })
     await transferProject(db, project)
     return db.close()
