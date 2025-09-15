@@ -7,7 +7,7 @@ import { Title } from './Title'
 import { useServices, useEmitter } from '../hooks'
 import * as ID from '../../ids'
 import { Tooltip } from 'react-tooltip'
-import './Card.scss'
+import './Card.css'
 
 /**
  *

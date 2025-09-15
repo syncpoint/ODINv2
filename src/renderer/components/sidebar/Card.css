@@ -1,11 +1,11 @@
-@import 'presets';
-
 .e3de-card {
-  @include card-border;
   margin: 0.25rem 0;
   padding: 0.5rem;
   font-family: sans-serif;
   box-sizing: border-box;
+  border: 0.07rem solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 
   &[aria-selected="true"] {
     background-color: #f4f0ec;
@@ -51,16 +51,11 @@
   font-size: 100%;
 
   &:focus {
-    color: $color-text-focus;
+    color: var(--color-text-focus);
   }
 
   &:hover {
-    color: $color-text-focus;
-  }
-
-  &--highlight {
-    font-weight: 500;
-    text-decoration: underline;
+    color: var(--color-text-focus);
   }
 }
 
@@ -75,6 +70,6 @@
   background-color: inherit;
 
   &:hover {
-    color: $color-text-focus;
+    color: var(--color-text-focus);
   }
 }

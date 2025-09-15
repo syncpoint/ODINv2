@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import React from 'react'
 import Color from 'color'
 import { Swatch } from './Swatch'
-import './index.scss'
+import './index.css'
 
 export const Palette = props => {
   const format = color => R.cond([

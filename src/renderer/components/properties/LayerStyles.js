@@ -5,7 +5,7 @@ import { useServices } from '../hooks'
 import { Palette } from '../colors/Palette'
 import Range from './Range'
 import Checkbox from './Checkbox'
-import './Styles.scss'
+import './Styles.css'
 
 const lineColors = [undefined, 'white', 'black', 'red', 'brown', 'gold', 'green', 'blue', 'purple']
   .map(c => c ? Color(c) : undefined)

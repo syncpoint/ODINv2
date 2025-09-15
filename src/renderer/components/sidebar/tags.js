@@ -7,7 +7,7 @@ import { TagIcon } from './TagIcon'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
 import { IconTag } from './IconTag'
-import './tags.scss'
+import './tags.css'
 
 /**
  *

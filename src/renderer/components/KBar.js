@@ -16,7 +16,7 @@ import {
 } from 'kbar'
 import { useServices, useEmitter } from './hooks'
 import { Disposable } from '../../shared/disposable'
-import './KBar.scss'
+import './KBar.css'
 
 
 const List = () => {

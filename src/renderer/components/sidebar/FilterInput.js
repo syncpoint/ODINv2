@@ -5,7 +5,7 @@ import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
 import { preventDefault } from 'ol/events/Event'
-import './FilterInput.scss'
+import './FilterInput.css'
 
 
 /**

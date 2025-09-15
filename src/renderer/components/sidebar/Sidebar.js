@@ -12,7 +12,7 @@ import { MemoizedCard } from './Card'
 import { LazyList } from './LazyList'
 import { FilterInput } from './FilterInput'
 import { Tooltip } from 'react-tooltip'
-import './Sidebar.scss'
+import './Sidebar.css'
 
 
 /**

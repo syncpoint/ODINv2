@@ -1,0 +1,11 @@
+.fe6e-filter-container {
+  border: 0.07rem solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  padding: 8px 0 8px 8px;
+}
+
+.fe6e-filter {
+  font-size: 100%;
+  width: 100%;
+}

@@ -24,12 +24,12 @@
   &[aria-selected="true"] {
     background-color: #f4f0ec;
   }
+}
 
-  &__description {
-    display: inline-block;
-    font-size: 0.9rem;
-    line-height: 16px;
-  }
+.bf12-card__description {
+  display: inline-block;
+  font-size: 0.9rem;
+  line-height: 16px;
 }
 
 .bf12-list-container {
@@ -48,17 +48,17 @@
   margin: 8px;
   height: 60px;
   cursor: grab;
+}
 
-  &--dragged {
-    opacity: 0.6;
-    z-index: 10;
-  }
+.bf12-tile-layer-item--dragged {
+  opacity: 0.6;
+  z-index: 10;
 }
 
 .bf12-opacity {
   margin-top: 0.25rem;
+}
 
-  &__label {
-    font-size: 0.9rem;
-  }
+.bf12-opacity__label {
+  font-size: 0.9rem;
 }

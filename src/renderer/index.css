@@ -12,6 +12,12 @@
   --color-gray-500: #6b7280;
   --color-gray-600: rgb(75, 85, 99);
   --color-gray-900: rgb(17, 24, 39);
+
+  --color-text-focus: #40a9ff;
+  --color-border: lightgrey;
+  --color-primary-accent: #e9746c;
+  --color-secondary-accent: #168b93;
+  --color-tag-hover: #dcdcdc;
 }
 
 /* ==> Tailwind CSS presets */

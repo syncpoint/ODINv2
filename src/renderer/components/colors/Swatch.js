@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import Color from 'color'
-import './index.scss'
+import './index.css'
 
 export const Swatch = props => {
   const color = Color(props.color)
