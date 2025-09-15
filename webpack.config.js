@@ -31,7 +31,7 @@ const RULES = {
     // Note: loaders are applied from right to left, i.e. css-loader -> style-loader
     //
     test: /\.(scss|css)$/,
-    use: ['style-loader', 'css-loader', 'sass-loader']
+    use: ['style-loader', 'css-loader']
   },
 
   image: {
