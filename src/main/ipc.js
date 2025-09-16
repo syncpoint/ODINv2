@@ -1,7 +1,10 @@
 import path from 'path'
 import { promises as fs } from 'fs'
+import { app } from 'electron'
 import { leveldb, sessionDB } from '../shared/level'
-import * as paths from './paths'
+import { initPaths } from './paths'
+
+const paths = initPaths(app)
 
 export const ipc = (ipcMain, projectStore) => {
 

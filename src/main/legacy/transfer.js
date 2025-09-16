@@ -2,7 +2,6 @@ import path from 'path'
 import { readSources } from './io'
 import { readProjects } from './projects'
 import * as L from '../../shared/level'
-import * as paths from '../paths'
 
 
 /**
@@ -57,15 +56,15 @@ export const transferProject = async (db, project) => {
   await wkbDB.batch(wkb)
 }
 
-
-
 /**
  * @param {String} location directory for legacy data (ODIN_HOME)
  * @param {Master} legacyStore master/main database
  * @param {String} databases directory to store project databases
  */
-export const transferLegacy = async (location, legacyStore) => {
-  await legacyStore.transferSources(await readSources(location))
+export const transferLegacy = async (paths, legacyStore) => {
+  const location = paths.odinHome
+  const sources = await readSources(location)
+  await legacyStore.transferSources(sources)
   const projects = await readProjects(location)
   await legacyStore.transferMetadata(projects)
 

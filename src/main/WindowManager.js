@@ -1,7 +1,9 @@
 import util from 'util'
-import { BrowserWindow } from 'electron'
-import * as paths from './paths'
+import { BrowserWindow, app } from 'electron'
+import { initPaths } from './paths'
 import Emitter from '../shared/emitter'
+
+const paths = initPaths(app)
 
 const url = (() => {
   const notCold = process.argv.indexOf('--cold') === -1

@@ -47,7 +47,7 @@ Collaboration.prototype.purgeSettings = async function () {
 
   const removeSharedLayers = () => sharedProjects.map(async (project) => {
     try {
-      const location = path.join(paths.databases, projectUUID(project))
+      const location = path.join(paths.databases(app), projectUUID(project))
       console.log(`Purging collaboration settings from ${project.id} located at ${location}`)
       const db = L.leveldb({ location })
 

@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import { app, ipcMain, shell, BrowserWindow } from 'electron'
 import URL from 'url'
-import * as paths from './paths'
+import { initPaths } from './paths'
 import { transferLegacy } from './legacy/transfer'
 import { leveldb } from '../shared/level'
 import { IPCServer } from '../shared/level/ipc'
@@ -15,6 +15,8 @@ import { Collaboration } from './Collaboration'
 import * as dotenv from 'dotenv'
 import SelfUpdate from './SelfUpdate'
 import { isEnabled } from './environment'
+
+const paths = initPaths(app)
 
 /**
  * Emitted once, when Electron has finished initializing.
@@ -39,9 +41,7 @@ const ready = async () => {
 
   // Transfer legacy data if not already done.
   if (await legacyStore.getTransferred() === false) {
-    const location = paths.odinHome
-    // TODO: remove databases parameter and directly use paths instead
-    await transferLegacy(location, legacyStore)
+    await transferLegacy(paths, legacyStore)
   }
 
   const windowManager = new WindowManager()

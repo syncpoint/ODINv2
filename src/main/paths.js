@@ -5,7 +5,13 @@
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
-import { app } from 'electron'
+
+/**
+ * Due to current setup (CommonJS) and module loading limitations
+ * with Mocha, we cannot directly import { app } from 'electron',
+ * which would be the 'right' thing to do.
+ * See also function `initPaths` below.
+ */
 
 export const execPath = process.execPath
 
@@ -19,7 +25,7 @@ export const execPath = process.execPath
  * Note: Currently unused; included only for documentation purpose.
  */
 /* eslint-disable no-unused-vars */
-const appData = app.getPath('appData')
+const appData = app => app.getPath('appData')
 /* eslint-enable no-unused-vars */
 
 /**
@@ -31,28 +37,28 @@ const appData = app.getPath('appData')
  * where we used to store all databases.
  * REFERENCE: https://github.com/electron/electron/issues/45396
  */
-const userData = app.getPath('userData')
+const userData = app => app.getPath('userData')
 
 /**
  * The current application directory.
  */
-const appPath = app.getAppPath()
+const appPath = app => app.getAppPath()
 
 /**
  * Directory to store all main/renderer databases.
  */
-export const databases = path.join(userData, 'leveldb')
-const databasesLegacy = path.join(userData, 'databases')
+export const databases = app => path.join(userData(app), 'leveldb')
+const databasesLegacy = app => path.join(userData(app), 'databases')
 
 /**
  * Directory to store main/master database.
  */
-export const master = path.join(databases, 'master')
+export const master = app => path.join(databases(app), 'master')
 
 /**
  * .env file for providing user related environment settings
  */
-export const dotenv = path.join(userData, '.env')
+export const dotenv = app => path.join(userData(app), '.env')
 
 /**
  * (Recusively) create directory for given path.
@@ -100,15 +106,32 @@ export const metadata = (location, uuid) => path.join(projects(location), uuid, 
  */
 export const preferences = (location, uuid) => path.join(projects(location), uuid, 'preferences.json')
 
-export const staticIndexPage = path.join(appPath, 'dist', 'index.html')
+export const staticIndexPage = app => path.join(appPath(app), 'dist', 'index.html')
 
 /**
  *
  */
-export const initStorageLocation = () => {
-  if (fs.existsSync(databasesLegacy)) {
-    fs.renameSync(databasesLegacy, databases)
-  } else if (!fs.existsSync(databases)) {
-    mkdir(databases)
+export const initStorageLocation = app => {
+  if (fs.existsSync(databasesLegacy(app))) {
+    fs.renameSync(databasesLegacy(app), databases(app))
+  } else if (!fs.existsSync(databases(app))) {
+    mkdir(databases(app))
   }
 }
+
+export const initPaths = app => ({
+  execPath,
+  databases: databases(app),
+  master: master(app),
+  dotenv: dotenv(app),
+  userHome,
+  odinHome,
+  sources,
+  projects,
+  layers,
+  layer,
+  metadata,
+  preferences,
+  staticIndexPage: staticIndexPage(app),
+  initStorageLocation: () => initStorageLocation(app)
+})
