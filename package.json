@@ -78,7 +78,7 @@
     "leveldown": "^6.1.1",
     "levelup": "^5.0.1",
     "luxon": "^3.7.2",
-    "minisearch": "^7.1.2",
+    "minisearch": "^7.2.0",
     "mousetrap": "^1.6.5",
     "mousetrap-global-bind": "^1.1.0",
     "ol": "^10.6.1",
