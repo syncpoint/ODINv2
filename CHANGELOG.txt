@@ -1,3 +1,11 @@
+3.0.2
+* moved unit tests to dedicated directory (8718cd05e0f48de88f7adf60f160f87b66bab1e6)
+* regression tests: luxon, fuse.js, rbush, proj4, geo-coordinate-parser, Color
+* electron: rename databases directory (a0f92b99f130c6b71536fc2173ae56407797296c)
+* migrated scss -> css (293f7fe2c062714715089151f9bf26d16623bb9d)
+* updated most outdated build/runtime dependencies
+* removed jsdoc dependency
+
 2.5.0-alpha
 * New: Distance and area measurement
 * New: Layer Styles
