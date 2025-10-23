@@ -19,6 +19,15 @@ ODINv1 layer files (*.json) you can import them at any time via drag&drop onto t
 Self-Update is enabled by default and ODIN will check for newer versions. In order to disable Self-Update
 one can use the environment variable `ODIN_SELF_UPDATE` with a value of `0`.
 
+### OpenStreetMap Nominatim
+
+If you are not connected to the Internet and you want to use the "Search for places" function you need to host your own OSM [Nominatim server](https://nominatim.org/release-docs/latest/admin/Installation/). In order
+to make ODIN use your on-premise instance of Nominatim you cat use the environment variable `NOMINATIM_URL`. The default value for this parameter is `https://nominatim.openstreetmap.org/search`.
+
+## Host your own map server
+
+You are an offline-first user and want to host your own map server (i.e. on your laptop)? GeoWebServer is way to big and uses too many resources? Just fire up [mbtileserver](https://github.com/consbio/mbtileserver), provide a _mbtile_ file that contains all your map tiles and you are done.
+
 ## License
 
 Copyright (c) Syncpoint GmbH. All rights reserved.
