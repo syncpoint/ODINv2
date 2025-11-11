@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import util from 'util'
-import { promises as fs } from 'fs'
 import path from 'path'
 import { reproject } from 'reproject'
 import Emitter from '../shared/emitter'
@@ -8,8 +7,8 @@ import * as ID from './ids'
 import { CONTENT_TYPE } from './Clipboard'
 import { clone } from './model/Import'
 
-const readJSON = async path => {
-  const content = await fs.readFile(path, 'utf8')
+const readJSON = async file => {
+  const content = await file.text()
   return JSON.parse(content)
 }
 
@@ -46,7 +45,7 @@ DragAndDrop.prototype.drop = async function (event) {
 
 DragAndDrop.prototype.json = async function (files) {
 
-  const geoJSON = await Promise.all(files.map(file => readJSON(file.path)))
+  const geoJSON = await Promise.all(files.map(file => readJSON(file)))
 
   /*  treat dropped files the same way as if they were copied/pasted */
   const natives = geoJSON.filter(json => json.contentType === CONTENT_TYPE)
