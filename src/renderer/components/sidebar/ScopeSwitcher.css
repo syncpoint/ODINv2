@@ -1,40 +1,73 @@
 
 .a74a-taglist {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 2px;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  padding: 4px 0;
 }
 
 .a74a-scope-selector {
-  width: 28px;
-  height: 28px;
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.a74a-scope-selector-active {
-  border: 1px solid #e9746c;
-  border-radius: 2px;
+.a74a-scope-selector::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 0;
   background-color: #e9746c;
+  transition: height 0.15s ease;
+}
+
+.a74a-scope-selector-active::before {
+  height: 24px;
 }
 
 .a74a-scope-selector:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(0, 0, 0, 0.05);
   cursor: pointer;
 }
 
+.a74a-scope-selector-active:hover {
+  background-color: transparent;
+}
+
 .a74a-icon {
-  color:#68696B;
-  width: 26px;
-  height: 26px;
+  color: #616161;
+  width: 28px;
+  height: 28px;
   padding: 0px;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.a74a-scope-selector:hover .a74a-icon {
+  opacity: 1;
 }
 
 .a74a-icon-active {
-  color: white;
-  width: 26px;
-  height: 26px;
+  color: #e9746c;
+  width: 28px;
+  height: 28px;
   padding: 0px;
+  opacity: 1;
+}
+
+.a74a-breadcrumb {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .a74a-named {

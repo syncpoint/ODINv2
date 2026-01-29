@@ -68,23 +68,27 @@ const ScopeSwitch = props => {
     const restoredFilter = filters[props.scope] || ''
 
     setSearch({ history: history(), filter: restoredFilter, filters })
+
+    // Notify parent (e.g., to expand collapsed sidebar)
+    if (props.onScopeClick) props.onScopeClick()
   }
 
 
   if (props.name && props.handleGoBack) {
 
     return <div style={{ width: '100%', border: '1px solid #e9746c', borderRadius: '2px', marginTop: '3px' }} >
-      <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between' }}>
-        <Icon className='a74a-icon-active'
+      <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Icon
           path={props.scope.match(/LINK/i) === null ? mdi.mdiFormatListBulletedType : mdi.mdiLinkVariant }
+          style={{ width: '26px', height: '26px', color: 'white' }}
         />
         <div style={{ textTransform: 'uppercase', padding: '3px', fontWeight: 400, fontSize: '0.86rem' }}>{props.name}</div>
         { props.disabled
-          ? <div className='a74a-icon-active' style= {{ marginLeft: 'auto' }}/>
-          : <Icon className='a74a-icon-active'
+          ? <div style={{ width: '26px', height: '26px', marginLeft: 'auto' }}/>
+          : <Icon
           path={mdi.mdiCloseBoxOutline}
           onClick={props.handleGoBack}
-          style= {{ marginLeft: 'auto' }}
+          style={{ width: '26px', height: '26px', marginLeft: 'auto', color: 'white', cursor: 'pointer' }}
         />}
       </div>
       <div style={{ padding: '3px', fontWeight: 300, fontSize: '0.86rem' }}>{props.label}</div>
@@ -107,14 +111,40 @@ ScopeSwitch.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string.isRequired,
   scope: PropTypes.string.isRequired,
-  toolTip: PropTypes.string
+  toolTip: PropTypes.string,
+  onScopeClick: PropTypes.func
 }
 
 
 /**
- *
+ * Vertical column of scope icons
  */
-export const ScopeSwitcher = props => {
+export const ScopeSwitcher = ({ onScopeClick }) => {
+  const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
+    <ScopeSwitch
+      key={scope}
+      scope={scope}
+      label={label}
+      toolTip={TOOLTIPS[scope]}
+      onScopeClick={onScopeClick}
+    />
+  )
+
+  return (
+    <div className='a74a-taglist'>
+      { defaultSwitches }
+    </div>
+  )
+}
+
+ScopeSwitcher.propTypes = {
+  onScopeClick: PropTypes.func
+}
+
+/**
+ * Breadcrumb trail showing current drill-down path
+ */
+export const ScopeBreadcrumb = () => {
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const { history } = search
 
@@ -132,15 +162,6 @@ export const ScopeSwitcher = props => {
     setHistory(R.dropLast(1, history))
   }
 
-  const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
-    <ScopeSwitch
-      key={scope}
-      scope={scope}
-      label={label}
-      toolTip={TOOLTIPS[scope]}
-    />
-  )
-
   const childSwitches = R.drop(1, history).map(({ key, label, scope }, index, elements) => {
     return <ScopeSwitch
       key={key}
@@ -150,13 +171,12 @@ export const ScopeSwitcher = props => {
       handleGoBack={handleGoBack}
       disabled={elements.length > 1 && index < elements.length - 1 }
     />
-  }
-  )
+  })
 
+  if (childSwitches.length === 0) return null
 
   return (
-    <div className='a74a-taglist'>
-      { defaultSwitches }
+    <div className='a74a-breadcrumb'>
       { childSwitches }
     </div>
   )
