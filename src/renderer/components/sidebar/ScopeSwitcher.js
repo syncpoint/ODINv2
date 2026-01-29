@@ -61,7 +61,13 @@ const ScopeSwitch = props => {
     const pop = () => search.history.slice(0, findIndex() + 1)
     const reset = () => [{ key: 'root', scope: props.scope, label: props.label }]
     const history = props.name ? pop : reset
-    setSearch({ history: history(), filter: '' })
+
+    // Save current filter for current scope, restore filter for new scope
+    const currentScope = search.history[search.history.length - 1]?.scope
+    const filters = { ...search.filters, [currentScope]: search.filter }
+    const restoredFilter = filters[props.scope] || ''
+
+    setSearch({ history: history(), filter: restoredFilter, filters })
   }
 
 
@@ -112,10 +118,15 @@ export const ScopeSwitcher = props => {
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const { history } = search
 
-  const setHistory = React.useCallback(history => {
-    // Note: Setting/resetting history always resets filter.
-    setSearch({ filter: '', history })
-  }, [setSearch])
+  const setHistory = React.useCallback(newHistory => {
+    // Save current filter for current scope, restore filter for new scope
+    const currentScope = search.history[search.history.length - 1]?.scope
+    const newScope = newHistory[newHistory.length - 1]?.scope
+    const filters = { ...search.filters, [currentScope]: search.filter }
+    const restoredFilter = filters[newScope] || ''
+
+    setSearch({ history: newHistory, filter: restoredFilter, filters })
+  }, [setSearch, search])
 
   const handleGoBack = () => {
     setHistory(R.dropLast(1, history))

@@ -77,10 +77,15 @@ const useModel = () => {
 
   // ==> Internal callbacks.
 
-  const setHistory = React.useCallback(history => {
-    // Note: Setting/resetting history always resets filter.
-    setSearch({ filter: '', history })
-  }, [setSearch])
+  const setHistory = React.useCallback(newHistory => {
+    // Save current filter for current scope, restore filter for new scope
+    const currentScope = search.history[search.history.length - 1]?.scope
+    const newScope = newHistory[newHistory.length - 1]?.scope
+    const filters = { ...search.filters, [currentScope]: search.filter }
+    const restoredFilter = filters[newScope] || ''
+
+    setSearch({ history: newHistory, filter: restoredFilter, filters })
+  }, [setSearch, search])
 
   // <== Internal callbacks.
 
