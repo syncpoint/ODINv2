@@ -28,16 +28,18 @@ const SSEServiceProperties = props => {
     return () => clearInterval(interval)
   }, [key, sseLayerStore])
 
-  // Update local state when service changes
+  // Reset local state only when selecting a different service
   React.useEffect(() => {
     setUrl({ dirty: false, value: service.url || '' })
     setEventType({ dirty: false, value: service.eventType || 'message' })
     setUpdateInterval({ dirty: false, value: service.updateInterval || 100 })
-  }, [service])
+  }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateService = (updates) => {
-    const newValue = { ...service, ...updates }
-    store.update([key], [newValue], [service])
+  const updateService = async (updates) => {
+    // Read current value from store to avoid stale closure issues
+    const [currentService] = await store.values(key)
+    const newValue = { ...currentService, ...updates }
+    store.update([key], [newValue], [currentService])
   }
 
   const handleUrlChange = ({ target }) => {
