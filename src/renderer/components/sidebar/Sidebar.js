@@ -1,13 +1,15 @@
 import * as R from 'ramda'
 import React from 'react'
 import isEqual from 'react-fast-compare'
+import Icon from '@mdi/react'
+import { mdiChevronLeft, mdiChevronRight } from '@mdi/js'
 import { Disposable } from '../../../shared/disposable'
 import * as ID from '../../ids'
 import { useServices, useMemento, useEmitter } from '../hooks'
 import { multiselect } from '../../model/selection/multiselect'
 import { defaultSearch, defaultState } from './state'
 import { matcher, preventDefault } from '../events'
-import { ScopeSwitcher } from './ScopeSwitcher'
+import { ScopeSwitcher, ScopeBreadcrumb } from './ScopeSwitcher'
 import { MemoizedCard } from './Card'
 import { LazyList } from './LazyList'
 import { FilterInput } from './FilterInput'
@@ -77,10 +79,15 @@ const useModel = () => {
 
   // ==> Internal callbacks.
 
-  const setHistory = React.useCallback(history => {
-    // Note: Setting/resetting history always resets filter.
-    setSearch({ filter: '', history })
-  }, [setSearch])
+  const setHistory = React.useCallback(newHistory => {
+    // Save current filter for current scope, restore filter for new scope
+    const currentScope = search.history[search.history.length - 1]?.scope
+    const newScope = newHistory[newHistory.length - 1]?.scope
+    const filters = { ...search.filters, [currentScope]: search.filter }
+    const restoredFilter = filters[newScope] || ''
+
+    setSearch({ history: newHistory, filter: restoredFilter, filters })
+  }, [setSearch, search])
 
   // <== Internal callbacks.
 
@@ -243,7 +250,15 @@ const useModel = () => {
   }
 }
 
+const DEFAULT_WIDTH = 336 // 21rem equivalent
+const MIN_WIDTH = 200
+const MAX_WIDTH = 600
+
 export const Sidebar = () => {
+  const [collapsed, setCollapsed] = useMemento('ui.sidebar.collapsed', false)
+  const [width, setWidth] = useMemento('ui.sidebar.width', DEFAULT_WIDTH)
+  const [isResizing, setIsResizing] = React.useState(false)
+  const sidebarRef = React.useRef(null)
 
   // Current behavior:
   // On startup three renders are performed.
@@ -253,6 +268,40 @@ export const Sidebar = () => {
 
   const { state, ...controller } = useModel()
   const { onClick, onKeyDown, onFocus } = controller
+
+  // Handle resize drag
+  React.useEffect(() => {
+    if (!isResizing) return
+
+    const handleMouseMove = (e) => {
+      if (!sidebarRef.current) return
+      const sidebarRect = sidebarRef.current.getBoundingClientRect()
+      const newWidth = e.clientX - sidebarRect.left
+      const clampedWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth))
+      setWidth(clampedWidth)
+    }
+
+    const handleMouseUp = () => {
+      setIsResizing(false)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizing, setWidth])
+
+  const handleResizeStart = (e) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }
 
   const renderEntry = React.useCallback(({ index, measureRef }) => {
     // Handle 'overshooting':
@@ -271,20 +320,55 @@ export const Sidebar = () => {
     )
   }, [state, onClick])
 
+  const toggleCollapsed = () => setCollapsed(!collapsed)
+
+  const sidebarClass = collapsed ? 'e3de-sidebar e3de-sidebar--collapsed' : 'e3de-sidebar'
+  const sidebarStyle = collapsed ? {} : { width: `${width}px` }
+
   return (
-    <div className="e3de-sidebar"
+    <div
+      className={sidebarClass}
+      style={sidebarStyle}
+      ref={sidebarRef}
       tabIndex={0}
       onKeyDown={onKeyDown}
       onClick={onClick(null)}
     >
-      <ScopeSwitcher/>
-      <FilterInput onFocus={onFocus}/>
-      <LazyList
-        count={state.entries.length}
-        scroll={state.scroll}
-        focusIndex={state.focusIndex}
-        renderEntry={renderEntry}
-      />
+      <div className="e3de-sidebar-layout">
+        <div className="e3de-sidebar-scopes">
+          <ScopeSwitcher onScopeClick={() => collapsed && setCollapsed(false)}/>
+          <button
+            id="sidebar-toggle"
+            className="e3de-sidebar-toggle"
+            onClick={toggleCollapsed}
+          >
+            <Icon path={collapsed ? mdiChevronRight : mdiChevronLeft} />
+          </button>
+          <Tooltip
+            anchorSelect="#sidebar-toggle"
+            content={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            delayShow={750}
+          />
+        </div>
+        {!collapsed && (
+          <div className="e3de-sidebar-content">
+            <ScopeBreadcrumb/>
+            <FilterInput onFocus={onFocus}/>
+            <LazyList
+              count={state.entries.length}
+              scroll={state.scroll}
+              focusIndex={state.focusIndex}
+              renderEntry={renderEntry}
+            />
+          </div>
+        )}
+      </div>
+      {!collapsed && (
+        <div
+          className="e3de-sidebar-resize-handle"
+          onMouseDown={handleResizeStart}
+        />
+      )}
       <Tooltip anchorSelect='.e3de-tag--active' delayShow={750} render={({ activeAnchor }) => {
         /*
           Unfortunately we have elements that are addressed by both id and class selectors. In order

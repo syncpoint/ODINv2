@@ -28,7 +28,7 @@ export const FilterInput = props => {
   const handleChange = event => {
     const { target } = event
     setCursor(target.selectionStart)
-    setSearch({ history: search.history, filter: target.value })
+    setSearch({ ...search, filter: target.value })
   }
 
 
