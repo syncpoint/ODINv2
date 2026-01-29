@@ -338,12 +338,17 @@ export const Sidebar = () => {
         <div className="e3de-sidebar-scopes">
           <ScopeSwitcher onScopeClick={() => collapsed && setCollapsed(false)}/>
           <button
+            id="sidebar-toggle"
             className="e3de-sidebar-toggle"
             onClick={toggleCollapsed}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <Icon path={collapsed ? mdiChevronRight : mdiChevronLeft} />
           </button>
+          <Tooltip
+            anchorSelect="#sidebar-toggle"
+            content={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            delayShow={750}
+          />
         </div>
         {!collapsed && (
           <div className="e3de-sidebar-content">
