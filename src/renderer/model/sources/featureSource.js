@@ -13,7 +13,7 @@ import isEqual from 'react-fast-compare'
  * Read features from GeoJSON to ol/Feature and
  * create input signals for style calculation.
  */
-const readFeature = R.curry((state, source) => {
+export const readFeature = R.curry((state, source) => {
   const feature = format.readFeature(source)
   const featureId = feature.getId()
   const layerId = ID.layerId(featureId)
