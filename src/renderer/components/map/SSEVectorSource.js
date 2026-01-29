@@ -171,8 +171,7 @@ class SSEVectorSource extends VectorSource {
       if (this.useFeatureIds) {
         this.updateFeaturesById(features)
       } else {
-        this.clear()
-        this.addFeatures(features)
+        this.replaceAllFeatures(features)
       }
 
       this.stats.mapUpdates++
@@ -208,6 +207,19 @@ class SSEVectorSource extends VectorSource {
       return geometry
     }
     return reproject(geometry, this.dataProjection, this.featureProjection)
+  }
+
+  // Replace all features (for sources without IDs)
+  replaceAllFeatures (features) {
+    this.clear()
+    const olFeatures = features.map(feature => {
+      const reprojectedFeature = {
+        ...feature,
+        geometry: this.reprojectGeometry(feature.geometry)
+      }
+      return this.featureReader(reprojectedFeature)
+    })
+    this.addFeatures(olFeatures)
   }
 
   // features Array[GeoJSON]
