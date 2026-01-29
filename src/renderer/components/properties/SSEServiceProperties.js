@@ -85,6 +85,7 @@ const SSEServiceProperties = props => {
     : 'sse-status sse-status--disconnected'
 
   const connectionStatusText = stats.isConnected ? 'Connected' : 'Disconnected'
+  const isConnected = service.enabled && stats.isConnected
 
   return (
     <FlexColumnGap>
@@ -94,6 +95,7 @@ const SSEServiceProperties = props => {
         id='sse-url'
         label='URL'
         value={url.value}
+        disabled={isConnected}
         onChange={handleUrlChange}
         onBlur={handleUrlBlur}
       />
@@ -103,6 +105,7 @@ const SSEServiceProperties = props => {
         id='sse-event-type'
         label='Event Type'
         value={eventType.value}
+        disabled={isConnected}
         onChange={handleEventTypeChange}
         onBlur={handleEventTypeBlur}
       />
