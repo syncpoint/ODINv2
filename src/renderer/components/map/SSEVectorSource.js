@@ -3,6 +3,8 @@ import VectorSource from 'ol/source/Vector'
 import { reproject } from 'reproject'
 import { readFeature } from '../../model/sources/featureSource'
 import { format } from '../../ol/format'
+import { defaultStyle } from '../../store/schema/default-style'
+import * as ID from '../../ids'
 
 class SSEVectorSource extends VectorSource {
   constructor (options = {}) {
@@ -32,25 +34,9 @@ class SSEVectorSource extends VectorSource {
     this.useFeatureIds = options.useFeatureIds !== false // Default: true
     this.idPrefix = 'feature:475563a0-c067-4a5a-bf9a-75dfcda188ad/'
 
-    const textColor = 'black'
-    const textHaloColor = 'white'
-    const textHaloWidth = 3
-
     this.featureReader = readFeature({
       styles: {
-        'style+default:': {
-          'color-scheme': 'medium',
-          'line-width': 2,
-          'line-halo-width': 1,
-          'text-font-size': '12px',
-          'text-font-family': 'sans-serif',
-          'text-color': textColor,
-          'text-halo-color': textHaloColor,
-          'text-halo-width': textHaloWidth,
-          'symbol-text-color': textColor,
-          'symbol-text-halo-color': textHaloColor,
-          'symbol-text-halo-width': textHaloWidth * 1.5
-        }
+        [ID.defaultStyleId]: defaultStyle
       }
     })
 
