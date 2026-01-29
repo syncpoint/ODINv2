@@ -20,6 +20,7 @@ const SCOPES = {
   [`@${ID.BOOKMARK}`]: 'mdiBookmarkOutline',
   [`@${ID.PLACE}`]: 'mdiSearchWeb',
   [`@${ID.TILE_SERVICE}`]: 'mdiEarth',
+  [`@${ID.SSE_SERVICE}`]: 'mdiAccessPointNetwork',
   [`@${ID.MEASURE}`]: 'mdiAndroidStudio',
   [`@${ID.INVITED}`]: 'mdiCloudPlusOutline'
 }
@@ -34,6 +35,7 @@ const TOOLTIPS = {
   [`@${ID.BOOKMARK}`]: 'Manage existing bookmarks',
   [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
   [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
+  [`@${ID.SSE_SERVICE}`]: 'Manage live data sources',
   [`@${ID.MEASURE}`]: 'Manage existing measurements',
   [`@${ID.INVITED}`]: 'Show invitations and join shared layers'
 }

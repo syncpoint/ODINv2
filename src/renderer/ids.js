@@ -18,6 +18,7 @@ export const PLACE = 'place'
 export const TILE_SERVICE = 'tile-service'
 export const TILE_PRESET = 'tile-preset'
 export const TILE_LAYER = 'tile-layer'
+export const SSE_SERVICE = 'sse-service'
 export const LINK = 'link'
 export const STYLE = 'style'
 export const LOCKED = 'locked'
@@ -42,6 +43,7 @@ export const PLACE_SCOPE = PLACE + COLON
 export const TILE_SERVICE_SCOPE = TILE_SERVICE + COLON
 export const TILE_PRESET_SCOPE = TILE_PRESET + COLON
 export const TILE_LAYER_SCOPE = TILE_LAYER + COLON
+export const SSE_SERVICE_SCOPE = SSE_SERVICE + COLON
 export const MEASURE_SCOPE = MEASURE + COLON
 
 export const LINK_PREFIX = 'link' + PLUS
@@ -93,6 +95,7 @@ export const isPlaceId = isId(PLACE_SCOPE)
 export const isTileServiceId = isId(TILE_SERVICE_SCOPE)
 export const isTileLayerId = isId(TILE_LAYER_SCOPE)
 export const isTilePresetId = isId(TILE_PRESET_SCOPE)
+export const isSSEServiceId = isId(SSE_SERVICE_SCOPE)
 export const isLinkId = isId(LINK_PREFIX)
 export const isStyleId = isId(STYLE_PREFIX)
 export const isLayerStyleId = isId(styleId(LAYER_SCOPE))
@@ -148,6 +151,13 @@ export const layerId = R.cond([
 export const tileServiceId = R.cond([
   [R.isNil, () => makeId(TILE_SERVICE, uuid())],
   [isTileLayerId, x => makeId(TILE_SERVICE, nthId(0, x))]
+])
+
+/**
+ * sseServiceId :: () -> SSEServiceId
+ */
+export const sseServiceId = R.cond([
+  [R.isNil, () => makeId(SSE_SERVICE, uuid())]
 ])
 
 

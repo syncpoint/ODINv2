@@ -38,7 +38,8 @@ export const Toolbar = () => {
     commandRegistry.command('LAYER_CREATE'),
     commandRegistry.command('MARKER_CREATE'),
     commandRegistry.command('BOOKMARK_CREATE'),
-    commandRegistry.command('TILE_SERVICE_CREATE')
+    commandRegistry.command('TILE_SERVICE_CREATE'),
+    commandRegistry.command('SSE_SERVICE_CREATE')
   ]
 
   const measureCommands = [
