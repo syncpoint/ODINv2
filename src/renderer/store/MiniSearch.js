@@ -20,9 +20,15 @@ export const createIndex = () => new MiniSearch({
 
   extractField: (document, fieldName) => {
     const value = document[fieldName]
-    return value && fieldName === 'tags'
-      ? value.flat().filter(R.identity).join(' ')
-      : value
+    if (fieldName === 'tags') {
+      return value ? value.flat().filter(R.identity).join(' ') : value
+    }
+    if (fieldName === 'scope') {
+      // Remove hyphens to prevent tokenizer from splitting scope values
+      // e.g., 'sse-service' becomes 'sseservice' to avoid matching 'tile-service'
+      return value ? value.replace(/-/g, '') : value
+    }
+    return value
   }
 })
 
@@ -30,8 +36,11 @@ export const createIndex = () => new MiniSearch({
 export const parseQuery = (terms, ids = []) => {
   const tokens = (terms || '').split(' ')
   const parts = tokens.reduce((acc, token) => {
-    if (token.startsWith('@')) token.length > 2 && acc.scope.push(token.substring(1))
-    else if (token.startsWith('#')) token.length > 2 && acc.tags.push(token.substring(1))
+    if (token.startsWith('@')) {
+      // Remove hyphens to match the extractField transformation for scope
+      const scopeValue = token.substring(1).replace(/-/g, '')
+      scopeValue.length > 1 && acc.scope.push(scopeValue)
+    } else if (token.startsWith('#')) token.length > 2 && acc.tags.push(token.substring(1))
     else if (token.startsWith('!')) token.length > 2 && acc.ids.push(token.substring(1))
     else if (token.startsWith('&')) { /* ignore */ }
     else if (token) acc.text.push(token)

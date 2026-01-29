@@ -15,6 +15,7 @@ import { FeatureStore } from '../store/FeatureStore'
 import { OSDDriver } from '../model/OSDDriver'
 import { KBarActions } from '../model/actions/KBarActions'
 import TileLayerStore from '../store/TileLayerStore'
+import SSELayerStore from '../store/SSELayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
@@ -56,6 +57,7 @@ export default async projectUUID => {
   const sessionStore = new SessionStore(sessionDB)
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
+  const sseLayerStore = new SSELayerStore(store)
   const spatialIndex = new SpatialIndex(wkbDB)
 
   const documentStore = new DocumentStore(store)
@@ -94,6 +96,7 @@ export default async projectUUID => {
   services.documentStore = documentStore
   services.searchIndex = searchIndex
   services.tileLayerStore = tileLayerStore
+  services.sseLayerStore = sseLayerStore
   services.featureStore = featureStore
   services.spatialIndex = spatialIndex
   services.osdDriver = osdDriver
@@ -124,6 +127,7 @@ export default async projectUUID => {
   //
   await schema.bootstrap()
   await tileLayerStore.bootstrap()
+  await sseLayerStore.bootstrap()
   await searchIndex.bootstrap()
   await spatialIndex.bootstrap()
 

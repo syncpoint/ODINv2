@@ -14,6 +14,7 @@ import PointProperties from './PointProperties'
 import MarkerProperties from './MarkerProperties'
 import TileServiceProperties from './TileServiceProperties'
 import TilePresetProperties from './TilePresetProperties'
+import SSEServiceProperties from './SSEServiceProperties'
 import SKKMStandardProperties from './SKKMStandardProperties'
 import SKKMUnitProperties from './SKKMUnitProperties'
 import SKKMCommandProperties from './SKKMCommandProperties'
@@ -30,12 +31,13 @@ const propertiesPanels = {
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
   'tile-preset': props => <TilePresetProperties {...props}/>,
+  'sse-service': props => <SSEServiceProperties {...props}/>,
   'feature:SKKM/K': props => <SKKMStandardProperties {...props}/>,
   'feature:SKKM/KU': props => <SKKMUnitProperties {...props}/>,
   'feature:SKKM/KC': props => <SKKMCommandProperties {...props}/>
 }
 
-const singletons = ['tile-service', 'tile-layers']
+const singletons = ['tile-service', 'tile-layers', 'sse-service']
 
 const sidc = feature => feature?.properties?.sidc
 

@@ -1,5 +1,6 @@
 import * as ID from '../../ids'
 import { militaryFormat } from '../../../shared/datetime'
+import uuid from '../../../shared/uuid'
 
 /**
  *
@@ -85,9 +86,36 @@ CreateBookmark.prototype.execute = async function () {
 /**
  *
  */
+const CreateSSEService = function (services) {
+  this.selection = services.selection
+  this.store = services.store
+  this.label = 'Create Live Data Source'
+  this.path = 'mdiAccessPointNetwork'
+}
+
+CreateSSEService.prototype.execute = function () {
+  const key = ID.sseServiceId()
+  const layerId = uuid()
+  this.store.insert([[key, {
+    name: 'New Live Data Source',
+    url: '',
+    enabled: false,
+    eventType: 'message',
+    dataProjection: 'EPSG:4326',
+    updateInterval: 100,
+    featureIdPrefix: `feature:${layerId}/`,
+    useFeatureIds: true
+  }]])
+  this.selection.focus(key)
+}
+
+/**
+ *
+ */
 export default services => ({
   LAYER_CREATE: new CreateLayer(services),
   TILE_SERVICE_CREATE: new CreateTileService(services),
   MARKER_CREATE: new CreateMarker(services),
-  BOOKMARK_CREATE: new CreateBookmark(services)
+  BOOKMARK_CREATE: new CreateBookmark(services),
+  SSE_SERVICE_CREATE: new CreateSSEService(services)
 })

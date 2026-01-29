@@ -10,6 +10,7 @@ import createMapView from './view'
 import createLayerStyles from './layerStyles'
 import createVectorLayers from './vectorLayers'
 import createTileLayers from './tileLayers'
+import createSSELayers from './sseLayers'
 import registerEventHandlers from './eventHandlers'
 import registerGraticules from './graticules'
 import measure from '../../ol/interaction/measure'
@@ -38,7 +39,8 @@ export const Map = () => {
     ]
 
     const tileLayers = await createTileLayers(services)
-    const layers = [...tileLayers, ...Object.values(vectorLayers)]
+    const sseLayers = await createSSELayers(services)
+    const layers = [...tileLayers, ...sseLayers, ...Object.values(vectorLayers)]
 
     const map = new ol.Map({
       target: 'map',
