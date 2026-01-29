@@ -32,7 +32,7 @@ class SSEVectorSource extends VectorSource {
     this.featureProjection = options.featureProjection || 'EPSG:3857'
     this.eventType = options.eventType || 'message'
     this.useFeatureIds = options.useFeatureIds !== false // Default: true
-    this.idPrefix = 'feature:475563a0-c067-4a5a-bf9a-75dfcda188ad/'
+    this.idPrefix = options.idPrefix || 'feature:'
 
     this.featureReader = readFeature({
       styles: {

@@ -56,7 +56,8 @@ SSELayerStore.prototype.createLayer = function (key, service) {
     sseUrl: service.url,
     eventType: service.eventType || 'message',
     dataProjection: service.dataProjection || 'EPSG:4326',
-    updateInterval: service.updateInterval || 100
+    updateInterval: service.updateInterval || 100,
+    idPrefix: service.featureIdPrefix || 'feature:'
   })
 
   const layer = new VectorLayer({

@@ -1,5 +1,6 @@
 import * as ID from '../../ids'
 import { militaryFormat } from '../../../shared/datetime'
+import uuid from '../../../shared/uuid'
 
 /**
  *
@@ -94,13 +95,15 @@ const CreateSSEService = function (services) {
 
 CreateSSEService.prototype.execute = function () {
   const key = ID.sseServiceId()
+  const layerId = uuid()
   this.store.insert([[key, {
     name: 'New Live Data Source',
     url: '',
     enabled: false,
     eventType: 'message',
     dataProjection: 'EPSG:4326',
-    updateInterval: 100
+    updateInterval: 100,
+    featureIdPrefix: `feature:${layerId}/`
   }]])
   this.selection.focus(key)
 }
