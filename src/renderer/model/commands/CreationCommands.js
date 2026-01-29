@@ -103,7 +103,8 @@ CreateSSEService.prototype.execute = function () {
     eventType: 'message',
     dataProjection: 'EPSG:4326',
     updateInterval: 100,
-    featureIdPrefix: `feature:${layerId}/`
+    featureIdPrefix: `feature:${layerId}/`,
+    useFeatureIds: true
   }]])
   this.selection.focus(key)
 }

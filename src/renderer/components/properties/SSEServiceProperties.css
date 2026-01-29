@@ -1,3 +1,20 @@
+.sse-option-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.sse-option-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.sse-option-label input:disabled + span {
+  color: #999;
+}
+
 .sse-enabled-row {
   display: flex;
   justify-content: space-between;

@@ -57,7 +57,8 @@ SSELayerStore.prototype.createLayer = function (key, service) {
     eventType: service.eventType || 'message',
     dataProjection: service.dataProjection || 'EPSG:4326',
     updateInterval: service.updateInterval || 100,
-    idPrefix: service.featureIdPrefix || 'feature:'
+    idPrefix: service.featureIdPrefix || 'feature:',
+    useFeatureIds: service.useFeatureIds !== false
   })
 
   const layer = new VectorLayer({
@@ -99,7 +100,8 @@ SSELayerStore.prototype.updateOrCreateService = function (key, service) {
     // Check if we need to reconnect due to config changes
     const configChanged = source.sseUrl !== service.url ||
                           source.eventType !== (service.eventType || 'message') ||
-                          source.dataProjection !== (service.dataProjection || 'EPSG:4326')
+                          source.dataProjection !== (service.dataProjection || 'EPSG:4326') ||
+                          source.useFeatureIds !== (service.useFeatureIds !== false)
 
     if (configChanged) {
       // Disconnect and reconfigure
@@ -108,6 +110,7 @@ SSELayerStore.prototype.updateOrCreateService = function (key, service) {
       source.eventType = service.eventType || 'message'
       source.dataProjection = service.dataProjection || 'EPSG:4326'
       source.updateInterval = service.updateInterval || 100
+      source.useFeatureIds = service.useFeatureIds !== false
     }
 
     // Update interval can be changed without reconnect

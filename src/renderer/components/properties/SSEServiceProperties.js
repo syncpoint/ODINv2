@@ -80,6 +80,10 @@ const SSEServiceProperties = props => {
     updateService({ enabled: target.checked })
   }
 
+  const handleUseFeatureIdsChange = ({ target }) => {
+    updateService({ useFeatureIds: target.checked })
+  }
+
   const connectionStatusClass = stats.isConnected
     ? 'sse-status sse-status--connected'
     : 'sse-status sse-status--disconnected'
@@ -121,6 +125,19 @@ const SSEServiceProperties = props => {
         onBlur={handleUpdateIntervalBlur}
       />
       <Tooltip anchorSelect='#sse-update-interval' content='Rate limiting interval in milliseconds' delayShow={750} />
+
+      <div className='sse-option-row'>
+        <label className='sse-option-label'>
+          <input
+            type='checkbox'
+            checked={service.useFeatureIds !== false}
+            disabled={isConnected}
+            onChange={handleUseFeatureIdsChange}
+          />
+          <span>Track features by ID</span>
+        </label>
+      </div>
+      <Tooltip anchorSelect='.sse-option-row' content='When enabled, features are updated by ID. When disabled, all features are replaced on each update.' delayShow={750} />
 
       <div className='sse-enabled-row'>
         <label className='sse-enabled-label'>
