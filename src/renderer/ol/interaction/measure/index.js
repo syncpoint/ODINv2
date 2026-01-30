@@ -1,6 +1,7 @@
 import { Draw } from 'ol/interaction'
 import Feature from 'ol/Feature'
 import LineString from 'ol/geom/LineString'
+import Point from 'ol/geom/Point'
 import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import Circle from 'ol/geom/Circle'
@@ -128,13 +129,26 @@ export default ({ map, services }) => {
       feature.setStyle(null)
       cancel()
 
-      const measurement = writeFeatureObject(feature)
+      let measurement
 
-      if (geometryType === GeometryType.LINE_STRING) {
-        feature.un('change', applyToCircleFeature)
-        measurement.name = `Distance - ${militaryFormat.now()}`
+      if (geometryType === GeometryType.CIRCLE) {
+        // Convert Circle geometry to Point + radius property
+        const circleGeometry = feature.getGeometry()
+        const center = circleGeometry.getCenter()
+        const radius = circleGeometry.getRadius()
+        const pointFeature = new Feature(new Point(center))
+        pointFeature.set('radius', radius)
+        measurement = writeFeatureObject(pointFeature)
+        measurement.properties = { radius }
+        measurement.name = `Circle - ${militaryFormat.now()}`
       } else {
-        measurement.name = `Area - ${militaryFormat.now()}`
+        measurement = writeFeatureObject(feature)
+        if (geometryType === GeometryType.LINE_STRING) {
+          feature.un('change', applyToCircleFeature)
+          measurement.name = `Distance - ${militaryFormat.now()}`
+        } else {
+          measurement.name = `Area - ${militaryFormat.now()}`
+        }
       }
 
       services.store.insert([[ID.measureId(), measurement]])
@@ -171,6 +185,11 @@ export default ({ map, services }) => {
   services.emitter.on('MEASURE_AREA', () => {
     services.emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
     addDrawInteraction(GeometryType.POLYGON)
+  })
+
+  services.emitter.on('MEASURE_CIRCLE', () => {
+    services.emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
+    addDrawInteraction(GeometryType.CIRCLE)
   })
 
   services.emitter.on('command/draw/cancel', ({ originatorId }) => {

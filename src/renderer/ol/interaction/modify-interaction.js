@@ -19,7 +19,18 @@ export default options => {
   interaction.on('modifyend', ({ feature }) => {
     const key = feature.getId()
     const geometry = writeGeometryObject(feature.getGeometry())
-    store.update([key], value => ({ ...value, geometry }))
+    const props = feature.getProperties()
+
+    // For circle measures, also persist the radius property
+    if (typeof props.radius === 'number') {
+      store.update([key], value => ({
+        ...value,
+        geometry,
+        properties: { ...value.properties, radius: props.radius }
+      }))
+    } else {
+      store.update([key], value => ({ ...value, geometry }))
+    }
   })
 
   return interaction

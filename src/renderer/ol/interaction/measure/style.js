@@ -1,5 +1,6 @@
 import { Polygon } from './PolygonStyle'
 import { LineString } from './LineStringStyle'
+import { Point } from './PointStyle'
 import { baseStyle } from './baseStyle'
 
 /**
@@ -20,7 +21,8 @@ import { baseStyle } from './baseStyle'
  */
 export const STYLES = {
   Polygon,
-  LineString
+  LineString,
+  Point
 }
 
 /**
@@ -33,9 +35,28 @@ export const styleFN = (isSelected) => {
   return feature => {
     const geometry = feature.getGeometry()
     const geometryType = geometry.getType()
+    const styleFn = STYLES[geometryType]
+
+    // No style function for this geometry type (e.g., Circle during drawing)
+    if (!styleFn) {
+      return baseStyle(isSelected(feature))
+    }
+
+    const selected = isSelected(feature)
+
+    // Point style needs feature and selected state for radius property access
+    const geometryStyles = geometryType === 'Point'
+      ? styleFn(geometry, feature, selected)
+      : styleFn(geometry)
+
+    // Skip base style for Point with radius (circle measure) as it has its own styling
+    if (geometryType === 'Point' && feature.get('radius')) {
+      return geometryStyles
+    }
+
     return [
-      ...baseStyle(isSelected(feature)),
-      ...STYLES[geometryType](geometry)
+      ...baseStyle(selected),
+      ...geometryStyles
     ]
   }
 }

@@ -1,9 +1,11 @@
 import GeometryType from '../GeometryType'
-import { getArea, getLength } from 'ol/sphere'
+import { getArea, getLength, getDistance } from 'ol/sphere'
+import { toLonLat } from 'ol/proj'
 
 /**
  * @typedef {import('ol/geom/LineString').default} LineString
  * @typedef {import('ol/geom/Polygon').default} Polygon
+ * @typedef {import('ol/geom/Circle').default} CircleGeometry
  * @typedef {import('ol/geom/Geometry').default} Geometry
  * @typedef {import('ol/coordinate').Coordinate} Coordinate
  */
@@ -109,4 +111,87 @@ export const getLastSegmentCoordinates = lineStringGeometry => {
 export const isSingleSegment = lineStringGeometry => {
   if (lineStringGeometry.getType() !== GeometryType.LINE_STRING) return false
   return lineStringGeometry.getCoordinates().length === 2
+}
+
+/**
+ * Calculates geodesic radius from a Circle geometry.
+ * @param {CircleGeometry} circleGeometry - The Circle geometry
+ * @returns {number} Radius in meters
+ */
+const getCircleRadius = circleGeometry => {
+  const center = circleGeometry.getCenter()
+  const edge = [center[0] + circleGeometry.getRadius(), center[1]]
+  return getDistance(toLonLat(center), toLonLat(edge))
+}
+
+/**
+ * Calculates and formats the geodesic radius of a Circle geometry.
+ * @param {CircleGeometry} circleGeometry - The Circle geometry to measure
+ * @returns {string} Formatted radius with unit
+ */
+export const circleRadius = circleGeometry => {
+  return formatLength(getCircleRadius(circleGeometry))
+}
+
+/**
+ * Calculates and formats the geodesic circumference of a Circle geometry.
+ * @param {CircleGeometry} circleGeometry - The Circle geometry to measure
+ * @returns {string} Formatted circumference with unit
+ */
+export const circleCircumference = circleGeometry => {
+  const radius = getCircleRadius(circleGeometry)
+  return formatLength(2 * Math.PI * radius)
+}
+
+/**
+ * Calculates and formats the geodesic area of a Circle geometry.
+ * @param {CircleGeometry} circleGeometry - The Circle geometry to measure
+ * @returns {string} Formatted area with unit
+ */
+export const circleArea = circleGeometry => {
+  const radius = getCircleRadius(circleGeometry)
+  return formatArea(Math.PI * radius * radius)
+}
+
+/**
+ * Calculates geodesic radius from center point and radius in map units.
+ * @param {Coordinate} center - The center coordinate in map projection
+ * @param {number} radiusMapUnits - The radius in map units
+ * @returns {number} Radius in meters
+ */
+const getRadiusFromMapUnits = (center, radiusMapUnits) => {
+  const edge = [center[0] + radiusMapUnits, center[1]]
+  return getDistance(toLonLat(center), toLonLat(edge))
+}
+
+/**
+ * Calculates and formats the geodesic radius from center and map units.
+ * @param {Coordinate} center - The center coordinate in map projection
+ * @param {number} radiusMapUnits - The radius in map units
+ * @returns {string} Formatted radius with unit
+ */
+export const formatRadius = (center, radiusMapUnits) => {
+  return formatLength(getRadiusFromMapUnits(center, radiusMapUnits))
+}
+
+/**
+ * Calculates and formats the geodesic circumference from center and map units.
+ * @param {Coordinate} center - The center coordinate in map projection
+ * @param {number} radiusMapUnits - The radius in map units
+ * @returns {string} Formatted circumference with unit
+ */
+export const circumferenceFromRadius = (center, radiusMapUnits) => {
+  const radius = getRadiusFromMapUnits(center, radiusMapUnits)
+  return formatLength(2 * Math.PI * radius)
+}
+
+/**
+ * Calculates and formats the geodesic area from center and map units.
+ * @param {Coordinate} center - The center coordinate in map projection
+ * @param {number} radiusMapUnits - The radius in map units
+ * @returns {string} Formatted area with unit
+ */
+export const areaFromRadius = (center, radiusMapUnits) => {
+  const radius = getRadiusFromMapUnits(center, radiusMapUnits)
+  return formatArea(Math.PI * radius * radius)
 }

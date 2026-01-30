@@ -62,11 +62,34 @@ MeasureArea.prototype.execute = function () {
 }
 
 /**
+ * Command constructor for measuring circles on the map.
+ * @constructor
+ * @param {Services} services - Application services
+ */
+const MeasureCircle = function (services) {
+  /** @type {Object} */
+  this.emitter = services.emitter
+  /** @type {string} */
+  this.label = 'Measure Circle'
+  /** @type {string} */
+  this.path = 'mdiCircleOutline'
+}
+
+/**
+ * Executes the measure circle command by emitting the MEASURE_CIRCLE event.
+ * @returns {void}
+ */
+MeasureCircle.prototype.execute = function () {
+  this.emitter.emit('MEASURE_CIRCLE')
+}
+
+/**
  * Creates and returns the measure commands.
  * @param {Services} services - Application services
- * @returns {MeasureCommands} Object containing MEASURE_DISTANCE and MEASURE_AREA commands
+ * @returns {MeasureCommands} Object containing MEASURE_DISTANCE, MEASURE_AREA, and MEASURE_CIRCLE commands
  */
 export default services => ({
   MEASURE_DISTANCE: new MeasureDistance(services),
-  MEASURE_AREA: new MeasureArea(services)
+  MEASURE_AREA: new MeasureArea(services),
+  MEASURE_CIRCLE: new MeasureCircle(services)
 })

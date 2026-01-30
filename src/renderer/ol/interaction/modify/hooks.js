@@ -3,6 +3,7 @@ import fan from './hooks-fan'
 import rectangle from './hooks-rectangle'
 import corridor from './hooks-corridor'
 import collection from './hooks-collection'
+import circleMeasure from './hooks-circle-measure'
 
 export const Hooks = {}
 
@@ -12,6 +13,7 @@ Hooks['MultiPoint-fan'] = fan
 Hooks['MultiPoint-circle'] = fan
 Hooks['Polygon-rectangle'] = rectangle
 Hooks.GeometryCollection = collection
+Hooks['Point-circle-measure'] = circleMeasure
 
 const NullHooks = {
   project: R.identity,
