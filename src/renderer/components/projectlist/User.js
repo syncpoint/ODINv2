@@ -41,10 +41,17 @@ User.propTypes = {
   selected: PropTypes.bool
 }
 
-const userProvider = onClick => props => {
+const UserWrapper = ({ onClick, ...props }) => {
+  return <User key={props.id} onClick={onClick} {...props} />
+}
 
-  const injected = { ...props, onClick }
-  return <User key={props.id} {...injected} />
+UserWrapper.propTypes = {
+  id: PropTypes.string.isRequired,
+  onClick: PropTypes.func
+}
+
+const userProvider = onClick => props => {
+  return <UserWrapper onClick={onClick} {...props} />
 }
 
 export default User

@@ -70,7 +70,7 @@ const LeaveLayer = function (services) {
     if (this.selected().length === 0) {
       this.isEnabled = false
     } else {
-      const [shared, role] = await this.store.collect(this.selection.selected()[0], [ID.sharedId, ID.roleId])
+      const [shared] = await this.store.collect(this.selection.selected()[0], [ID.sharedId, ID.roleId])
       this.isEnabled = shared // (shared && role?.self !== 'OWNER')
     }
     this.emit('changed')

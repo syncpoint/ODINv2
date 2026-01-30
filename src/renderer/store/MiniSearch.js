@@ -42,8 +42,7 @@ export const parseQuery = (terms, ids = []) => {
       scopeValue.length > 1 && acc.scope.push(scopeValue)
     } else if (token.startsWith('#')) token.length > 2 && acc.tags.push(token.substring(1))
     else if (token.startsWith('!')) token.length > 2 && acc.ids.push(token.substring(1))
-    else if (token.startsWith('&')) { /* ignore */ }
-    else if (token) acc.text.push(token)
+    else if (token.startsWith('&')) { /* ignore */ } else if (token) acc.text.push(token)
     return acc
   }, { scope: [], text: [], tags: [], ids })
 

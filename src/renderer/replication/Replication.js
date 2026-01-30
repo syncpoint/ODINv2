@@ -179,18 +179,19 @@ const Replication = () => {
     the layer.
   */
   React.useEffect(() => {
+    const currentNotifications = notifications.current
 
     const clickHandler = event => {
       event.preventDefault() // prevent the browser from focusing the Notification's tab
       event.target.onclick = undefined
-      notifications.current.delete(event.target)
+      currentNotifications.delete(event.target)
       preferencesStore.showSidebar(true)
       setTimeout(() => selection.focus(event.target.data), 250)
     }
 
     const closeHandler = event => {
       event.target.onclick = undefined
-      notifications.current.delete(event.target)
+      currentNotifications.delete(event.target)
     }
 
     const handler = batch => {
@@ -203,14 +204,14 @@ const Replication = () => {
         const notification = new Notification('Received invitation', options)
         notification.onclick = clickHandler
         notification.onclose = closeHandler
-        notifications.current.add(notification)
+        currentNotifications.add(notification)
       })
     }
     store.on('batch', handler)
 
     return () => {
       store.off('batch', handler)
-      notifications.current.clear()
+      currentNotifications.clear()
     }
   },
   // eslint-disable-next-line react-hooks/exhaustive-deps
