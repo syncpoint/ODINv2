@@ -48,9 +48,17 @@ Session.prototype.openProject = async function (id) {
     // Create and show project window.
     const window = await this.windowManager.showProject(id, project)
 
-    ;['resized', 'moved', 'close'].forEach(event => window.on(event, () => {
-      this.projectStore.updateWindowBounds(id, window.getBounds())
-    }))
+    const updateWindowState = () => {
+      this.projectStore.updateWindowBounds(id, {
+        ...window.getBounds(),
+        fullscreen: window.isFullScreen(),
+        maximized: window.isMaximized()
+      })
+    }
+
+    ;['resized', 'moved', 'close', 'enter-full-screen', 'leave-full-screen', 'maximize', 'unmaximize'].forEach(event =>
+      window.on(event, updateWindowState)
+    )
 
     if (this.windowManager.isWindowOpen('splash')) {
       this.windowManager.closeWindow('splash')
@@ -58,6 +66,13 @@ Session.prototype.openProject = async function (id) {
 
     await this.sessionStore.addProject(id)
     window.show()
+
+    // Restore fullscreen/maximized state after window is shown
+    if (project.bounds?.fullscreen) {
+      window.setFullScreen(true)
+    } else if (project.bounds?.maximized) {
+      window.maximize()
+    }
   }
 }
 
