@@ -3,35 +3,79 @@ name: ODIN Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
-  nx:
-    runs-on: macos-12
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+  release-linux:
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 22.x
         cache: 'npm'
+
+    - name: Install Snapcraft
+      uses: samber/actions-snapcraft@v2
+
+    - name: Install Flatpak builder
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y flatpak flatpak-builder
+        flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+
     - run: npm ci --no-audit --no-optional
-    - run: npm i dmg-license
     - run: npm run webpack:production
-    - name: Import OS-X certificates
-      run: chmod +x ./.github/workflows/add-osx-cert.sh && ./.github/workflows/add-osx-cert.sh
+
+    - name: Build and release Snap
+      run: npm run build:linux:snap
       env:
-        CSC_LINK: ${{ secrets.CSC_LINK }}
-        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-    - run: npm run release:ml
-      env:
-        APPLEID: ${{ secrets.APPLEID }}
-        APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
-        CSC_LINK: ${{ secrets.CSC_LINK }}
-        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and release Flatpak
+      run: npm run build:linux:flatpak
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build AppImage
+      run: npm run build:linux:appimage
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload artifacts for manual runs
+      if: github.event_name == 'workflow_dispatch'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-packages
+        path: |
+          binaries/*.snap
+          binaries/*.flatpak
+          binaries/*.AppImage
+
+    - name: Upload Linux artifacts to release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          binaries/*.snap
+          binaries/*.flatpak
+          binaries/*.AppImage
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish to Snap Store
+      if: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS != '' }}
+      run: snapcraft upload --release=stable binaries/*.snap
+      env:
+        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
