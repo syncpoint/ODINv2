@@ -1,11 +1,54 @@
 .fe6e-filter-container {
+  display: flex;
+  align-items: center;
   border: 0.07rem solid var(--color-border);
   border-radius: 4px;
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  padding: 8px 0 8px 8px;
+  padding: 8px;
 }
 
 .fe6e-filter {
   font-size: 100%;
-  width: 100%;
+  flex: 1;
+}
+
+.fe6e-filter-clear {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: grey;
+  margin-left: 4px;
+}
+
+.fe6e-filter-clear:hover {
+  color: black;
+}
+
+.fe6e-taglist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 8px;
+  border: 0.07rem solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  max-height: 7em;
+  overflow-y: auto;
+}
+
+.fe6e-taglist-tag {
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--color-secondary-accent);
+  white-space: nowrap;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.fe6e-taglist-tag:hover {
+  background-color: var(--color-tag-hover);
+  border-color: var(--color-tag-hover);
+  color: black;
 }

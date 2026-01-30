@@ -1,6 +1,8 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import { useMemento } from '../hooks'
+import Icon from '@mdi/react'
+import { mdiClose } from '@mdi/js'
+import { useServices, useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
 import { cmdOrCtrl } from '../../platform'
@@ -12,8 +14,10 @@ import './FilterInput.css'
  *
  */
 export const FilterInput = props => {
+  const { searchIndex } = useServices()
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
   const [cursor, setCursor] = React.useState(null)
+  const [userTags, setUserTags] = React.useState([])
   const ref = React.useRef()
 
   React.useEffect(() => {
@@ -25,12 +29,39 @@ export const FilterInput = props => {
     if (input) input.setSelectionRange(position, position)
   }, [ref, cursor, search.filter])
 
+  // Fetch user tags and listen for index updates
+  React.useEffect(() => {
+    const fetchTags = async () => {
+      const tags = await searchIndex.userTags()
+      setUserTags(tags)
+    }
+
+    fetchTags()
+    searchIndex.on('index/updated', fetchTags)
+    return () => searchIndex.off('index/updated', fetchTags)
+  }, [searchIndex])
+
   const handleChange = event => {
     const { target } = event
     setCursor(target.selectionStart)
     setSearch({ ...search, filter: target.value })
   }
 
+  const handleTagClick = tag => {
+    const tagFilter = `#${tag}`
+    const newFilter = search.filter
+      ? `${search.filter} ${tagFilter}`
+      : tagFilter
+    setCursor(null)
+    setSearch({ ...search, filter: newFilter, force: true })
+  }
+
+  const handleClear = event => {
+    event.stopPropagation()
+    setCursor(null)
+    setSearch({ ...search, filter: '' })
+    ref.current?.focus()
+  }
 
   const handleKeyDown = event => {
     matcher([
@@ -59,18 +90,38 @@ export const FilterInput = props => {
   }
 
   return (
-    <div className='fe6e-filter-container'>
-      <input
-        className='fe6e-filter'
-        type='text'
-        ref={ref}
-        placeholder='Search'
-        value={search.filter}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onClick={stopPropagation}
-        id='filter-input'
-      />
-    </div>
+    <>
+      <div className='fe6e-filter-container'>
+        <input
+          className='fe6e-filter'
+          type='text'
+          ref={ref}
+          placeholder='Search'
+          value={search.filter}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onClick={stopPropagation}
+          id='filter-input'
+        />
+        {search.filter && (
+          <span className='fe6e-filter-clear' onClick={handleClear}>
+            <Icon path={mdiClose} size={0.7} />
+          </span>
+        )}
+      </div>
+      {userTags.length > 0 && (
+        <div className='fe6e-taglist'>
+          {userTags.map(tag => (
+            <span
+              key={tag}
+              className='fe6e-taglist-tag'
+              onClick={() => handleTagClick(tag)}
+            >
+              {tag.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      )}
+    </>
   )
 }
