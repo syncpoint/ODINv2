@@ -3,7 +3,22 @@ import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import { FONT } from './baseStyle'
 import { angle, radiansAngle, length, getLastSegmentCoordinates } from './tools'
 
+/**
+ * @typedef {import('ol/geom/LineString').default} LineStringGeometry
+ * @typedef {import('ol/style/Style').default} Style
+ * @typedef {import('ol/coordinate').Coordinate} Coordinate
+ */
+
+/**
+ * Creates styles for LineString measurement geometries.
+ * Displays length and bearing angle labels on each segment,
+ * a green circle at the start point, and a red circle at the end point
+ * with the total distance (if more than one segment).
+ * @param {LineStringGeometry} geometry - The LineString geometry to style
+ * @returns {Style[]} Array of OpenLayers Style objects
+ */
 export const LineString = geometry => {
+  /** @type {Style[]} */
   const styles = []
   let numberOfSegments = 0
 

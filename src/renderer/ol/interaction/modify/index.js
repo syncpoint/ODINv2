@@ -89,7 +89,13 @@ export class Modify extends Interaction {
         : new Feature()
 
     // isSymbol :: ol/Feature => Boolean
-    const isSymbol = feature => feature?.getGeometry()?.getType() === 'Point'
+    // Returns true for Point symbols (should not be modified), but false for circle measures
+    const isSymbol = feature => {
+      if (feature?.getGeometry()?.getType() !== 'Point') return false
+      // Circle measures have a radius property - these should be modifiable
+      const radius = feature.getProperties().radius
+      return typeof radius !== 'number'
+    }
 
     // sourceEvent :: Signal ol/source/Vector.VectorSourceEvent
     // Track feature add/remove events to update spatial index.
