@@ -267,3 +267,14 @@ SearchIndex.prototype.createQuery = function (terms, callback, options) {
   disposable.on(this.sessionStore, 'put', refresh)
   return disposable
 }
+
+
+/**
+ * Get all unique user-defined tags from the database.
+ * Returns sorted array of tag names.
+ */
+SearchIndex.prototype.userTags = async function () {
+  const tagArrays = await L.values(this.jsonDB, ID.TAGS_PREFIX)
+  const tags = tagArrays.flatMap(arr => Array.isArray(arr) ? arr : [])
+  return [...new Set(tags)].sort()
+}
