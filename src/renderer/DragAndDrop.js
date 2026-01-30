@@ -56,13 +56,22 @@ DragAndDrop.prototype.json = async function (files) {
   }
 
   /* plain old geoJSON */
+  this.importGeoJSON(geoJSON, files, '.json')
+}
+
+DragAndDrop.prototype.geojson = async function (files) {
+  const geoJSON = await Promise.all(files.map(file => readJSON(file)))
+  this.importGeoJSON(geoJSON, files, '.geojson')
+}
+
+DragAndDrop.prototype.importGeoJSON = function (geoJSON, files, extension) {
   const featureCollections = geoJSON.filter(json => json.type === 'FeatureCollection')
 
   const tuples = featureCollections.flatMap((collection, index) => {
     const tuples = []
 
     // Layer.
-    const basename = path.basename(files[index].name, '.json')
+    const basename = path.basename(files[index].name, extension)
     const layerId = ID.layerId()
     const value = { name: collection.name || basename }
     tuples.push([layerId, value])

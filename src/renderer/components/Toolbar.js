@@ -28,10 +28,15 @@ export const Toolbar = () => {
     commandRegistry.separator(),
     commandRegistry.command('LAYER_SET_DEFAULT'),
     commandRegistry.command('PIN'),
-    commandRegistry.command('LAYER_EXPORT'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
     commandRegistry.separator(),
     commandRegistry.command('PRINT_SWITCH_SCOPE')
+  ]
+
+  const exportOdinCommand = commandRegistry.command('LAYER_EXPORT_ODIN')
+  const exportCommands = [
+    exportOdinCommand,
+    commandRegistry.command('LAYER_EXPORT_GEOJSON')
   ]
 
   const addCommands = [
@@ -72,6 +77,7 @@ export const Toolbar = () => {
               : <CommandButton key={key} command={command}/>
           })
         }
+        <DropdownMenu path='mdiExport' options={exportCommands} toolTip='Export layer...' command={exportOdinCommand[1]} />
         <DropdownMenu path='mdiAndroidStudio' options={measureCommands} toolTip='Measure ...'/>
         {
           replicationCommands.map(([key, command]) => {
