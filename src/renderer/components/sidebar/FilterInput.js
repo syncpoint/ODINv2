@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
+import Icon from '@mdi/react'
+import { mdiClose } from '@mdi/js'
 import { useServices, useMemento } from '../hooks'
 import { defaultSearch } from './state'
 import { matcher, stopPropagation } from '../events'
@@ -54,6 +56,13 @@ export const FilterInput = props => {
     setSearch({ ...search, filter: newFilter, force: true })
   }
 
+  const handleClear = event => {
+    event.stopPropagation()
+    setCursor(null)
+    setSearch({ ...search, filter: '' })
+    ref.current?.focus()
+  }
+
   const handleKeyDown = event => {
     matcher([
       ({ key }) => key === 'Enter',
@@ -94,6 +103,11 @@ export const FilterInput = props => {
           onClick={stopPropagation}
           id='filter-input'
         />
+        {search.filter && (
+          <span className='fe6e-filter-clear' onClick={handleClear}>
+            <Icon path={mdiClose} size={0.7} />
+          </span>
+        )}
       </div>
       {userTags.length > 0 && (
         <div className='fe6e-taglist'>
