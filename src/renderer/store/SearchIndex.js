@@ -201,7 +201,7 @@ SearchIndex.prototype.searchField = function (field, tokens) {
 SearchIndex.prototype.search = async function (terms, options) {
   if (terms.includes('@place') && options.force) {
     const query = terms
-      .replace(/([@#!&]\S+)/gi, '')
+      .replace(/([@#!&-]\S+)/gi, '')
       .trim()
       .replace(/[ ]+/g, '+')
 
@@ -225,7 +225,18 @@ SearchIndex.prototype.search = async function (terms, options) {
     ? this.index.search(query, searchOptions)
     : this.index.search(query)
 
-  const keys = matches.map(R.prop('id'))
+  // Filter out excluded tags using cached documents
+  const excludeTags = searchOptions?.excludeTags || []
+  const filteredMatches = excludeTags.length
+    ? matches.filter(match => {
+      const doc = this.cachedDocuments[match.id]
+      if (!doc || !doc.tags) return true
+      const docTags = doc.tags.map(t => t.toLowerCase())
+      return !excludeTags.some(tag => docTags.includes(tag))
+    })
+    : matches
+
+  const keys = filteredMatches.map(R.prop('id'))
 
 
   const option = id => {
