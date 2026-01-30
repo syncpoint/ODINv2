@@ -1,14 +1,12 @@
-import * as ID from '../../ids'
 import { featureSource } from '../../model/sources/featureSource'
 import { highlightTracker } from '../../model/sources/highlightTracker'
 import { lockedTracker } from '../../model/sources/lockedTracker'
 import { visibilityTracker } from '../../model/sources/visibilityTracker'
 import { selectionTracker } from '../../model/sources/selectionTracker'
 import { intersect } from '../../model/sources/intersect'
-import { union } from '../../model/sources/union'
 
 export default async services => {
-  const { store, featureStore, emitter, sessionStore, selection } = services
+  const { store, emitter, sessionStore, selection } = services
 
   // const featureSource = Sources.union(
   //   Sources.featureSource(featureStore, ID.FEATURE_SCOPE),

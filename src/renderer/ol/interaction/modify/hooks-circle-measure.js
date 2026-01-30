@@ -25,9 +25,6 @@ export default (node, offset) => {
   const { feature, geometry } = node
   const handleIndex = node.index
 
-  // Capture the initial center when hooks are created
-  const initialCenter = geometry.getCoordinates().slice()
-
   // Get current center for radius calculations
   const getCenter = () => geometry.getCoordinates()
 

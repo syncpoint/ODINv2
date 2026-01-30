@@ -28,13 +28,39 @@ mac:
 linux:
   target:
     - target: AppImage
+    - target: snap
+    - target: flatpak
   icon: 'build/icons'
   category: 'Office'
   files:
     - 'dist'
 
+snap:
+  confinement: strict
+  grade: stable
+  summary: "Open Source Command and Control Information System"
+  description: |
+    ODIN is an Open Source Command and Control Information System (C2IS)
+    for planning and conducting military or civilian operations.
+  plugs:
+    - default
+    - removable-media
+
+flatpak:
+  runtime: org.freedesktop.Platform
+  runtimeVersion: "24.08"
+  sdk: org.freedesktop.Sdk
+  finishArgs:
+    - "--share=ipc"
+    - "--socket=x11"
+    - "--socket=wayland"
+    - "--socket=pulseaudio"
+    - "--share=network"
+    - "--device=dri"
+    - "--filesystem=home"
+
 publish:
   - provider: github
     releaseType: release
 
-electronVersion: 38.2.1
+electronVersion: 38.8.0

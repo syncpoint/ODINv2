@@ -314,7 +314,7 @@ describe('multiselect', function () {
 
     it('meta - toggle selection (deselected)', function () {
       const state = { entries, selected: [] }
-      const actual = multiselect.click(state, { id: 'x', metaKey: true })
+      const actual = multiselect.click(state, { id: 'x', metaKey: true, ctrlKey: true })
       const expected = {
         entries,
         selected: ['x'],
@@ -327,7 +327,7 @@ describe('multiselect', function () {
 
     it('meta - toggle selection (selected)', function () {
       const state = { entries, selected: ['x'] }
-      const actual = multiselect.click(state, { id: 'x', metaKey: true })
+      const actual = multiselect.click(state, { id: 'x', metaKey: true, ctrlKey: true })
       const expected = {
         entries,
         selected: [],
@@ -340,7 +340,7 @@ describe('multiselect', function () {
 
     it('meta - toggle/add selection', function () {
       const state = { entries, selected: ['y'] }
-      const actual = multiselect.click(state, { id: 'x', metaKey: true })
+      const actual = multiselect.click(state, { id: 'x', metaKey: true, ctrlKey: true })
       const expected = {
         entries,
         selected: ['y', 'x'],
@@ -451,7 +451,7 @@ describe('multiselect', function () {
 
     it('meta - noop', function () {
       const state = { entries, selected: ['y'], scroll: 'smooth' }
-      const actual = multiselect['keydown/ArrowDown'](state, { metaKey: true })
+      const actual = multiselect['keydown/ArrowDown'](state, { metaKey: true, ctrlKey: true })
       assert.deepStrictEqual(actual, state)
     })
   })
@@ -499,7 +499,7 @@ describe('multiselect', function () {
 
     it('meta - noop', function () {
       const state = { entries, selected: ['y'], scroll: 'smooth' }
-      const actual = multiselect['keydown/ArrowUp'](state, { metaKey: true })
+      const actual = multiselect['keydown/ArrowUp'](state, { metaKey: true, ctrlKey: true })
       assert.deepStrictEqual(actual, state)
     })
   })
@@ -573,7 +573,7 @@ describe('multiselect', function () {
 
     it('select all options', function () {
       const state = { entries, selected: [], scroll: 'none' }
-      const actual = multiselect['keydown/a'](state, { metaKey: true })
+      const actual = multiselect['keydown/a'](state, { metaKey: true, ctrlKey: true })
       const expected = {
         entries,
         selected: ['x', 'y'],

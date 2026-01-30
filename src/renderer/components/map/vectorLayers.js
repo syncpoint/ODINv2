@@ -25,7 +25,7 @@ const highlightLayer = (sources, styles) => {
 
 
 export default (sources, styles) => {
-  const { deselectedSource, selectedSource, featureSource } = sources
+  const { deselectedSource, selectedSource } = sources
   const declutter = false
   const vectorLayer = source => new VectorLayer({
     source,
