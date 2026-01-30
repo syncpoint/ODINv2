@@ -132,7 +132,7 @@ describe('singleselect', function () {
 
     it('meta - noop', function () {
       const state = { entries, selected: ['y'], scroll: 'smooth' }
-      const actual = singleselect['keydown/ArrowDown'](state, { metaKey: true })
+      const actual = singleselect['keydown/ArrowDown'](state, { metaKey: true, ctrlKey: true })
       assert.deepStrictEqual(actual, state)
     })
 
@@ -174,7 +174,7 @@ describe('singleselect', function () {
 
     it('meta - noop', function () {
       const state = { entries, selected: ['y'], scroll: 'smooth' }
-      const actual = singleselect['keydown/ArrowUp'](state, { metaKey: true })
+      const actual = singleselect['keydown/ArrowUp'](state, { metaKey: true, ctrlKey: true })
       assert.deepStrictEqual(actual, state)
     })
 
