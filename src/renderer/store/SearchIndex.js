@@ -221,8 +221,11 @@ SearchIndex.prototype.search = async function (terms, options) {
   )(terms)
 
   const [query, searchOptions] = parseQuery(terms, ids)
-  const matches = searchOptions
-    ? this.index.search(query, searchOptions)
+
+  // Only pass filter option to MiniSearch, handle excludeTags separately
+  const miniSearchOptions = searchOptions?.filter ? { filter: searchOptions.filter } : null
+  const matches = miniSearchOptions
+    ? this.index.search(query, miniSearchOptions)
     : this.index.search(query)
 
   // Filter out excluded tags using cached documents
@@ -231,7 +234,7 @@ SearchIndex.prototype.search = async function (terms, options) {
     ? matches.filter(match => {
       const doc = this.cachedDocuments[match.id]
       if (!doc || !doc.tags) return true
-      const docTags = doc.tags.map(t => t.toLowerCase())
+      const docTags = doc.tags.filter(Boolean).map(t => t.toLowerCase())
       return !excludeTags.some(tag => docTags.includes(tag))
     })
     : matches
