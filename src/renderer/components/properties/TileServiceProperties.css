@@ -42,3 +42,22 @@
   border-radius: 3px;
   border-width: 1px;
 }
+
+.import-button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.import-button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.import-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
