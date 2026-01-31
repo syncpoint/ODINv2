@@ -2,6 +2,7 @@ import WMTSCapabilities from 'ol/format/WMTSCapabilities'
 import WMSCapabilities from 'ol/format/WMSCapabilities'
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS'
 import TileWMS from 'ol/source/TileWMS'
+import TileJSON from 'ol/source/TileJSON'
 import { OSM, XYZ } from 'ol/source'
 
 /**
@@ -111,13 +112,64 @@ const osmAdapter = () => ({
 
 
 /**
+ * Adapter for TileJSON discovery endpoints that return an array of available tilesets.
+ * Each service object should have at least `name` and `url` properties.
+ * Works like WMS/WMTS - select tilesets to add them to the background maps.
+ * The TileJSON source automatically respects minzoom/maxzoom from the TileJSON document.
+ */
+const tileJSONDiscoveryAdapter = caps => {
+  const findService = id => caps.services.find(s => s.name === id)
+
+  return {
+    type: 'TileJSONDiscovery',
+    capabilities: caps,
+    title: 'TileJSON Server',
+    abstract: null,
+    layers: () => caps.services.map(s => ({
+      id: s.name,
+      title: s.name,
+      abstract: s.description || ''
+    })),
+    boundingBox: id => findService(id)?.bounds,
+    layerName: id => findService(id)?.name || id,
+    source: id => {
+      if (!id) return null
+      const service = findService(id)
+      if (!service?.url) return null
+      // Resolve service URL against base URL (handles both relative and absolute URLs)
+      const tileJSONUrl = new URL(service.url, caps.url).href
+      return new TileJSON({ url: tileJSONUrl, crossOrigin: 'anonymous' })
+    }
+  }
+}
+
+
+/**
+ * Adapter for individual TileJSON tileset.
+ * The TileJSON source automatically respects minzoom/maxzoom from the TileJSON document.
+ */
+const tileJSONAdapter = caps => ({
+  type: 'TileJSON',
+  capabilities: caps,
+  title: caps.tileJSON?.name,
+  abstract: caps.tileJSON?.description || null,
+  layers: () => [],
+  boundingBox: () => caps.tileJSON?.bounds,
+  layerName: () => caps.tileJSON?.name,
+  source: () => new TileJSON({ url: caps.url, crossOrigin: 'anonymous' })
+})
+
+
+/**
  *
  */
 export const adapters = {
   WMTS: wmtsAdapter,
   WMS: wmsAdapter,
   XYZ: xyzAdapter,
-  OSM: osmAdapter
+  OSM: osmAdapter,
+  TileJSONDiscovery: tileJSONDiscoveryAdapter,
+  TileJSON: tileJSONAdapter
 }
 
 
