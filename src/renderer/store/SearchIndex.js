@@ -234,8 +234,8 @@ SearchIndex.prototype.search = async function (terms, options) {
     ? matches.filter(match => {
       const doc = this.cachedDocuments[match.id]
       if (!doc || !doc.tags) return true
-      const docTags = doc.tags.filter(Boolean).map(t => t.toLowerCase())
-      return !excludeTags.some(tag => docTags.includes(tag.toLowerCase()))
+      const docTags = doc.tags.filter(Boolean).map(t => t.toUpperCase())
+      return !excludeTags.some(tag => docTags.includes(tag.toUpperCase()))
     })
     : matches
 
