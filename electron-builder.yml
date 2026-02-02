@@ -29,7 +29,6 @@ linux:
   target:
     - target: AppImage
     - target: snap
-    - target: flatpak
   icon: 'build/icons'
   category: 'Office'
   files:
@@ -45,19 +44,6 @@ snap:
   plugs:
     - default
     - removable-media
-
-flatpak:
-  runtime: org.freedesktop.Platform
-  runtimeVersion: "24.08"
-  sdk: org.freedesktop.Sdk
-  finishArgs:
-    - "--share=ipc"
-    - "--socket=x11"
-    - "--socket=wayland"
-    - "--socket=pulseaudio"
-    - "--share=network"
-    - "--device=dri"
-    - "--filesystem=home"
 
 publish:
   - provider: github

@@ -18,7 +18,6 @@
     "build:linux": "electron-builder --linux --publish never",
     "build:linux:appimage": "electron-builder --linux AppImage --publish never",
     "build:linux:snap": "electron-builder --linux snap --publish never",
-    "build:linux:flatpak": "electron-builder --linux flatpak --publish never",
     "release:m": "electron-builder --mac --publish always",
     "release:w": "electron-builder --win --publish always",
     "release:l": "electron-builder --linux --publish always",

@@ -28,23 +28,11 @@ jobs:
     - name: Install Snapcraft
       uses: samber/actions-snapcraft@v2
 
-    - name: Install Flatpak builder
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y flatpak flatpak-builder
-        flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
-
     - run: npm ci --no-audit --no-optional
     - run: npm run webpack:production
 
     - name: Build and release Snap
       run: npm run build:linux:snap
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build and release Flatpak
-      run: npm run build:linux:flatpak
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -60,7 +48,6 @@ jobs:
         name: linux-packages
         path: |
           binaries/*.snap
-          binaries/*.flatpak
           binaries/*.AppImage
 
     - name: Upload Linux artifacts to release
@@ -69,7 +56,6 @@ jobs:
       with:
         files: |
           binaries/*.snap
-          binaries/*.flatpak
           binaries/*.AppImage
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
