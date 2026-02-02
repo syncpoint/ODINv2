@@ -15,6 +15,8 @@ permissions:
 jobs:
   release-linux:
     runs-on: ubuntu-latest
+    env:
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
     steps:
     - uses: actions/checkout@v4
@@ -61,7 +63,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish to Snap Store
-      if: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS != '' }}
+      if: env.SNAPCRAFT_STORE_CREDENTIALS != ''
       run: snapcraft upload --release=stable binaries/*.snap
-      env:
-        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
