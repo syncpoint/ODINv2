@@ -49,9 +49,13 @@ export const FilterInput = props => {
 
   const handleTagClick = tag => {
     const tagFilter = `#${tag}`
-    const newFilter = search.filter
-      ? `${search.filter} ${tagFilter}`
-      : tagFilter
+    const tokens = search.filter.split(' ').filter(Boolean)
+    const tagIndex = tokens.findIndex(t => t.toLowerCase() === tagFilter.toLowerCase())
+
+    const newFilter = tagIndex >= 0
+      ? tokens.filter((_, i) => i !== tagIndex).join(' ')
+      : search.filter ? `${search.filter} ${tagFilter}` : tagFilter
+
     setCursor(null)
     setSearch({ ...search, filter: newFilter, force: true })
   }
