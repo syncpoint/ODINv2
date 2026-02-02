@@ -1,7 +1,7 @@
 {
   "name": "odin",
   "productName": "ODINv2",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Open Source Command and Control Information System (C2IS)",
   "main": "dist/main.js",
   "scripts": {
