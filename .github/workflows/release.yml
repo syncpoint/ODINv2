@@ -28,7 +28,7 @@ jobs:
         cache: 'npm'
 
     - name: Install Snapcraft
-      uses: samber/actions-snapcraft@v2
+      run: sudo snap install snapcraft --classic
 
     - run: npm ci --no-audit --no-optional
     - run: npm run webpack:production
