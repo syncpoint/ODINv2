@@ -40,8 +40,8 @@ export const parseQuery = (terms, ids = []) => {
       // Remove hyphens to match the extractField transformation for scope
       const scopeValue = token.substring(1).replace(/-/g, '')
       scopeValue.length > 1 && acc.scope.push(scopeValue)
-    } else if (token.startsWith('-#')) token.length > 3 && acc.excludeTags.push(token.substring(2).toLowerCase())
-    else if (token.startsWith('#')) token.length > 2 && acc.tags.push(token.substring(1))
+    } else if (token.startsWith('-#')) token.length > 2 && acc.excludeTags.push(token.substring(2))
+    else if (token.startsWith('#')) token.length > 1 && acc.tags.push(token.substring(1))
     else if (token.startsWith('!')) token.length > 2 && acc.ids.push(token.substring(1))
     else if (token.startsWith('&')) { /* ignore */ } else if (token) acc.text.push(token)
     return acc
@@ -57,7 +57,7 @@ export const parseQuery = (terms, ids = []) => {
 
   add('scope', 'OR')
   add('text', 'AND', true)
-  add('tags', 'AND', true)
+  add('tags', 'AND')
 
   const filter = parts.ids.length
     ? result => parts.ids.some(id => result.id.startsWith(id))
