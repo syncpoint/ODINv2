@@ -65,3 +65,47 @@ jobs:
     - name: Publish to Snap Store
       if: env.SNAPCRAFT_STORE_CREDENTIALS != ''
       run: snapcraft upload --release=stable binaries/*.snap
+
+  release-macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+
+    - run: npm ci --no-audit --no-optional
+    - run: npm run webpack:production
+
+    - name: Build and notarize macOS app
+      run: npm run build:mac
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+        APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+
+    - name: Upload artifacts for manual runs
+      if: github.event_name == 'workflow_dispatch'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-packages
+        path: |
+          binaries/*.dmg
+          binaries/*.zip
+          binaries/latest-mac.yml
+
+    - name: Upload macOS artifacts to release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          binaries/*.dmg
+          binaries/*.zip
+          binaries/latest-mac.yml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
