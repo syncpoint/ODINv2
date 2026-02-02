@@ -77,10 +77,10 @@ describe('MiniSearch', function () {
     it('single-letter exclude tags are parsed correctly', function () {
       // Verify parseQuery handles single-letter exclude tags
       const [, options] = parseQuery('-#A')
-      assert.deepStrictEqual(options.excludeTags, ['a'])
+      assert.deepStrictEqual(options.excludeTags, ['A'])
 
       const [, options2] = parseQuery('-#B -#C')
-      assert.deepStrictEqual(options2.excludeTags, ['b', 'c'])
+      assert.deepStrictEqual(options2.excludeTags, ['B', 'C'])
     })
   })
 })
