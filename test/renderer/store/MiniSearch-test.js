@@ -54,5 +54,33 @@ describe('MiniSearch', function () {
       const actual = index.search(query)
       assert.strictEqual(actual.length, _3OSC.docs.length - 1) // minus one installation
     })
+
+    it('tag search uses exact matching, not prefix matching', function () {
+      const index = createIndex()
+      index.addAll([
+        { id: 'feature:1', text: 'First feature', tags: ['A'] },
+        { id: 'feature:2', text: 'Second feature', tags: ['AA'] },
+        { id: 'feature:3', text: 'Third feature', tags: ['AAA'] }
+      ])
+
+      const searchTag = (tag) => {
+        const [query] = parseQuery(tag)
+        return index.search(query).map(({ id }) => id).sort()
+      }
+
+      // Each tag search should only return exact matches
+      assert.deepStrictEqual(searchTag('#A'), ['feature:1'])
+      assert.deepStrictEqual(searchTag('#AA'), ['feature:2'])
+      assert.deepStrictEqual(searchTag('#AAA'), ['feature:3'])
+    })
+
+    it('single-letter exclude tags are parsed correctly', function () {
+      // Verify parseQuery handles single-letter exclude tags
+      const [, options] = parseQuery('-#A')
+      assert.deepStrictEqual(options.excludeTags, ['a'])
+
+      const [, options2] = parseQuery('-#B -#C')
+      assert.deepStrictEqual(options2.excludeTags, ['b', 'c'])
+    })
   })
 })
