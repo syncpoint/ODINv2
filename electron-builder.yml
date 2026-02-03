@@ -35,6 +35,8 @@ linux:
 
 snap:
   confinement: strict
+  environment:
+    ODIN_SELF_UPDATE: 0
   grade: stable
   summary: "Open Source Command and Control Information System"
   description: |
