@@ -2,6 +2,8 @@
 
 ODINv2 is the successor of [ODINv1](https://github.com/syncpoint/ODIN). ODIN has been completely rewritten and enables a wide range of new features such as layer-level links and styles, searchable `#tag`s for features, layers, symbols, etc.
 
+[![Get it from the Snap Store](https://snapcraft.io/en/light/install.svg)](https://snapcraft.io/odin-v2)
+
 ## Online collaboration
 Replication in a distributed command and control environment by making use of the [[matrix]](https://matrix.org) ecosystem is here. Make sure to join our [[matrix] ODIN Community Chat Room](https://matrix.to/#/#ODIN.Community:syncpoint.io) to get the latest news about ODIN.
 
