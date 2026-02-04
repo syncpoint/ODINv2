@@ -72,14 +72,25 @@ function handleMessage(msg) {
 
     case 'batch':
       console.log(`[${timestamp}] 📦 BATCH (${msg.payload.operations.length} operations)`)
-      msg.payload.operations.forEach((op, i) => {
+      if (msg.payload.operations.length === 1) {
+        // Single operation: show full JSON for easy copying
+        const op = msg.payload.operations[0]
         if (op.type === 'put') {
-          const preview = JSON.stringify(op.value).substring(0, 260)
-          console.log(`  ${i + 1}. PUT ${op.key} = ${preview}${preview.length >= 260 ? '...' : ''}`)
+          console.log(`  PUT ${op.key}:`)
+          console.log(JSON.stringify(op.value, null, 2))
         } else {
-          console.log(`  ${i + 1}. DEL ${op.key}`)
+          console.log(`  DEL ${op.key}`)
         }
-      })
+      } else {
+        msg.payload.operations.forEach((op, i) => {
+          if (op.type === 'put') {
+            const preview = JSON.stringify(op.value).substring(0, 260)
+            console.log(`  ${i + 1}. PUT ${op.key} = ${preview}${preview.length >= 260 ? '...' : ''}`)
+          } else {
+            console.log(`  ${i + 1}. DEL ${op.key}`)
+          }
+        })
+      }
       console.log()
       break
 
