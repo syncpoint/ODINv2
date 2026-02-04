@@ -21,6 +21,30 @@ export const toGeoJSON = geometry => {
 }
 
 /**
+ * Transform a coordinate [lon, lat] from GeoJSON to internal format.
+ * @param {Array} coord - [lon, lat] in EPSG:4326
+ * @returns {Array} - [x, y] in EPSG:3857
+ */
+export const coordToInternal = coord => {
+  if (!coord || !Array.isArray(coord)) return coord
+  const point = { type: 'Point', coordinates: coord }
+  const transformed = reproject(point, GEOJSON_PROJECTION, INTERNAL_PROJECTION)
+  return transformed.coordinates
+}
+
+/**
+ * Transform a coordinate [x, y] from internal to GeoJSON format.
+ * @param {Array} coord - [x, y] in EPSG:3857
+ * @returns {Array} - [lon, lat] in EPSG:4326
+ */
+export const coordToGeoJSON = coord => {
+  if (!coord || !Array.isArray(coord)) return coord
+  const point = { type: 'Point', coordinates: coord }
+  const transformed = reproject(point, INTERNAL_PROJECTION, GEOJSON_PROJECTION)
+  return transformed.coordinates
+}
+
+/**
  * Transform a geometry from GeoJSON format to internal format.
  * @param {Object} geometry - GeoJSON geometry in EPSG:4326
  * @returns {Object} - GeoJSON geometry in EPSG:3857

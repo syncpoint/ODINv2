@@ -21,6 +21,8 @@ console.log('Commands (type and press Enter):')
 console.log('  query <prefix>     - Query data (e.g., "query layer:")')
 console.log('  put <key> <json>   - Put a value (e.g., "put layer:test {"name":"Test"}")')
 console.log('  del <key>          - Delete a key')
+console.log('  flyto <lon> <lat>  - Fly to coordinates (e.g., "flyto 16.37 48.21")')
+console.log('  getview            - Get current map view state')
 console.log('  quit               - Exit server\n')
 
 let clientSocket = null
@@ -100,6 +102,12 @@ function handleMessage(msg) {
       console.log()
       break
 
+    case 'view:response':
+      console.log(`[${timestamp}] 🗺️  View ${msg.id} result:`)
+      console.log(JSON.stringify(msg.payload, null, 2))
+      console.log()
+      break
+
     case 'error':
       console.log(`[${timestamp}] ❌ Error (${msg.error.code}): ${msg.error.message}\n`)
       break
@@ -140,6 +148,22 @@ function sendQuery(prefix) {
 
   clientSocket.send(JSON.stringify(msg))
   console.log(`📤 Sent query for prefix: ${prefix}\n`)
+}
+
+function sendView(action, payload = {}) {
+  if (!clientSocket) {
+    console.log('⚠️  No client connected\n')
+    return
+  }
+
+  const msg = {
+    type: 'view',
+    id: `view-${messageId++}`,
+    payload: { action, ...payload }
+  }
+
+  clientSocket.send(JSON.stringify(msg))
+  console.log(`📤 Sent view command: ${action}\n`)
 }
 
 // Interactive CLI
@@ -186,6 +210,24 @@ rl.on('line', (line) => {
       } else {
         console.log('Usage: del <key>\n')
       }
+      break
+
+    case 'flyto':
+      if (parts[1] && parts[2]) {
+        const lon = parseFloat(parts[1])
+        const lat = parseFloat(parts[2])
+        if (!isNaN(lon) && !isNaN(lat)) {
+          sendView('flyto', { center: [lon, lat] })
+        } else {
+          console.log('Invalid coordinates\n')
+        }
+      } else {
+        console.log('Usage: flyto <lon> <lat>\n')
+      }
+      break
+
+    case 'getview':
+      sendView('get')
       break
 
     case 'quit':

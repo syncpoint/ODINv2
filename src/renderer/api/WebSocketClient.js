@@ -31,15 +31,19 @@ const READY_STATE = {
  *
  * @param {Object} options
  * @param {Object} options.store - The ODIN store instance
+ * @param {Object} options.emitter - Event emitter for map control
+ * @param {Object} options.sessionStore - Session store for view state
  * @param {string} options.projectId - Project UUID
  * @param {string} options.projectName - Project display name
  * @param {string} options.odinVersion - ODIN version string
  * @returns {Object} - WebSocket client instance
  */
-export function WebSocketClient ({ store, projectId, projectName, odinVersion }) {
+export function WebSocketClient ({ store, emitter, sessionStore, projectId, projectName, odinVersion }) {
   Emitter.call(this)
 
   this.store = store
+  this.emitter = emitter
+  this.sessionStore = sessionStore
   this.projectId = projectId
   this.projectName = projectName
   this.odinVersion = odinVersion
@@ -198,11 +202,13 @@ WebSocketClient.prototype._sendConnected = function () {
  */
 WebSocketClient.prototype._subscribeToStore = function () {
   // Create message handler for incoming commands
-  this.messageHandler = createMessageHandler(
-    this.store,
-    this.clientId,
-    this.send.bind(this)
-  )
+  this.messageHandler = createMessageHandler({
+    store: this.store,
+    clientId: this.clientId,
+    send: this.send.bind(this),
+    emitter: this.emitter,
+    sessionStore: this.sessionStore
+  })
 
   // Create batch event handler
   this.batchHandler = ({ operations, creatorId }) => {
@@ -263,6 +269,11 @@ WebSocketClient.prototype._handleMessage = function (event) {
     case INCOMING_TYPES.QUERY:
       if (this.messageHandler) {
         this.messageHandler.handleQuery(msg)
+      }
+      break
+    case INCOMING_TYPES.VIEW:
+      if (this.messageHandler) {
+        this.messageHandler.handleView(msg)
       }
       break
     default:

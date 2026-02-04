@@ -151,6 +151,8 @@ export default async projectUUID => {
   const project = await projectStore.getProject(`project:${projectUUID}`)
   const wsClient = new WebSocketClient({
     store,
+    emitter,
+    sessionStore,
     projectId: projectUUID,
     projectName: project?.name || 'Unknown Project',
     odinVersion: pkg.version

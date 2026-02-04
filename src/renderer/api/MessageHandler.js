@@ -8,6 +8,7 @@
 import {
   MESSAGE_TYPES,
   ACTIONS,
+  VIEW_ACTIONS,
   ERROR_CODES,
   isValidKey,
   isFeatureKey,
@@ -16,18 +17,23 @@ import {
 import {
   transformIncoming,
   transformOperationIncoming,
-  transformTupleOutgoing
+  transformTupleOutgoing,
+  coordToInternal,
+  coordToGeoJSON
 } from './coordinates'
 
 /**
  * Create a message handler for processing incoming WebSocket messages.
  *
- * @param {Object} store - The ODIN store instance
- * @param {string} clientId - Unique client ID to mark operations (prevents echo)
- * @param {Function} send - Function to send responses back via WebSocket
+ * @param {Object} options
+ * @param {Object} options.store - The ODIN store instance
+ * @param {string} options.clientId - Unique client ID to mark operations (prevents echo)
+ * @param {Function} options.send - Function to send responses back via WebSocket
+ * @param {Object} options.emitter - Event emitter for map control
+ * @param {Object} options.sessionStore - Session store for view state
  * @returns {Object} - Handler object with methods for processing messages
  */
-export const createMessageHandler = (store, clientId, send) => {
+export const createMessageHandler = ({ store, clientId, send, emitter, sessionStore }) => {
 
   /**
    * Send a success response for a command.
@@ -217,8 +223,70 @@ export const createMessageHandler = (store, clientId, send) => {
     }
   }
 
+  /**
+   * Send a view response with current view state.
+   */
+  const sendViewResponse = (id, viewState) => {
+    send({
+      type: MESSAGE_TYPES.VIEW_RESPONSE,
+      id,
+      success: true,
+      payload: viewState
+    })
+  }
+
+  /**
+   * Handle an incoming view message.
+   */
+  const handleView = async (msg) => {
+    if (!msg.id) {
+      console.warn('[WebSocketAPI] View message missing id:', msg)
+      return
+    }
+
+    if (!msg.payload || !msg.payload.action) {
+      return sendError(msg.id, ERROR_CODES.INVALID_ACTION, 'Missing action in payload')
+    }
+
+    const { action } = msg.payload
+
+    switch (action) {
+      case VIEW_ACTIONS.FLYTO: {
+        const { center, zoom } = msg.payload
+        if (!center || !Array.isArray(center) || center.length !== 2) {
+          return sendError(msg.id, ERROR_CODES.INVALID_ACTION, 'flyto requires center as [lon, lat]')
+        }
+        // Transform from GeoJSON (EPSG:4326) to internal (EPSG:3857)
+        const internalCenter = coordToInternal(center)
+        // Emit map event - view.js handles the animation
+        emitter.emit('map/flyto', { center: internalCenter, zoom })
+        sendCommandSuccess(msg.id)
+        break
+      }
+      case VIEW_ACTIONS.GET: {
+        try {
+          const viewport = await sessionStore.get('viewport', {})
+          // Transform center from internal (EPSG:3857) to GeoJSON (EPSG:4326)
+          const center = viewport.center ? coordToGeoJSON(viewport.center) : null
+          sendViewResponse(msg.id, {
+            center,
+            zoom: viewport.zoom,
+            resolution: viewport.resolution,
+            rotation: viewport.rotation
+          })
+        } catch (error) {
+          sendError(msg.id, ERROR_CODES.QUERY_FAILED, error.message)
+        }
+        break
+      }
+      default:
+        sendError(msg.id, ERROR_CODES.INVALID_ACTION, `Unknown view action: ${action}`)
+    }
+  }
+
   return {
     handleCommand,
-    handleQuery
+    handleQuery,
+    handleView
   }
 }

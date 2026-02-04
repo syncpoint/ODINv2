@@ -10,13 +10,21 @@ export const MESSAGE_TYPES = {
   BATCH: 'batch',
   COMMAND_RESPONSE: 'command:response',
   QUERY_RESPONSE: 'query:response',
+  VIEW_RESPONSE: 'view:response',
   ERROR: 'error'
 }
 
 // Incoming message types (External Server -> ODIN)
 export const INCOMING_TYPES = {
   COMMAND: 'command',
-  QUERY: 'query'
+  QUERY: 'query',
+  VIEW: 'view'
+}
+
+// View action types
+export const VIEW_ACTIONS = {
+  FLYTO: 'flyto',
+  GET: 'get'
 }
 
 // Command action types
