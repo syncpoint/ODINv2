@@ -15,15 +15,23 @@ const WebSocket = require('ws')
 const port = parseInt(process.argv[2]) || 9000
 const wss = new WebSocket.Server({ port })
 
+function showHelp() {
+  console.log('Commands:')
+  console.log('  query <prefix>     - Query data (e.g., "query layer:")')
+  console.log('  put <key> <json>   - Put a value (supports multi-line JSON)')
+  console.log('  del <key>          - Delete a key')
+  console.log('  batch <json>       - Batch operations (array of {type, key, value})')
+  console.log('  flyto <lon> <lat>  - Fly to coordinates (e.g., "flyto 16.37 48.21")')
+  console.log('  getview            - Get current map view state')
+  console.log('  help, ?            - Show this help')
+  console.log('  quit               - Exit server')
+  console.log('')
+  console.log('Multi-line input: paste JSON, press Enter on empty line to submit, "cancel" to abort.\n')
+}
+
 console.log(`\n🚀 NIDO Test Server running on ws://localhost:${port}\n`)
 console.log('Waiting for ODIN to connect...\n')
-console.log('Commands (type and press Enter):')
-console.log('  query <prefix>     - Query data (e.g., "query layer:")')
-console.log('  put <key> <json>   - Put a value (e.g., "put layer:test {"name":"Test"}")')
-console.log('  del <key>          - Delete a key')
-console.log('  flyto <lon> <lat>  - Fly to coordinates (e.g., "flyto 16.37 48.21")')
-console.log('  getview            - Get current map view state')
-console.log('  quit               - Exit server\n')
+showHelp()
 
 let clientSocket = null
 let messageId = 1
@@ -166,7 +174,23 @@ function sendView(action, payload = {}) {
   console.log(`📤 Sent view command: ${action}\n`)
 }
 
-// Interactive CLI
+function sendBatch(operations) {
+  if (!clientSocket) {
+    console.log('⚠️  No client connected\n')
+    return
+  }
+
+  const msg = {
+    type: 'command',
+    id: `cmd-${messageId++}`,
+    payload: { action: 'batch', operations }
+  }
+
+  clientSocket.send(JSON.stringify(msg))
+  console.log(`📤 Sent batch with ${operations.length} operations\n`)
+}
+
+// Interactive CLI with multi-line JSON support
 const readline = require('readline')
 const rl = readline.createInterface({
   input: process.stdin,
@@ -174,9 +198,148 @@ const rl = readline.createInterface({
   prompt: '> '
 })
 
+// Multi-line input state
+let bufferMode = null // null, 'put', or 'batch'
+let bufferKey = null
+let bufferLines = []
+
+function setPrompt(multiLine) {
+  rl.setPrompt(multiLine ? '... ' : '> ')
+}
+
+function countBraces(str) {
+  let braces = 0
+  let brackets = 0
+  let inString = false
+  let escape = false
+
+  for (const char of str) {
+    if (escape) {
+      escape = false
+      continue
+    }
+    if (char === '\\') {
+      escape = true
+      continue
+    }
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+    if (inString) continue
+
+    if (char === '{') braces++
+    else if (char === '}') braces--
+    else if (char === '[') brackets++
+    else if (char === ']') brackets--
+  }
+
+  return { braces, brackets, balanced: braces === 0 && brackets === 0 }
+}
+
+function tryParseJson(str) {
+  try {
+    return { success: true, value: JSON.parse(str) }
+  } catch (e) {
+    return { success: false, error: e }
+  }
+}
+
+function processBuffer() {
+  const jsonStr = bufferLines.join('\n')
+  const counts = countBraces(jsonStr)
+
+  // Only try to parse when braces are balanced
+  if (!counts.balanced) {
+    return false
+  }
+
+  const result = tryParseJson(jsonStr)
+  if (result.success) {
+    if (bufferMode === 'put') {
+      sendCommand('put', { key: bufferKey, value: result.value })
+    } else if (bufferMode === 'batch') {
+      // Expect an array of operations
+      if (Array.isArray(result.value)) {
+        sendBatch(result.value)
+      } else {
+        console.log('Batch must be an array of operations\n')
+      }
+    }
+    resetBuffer()
+    return true
+  }
+  return false
+}
+
+function resetBuffer() {
+  bufferMode = null
+  bufferKey = null
+  bufferLines = []
+  setPrompt(false)
+}
+
+function startBuffer(mode, key = null, initialLine = '') {
+  bufferMode = mode
+  bufferKey = key
+  bufferLines = initialLine ? [initialLine] : []
+
+  // Check if initial line is already complete
+  if (initialLine && processBuffer()) {
+    return
+  }
+
+  console.log('(paste JSON, then press Enter on empty line to submit, or type "cancel")')
+  setPrompt(true)
+  rl.prompt()
+}
+
 rl.prompt()
 
 rl.on('line', (line) => {
+  // Handle multi-line buffer mode
+  if (bufferMode) {
+    const trimmed = line.trim().toLowerCase()
+
+    if (trimmed === 'cancel') {
+      console.log('Cancelled.\n')
+      resetBuffer()
+      rl.prompt()
+      return
+    }
+
+    if (line === '' && bufferLines.length > 0) {
+      // Empty line = try to submit
+      const jsonStr = bufferLines.join('\n')
+      const result = tryParseJson(jsonStr)
+
+      if (result.success) {
+        if (bufferMode === 'put') {
+          sendCommand('put', { key: bufferKey, value: result.value })
+        } else if (bufferMode === 'batch') {
+          if (Array.isArray(result.value)) {
+            sendBatch(result.value)
+          } else {
+            console.log('Batch must be an array of operations\n')
+          }
+        }
+        resetBuffer()
+      } else {
+        console.log(`JSON parse error: ${result.error.message}`)
+        console.log('Continue typing or "cancel" to abort.\n')
+        setPrompt(true)
+      }
+      rl.prompt()
+      return
+    }
+
+    if (line !== '') {
+      bufferLines.push(line)
+    }
+    rl.prompt()
+    return
+  }
+
   const input = line.trim()
   const parts = input.split(' ')
   const cmd = parts[0]
@@ -191,18 +354,42 @@ rl.on('line', (line) => {
       break
 
     case 'put':
-      if (parts[1] && parts[2]) {
-        try {
-          const key = parts[1]
-          const value = JSON.parse(parts.slice(2).join(' '))
-          sendCommand('put', { key, value })
-        } catch (e) {
-          console.log('Invalid JSON value\n')
+      if (parts[1]) {
+        const key = parts[1]
+        const jsonPart = parts.slice(2).join(' ')
+
+        if (jsonPart) {
+          // Try to parse inline JSON
+          const result = tryParseJson(jsonPart)
+          if (result.success) {
+            sendCommand('put', { key, value: result.value })
+            break
+          }
         }
+        // Start multi-line mode
+        startBuffer('put', key, jsonPart)
+        return // Don't prompt, startBuffer handles it
       } else {
         console.log('Usage: put <key> <json>\n')
       }
       break
+
+    case 'batch':
+      // Start collecting batch operations
+      const batchJsonPart = parts.slice(1).join(' ')
+      if (batchJsonPart) {
+        const result = tryParseJson(batchJsonPart)
+        if (result.success) {
+          if (Array.isArray(result.value)) {
+            sendBatch(result.value)
+          } else {
+            console.log('Batch must be an array of operations\n')
+          }
+          break
+        }
+      }
+      startBuffer('batch', null, batchJsonPart)
+      return // Don't prompt, startBuffer handles it
 
     case 'del':
       if (parts[1]) {
@@ -228,6 +415,11 @@ rl.on('line', (line) => {
 
     case 'getview':
       sendView('get')
+      break
+
+    case 'help':
+    case '?':
+      showHelp()
       break
 
     case 'quit':
