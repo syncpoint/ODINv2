@@ -56,39 +56,71 @@ export const fromGeoJSON = geometry => {
 
 /**
  * Transform a feature value for outgoing messages (to external clients).
- * @param {Object} value - Feature value with geometry in EPSG:3857
- * @returns {Object} - Feature value with geometry in EPSG:4326
+ * Handles both features (with geometry) and bookmarks (with center).
+ * @param {Object} value - Value with geometry/center in EPSG:3857
+ * @returns {Object} - Value with geometry/center in EPSG:4326
  */
 export const transformOutgoing = value => {
-  if (!value || !value.geometry) return value
-  return {
-    ...value,
-    geometry: toGeoJSON(value.geometry)
+  if (!value) return value
+
+  let result = value
+
+  // Transform geometry (features, markers)
+  if (value.geometry) {
+    result = { ...result, geometry: toGeoJSON(value.geometry) }
   }
+
+  // Transform center (bookmarks)
+  if (value.center && Array.isArray(value.center)) {
+    result = { ...result, center: coordToGeoJSON(value.center) }
+  }
+
+  return result
 }
 
 /**
  * Transform a feature value for incoming messages (from external clients).
- * @param {Object} value - Feature value with geometry in EPSG:4326
- * @returns {Object} - Feature value with geometry in EPSG:3857
+ * Handles both features (with geometry) and bookmarks (with center).
+ * @param {Object} value - Value with geometry/center in EPSG:4326
+ * @returns {Object} - Value with geometry/center in EPSG:3857
  */
 export const transformIncoming = value => {
-  if (!value || !value.geometry) return value
-  return {
-    ...value,
-    geometry: fromGeoJSON(value.geometry)
+  if (!value) return value
+
+  let result = value
+
+  // Transform geometry (features, markers)
+  if (value.geometry) {
+    result = { ...result, geometry: fromGeoJSON(value.geometry) }
   }
+
+  // Transform center (bookmarks)
+  if (value.center && Array.isArray(value.center)) {
+    result = { ...result, center: coordToInternal(value.center) }
+  }
+
+  return result
+}
+
+/**
+ * Check if a value needs coordinate transformation.
+ * @param {Object} value - Value to check
+ * @returns {boolean} - True if value has coordinates to transform
+ */
+const needsTransformation = value => {
+  if (!value) return false
+  return value.geometry || (value.center && Array.isArray(value.center))
 }
 
 /**
  * Transform an operation for outgoing messages.
- * Only transforms put operations with geometry.
+ * Transforms put operations with geometry or center coordinates.
  * @param {Object} operation - Store operation
  * @returns {Object} - Transformed operation
  */
 export const transformOperationOutgoing = operation => {
   if (operation.type !== 'put') return operation
-  if (!operation.value?.geometry) return operation
+  if (!needsTransformation(operation.value)) return operation
   return {
     ...operation,
     value: transformOutgoing(operation.value)
@@ -97,13 +129,13 @@ export const transformOperationOutgoing = operation => {
 
 /**
  * Transform an operation for incoming messages.
- * Only transforms put operations with geometry.
+ * Transforms put operations with geometry or center coordinates.
  * @param {Object} operation - Store operation
  * @returns {Object} - Transformed operation
  */
 export const transformOperationIncoming = operation => {
   if (operation.type !== 'put') return operation
-  if (!operation.value?.geometry) return operation
+  if (!needsTransformation(operation.value)) return operation
   return {
     ...operation,
     value: transformIncoming(operation.value)
@@ -116,6 +148,6 @@ export const transformOperationIncoming = operation => {
  * @returns {Array} - Transformed tuple
  */
 export const transformTupleOutgoing = ([key, value]) => {
-  if (!value?.geometry) return [key, value]
+  if (!needsTransformation(value)) return [key, value]
   return [key, transformOutgoing(value)]
 }
