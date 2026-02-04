@@ -12,7 +12,9 @@ import {
   ERROR_CODES,
   isValidKey,
   isFeatureKey,
-  hasValidGeometry
+  isTagsKey,
+  hasValidGeometry,
+  deduplicateTags
 } from './protocol'
 import {
   transformIncoming,
@@ -118,8 +120,15 @@ export const createMessageHandler = ({ store, clientId, send, emitter, sessionSt
       return sendError(msg.id, ERROR_CODES.COMMAND_FAILED, 'Feature must have valid geometry with type')
     }
 
-    // Transform coordinates from GeoJSON (EPSG:4326) to internal (EPSG:3857)
-    const transformedValue = isFeatureKey(key) ? transformIncoming(value) : value
+    // Transform value based on key type
+    let transformedValue = value
+    if (isFeatureKey(key)) {
+      // Transform coordinates from GeoJSON (EPSG:4326) to internal (EPSG:3857)
+      transformedValue = transformIncoming(value)
+    } else if (isTagsKey(key)) {
+      // Deduplicate tags case-insensitively
+      transformedValue = deduplicateTags(value)
+    }
 
     try {
       await store.import([{ type: 'put', key, value: transformedValue }], { creatorId: clientId })
@@ -158,10 +167,18 @@ export const createMessageHandler = ({ store, clientId, send, emitter, sessionSt
       return sendError(msg.id, ERROR_CODES.INVALID_ACTION, validation.error)
     }
 
-    // Transform coordinates from GeoJSON (EPSG:4326) to internal (EPSG:3857)
-    const transformedOperations = operations.map(op =>
-      isFeatureKey(op.key) ? transformOperationIncoming(op) : op
-    )
+    // Transform operations based on key type
+    const transformedOperations = operations.map(op => {
+      if (op.type !== 'put') return op
+      if (isFeatureKey(op.key)) {
+        // Transform coordinates from GeoJSON (EPSG:4326) to internal (EPSG:3857)
+        return transformOperationIncoming(op)
+      } else if (isTagsKey(op.key)) {
+        // Deduplicate tags case-insensitively
+        return { ...op, value: deduplicateTags(op.value) }
+      }
+      return op
+    })
 
     try {
       await store.import(transformedOperations, { creatorId: clientId })
