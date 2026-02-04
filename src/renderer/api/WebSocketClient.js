@@ -66,9 +66,16 @@ Object.setPrototypeOf(WebSocketClient.prototype, Emitter.prototype)
  * @param {string} url - WebSocket URL (e.g., ws://localhost:9000)
  */
 WebSocketClient.prototype.connect = function (url) {
-  if (this.ws && this.ws.readyState === READY_STATE.OPEN) {
-    console.warn('[WebSocketAPI] Already connected, disconnect first')
-    return
+  // Guard against connecting while already connected or connecting
+  if (this.ws) {
+    if (this.ws.readyState === READY_STATE.OPEN) {
+      console.warn('[WebSocketAPI] Already connected, disconnect first')
+      return
+    }
+    if (this.ws.readyState === READY_STATE.CONNECTING) {
+      console.warn('[WebSocketAPI] Connection already in progress')
+      return
+    }
   }
 
   this.url = url
@@ -145,6 +152,21 @@ WebSocketClient.prototype.send = function (message) {
  * @private
  */
 WebSocketClient.prototype._createConnection = function () {
+  // Clean up any existing connection first
+  if (this.ws) {
+    // Remove listeners to prevent callbacks on old socket
+    this.ws.onopen = null
+    this.ws.onmessage = null
+    this.ws.onclose = null
+    this.ws.onerror = null
+    // Close if not already closed
+    if (this.ws.readyState === READY_STATE.OPEN ||
+        this.ws.readyState === READY_STATE.CONNECTING) {
+      this.ws.close()
+    }
+    this.ws = null
+  }
+
   try {
     this.ws = new WebSocket(this.url)
   } catch (error) {
@@ -201,6 +223,9 @@ WebSocketClient.prototype._sendConnected = function () {
  * @private
  */
 WebSocketClient.prototype._subscribeToStore = function () {
+  // Always unsubscribe first to prevent duplicate subscriptions
+  this._unsubscribeFromStore()
+
   // Create message handler for incoming commands
   this.messageHandler = createMessageHandler({
     store: this.store,
@@ -210,10 +235,26 @@ WebSocketClient.prototype._subscribeToStore = function () {
     sessionStore: this.sessionStore
   })
 
-  // Create batch event handler
+  // Create batch event handler with deduplication
+  this.lastBatchKey = null
   this.batchHandler = ({ operations, creatorId }) => {
     // Don't echo back our own changes
     if (creatorId === this.clientId) return
+
+    // Deduplicate: skip if this is the exact same batch as the last one
+    // This handles cases where the same event might be delivered twice
+    const batchKey = JSON.stringify(operations.map(op => ({ type: op.type, key: op.key })))
+    if (batchKey === this.lastBatchKey) {
+      console.log('[WebSocketAPI] Skipping duplicate batch')
+      return
+    }
+    this.lastBatchKey = batchKey
+
+    // Clear the dedup key after a short delay to allow legitimate repeated operations
+    clearTimeout(this.batchDedupeTimeout)
+    this.batchDedupeTimeout = setTimeout(() => {
+      this.lastBatchKey = null
+    }, 100)
 
     // Transform coordinates from internal (EPSG:3857) to GeoJSON (EPSG:4326)
     const transformedOperations = operations.map(transformOperationOutgoing)
@@ -239,6 +280,11 @@ WebSocketClient.prototype._unsubscribeFromStore = function () {
     this.store.off('batch', this.batchHandler)
     this.batchHandler = null
   }
+  if (this.batchDedupeTimeout) {
+    clearTimeout(this.batchDedupeTimeout)
+    this.batchDedupeTimeout = null
+  }
+  this.lastBatchKey = null
   this.messageHandler = null
 }
 
