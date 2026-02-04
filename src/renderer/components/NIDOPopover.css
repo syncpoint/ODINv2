@@ -163,3 +163,22 @@
   padding-top: 12px;
   border-top: 1px solid #eee;
 }
+
+.nido-popover__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 10px;
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #8d6e00;
+  line-height: 1.4;
+}
+
+.nido-popover__warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}

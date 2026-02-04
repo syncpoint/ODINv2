@@ -159,6 +159,14 @@ export const NIDOPopover = () => {
             Connected tools can receive live updates and send commands to create,
             modify, or delete features.
           </div>
+
+          <div className="nido-popover__warning">
+            <Icon path={mdi.mdiAlertOutline} size="16px" />
+            <span>
+              External connections can read and modify your project data.
+              Only connect to servers you trust.
+            </span>
+          </div>
         </div>
       )}
 
