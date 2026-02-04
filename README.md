@@ -24,6 +24,20 @@ To connect an external application, click the LAN icon in the ODIN toolbar and c
 
 For detailed protocol documentation and examples, see [docs/NIDO.md](docs/NIDO.md).
 
+### NIDO vs. Live Data Sources
+
+ODIN supports two different mechanisms for external data integration:
+
+| | NIDO | Live Data Sources |
+|---|---|---|
+| **Connections** | Single connection only | Multiple sources allowed |
+| **Data persistence** | Full persistence (stored in project) | Not persisted (disappears on disconnect) |
+| **Feature properties** | Full access to all properties | Properties not available |
+| **Control** | Full read/write access to all project data | Read-only display on map |
+| **Security** | Use only with trusted servers | Suitable for untrusted/public sources |
+
+**NIDO** provides complete control over your project and should only be used with servers you fully trust. **Live Data Sources** are ideal for displaying real-time tracking data from external systems without affecting your project's stored data.
+
 ## Migration from ODINv1
 
 ODINv2 will migrate all of your existing ODINv1 projects on first start. You will be able to further use ODINv1 in parallel but we will not update newly or updated projects after the first start of ODINv2. If you do have any 
