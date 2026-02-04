@@ -83,12 +83,19 @@ function handleMessage(msg) {
 
     case 'query:response':
       console.log(`[${timestamp}] 📋 Query ${msg.id} result: ${msg.payload.tuples.length} items`)
-      msg.payload.tuples.slice(0, 10).forEach(([key, value]) => {
-        const preview = JSON.stringify(value).substring(0, 250)
-        console.log(`  ${key}: ${preview}${preview.length >= 250 ? '...' : ''}`)
-      })
-      if (msg.payload.tuples.length > 10) {
-        console.log(`  ... and ${msg.payload.tuples.length - 10} more`)
+      if (msg.payload.tuples.length === 1) {
+        // Single result: show full JSON for easy copying
+        const [key, value] = msg.payload.tuples[0]
+        console.log(`  ${key}:`)
+        console.log(JSON.stringify(value, null, 2))
+      } else {
+        msg.payload.tuples.slice(0, 10).forEach(([key, value]) => {
+          const preview = JSON.stringify(value).substring(0, 250)
+          console.log(`  ${key}: ${preview}${preview.length >= 250 ? '...' : ''}`)
+        })
+        if (msg.payload.tuples.length > 10) {
+          console.log(`  ... and ${msg.payload.tuples.length - 10} more`)
+        }
       }
       console.log()
       break
