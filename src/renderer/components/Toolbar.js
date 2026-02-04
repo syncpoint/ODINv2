@@ -4,12 +4,7 @@ import './Toolbar.css'
 import { useServices, useMemento } from './hooks'
 import { DropdownMenu } from './DropdownMenu'
 import { SimpleButton, CommandButton } from './ToolbarButtons'
-
-
-// mdiFormatPaint
-// mdiPaletteSwatchOutline
-// mdiFileDocumentOutline
-
+import { NIDOPopover } from './NIDOPopover'
 
 
 export const Toolbar = () => {
@@ -86,6 +81,7 @@ export const Toolbar = () => {
               : <CommandButton key={key} command={command}/>
           })
         }
+        <NIDOPopover />
       </div>
       <div className='toolbar__items-container toolbar__items--right'>
         <SimpleButton

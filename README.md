@@ -9,6 +9,21 @@ Replication in a distributed command and control environment by making use of th
 
 ![ODINv2 C2IS](assets/splash-01.jpeg?raw=true)
 
+## NIDO - External Integration API
+
+NIDO (ODIN reversed) is a WebSocket-based API that enables external applications to integrate with ODIN in real-time. This opens up powerful possibilities for extending ODIN's capabilities:
+
+- **Digital Twin**: Mirror ODIN data in external systems for monitoring or backup
+- **Automation**: Programmatically create, update, or delete features from scripts or external tools
+- **System Integration**: Connect ODIN to other C2 systems, sensors, or data sources
+- **Real-time Analytics**: Stream project data to external analytics or visualization tools
+
+External applications can subscribe to live data changes, query project data, send commands to modify layers and features, and even control the map view. All coordinates are exposed in standard GeoJSON format (EPSG:4326 lon/lat).
+
+To connect an external application, click the LAN icon in the ODIN toolbar and configure your WebSocket server URL.
+
+For detailed protocol documentation and examples, see [docs/NIDO.md](docs/NIDO.md).
+
 ## Migration from ODINv1
 
 ODINv2 will migrate all of your existing ODINv1 projects on first start. You will be able to further use ODINv1 in parallel but we will not update newly or updated projects after the first start of ODINv2. If you do have any 
