@@ -88,3 +88,29 @@ export const isFeatureKey = key => {
 export const hasValidGeometry = value => {
   return value?.geometry?.type !== undefined
 }
+
+/**
+ * Check if a key represents a tags entry.
+ * @param {string} key - The key to check
+ * @returns {boolean} - True if key is a tags key
+ */
+export const isTagsKey = key => {
+  if (typeof key !== 'string') return false
+  return key.startsWith('tags+')
+}
+
+/**
+ * Deduplicate tags array case-insensitively (first occurrence wins).
+ * @param {Array} tags - Array of tag strings
+ * @returns {Array} - Deduplicated array
+ */
+export const deduplicateTags = tags => {
+  if (!Array.isArray(tags)) return tags
+  const seen = new Set()
+  return tags.filter(tag => {
+    const upper = tag.toUpperCase()
+    if (seen.has(upper)) return false
+    seen.add(upper)
+    return true
+  })
+}

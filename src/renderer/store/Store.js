@@ -564,7 +564,13 @@ Store.prototype.rename = async function (id, name) {
 Store.prototype.addTag = async function (id, name) {
   if (name === 'default') return this.setDefaultLayer(id)
 
-  const addTag = name => tags => R.uniq([...(tags || []), name])
+  // Case-insensitive duplicate check
+  const addTag = name => tags => {
+    const existing = tags || []
+    const alreadyExists = existing.some(tag => tag.toUpperCase() === name.toUpperCase())
+    if (alreadyExists) return existing
+    return [...existing, name]
+  }
   const taggableIds = this.selection.selected(ID.isTaggableId)
   const ids = R.uniq([id, ...taggableIds]).map(ID.tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
@@ -582,7 +588,8 @@ Store.prototype.addTag = async function (id, name) {
 Store.prototype.removeTag = async function (id, name) {
   if (name === 'default') return this.unsetDefaultLayer(id)
 
-  const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
+  // Case-insensitive removal
+  const removeTag = name => tags => (tags || []).filter(tag => tag.toUpperCase() !== name.toUpperCase())
   const taggableIds = this.selection.selected(ID.isTaggableId)
   const ids = R.uniq([id, ...taggableIds]).map(ID.tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
