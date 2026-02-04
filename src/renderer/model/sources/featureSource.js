@@ -126,9 +126,33 @@ export const featureSource = services => {
       ...await store.tuples(ID.MEASURE_SCOPE)
     ]
 
-    const features = tuples
-      .map(([id, value]) => ({ id, ...value }))
-      .map(readFeature(state))
+    // Filter out entries with invalid geometry before parsing
+    const isValidFeature = ([id, value]) => {
+      if (!value || typeof value !== 'object') {
+        console.warn(`[featureSource] Skipping ${id}: value is not an object`)
+        return false
+      }
+      if (!value.geometry || typeof value.geometry !== 'object') {
+        console.warn(`[featureSource] Skipping ${id}: missing geometry object`)
+        return false
+      }
+      if (!value.geometry.type) {
+        console.warn(`[featureSource] Skipping ${id}: geometry has no type`)
+        return false
+      }
+      return true
+    }
+
+    const features = []
+    for (const [id, value] of tuples) {
+      if (!isValidFeature([id, value])) continue
+      try {
+        const feature = readFeature(state, { id, ...value })
+        features.push(feature)
+      } catch (error) {
+        console.warn(`[featureSource] Failed to read feature ${id}:`, error.message)
+      }
+    }
     source.addFeatures(features)
   })()
 
@@ -159,7 +183,10 @@ export const featureSource = services => {
   feature.on(({ type, key, value }) => {
     let feature = getFeatureById(key)
     if (type === 'del') source.removeFeature(feature)
-    else if (feature) {
+    else if (!value?.geometry?.type) {
+      // Skip features with invalid geometry
+      console.warn(`[featureSource] Skipping feature with invalid geometry: ${key}`)
+    } else if (feature) {
       feature.setProperties(value.properties)
       // It is possible that only properties have changed.
       // Don't set null/undefined geometry!

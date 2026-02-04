@@ -11,15 +11,22 @@ export const SimpleButton = props => {
     ? 'toolbar__button toolbar__button--checked'
     : 'toolbar__button'
 
+  const badge = props.badge
+    ? <span className={`toolbar__badge toolbar__badge--${props.badge}`} />
+    : null
+
   return (
     <>
-    <button
-    id={`sb-${props.path}`}
-      className={className}
-      onClick={() => props.onClick()}
-    >
-      <Icon path={mdi[props.path]} size='20px' />
-    </button>
+    <div className='toolbar__button-wrapper'>
+      <button
+        id={`sb-${props.path}`}
+        className={className}
+        onClick={() => props.onClick()}
+      >
+        <Icon path={mdi[props.path]} size='20px' />
+      </button>
+      {badge}
+    </div>
     <Tooltip anchorSelect={`#sb-${props.path}`} content={props.toolTip} style={{ zIndex: 200 }} delayShow={750}/>
     </>
   )
@@ -29,7 +36,8 @@ SimpleButton.propTypes = {
   onClick: PropTypes.func.isRequired,
   path: PropTypes.string.isRequired,
   checked: PropTypes.bool.isRequired,
-  toolTip: PropTypes.string
+  toolTip: PropTypes.string,
+  badge: PropTypes.oneOf(['connected', 'failed', 'disconnected'])
 }
 
 

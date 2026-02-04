@@ -26,6 +26,8 @@ import { bindings } from '../bindings'
 import { SpatialIndex } from '../store/SpatialIndex'
 import { MatrixClient } from '@syncpoint/matrix-client-api'
 import Signal from '@syncpoint/signal'
+import { WebSocketClient } from '../api'
+import pkg from '../../../package.json'
 
 export default async projectUUID => {
   const services = {}
@@ -144,6 +146,23 @@ export default async projectUUID => {
 
   services.signals = {}
   services.signals['replication/operational'] = Signal.of(false)
+
+  // Initialize WebSocket API client for NIDO integration
+  const project = await projectStore.getProject(`project:${projectUUID}`)
+  const wsClient = new WebSocketClient({
+    store,
+    projectId: projectUUID,
+    projectName: project?.name || 'Unknown Project',
+    odinVersion: pkg.version
+  })
+  services.wsClient = wsClient
+
+  // Auto-connect if both URL and enabled flag are set
+  const wsUrl = await preferencesStore.get('api.websocket.url', null)
+  const wsEnabled = await preferencesStore.get('api.websocket.enabled', false)
+  if (wsUrl && wsEnabled) {
+    wsClient.connect(wsUrl)
+  }
 
   const commandRegistry = new CommandRegistry(services)
   services.commandRegistry = commandRegistry
