@@ -7,7 +7,7 @@ ODINv2 is the successor of [ODINv1](https://github.com/syncpoint/ODIN). ODIN has
 ## Online collaboration
 Replication in a distributed command and control environment by making use of the [[matrix]](https://matrix.org) ecosystem is here. Make sure to join our [[matrix] ODIN Community Chat Room](https://matrix.to/#/#ODIN.Community:syncpoint.io) to get the latest news about ODIN.
 
-![ODINv2 C2IS](assets/splash-01.jpeg?raw=true)
+![ODINv2 C2IS](assets/ODIN-Splash-3.2.0.jpg?raw=true)
 
 ## NIDO - External Integration API
 
