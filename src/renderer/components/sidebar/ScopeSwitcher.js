@@ -20,7 +20,9 @@ const SCOPES = {
   [`@${ID.BOOKMARK}`]: 'mdiBookmarkOutline',
   [`@${ID.PLACE}`]: 'mdiSearchWeb',
   [`@${ID.TILE_SERVICE}`]: 'mdiEarth',
-  [`@${ID.MEASURE}`]: 'mdiAndroidStudio'
+  [`@${ID.SSE_SERVICE}`]: 'mdiAccessPointNetwork',
+  [`@${ID.MEASURE}`]: 'mdiAndroidStudio',
+  [`@${ID.INVITED}`]: 'mdiCloudPlusOutline'
 }
 
 const TOOLTIPS = {
@@ -33,7 +35,9 @@ const TOOLTIPS = {
   [`@${ID.BOOKMARK}`]: 'Manage existing bookmarks',
   [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
   [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
-  [`@${ID.MEASURE}`]: 'Manage existing measurements'
+  [`@${ID.SSE_SERVICE}`]: 'Manage live data sources',
+  [`@${ID.MEASURE}`]: 'Manage existing measurements',
+  [`@${ID.INVITED}`]: 'Show invitations and join shared layers'
 }
 
 /**
@@ -57,24 +61,34 @@ const ScopeSwitch = props => {
     const pop = () => search.history.slice(0, findIndex() + 1)
     const reset = () => [{ key: 'root', scope: props.scope, label: props.label }]
     const history = props.name ? pop : reset
-    setSearch({ history: history(), filter: '' })
+
+    // Save current filter for current scope, restore filter for new scope
+    const currentScope = search.history[search.history.length - 1]?.scope
+    const filters = { ...search.filters, [currentScope]: search.filter }
+    const restoredFilter = filters[props.scope] || ''
+
+    setSearch({ history: history(), filter: restoredFilter, filters })
+
+    // Notify parent (e.g., to expand collapsed sidebar)
+    if (props.onScopeClick) props.onScopeClick()
   }
 
 
   if (props.name && props.handleGoBack) {
 
     return <div style={{ width: '100%', border: '1px solid #e9746c', borderRadius: '2px', marginTop: '3px' }} >
-      <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between' }}>
-        <Icon className='a74a-icon-active'
+      <div style={{ display: 'flex', gap: '2px', backgroundColor: '#e9746c', flexGrow: 1, color: 'white', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Icon
           path={props.scope.match(/LINK/i) === null ? mdi.mdiFormatListBulletedType : mdi.mdiLinkVariant }
+          style={{ width: '26px', height: '26px', color: 'white' }}
         />
         <div style={{ textTransform: 'uppercase', padding: '3px', fontWeight: 400, fontSize: '0.86rem' }}>{props.name}</div>
         { props.disabled
-          ? <div className='a74a-icon-active' style= {{ marginLeft: 'auto' }}/>
-          : <Icon className='a74a-icon-active'
+          ? <div style={{ width: '26px', height: '26px', marginLeft: 'auto' }}/>
+          : <Icon
           path={mdi.mdiCloseBoxOutline}
           onClick={props.handleGoBack}
-          style= {{ marginLeft: 'auto' }}
+          style={{ width: '26px', height: '26px', marginLeft: 'auto', color: 'white', cursor: 'pointer' }}
         />}
       </div>
       <div style={{ padding: '3px', fontWeight: 300, fontSize: '0.86rem' }}>{props.label}</div>
@@ -97,34 +111,56 @@ ScopeSwitch.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string.isRequired,
   scope: PropTypes.string.isRequired,
-  toolTip: PropTypes.string
+  toolTip: PropTypes.string,
+  onScopeClick: PropTypes.func
 }
 
 
 /**
- *
+ * Vertical column of scope icons
  */
-export const ScopeSwitcher = props => {
-  const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
-  const { history } = search
-
-  const setHistory = React.useCallback(history => {
-    // Note: Setting/resetting history always resets filter.
-    setSearch({ filter: '', history })
-  }, [setSearch])
-
-  const handleGoBack = () => {
-    setHistory(R.dropLast(1, history))
-  }
-
+export const ScopeSwitcher = ({ onScopeClick }) => {
   const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
     <ScopeSwitch
       key={scope}
       scope={scope}
       label={label}
       toolTip={TOOLTIPS[scope]}
+      onScopeClick={onScopeClick}
     />
   )
+
+  return (
+    <div className='a74a-taglist'>
+      { defaultSwitches }
+    </div>
+  )
+}
+
+ScopeSwitcher.propTypes = {
+  onScopeClick: PropTypes.func
+}
+
+/**
+ * Breadcrumb trail showing current drill-down path
+ */
+export const ScopeBreadcrumb = () => {
+  const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
+  const { history } = search
+
+  const setHistory = React.useCallback(newHistory => {
+    // Save current filter for current scope, restore filter for new scope
+    const currentScope = search.history[search.history.length - 1]?.scope
+    const newScope = newHistory[newHistory.length - 1]?.scope
+    const filters = { ...search.filters, [currentScope]: search.filter }
+    const restoredFilter = filters[newScope] || ''
+
+    setSearch({ history: newHistory, filter: restoredFilter, filters })
+  }, [setSearch, search])
+
+  const handleGoBack = () => {
+    setHistory(R.dropLast(1, history))
+  }
 
   const childSwitches = R.drop(1, history).map(({ key, label, scope }, index, elements) => {
     return <ScopeSwitch
@@ -135,13 +171,12 @@ export const ScopeSwitcher = props => {
       handleGoBack={handleGoBack}
       disabled={elements.length > 1 && index < elements.length - 1 }
     />
-  }
-  )
+  })
 
+  if (childSwitches.length === 0) return null
 
   return (
-    <div className='a74a-taglist'>
-      { defaultSwitches }
+    <div className='a74a-breadcrumb'>
       { childSwitches }
     </div>
   )

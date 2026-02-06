@@ -7,11 +7,20 @@ import uuid from '../../shared/uuid'
 import './DropdownMenu.css'
 
 export const DropdownMenu = props => {
-
+  const { command } = props
   const [id] = React.useState(uuid())
   const [collapsed, setCollapsed] = React.useState(true)
+  const [enabled, setEnabled] = React.useState(command?.enabled ? command.enabled() : true)
+
+  React.useEffect(() => {
+    if (!command) return
+    const handle = () => setEnabled(command.enabled())
+    if (command.on) command.on('changed', handle)
+    return command.off && (() => command.off('changed', handle))
+  }, [command])
 
   const handleClick = () => {
+    if (!enabled) return
     document.getElementById(id).classList.toggle('show')
     setCollapsed(current => !current)
   }
@@ -43,9 +52,10 @@ export const DropdownMenu = props => {
         onClick={handleClick}
         onBlur={handleBlur}
         className="dropdown__button"
+        disabled={!enabled}
       >
-        <Icon path={mdi[props.path]} size='20px' color='#68696B'/>
-        <Icon path={mdi.mdiChevronDown} size='16px' color='#68696B'/>
+        <Icon path={mdi[props.path]} size='20px' color={enabled ? '#68696B' : 'lightgray'}/>
+        <Icon path={mdi.mdiChevronDown} size='16px' color={enabled ? '#68696B' : 'lightgray'}/>
       </button>
       <div id={id} className="dropdown__content">
         { props.options.map(option) }
@@ -64,5 +74,6 @@ export const DropdownMenu = props => {
 DropdownMenu.propTypes = {
   path: PropTypes.string.isRequired,
   options: PropTypes.array.isRequired,
-  toolTip: PropTypes.string
+  toolTip: PropTypes.string,
+  command: PropTypes.object
 }

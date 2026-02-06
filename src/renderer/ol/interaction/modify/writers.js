@@ -10,11 +10,19 @@ import { Hooks } from './hooks'
  * Geometry type plus optional layout from feature descriptors.
  */
 const signature = feature => {
+  // Check for Point with radius property (circle measure)
+  const geom = feature.getGeometry()
+  const props = feature.getProperties()
+  const radius = props.radius
+  if (geom.getType() === 'Point' && typeof radius === 'number') {
+    return 'Point-circle-measure'
+  }
+
   const geometry = MILSTD.geometry(feature.get('sidc'))
   const layout = geometry && geometry.layout
   const type = layout
     ? geometryType(feature)
-    : feature.getGeometry().getType()
+    : geom.getType()
   return layout ? `${type}-${geometry.layout}` : type
 }
 
@@ -55,8 +63,32 @@ export const writeIndex = feature => {
 export const Writers = {}
 
 Writers.Point = options => {
-  const { geometry } = options
+  const { geometry, feature } = options
   const coordinate = geometry.getCoordinates()
+  const props = feature.getProperties()
+  const radius = props.radius
+
+  // For circle measure (Point with radius), return two handles:
+  // index 0: center point (for panning)
+  // index 1: edge point (for resizing)
+  if (typeof radius === 'number') {
+    const edgeCoordinate = [coordinate[0] + radius, coordinate[1]]
+    return [
+      {
+        ...options,
+        index: 0,
+        vertices: [coordinate, coordinate],
+        extent: geometry.getExtent()
+      },
+      {
+        ...options,
+        index: 1,
+        vertices: [edgeCoordinate, edgeCoordinate],
+        extent: Extent.boundingExtent([edgeCoordinate])
+      }
+    ]
+  }
+
   return [{
     ...options,
     vertices: [coordinate, coordinate],

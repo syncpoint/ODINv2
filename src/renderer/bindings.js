@@ -5,9 +5,17 @@ const cmdOrCtrl = key => process.platform === 'darwin'
   ? `command+${key}`
   : `ctrl+${key}`
 
-export const bindings = (clipboard, emitter) => {
+export const bindings = (commandRegistry, emitter) => {
+  const [/* unused */, deleteCommand] = commandRegistry.command('CLIPBOARD_DELETE')
+
   // Note: bindGlobal() is used to also trap inside input elements.
-  Mousetrap.bind(cmdOrCtrl('backspace'), () => clipboard.delete())
-  Mousetrap.bind('del', () => clipboard.delete())
+  Mousetrap.bind(cmdOrCtrl('backspace'), () => {
+    if (deleteCommand.enabled()) deleteCommand.execute()
+  })
+
+  Mousetrap.bind('del', () => {
+    if (deleteCommand.enabled()) deleteCommand.execute()
+  })
+
   Mousetrap.bind('esc', () => emitter.emit('command/draw/cancel'))
 }

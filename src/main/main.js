@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import { app, ipcMain, shell, BrowserWindow } from 'electron'
 import URL from 'url'
-import * as paths from './paths'
+import { initPaths } from './paths'
 import { transferLegacy } from './legacy/transfer'
 import { leveldb } from '../shared/level'
 import { IPCServer } from '../shared/level/ipc'
@@ -11,25 +11,23 @@ import { WindowManager } from './WindowManager'
 import { ProjectStore, SessionStore, LegacyStore, PreferencesProvider } from './stores'
 import { exportLayer } from './export.js'
 import { ipc } from './ipc'
+import { Collaboration } from './Collaboration'
 import * as dotenv from 'dotenv'
 import SelfUpdate from './SelfUpdate'
 import { isEnabled } from './environment'
+
+const paths = initPaths(app)
 
 /**
  * Emitted once, when Electron has finished initializing.
  */
 const ready = async () => {
   // read environment variables from .env file and add to process.env
-  console.log(`looking for .env file ${paths.dotenv(app)}`)
-  dotenv.config({ debug: true, path: paths.dotenv(app) })
-
-  // loadReactChromeExtension()
+  dotenv.config({ debug: false, quiet: true, path: paths.dotenv })
 
   // Open/create master database.
-  const databases = paths.databases(app)
-  console.log('databases directory:', databases)
-  paths.mkdir(databases)
-  const db = leveldb({ location: paths.master(app), encoding: 'json' })
+  paths.initStorageLocation()
+  const db = leveldb({ location: paths.master, encoding: 'json' })
 
   /* eslint-disable no-new */
   new IPCServer(db, ipcMain)
@@ -38,17 +36,18 @@ const ready = async () => {
   const projectStore = new ProjectStore(db)
   const sessionStore = new SessionStore(db)
   const legacyStore = new LegacyStore(db)
-  ipc(databases, ipcMain, projectStore)
+
+  ipc(ipcMain, projectStore)
 
   // Transfer legacy data if not already done.
   if (await legacyStore.getTransferred() === false) {
-    const location = paths.odinHome
-    await transferLegacy(location, legacyStore, databases)
+    await transferLegacy(paths, legacyStore)
   }
 
   const windowManager = new WindowManager()
   const session = new Session({ sessionStore, projectStore, windowManager })
-  const menu = new ApplicationMenu(sessionStore)
+  const menu = new ApplicationMenu({ sessionStore, projectStore })
+  const collaboration = new Collaboration({ sessionStore, projectStore, windowManager })
   const preferencesProvider = new PreferencesProvider(windowManager, ipcMain)
 
   preferencesProvider.on('preferencesChanged', ({ projectId, preferences }) => {
@@ -63,6 +62,8 @@ const ready = async () => {
 
   menu.on('project/open/:key', ({ key }) => session.openProject(key))
   menu.on('project/create', () => session.createProject())
+  menu.on('collaboration/enable', () => collaboration.login())
+  menu.on('collaboration/disable', () => collaboration.logout())
 
   windowManager.on('window/closed/:id', ({ id }) => {
     session.windowClosed(id)
@@ -102,6 +103,22 @@ const ready = async () => {
 
     open(link.url)
   })
+
+  ipcMain.on('RELOAD_ALL_WINDOWS', () => {
+    windowManager.reloadAll()
+  })
+
+  ipcMain.on('CLOSE_WINDOW', (event, handle) => {
+    windowManager.closeWindow(handle)
+  })
+
+  ipcMain.on('REFRESH_MENU', () => menu.show())
+
+  ipcMain.handle('PURGE_COLLABORATION_SETTINGS', async () => {
+    await collaboration.purgeSettings()
+    windowManager.reloadAll()
+  })
+  ipcMain.on('COLLABORATION_REFRESH_LOGIN', () => collaboration.login())
 
   ipcMain.on('EXPORT_LAYER', exportLayer)
 

@@ -1,0 +1,63 @@
+.e3de-tag {
+  font-size: 0.75em;
+  padding: 1px 3px;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: flex;
+  gap: 3px;
+  text-transform: uppercase;
+}
+
+.e3de-tag--scope {
+  color: white;
+  border: 1px solid var(--color-primary-accent);
+  background-color: var(--color-primary-accent);
+}
+
+.e3de-tag--system {
+  border: 1px solid var(--color-primary-accent);
+}
+
+.e3de-tag--user {
+  border: 1px solid var(--color-secondary-accent);
+}
+
+.e3de-tag--plus {
+  border: 1px dashed darkgrey;
+}
+
+.e3de-tag--active:hover {
+  background-color: var(--color-tag-hover);
+  border-color: var(--color-tag-hover);
+  color: black;
+  cursor: pointer;
+}
+
+.e3de-tag__input {
+  background-color: inherit;
+  width: 76px;
+}
+
+.e3de-tag__input:focus {
+  border: 1px dashed darkgrey;
+}
+
+.e3de-tag-icon {
+  height: 16px;
+  color: grey;
+}
+
+.e3de-tag-close-icon {
+  cursor: pointer;
+}
+
+.e3de-icon-tag {
+  width: 22px;
+  height: 22px;
+
+  &:hover {
+    background-color: var(--color-tag-hover);
+    border-color: var(--color-tag-hover);
+    cursor: pointer;
+  }
+}

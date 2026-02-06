@@ -5,6 +5,8 @@ appId: io.syncpoint.odin.v2
 productName: "ODINv2"
 copyright: ${author} https://syncpoint.io
 
+asarUnpack: "**/*.node"
+
 win:
   target:
     - target: nsis
@@ -20,19 +22,32 @@ mac:
   target: default
   entitlements: 'build/entitlements.mac.plist'
   entitlementsInherit: 'build/entitlements.mac.plist'
-  notarize:
-    teamId: 4KRG6BGC37
+  notarize: true
 
 linux:
   target:
     - target: AppImage
+    - target: snap
   icon: 'build/icons'
   category: 'Office'
   files:
     - 'dist'
 
+snap:
+  confinement: strict
+  environment:
+    ODIN_SELF_UPDATE: 0
+  grade: stable
+  summary: "Open Source Command and Control Information System"
+  description: |
+    ODIN is an Open Source Command and Control Information System (C2IS)
+    for planning and conducting military or civilian operations.
+  plugs:
+    - default
+    - removable-media
+
 publish:
   - provider: github
     releaseType: release
 
-electronVersion: 31.2.1
+electronVersion: 38.8.0

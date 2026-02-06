@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import './Button.scss'
+import './Button.css'
 
 export const Button = props => {
   const { children, danger, style, ...rest } = props

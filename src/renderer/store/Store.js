@@ -75,6 +75,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
   const tagsIds = id => L.readKeys(this.jsonDB, L.prefix(ID.tagsId(id)))
   const defaultIds = id => L.readKeys(this.jsonDB, L.prefix(ID.defaultId(id)))
   const styleIds = id => L.readKeys(this.jsonDB, L.prefix(ID.styleId(id)))
+  const sharedLayerIds = id => L.readKeys(this.jsonDB, L.prefix(ID.sharedId(id)))
   const tileLayerIds = id => L.readKeys(this.jsonDB, L.prefix(`tile-layer:${id.split(':')[1]}`))
   const hasLinks = id => consider('link') && (ID.isLayerId(id) || ID.isFeatureId(id))
   const hasFeatures = ID.isLayerId
@@ -83,6 +84,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
   const maybeTagged = id => consider('tags') && ID.isTaggableId(id)
   const maybeDefault = id => consider('default') && ID.isLayerId(id)
   const hasStyle = id => consider('style') && (ID.isLayerId(id) || ID.isFeatureId(id))
+  const isShared = id => consider(ID.SHARED) && (ID.isLayerId(id))
 
   const collect = (acc, ids) => {
     acc.push(...ids)
@@ -97,6 +99,7 @@ Store.prototype.collectKeys = async function (ids, include = []) {
       if (maybeTagged(id)) ys.push(...await tagsIds(id))
       if (maybeDefault(id)) ys.push(...await defaultIds(id))
       if (hasStyle(id)) ys.push(...await styleIds(id))
+      if (isShared(id)) ys.push(...await sharedLayerIds(id))
 
       await collect(xs, ys)
       return xs
@@ -290,13 +293,16 @@ Store.prototype.delete = async function (arg) {
   // [k]:
   const ids = arg
 
-  // Don't delete locked entries:
+  // Don't delete locked or restricted entries:
   const locks = Object.fromEntries(await this.tuples(ids.map(ID.lockedId)))
+  const restrictions = Object.fromEntries(await this.tuples(ids.map(ID.restrictedId)))
+
   const deletableIds = ids
     .filter(ID.isDeletableId) // symbols for example cannot be deleted.
     .filter(key => !locks[ID.lockedId(key)])
+    .filter(key => !restrictions[ID.restrictedId(key)])
 
-  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default', 'style'])
+  const keys = await this.collectKeys(deletableIds, ['link', 'hidden', 'tags', 'default', 'style', ID.SHARED])
   const tuples = await L.tuples(this.db, keys)
   const command = this.deleteCommand(this.db, tuples)
   this.undo.apply(command)
@@ -349,6 +355,30 @@ Store.prototype.unlock = async function (ids, active) {
   const operations = keys.map(key => L.delOp(ID.lockedId(key)))
   this.batch(this.jsonDB, operations)
 }
+
+/**
+ * @async
+ * restrict :: [k] -> unit
+ */
+Store.prototype.restrict = async function (ids, active) {
+  if (active !== undefined) return
+  const keys = await this.collectKeys(ids)
+  const operations = keys.map(key => L.putOp(ID.restrictedId(key), true))
+  this.batch(this.jsonDB, operations)
+}
+
+/**
+ * @sync
+ * permit :: [k] -> unit
+ */
+Store.prototype.permit = async function (ids, active) {
+  if (active !== undefined) return
+  const keys = await this.collectKeys(ids)
+  const operations = keys.map(key => L.delOp(ID.restrictedId(key)))
+  this.batch(this.jsonDB, operations)
+}
+
+
 
 
 /**
@@ -534,7 +564,13 @@ Store.prototype.rename = async function (id, name) {
 Store.prototype.addTag = async function (id, name) {
   if (name === 'default') return this.setDefaultLayer(id)
 
-  const addTag = name => tags => R.uniq([...(tags || []), name])
+  // Case-insensitive duplicate check
+  const addTag = name => tags => {
+    const existing = tags || []
+    const alreadyExists = existing.some(tag => tag.toUpperCase() === name.toUpperCase())
+    if (alreadyExists) return existing
+    return [...existing, name]
+  }
   const taggableIds = this.selection.selected(ID.isTaggableId)
   const ids = R.uniq([id, ...taggableIds]).map(ID.tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
@@ -552,7 +588,8 @@ Store.prototype.addTag = async function (id, name) {
 Store.prototype.removeTag = async function (id, name) {
   if (name === 'default') return this.unsetDefaultLayer(id)
 
-  const removeTag = name => tags => (tags || []).filter(tag => tag !== name)
+  // Case-insensitive removal
+  const removeTag = name => tags => (tags || []).filter(tag => tag.toUpperCase() !== name.toUpperCase())
   const taggableIds = this.selection.selected(ID.isTaggableId)
   const ids = R.uniq([id, ...taggableIds]).map(ID.tagsId)
   const values = await this.jsonDB.getMany(ids) // may include undefined entries
@@ -561,7 +598,6 @@ Store.prototype.removeTag = async function (id, name) {
   const command = this.updateCommand(this.jsonDB, ids, newValues, oldValues)
   this.undo.apply(command)
 }
-
 
 Store.prototype.insertCommand = function (db, tuples, options = {}) {
   const apply = () => this.batch(db, tuples.map(([key, value]) => L.putOp(key, value)), options)

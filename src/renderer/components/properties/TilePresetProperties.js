@@ -6,7 +6,7 @@ import { mdiDrag, mdiEyeOutline, mdiEyeOff, mdiSquareOpacity, mdiTerrain } from 
 import { useServices, useList } from '../hooks'
 import Range from './Range'
 import { Tooltip } from 'react-tooltip'
-import './TilePresetProperties.scss'
+import './TilePresetProperties.css'
 
 
 /**

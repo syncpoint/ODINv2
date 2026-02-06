@@ -1,9 +1,11 @@
 import util from 'util'
 import { BrowserWindow, app } from 'electron'
-import * as paths from './paths'
+import { initPaths } from './paths'
 import Emitter from '../shared/emitter'
 
-const url = app => {
+const paths = initPaths(app)
+
+const url = (() => {
   const notCold = process.argv.indexOf('--cold') === -1
   const hot = process.defaultApp ||
     /[\\/]electron-prebuilt[\\/]/.test(paths.execPath) ||
@@ -11,8 +13,8 @@ const url = app => {
 
   return (hot && notCold)
     ? new URL('index.html', 'http://localhost:8080')
-    : new URL(paths.staticIndexPage(app), 'file:')
-}
+    : new URL(paths.staticIndexPage, 'file:')
+})()
 
 
 /**
@@ -64,6 +66,10 @@ WindowManager.prototype.createWindow = function (options) {
       y: options.y,
       width: options.width,
       height: options.height,
+      minimizable: options.minimizable ?? true,
+      maximizable: options.maximizable ?? true,
+      resizable: options.resizable ?? true,
+      alwaysOnTop: options.alwaysOnTop ?? false,
       frame: !(options.frame === false),
       titleBarStyle: options.titleBarStyle || 'default',
       webPreferences: {
@@ -157,9 +163,20 @@ WindowManager.prototype.focusWindow = function (handle) {
  *
  * @param {String} handle - window handle
  */
-WindowManager.prototype.closeWindow = function (handle) {
-  const window = this.windowFromHandle(handle)
-  if (window) window.close()
+WindowManager.prototype.closeWindow = async function (handle) {
+  return new Promise(resolve => {
+    const window = this.windowFromHandle(handle)
+    if (!window) return resolve()
+    window.once('closed', () => resolve())
+    window.close()
+  })
+}
+
+WindowManager.prototype.reloadAll = function () {
+  Object.values(this.windows).forEach(handle => {
+    const window = this.windowFromHandle(handle)
+    window?.reload()
+  })
 }
 
 
@@ -173,13 +190,13 @@ WindowManager.prototype.closeWindow = function (handle) {
 WindowManager.prototype.showProject = function (key, project) {
   const additionalArguments = [
     `--page=${key}`,
-    `--databases=${paths.databases(app)}`
+    `--databases=${paths.databases}`
   ]
 
   return this.createWindow({
     handle: key,
     title: project.name,
-    url: url(app),
+    url,
     ...project.bounds,
     additionalArguments
   })
@@ -196,7 +213,41 @@ WindowManager.prototype.showSplash = function () {
   return this.createWindow({
     handle: 'splash',
     title: 'ODIN - Projects',
-    url: url(app),
+    url,
+    additionalArguments
+  })
+}
+
+WindowManager.prototype.showLogin = function () {
+  const additionalArguments = ['--page=login']
+  return this.createWindow({
+    handle: 'login',
+    title: 'Login and enable collaboration',
+    url,
+    minimizable: false,
+    maximizable: false,
+    resizable: true,
+    alwaysOnTop: true,
+    titleBarStyle: 'hidden',
+    width: 640,
+    height: 480,
+    additionalArguments
+  })
+}
+
+WindowManager.prototype.showLogout = function () {
+  const additionalArguments = ['--page=logout']
+  return this.createWindow({
+    handle: 'logout',
+    title: 'Logout and disable collaboration',
+    url,
+    minimizable: false,
+    maximizable: false,
+    resizable: true,
+    alwaysOnTop: true,
+    titleBarStyle: 'hidden',
+    width: 640,
+    height: 480,
     additionalArguments
   })
 }

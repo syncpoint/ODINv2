@@ -4,17 +4,12 @@ import './Toolbar.css'
 import { useServices, useMemento } from './hooks'
 import { DropdownMenu } from './DropdownMenu'
 import { SimpleButton, CommandButton } from './ToolbarButtons'
-
-
-// mdiFormatPaint
-// mdiPaletteSwatchOutline
-// mdiFileDocumentOutline
-
+import { NIDOPopover } from './NIDOPopover'
 
 
 export const Toolbar = () => {
   const [properties, setProperties] = useMemento('ui.properties', '')
-  const { commandRegistry } = useServices()
+  const { commandRegistry, replicationProvider } = useServices()
 
   const commands = [
     commandRegistry.separator(),
@@ -28,22 +23,37 @@ export const Toolbar = () => {
     commandRegistry.separator(),
     commandRegistry.command('LAYER_SET_DEFAULT'),
     commandRegistry.command('PIN'),
-    commandRegistry.command('LAYER_EXPORT'),
     commandRegistry.command('SELECT_TILE_LAYERS'),
     commandRegistry.separator(),
     commandRegistry.command('PRINT_SWITCH_SCOPE')
+  ]
+
+  const exportOdinCommand = commandRegistry.command('LAYER_EXPORT_ODIN')
+  const exportCommands = [
+    exportOdinCommand,
+    commandRegistry.command('LAYER_EXPORT_GEOJSON')
   ]
 
   const addCommands = [
     commandRegistry.command('LAYER_CREATE'),
     commandRegistry.command('MARKER_CREATE'),
     commandRegistry.command('BOOKMARK_CREATE'),
-    commandRegistry.command('TILE_SERVICE_CREATE')
+    commandRegistry.command('TILE_SERVICE_CREATE'),
+    commandRegistry.command('SSE_SERVICE_CREATE')
   ]
 
   const measureCommands = [
     commandRegistry.command('MEASURE_DISTANCE'),
-    commandRegistry.command('MEASURE_AREA')
+    commandRegistry.command('MEASURE_AREA'),
+    commandRegistry.command('MEASURE_CIRCLE')
+  ]
+
+  const replicationCommands = [
+    commandRegistry.separator(),
+    commandRegistry.command('REPLICATION_LAYER_SHARE'),
+    commandRegistry.command('REPLICATION_LAYER_JOIN'),
+    commandRegistry.command('REPLICATION_LAYER_LEAVE'),
+    commandRegistry.separator()
   ]
 
   const toggleProperties = type => () => {
@@ -62,7 +72,16 @@ export const Toolbar = () => {
               : <CommandButton key={key} command={command}/>
           })
         }
+        <DropdownMenu path='mdiExport' options={exportCommands} toolTip='Export layer...' command={exportOdinCommand[1]} />
         <DropdownMenu path='mdiAndroidStudio' options={measureCommands} toolTip='Measure ...'/>
+        {
+          replicationCommands.map(([key, command]) => {
+            return command === 'separator'
+              ? <span key={key} className='toolbar__divider'></span>
+              : <CommandButton key={key} command={command}/>
+          })
+        }
+        <NIDOPopover />
       </div>
       <div className='toolbar__items-container toolbar__items--right'>
         <SimpleButton
@@ -77,6 +96,14 @@ export const Toolbar = () => {
           checked={properties === 'styles'}
           toolTip='Show styling options for selected layer'
         />
+        { !replicationProvider.disabled &&
+          <SimpleButton
+            onClick={toggleProperties('sharing')}
+            path='mdiCloudOutline'
+            checked={properties === 'sharing'}
+            toolTip='Show sharing options for selected layer'
+          />
+        }
       </div>
     </header>
   )

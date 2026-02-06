@@ -11,6 +11,9 @@ export default options => {
     const { store } = useServices()
     const inputRef = React.useRef(null)
 
+    // Stable key for the current selection - only changes when different items are selected
+    const selectionKey = Object.keys(props.features).sort().join(',')
+
     const initialValue = () => {
       const features = Object.values(props.features)
       const values = R.uniq(features.map(get))
@@ -21,8 +24,8 @@ export default options => {
 
     const [value, setValue] = React.useState(initialValue())
 
-    /* eslint-disable react-hooks/exhaustive-deps */
-    React.useEffect(() => setValue(initialValue()), [props])
+    // Only reset value when selection changes, not on every prop change
+    React.useEffect(() => setValue(initialValue()), [selectionKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
     React.useImperativeHandle(ref, () => {
       return {
@@ -33,9 +36,12 @@ export default options => {
 
     const handleChange = ({ target }) => setValue(target.value)
 
-    const handleBlur = () => {
+    const handleBlur = async () => {
       if (value === initialValue()) return
-      store.update(props.features, set(value))
+      // Read current values from store to avoid stale closure issues
+      const keys = Object.keys(props.features)
+      const currentValues = await store.dictionary(keys)
+      store.update(currentValues, set(value))
     }
 
     return <TextField

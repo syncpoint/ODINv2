@@ -7,7 +7,7 @@ import { Title } from './Title'
 import { useServices, useEmitter } from '../hooks'
 import * as ID from '../../ids'
 import { Tooltip } from 'react-tooltip'
-import './Card.scss'
+import './Card.css'
 
 /**
  *
@@ -152,14 +152,16 @@ export const Card = React.forwardRef((props, ref) => {
     : {}
 
   const tag = spec => {
-    const [variant, label, action, path] = spec.split(':')
+    const [variant, label, action, path, removable] = spec.split(':')
+    // TODO: use generic Tag component
     return TAG[variant]({
       key: spec,
       id,
       spec,
       label,
       action,
-      path
+      path,
+      removable
     })
   }
 

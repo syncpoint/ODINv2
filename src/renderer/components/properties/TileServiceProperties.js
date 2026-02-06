@@ -149,7 +149,8 @@ const TileServiceProperties = props => {
     }
   }
 
-  const layerList = ['WMS', 'WMTS'].includes(service.type)
+  const showLayerList = ['WMS', 'WMTS', 'TileJSONDiscovery'].includes(service.type)
+  const layerList = showLayerList
     ? <div className='layer-list'>
       {
         list.entries.map((layer, index) => (
@@ -166,7 +167,7 @@ const TileServiceProperties = props => {
       </div>
     : null
 
-  const filterField = ['WMS', 'WMTS'].includes(service.type)
+  const filterField = showLayerList
     ? <><TextField id='tsp-filter' label='Filter' value={filter} onChange={handleFilterChange}/><Tooltip anchorSelect='#tsp-filter' content='Filter the list of layers' /></>
     : null
 
@@ -183,7 +184,7 @@ const TileServiceProperties = props => {
     <FlexColumnGap>
       <Name {...props}/>
       <TextField id='tsp-url' label='URL' value={url.value} onChange={handleUrlChange} onBlur={handleUrlBlur}/>
-      <Tooltip anchorSelect='#tsp-url' content='Z/X/Y, WMS or WMTS URL' delayShow={750} />
+      <Tooltip anchorSelect='#tsp-url' content='Z/X/Y, WMS, WMTS or TileJSON URL' delayShow={750} />
       { filterField }
       { layerList }
       <div className='map-preview' id='map-preview'></div>

@@ -56,21 +56,21 @@ export const transferProject = async (db, project) => {
   await wkbDB.batch(wkb)
 }
 
-
-
 /**
  * @param {String} location directory for legacy data (ODIN_HOME)
  * @param {Master} legacyStore master/main database
  * @param {String} databases directory to store project databases
  */
-export const transferLegacy = async (location, legacyStore, databases) => {
-  await legacyStore.transferSources(await readSources(location))
+export const transferLegacy = async (paths, legacyStore) => {
+  const location = paths.odinHome
+  const sources = await readSources(location)
+  await legacyStore.transferSources(sources)
   const projects = await readProjects(location)
   await legacyStore.transferMetadata(projects)
 
   await Promise.all(projects.map(async project => {
     const uuid = project.id.split(':')[1]
-    const location = path.join(databases, uuid)
+    const location = path.join(paths.databases, uuid)
     const db = L.leveldb({ location })
     await transferProject(db, project)
     return db.close()

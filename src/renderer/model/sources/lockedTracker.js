@@ -12,10 +12,11 @@ export const lockedTracker = (source, store) => {
   const unlocked = key => !keySet.has(key)
 
   ;(async () => {
-    store.on('batch', ({ operations }) => {
+    store.on('batch', async ({ operations }) => {
       const candidates = operations
-        .filter(({ key }) => ID.isLockedId(key))
+        .filter(({ key }) => (ID.isLockedId(key) || ID.isRestrictedId(key)))
         .map(({ type, key }) => ({ type, key: ID.associatedId(key) }))
+
 
       const [additions, removals] = R.partition(({ type }) => type === 'put', candidates)
       additions.forEach(({ key }) => keySet.add(key))
@@ -25,7 +26,9 @@ export const lockedTracker = (source, store) => {
       source.dispatchEvent(new TouchFeaturesEvent(keys))
     })
 
-    const keys = await store.keys(ID.lockedId())
+    const lockedKeys = await store.keys(ID.lockedId())
+    const restrictedKeys = await store.keys(ID.restrictedId())
+    const keys = [...lockedKeys, ...restrictedKeys]
     keys.forEach(key => keySet.add(ID.associatedId(key)))
   })()
 

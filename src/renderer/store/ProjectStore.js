@@ -95,11 +95,12 @@ ProjectStore.prototype.updateProject = async function (project) {
 /**
  * @async
  */
-ProjectStore.prototype.createProject = async function () {
-  const id = `project:${uuid()}`
-  const project = { id, name: 'New Project', lastAccess: DateTime.local().toISO() }
+ProjectStore.prototype.createProject = async function (projectUUID = uuid(), projectName = 'New Project', tags = []) {
+  const id = `project:${projectUUID}`
+  const project = { id, name: projectName, lastAccess: DateTime.local().toISO(), tags }
   await this.ipcRenderer.invoke('ipc:post:project', project)
   this.emit('created', { project })
+  this.emit('tagged', { id: projectUUID })
 }
 
 
@@ -117,4 +118,54 @@ ProjectStore.prototype.deleteProject = async function (id) {
  */
 ProjectStore.prototype.getPreview = function (id) {
   return this.ipcRenderer.invoke('ipc:get:project/preview', id)
+}
+
+/**
+ * @async
+ * @param {uuid} id Project Id
+ * @param {string} tag Whatever the tag shall be
+ * @returns The result of the operation
+ */
+ProjectStore.prototype.addTag = async function (id, tag) {
+  await this.ipcRenderer.invoke('ipc:add:project/tag', id, tag)
+  this.emit('tagged', { id })
+}
+
+/**
+ *
+ * @async
+ * @param {uuid} id Project Id
+ * @param {string} tag The tag that should be removed
+ * @returns The result of the operation
+ */
+ProjectStore.prototype.removeTag = async function (id, tag) {
+  await this.ipcRenderer.invoke('ipc:remove:project/tag', id, tag)
+  this.emit('tagged', { id })
+}
+
+/**
+ * @async
+ */
+ProjectStore.prototype.getStreamToken = async function (id) {
+  return this.ipcRenderer.invoke('ipc:get:replication/streamToken', id)
+}
+
+ProjectStore.prototype.putStreamToken = async function (id, streamToken) {
+  return this.ipcRenderer.invoke('ipc:put:replication/streamToken', id, streamToken)
+}
+
+ProjectStore.prototype.getCredentials = function (id) {
+  return this.ipcRenderer.invoke('ipc:get:replication/credentials', id)
+}
+
+ProjectStore.prototype.putCredentials = async function (id, credentials) {
+  return this.ipcRenderer.invoke('ipc:put:replication/credentials', id, credentials)
+}
+
+ProjectStore.prototype.delCredentials = async function (id) {
+  return this.ipcRenderer.invoke('ipc:del:replication/credentials', id)
+}
+
+ProjectStore.prototype.putReplicationSeed = async function (id, seed) {
+  return this.ipcRenderer.invoke('ipc:put:project:replication/seed', id, seed)
 }

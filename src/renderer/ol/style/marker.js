@@ -24,4 +24,4 @@ export default $ =>
     mode === 'default'
       ? crosshair('black')
       : crosshair('red')
-)
+  )

@@ -15,14 +15,6 @@
     rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 }
 
-.feature-properties:hover {
-  opacity: 1;
-}
-
-.feature-properties:focus-within {
-  opacity: 1;
-}
-
 .style-properties {
   flex: 0 0 22rem;
   font-size: 0.95rem;
@@ -36,11 +28,21 @@
   box-shadow:
     rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
     rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
-  opacity: 0.8;
 }
 
-.style-properties:hover {
-  opacity: 1;
+.sharing-properties {
+  flex: 0 0 22rem;
+  font-size: 0.95rem;
+
+  padding: 0.5rem 0.5rem;
+  overflow: auto;
+  background-color: white;
+  pointer-events: auto;
+  user-select: none;
+  background-color: white;
+  box-shadow:
+    rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 }
 
 .properties__icon__button {

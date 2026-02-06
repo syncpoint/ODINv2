@@ -6,6 +6,13 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 
+/**
+ * Due to current setup (CommonJS) and module loading limitations
+ * with Mocha, we cannot directly import { app } from 'electron',
+ * which would be the 'right' thing to do.
+ * See also function `initPaths` below.
+ */
+
 export const execPath = process.execPath
 
 /**
@@ -25,6 +32,10 @@ const appData = app => app.getPath('appData')
  * The directory for storing your app's configuration files,
  * which by default it is the appData directory appended
  * with your app's name.
+ *
+ * NOTE: Starting with v32.x Electron unconditionally deletes 'databases' directory
+ * where we used to store all databases.
+ * REFERENCE: https://github.com/electron/electron/issues/45396
  */
 const userData = app => app.getPath('userData')
 
@@ -36,7 +47,8 @@ const appPath = app => app.getAppPath()
 /**
  * Directory to store all main/renderer databases.
  */
-export const databases = app => path.join(userData(app), 'databases')
+export const databases = app => path.join(userData(app), 'leveldb')
+const databasesLegacy = app => path.join(userData(app), 'databases')
 
 /**
  * Directory to store main/master database.
@@ -45,7 +57,6 @@ export const master = app => path.join(databases(app), 'master')
 
 /**
  * .env file for providing user related environment settings
- *
  */
 export const dotenv = app => path.join(userData(app), '.env')
 
@@ -96,3 +107,31 @@ export const metadata = (location, uuid) => path.join(projects(location), uuid, 
 export const preferences = (location, uuid) => path.join(projects(location), uuid, 'preferences.json')
 
 export const staticIndexPage = app => path.join(appPath(app), 'dist', 'index.html')
+
+/**
+ *
+ */
+export const initStorageLocation = app => {
+  if (fs.existsSync(databasesLegacy(app))) {
+    fs.renameSync(databasesLegacy(app), databases(app))
+  } else if (!fs.existsSync(databases(app))) {
+    mkdir(databases(app))
+  }
+}
+
+export const initPaths = app => ({
+  execPath,
+  databases: databases(app),
+  master: master(app),
+  dotenv: dotenv(app),
+  userHome,
+  odinHome,
+  sources,
+  projects,
+  layers,
+  layer,
+  metadata,
+  preferences,
+  staticIndexPage: staticIndexPage(app),
+  initStorageLocation: () => initStorageLocation(app)
+})

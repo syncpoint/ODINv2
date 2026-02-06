@@ -16,7 +16,26 @@ const fetchCapabilities = async service => {
     if ([400, 404, 500].includes(response.status)) {
       throw new Error(response.statusText)
     }
+
+    const contentType = response.headers.get('content-type') || ''
     const text = await response.text()
+
+    // Try JSON first (TileJSON)
+    if (contentType.includes('application/json') || text.trim().startsWith('[') || text.trim().startsWith('{')) {
+      try {
+        const json = JSON.parse(text)
+        // Services list from mbtileserver
+        if (Array.isArray(json)) {
+          return TileService.adapters.TileJSONDiscovery({ url: service.url, services: json })
+        }
+        // Single TileJSON document
+        if (json.tiles && Array.isArray(json.tiles)) {
+          return TileService.adapters.TileJSON({ url: service.url, tileJSON: json })
+        }
+      } catch (e) { /* not valid JSON, continue */ }
+    }
+
+    // Try XML (existing logic)
     return TileService.adapter(text)
   } catch (err) {
     return TileService.adapters.XYZ({
@@ -163,6 +182,31 @@ TileLayerStore.prototype.toggleActiveLayer = async function (key, id) {
 
 
 /**
+ * Import selected tilesets from a TileJSON discovery service.
+ * Creates a new TileJSON tile service for each selected tileset.
+ */
+TileLayerStore.prototype.importTilesets = async function (baseUrl, selectedTilesets) {
+  const tuples = await Promise.all(selectedTilesets.map(async tileset => {
+    const tileJSONUrl = new URL(tileset.id, baseUrl).href
+    const response = await fetch(tileJSONUrl)
+    const tileJSON = await response.json()
+
+    const key = ID.tileServiceId()
+    const value = {
+      type: 'TileJSON',
+      name: tileJSON.name || tileset.title,
+      url: tileJSONUrl,
+      capabilities: { url: tileJSONUrl, tileJSON }
+    }
+    return [key, value]
+  }))
+
+  await this.store.update(tuples.map(t => t[0]), tuples.map(t => t[1]))
+  return tuples.map(t => t[0])
+}
+
+
+/**
  *
  */
 TileLayerStore.prototype.updateOpacity = function (preset, id, opacity) {
@@ -211,9 +255,11 @@ TileLayerStore.prototype.updatePreset = async function () {
   const adapter = ([key, { type, capabilities }]) => [key, TileService.adapters[type](capabilities)]
   const adapters = Object.fromEntries(services.map(adapter))
 
+  // Single-layer types (OSM, XYZ, TileJSON) get one layer automatically.
+  // Multi-layer types (WMS, WMTS, TileJSONDiscovery) use service.active array.
   const activeLayerIds = services.flatMap(([key, service]) =>
-    ['OSM', 'XYZ'].includes(service.type)
-      ? ID.tileLayerId(key)
+    ['OSM', 'XYZ', 'TileJSON'].includes(service.type)
+      ? [ID.tileLayerId(key)]
       : (service.active || []).map(id => ID.tileLayerId(key, id))
   )
 
@@ -221,7 +267,7 @@ TileLayerStore.prototype.updatePreset = async function () {
 
   const layerName = id => {
     const [key, service] = findService(ID.tileServiceId(id))
-    return ['OSM', 'XYZ'].includes(service.type)
+    return ['OSM', 'XYZ', 'TileJSON'].includes(service.type)
       ? service.name
       : adapters[key].layerName(ID.containedId(id))
   }
@@ -237,7 +283,8 @@ TileLayerStore.prototype.updatePreset = async function () {
   const layer = id => ({ id, opacity: 1.0, visible: false })
   const additions = activeLayerIds.filter(x => !currentLayers.includes(x)).map(layer)
 
-  // Propagate name changes from service to preset (only for OSM, XYZ.)
+  // Propagate name changes from service to preset (for OSM, XYZ, TileJSON).
+  //
   const propagateName = layer => ({ ...layer, name: layerName(layer.id) })
   // Propagate content type (either undefined or terrain/mapbox-rgb)
   const propagateContentType = layer => ({ ...layer, contentType: contentType(layer.id) })

@@ -19,9 +19,9 @@ SessionStore.prototype.DEFAULT_VIEWPORT = {
   rotation: 0
 }
 
-SessionStore.prototype.put = function (key, value) {
+SessionStore.prototype.put = async function (key, value) {
   this.cache[key] = value
-  this.db.put(key, value)
+  return this.db.put(key, value)
 }
 
 SessionStore.prototype.get = async function (key, defaultValue) {
@@ -31,4 +31,9 @@ SessionStore.prototype.get = async function (key, defaultValue) {
     this.cache[key] = value
     return value
   }
+}
+
+SessionStore.prototype.del = async function (key) {
+  await this.db.del(key)
+  delete this.cache[key]
 }

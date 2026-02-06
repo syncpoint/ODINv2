@@ -3,9 +3,24 @@ import { Fill, Stroke, Style, Text } from 'ol/style'
 import { FONT } from './baseStyle'
 import { length, area } from './tools'
 
+/**
+ * @typedef {import('ol/geom/Polygon').default} PolygonGeometry
+ * @typedef {import('ol/style/Style').default} Style
+ * @typedef {import('ol/coordinate').Coordinate} Coordinate
+ */
+
+/**
+ * Creates styles for Polygon measurement geometries.
+ * Displays length labels on each side of the polygon and
+ * shows total area and circumference at the interior point.
+ * @param {PolygonGeometry} geometry - The Polygon geometry to style
+ * @returns {Style[]} Array of OpenLayers Style objects
+ */
 export const Polygon = geometry => {
 
+  /** @type {Style[]} */
   const styles = []
+  /** @type {Coordinate[]} */
   const coordinates = geometry.getCoordinates()[0]
   const numberOfSegments = coordinates.length - 1
 

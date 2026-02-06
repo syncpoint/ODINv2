@@ -22,6 +22,11 @@
   background-color: #d0d0d0;
 }
 
+.dropdown__button:disabled {
+  pointer-events: none;
+  color: lightgray;
+}
+
 .dropdown__content {
   position: absolute;
   display: none;

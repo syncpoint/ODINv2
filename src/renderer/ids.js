@@ -18,15 +18,19 @@ export const PLACE = 'place'
 export const TILE_SERVICE = 'tile-service'
 export const TILE_PRESET = 'tile-preset'
 export const TILE_LAYER = 'tile-layer'
+export const SSE_SERVICE = 'sse-service'
 export const LINK = 'link'
 export const STYLE = 'style'
 export const LOCKED = 'locked'
+export const RESTRICTED = 'restricted'
+export const ROLE = 'role'
 export const HIDDEN = 'hidden'
 export const DEFAULT = 'default'
 export const TAGS = 'tags'
 export const STICKY = 'sticky'
-export const SHARED = 'shared'
 export const MEASURE = 'measure'
+export const SHARED = 'shared'
+export const INVITED = 'invited'
 
 export const PROJECT_SCOPE = PROJECT + COLON
 export const LAYER_SCOPE = LAYER + COLON
@@ -39,14 +43,18 @@ export const PLACE_SCOPE = PLACE + COLON
 export const TILE_SERVICE_SCOPE = TILE_SERVICE + COLON
 export const TILE_PRESET_SCOPE = TILE_PRESET + COLON
 export const TILE_LAYER_SCOPE = TILE_LAYER + COLON
+export const SSE_SERVICE_SCOPE = SSE_SERVICE + COLON
 export const MEASURE_SCOPE = MEASURE + COLON
 
 export const LINK_PREFIX = 'link' + PLUS
 export const STYLE_PREFIX = 'style' + PLUS
 export const LOCKED_PREFIX = 'locked' + PLUS
+export const RESTRICTED_PREFIX = RESTRICTED + PLUS
 export const HIDDEN_PREFIX = 'hidden' + PLUS
 export const DEFAULT_PREFIX = 'default' + PLUS
 export const TAGS_PREFIX = 'tags' + PLUS
+export const SHARED_LAYER_PREFIX = SHARED + PLUS
+export const ROLE_PREFIX = ROLE + PLUS
 
 export const scope = s => s.split(COLON)[0]
 export const ids = s => s.split(COLON)[1]
@@ -65,12 +73,15 @@ export const makeId = (scope, ...uuids) => scope + COLON + uuids.join(SLASH)
  */
 export const prefix = prefix => id => `${prefix}+${id || ''}`
 export const lockedId = prefix(LOCKED)
+export const restrictedId = prefix(RESTRICTED)
 export const hiddenId = prefix(HIDDEN)
 export const stickyId = prefix(STICKY)
 export const sharedId = prefix(SHARED)
+export const invitedId = prefix(INVITED)
 export const defaultId = prefix(DEFAULT)
 export const tagsId = prefix(TAGS)
 export const styleId = prefix(STYLE)
+export const roleId = prefix(ROLE)
 
 export const isId = prefix => id => id && id.startsWith(prefix)
 export const isProjectId = isId(PROJECT_SCOPE)
@@ -84,20 +95,25 @@ export const isPlaceId = isId(PLACE_SCOPE)
 export const isTileServiceId = isId(TILE_SERVICE_SCOPE)
 export const isTileLayerId = isId(TILE_LAYER_SCOPE)
 export const isTilePresetId = isId(TILE_PRESET_SCOPE)
+export const isSSEServiceId = isId(SSE_SERVICE_SCOPE)
 export const isLinkId = isId(LINK_PREFIX)
 export const isStyleId = isId(STYLE_PREFIX)
 export const isLayerStyleId = isId(styleId(LAYER_SCOPE))
 export const isFeatureStyleId = isId(styleId(FEATURE_SCOPE))
 export const isLockedId = isId(LOCKED_PREFIX)
+export const isRestrictedId = isId(RESTRICTED_PREFIX)
 export const isHiddenId = isId(HIDDEN_PREFIX)
 export const isDefaultId = isId(DEFAULT_PREFIX)
 export const isTagsId = isId(TAGS_PREFIX)
 export const isMeasureId = isId(MEASURE_SCOPE)
+export const isSharedLayerId = isId(sharedId(LAYER_SCOPE))
+export const isInvitedId = isId(INVITED)
+export const isRoleId = isId(ROLE_PREFIX)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
 export const isTaggableId = id => (!isViewId(id) && !isTagsId(id))
-export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isDefaultId, isTagsId])
+export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isRestrictedId, isDefaultId, isTagsId, isRoleId])
 
 export const layerUUID = R.cond([
   [isFeatureId, nthId(0)],
@@ -137,6 +153,13 @@ export const tileServiceId = R.cond([
   [isTileLayerId, x => makeId(TILE_SERVICE, nthId(0, x))]
 ])
 
+/**
+ * sseServiceId :: () -> SSEServiceId
+ */
+export const sseServiceId = R.cond([
+  [R.isNil, () => makeId(SSE_SERVICE, uuid())]
+])
+
 
 /**
  * tileLayerId :: TileServiceId -> TileLayerId [OSM, XYZ]
@@ -151,6 +174,7 @@ export const markerId = () => makeId(MARKER, uuid())
 export const bookmarkId = () => makeId(BOOKMARK, uuid())
 export const measureId = () => makeId(MEASURE, uuid())
 export const linkId = id => LINK + PLUS + id + SLASH + uuid()
+export const invitationId = () => makeId(INVITED, uuid())
 
 
 /** Only a single preset (for now.) */
@@ -169,7 +193,7 @@ export const defaultStyleId = 'style+default:'
 export const containerId = id => {
   const indexStart = id.indexOf('+') // remove '...+' part
   const indexEnd = id.lastIndexOf('/') // remove last UUID
-  return id.substring(indexStart + 1, indexEnd)
+  return id.substring(indexStart + 1, (indexEnd >= indexStart + 1 ? indexEnd : id.length))
 }
 
 /**

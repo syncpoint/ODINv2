@@ -6,6 +6,7 @@ import { List } from './List'
 import { Card } from './Card'
 import { useList, useServices } from '../hooks'
 import { militaryFormat } from '../../../shared/datetime'
+import MemberManagement from './MemberManagement'
 
 /**
  *
@@ -108,68 +109,27 @@ ButtonBar.propTypes = {
   children: PropTypes.array.isRequired
 }
 
-
-/**
- *
- */
-const Project = React.forwardRef((props, ref) => {
-  const { ipcRenderer, projectStore } = useServices()
-  const { project, selected } = props
-  const send = message => () => ipcRenderer.send(message, project.id)
-  const loadPreview = () => projectStore.getPreview(project.id)
-  const handleRename = name => projectStore.updateProject({ ...project, name })
-  const handleDelete = () => projectStore.deleteProject(project.id)
-
-  const isOpen = props.project.tags
-    ? props.project.tags.includes('OPEN')
-    : false
-
-  const className = props.selected
-    ? 'card focus'
-    : 'card'
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      aria-selected={selected}
-      onClick={event => props.onClick && props.onClick(event)}
-      onDoubleClick={event => props.onDoubleClick && props.onDoubleClick(event)}
-    >
-      <div className='card-content'>
-        <Title value={project.name} onChange={handleRename}/>
-        <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
-        <ButtonBar>
-          <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
-          <CustomButton
-            danger
-            onClick={handleDelete}
-            style={{ marginLeft: 'auto' }}
-            text='Delete'
-            disabled={isOpen}
-          />
-        </ButtonBar>
-      </div>
-      <Media loadPreview={loadPreview}/>
-    </div>
-  )
-})
-
-Project.propTypes = {
-  project: PropTypes.object.isRequired,
-  selected: PropTypes.bool,
-  onClick: PropTypes.func,
-  onDoubleClick: PropTypes.func
-}
-
-
 /**
  *
  */
 export const ProjectList = () => {
-  const { projectStore, ipcRenderer } = useServices()
+
+  const { projectStore, ipcRenderer, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
+
+  const [replication, setReplication] = React.useState(undefined)
+  const [managedProject, setManagedProject] = React.useState(null)
+
+  /* system/OS level notifications */
+  const notifications = React.useRef(new Set())
+  const [offline, setOffline] = React.useState(false)
+  const [initialized, setInitialized] = React.useState(false)
+  const [message, setMessage] = React.useState(null)
+
+  const abortController = React.useRef(new AbortController())
+
+  const feedback = message => setMessage(message)
 
   /**
    * Reload projects from store and update entry list
@@ -177,14 +137,27 @@ export const ProjectList = () => {
    * Use current filter to load only projects to display in list.
    *
    * @param {*} projectId - optional project id to focus in list next.
+   * @param {*} ephemeralProject - An array of projects we received an invitation for, defaults to []
    */
-  const fetch = React.useCallback(projectId => {
+  const fetch = React.useCallback((projectId, ephemeralProjects = []) => {
     (async () => {
       const projects = await projectStore.getProjects(filter)
-      dispatch({ type: 'entries', entries: projects, candidateId: projectId })
+      const localProjectIds = projects.map(p => p.id)
+      const sharedProjects = replication ? (await replication.invited()) : []
+
+      /*  Sometimes the replication API does not update the state immediately. In order to
+          avoid duplicate entries - one from the local db and one from the replication API -
+          we remove these duplicate entries.
+      */
+      const invitedProjects = [...sharedProjects, ...ephemeralProjects]
+        .filter(project => !localProjectIds.includes(project.id))
+        .map(project => ({ ...project, ...{ tags: ['INVITED'] } }))
+
+      const allProjects = [...projects, ...invitedProjects]
+      dispatch({ type: 'entries', entries: allProjects, candidateId: projectId })
       if (projectId) dispatch({ type: 'select', id: projectId })
     })()
-  }, [dispatch, filter, projectStore])
+  }, [dispatch, filter, projectStore, replication])
 
 
   /**
@@ -222,6 +195,135 @@ export const ProjectList = () => {
    */
   React.useEffect(fetch, [fetch])
 
+  React.useEffect(() => {
+    if (!initialized) return
+
+    const reconnect = async () => {
+      try {
+        abortController.current = new AbortController()
+        await replicationProvider.connect(abortController.current)
+        setOffline(false)
+        feedback(null)
+      } catch (error) {
+        // issued by abortController
+        if (error === 'online') {
+          setOffline(false)
+          feedback(null)
+          return
+        }
+        console.error(error)
+        feedback(error.message)
+        setOffline(true)
+      }
+    }
+    reconnect()
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized, offline])
+
+  React.useEffect(() => {
+    const initializeReplication = async () => {
+      try {
+        feedback('Initializing replication ...')
+
+        /*
+          Replication credentials are tokens that are used to authenticate the current SESSION
+          to the replication server. Credentials do not contain the user's password.
+        */
+        const credentials = await projectStore.getCredentials('PROJECT-LIST')
+        const replicatedProjectList = await replicationProvider.projectList(credentials)
+
+        if (!credentials) {
+          const currentCredentials = replicatedProjectList.credentials()
+          await projectStore.putCredentials('PROJECT-LIST', currentCredentials)
+        }
+
+        replicatedProjectList.tokenRefreshed(credentials => {
+          projectStore.putCredentials('PROJECT-LIST', credentials)
+        })
+
+        /*
+          connect() waits endlessly
+        */
+        await replicationProvider.connect()
+        await replicatedProjectList.hydrate()
+
+        const handler = {
+          streamToken: streamToken => {
+            projectStore.putStreamToken('PROJECT-LIST', streamToken)
+            setOffline(false)
+          },
+          renamed: (/* project */) => {
+            fetch()
+          },
+          invited: (project) => {
+            const clickHandler = event => {
+              event.preventDefault() // prevent the browser from focusing the Notification's tab
+              event.target.onclick = undefined
+              dispatch({ type: 'select', id: project.id })
+              notifications.current.delete(event.target)
+            }
+            const closeHandler = event => {
+              event.target.onclick = undefined
+              notifications.current.delete(event.target)
+            }
+
+            const notification = new Notification('Received invitation', { body: project.name, data: project.id })
+            notification.onclick = clickHandler
+            notification.onclose = closeHandler
+            notifications.current.add(notification)
+
+            fetch(null, [project])
+          },
+          error: error => {
+            console.error(error)
+            feedback('Looks like we are offline! Reconnecting ...')
+            setOffline(true)
+          }
+        }
+        const mostRecentStreamToken = await projectStore.getStreamToken('PROJECT-LIST')
+        replicatedProjectList.start(mostRecentStreamToken, handler)
+
+        setReplication(replicatedProjectList)
+        feedback(null)
+        setInitialized(true)
+
+        window.addEventListener('online', () => {
+          console.log('Browser thinks we are back online. Let\'s give it a try ...')
+          abortController.current.abort('online')
+        })
+
+      } catch (error) {
+
+        console.error(error)
+        setOffline(true)
+        if (!navigator.onLine) {
+          feedback('Looks like we are offline! Reconnecting ...')
+        } else {
+          feedback('Replication error: ', error.message)
+          await projectStore.putCredentials('PROJECT-LIST', null)
+          ipcRenderer.postMessage('COLLABORATION_REFRESH_LOGIN')
+        }
+      }
+    }
+
+    if (replicationProvider.disabled) {
+      console.log('Replication is disabled')
+      return
+    }
+    initializeReplication()
+
+    /*
+      Returning a cleanup function from this top-level component does not make sense. The window
+      gets closed but react does not execute the cleanup function.
+      Even subscribing to the appropriate window event (beforeunload) does not work in order to
+      logout from the replication server.
+    */
+
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleKeyDown = event => {
     const { key, shiftKey, metaKey, ctrlKey } = event
 
@@ -237,6 +339,8 @@ export const ProjectList = () => {
   /* eslint-disable react/prop-types */
   const child = React.useCallback(props => {
     const { entry: project } = props
+
+
     const send = message => () => ipcRenderer.send(message, project.id)
     const loadPreview = () => projectStore.getPreview(project.id)
     const handleRename = name => projectStore.updateProject({ ...project, name })
@@ -244,9 +348,36 @@ export const ProjectList = () => {
     const handleClick = id => ({ metaKey, shiftKey }) => {
       dispatch({ type: 'click', id, shiftKey, metaKey })
     }
+    const handleJoin = async () => {
+      const seed = await replication.join(project.id)
+      // createProject requires the id to be a UUID without prefix
+      await projectStore.createProject(project.id.split(':')[1], project.name, ['SHARED'])
+      await projectStore.putReplicationSeed(project.id, seed)
+    }
+
+    const handleShare = async () => {
+      const seed = await replication.share(project.id, project.name, project.description || '')
+      await projectStore.addTag(project.id, 'SHARED')
+      await projectStore.putReplicationSeed(project.id, seed)
+      fetch(project.id)
+    }
+
+    /* const handleMembers = async () => {
+      console.log(`Handle members for ${project.name} - ${project.id}`)
+      const members = await replication.members(project.id)
+      console.dir(members)
+    } */
 
     const isOpen = project.tags
       ? project.tags.includes('OPEN')
+      : false
+
+    const isInvited = project.tags
+      ? project.tags.includes('INVITED')
+      : false
+
+    const isShared = project.tags
+      ? project.tags.includes('SHARED')
       : false
 
     return (
@@ -266,8 +397,16 @@ export const ProjectList = () => {
               <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
               <ButtonBar>
-                <CustomButton onClick={send('OPEN_PROJECT')} text='Open'/>
+                <CustomButton onClick={send('OPEN_PROJECT')} text='Open' disabled={isInvited && !isShared}/>
                 <CustomButton onClick={send('EXPORT_PROJECT')} text='Export' disabled={true}/>
+                { (replication && isInvited) && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
+                { (replication && !isInvited && !isShared && !isOpen) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
+                { (replication && isShared) &&
+                    <CustomButton
+                      text='Members'
+                      onClick={() => setManagedProject(project)}
+                    />
+                }
                 <CustomButton
                   danger
                   onClick={handleDelete}
@@ -282,26 +421,35 @@ export const ProjectList = () => {
         </Card>
       </div>
     )
-  }, [dispatch, ipcRenderer, projectStore])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, ipcRenderer, offline, projectStore, replication])
   /* eslint-enable react/prop-types */
 
+
+
   return (
-    <div
-      onKeyDown={handleKeyDown}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh'
-      }}
-    >
+    <div >
+      { managedProject && <MemberManagement replication={replication} managedProject={managedProject} onClose={() => setManagedProject(null)}/>}
       <div
-        style={{ display: 'flex', gap: '8px', padding: '8px' }}
+        onKeyDown={handleKeyDown}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh'
+        }}
       >
-        <FilterInput onChange={handleFilterChange} placeholder='search for projects'/>
-        <Button onClick={handleCreate}>New</Button>
-        <Button disabled={true}>Import</Button>
+        { (message) && <div style={{ display: 'flex', padding: '8px', justifyContent: 'center', backgroundColor: 'rgb(255,77,79)' }}>{message}</div> }
+        <div
+          style={{ display: 'flex', gap: '8px', padding: '8px' }}
+        >
+          <FilterInput onChange={handleFilterChange} placeholder='search for projects'/>
+          <Button onClick={handleCreate}>New</Button>
+          <Button disabled={true}>Import</Button>
+        </div>
+        <List child={child} { ...state }/>
       </div>
-      <List child={child} { ...state }/>
     </div>
   )
 }
+
+ProjectList.whyDidYouRender = true

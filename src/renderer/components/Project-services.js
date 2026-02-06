@@ -15,6 +15,7 @@ import { FeatureStore } from '../store/FeatureStore'
 import { OSDDriver } from '../model/OSDDriver'
 import { KBarActions } from '../model/actions/KBarActions'
 import TileLayerStore from '../store/TileLayerStore'
+import SSELayerStore from '../store/SSELayerStore'
 import { CommandRegistry } from '../model/CommandRegistry'
 import { CoordinatesFormat } from '../model/CoordinatesFormat'
 import { DragAndDrop } from '../DragAndDrop'
@@ -23,6 +24,10 @@ import { Selection } from '../Selection'
 import { Clipboard } from '../Clipboard'
 import { bindings } from '../bindings'
 import { SpatialIndex } from '../store/SpatialIndex'
+import { MatrixClient } from '@syncpoint/matrix-client-api'
+import Signal from '@syncpoint/signal'
+import { WebSocketClient } from '../api'
+import pkg from '../../../package.json'
 
 export default async projectUUID => {
   const services = {}
@@ -54,6 +59,7 @@ export default async projectUUID => {
   const sessionStore = new SessionStore(sessionDB)
   const projectStore = new ProjectStore(ipcRenderer)
   const tileLayerStore = new TileLayerStore(store)
+  const sseLayerStore = new SSELayerStore(store)
   const spatialIndex = new SpatialIndex(wkbDB)
 
   const documentStore = new DocumentStore(store)
@@ -64,9 +70,6 @@ export default async projectUUID => {
   const nominatim = new Nominatim(store)
   const featureStore = new FeatureStore(store)
   const searchIndex = new SearchIndex(jsonDB, documentStore, optionStore, emitter, nominatim, sessionStore, spatialIndex)
-
-  // Key bindings.
-  bindings(clipboard, emitter)
 
   const inputTypes = [HTMLInputElement, HTMLTextAreaElement]
   const activeElement = () => document.activeElement
@@ -95,6 +98,7 @@ export default async projectUUID => {
   services.documentStore = documentStore
   services.searchIndex = searchIndex
   services.tileLayerStore = tileLayerStore
+  services.sseLayerStore = sseLayerStore
   services.featureStore = featureStore
   services.spatialIndex = spatialIndex
   services.osdDriver = osdDriver
@@ -109,8 +113,6 @@ export default async projectUUID => {
     selection,
     sessionStore
   })
-
-  services.commandRegistry = new CommandRegistry(services)
 
   const schema = new Schema(db, {
     ids: 'KEY-ONLY',
@@ -127,8 +129,47 @@ export default async projectUUID => {
   //
   await schema.bootstrap()
   await tileLayerStore.bootstrap()
+  await sseLayerStore.bootstrap()
   await searchIndex.bootstrap()
   await spatialIndex.bootstrap()
+
+  const projectTags = (await projectStore.getProject(`project:${projectUUID}`)).tags || []
+  const isRemoteProject = projectTags.includes('SHARED')
+  const credentials = await projectStore.getCredentials('default')
+
+  services.replicationProvider = (isRemoteProject && credentials)
+    ? MatrixClient({
+      ...credentials,
+      device_id: projectUUID
+    })
+    : { disabled: true }
+
+  services.signals = {}
+  services.signals['replication/operational'] = Signal.of(false)
+
+  // Initialize WebSocket API client for NIDO integration
+  const project = await projectStore.getProject(`project:${projectUUID}`)
+  const wsClient = new WebSocketClient({
+    store,
+    emitter,
+    sessionStore,
+    projectId: projectUUID,
+    projectName: project?.name || 'Unknown Project',
+    odinVersion: pkg.version
+  })
+  services.wsClient = wsClient
+
+  // Auto-connect if both URL and enabled flag are set
+  const wsUrl = await preferencesStore.get('api.websocket.url', null)
+  const wsEnabled = await preferencesStore.get('api.websocket.enabled', false)
+  if (wsUrl && wsEnabled) {
+    wsClient.connect(wsUrl)
+  }
+
+  const commandRegistry = new CommandRegistry(services)
+  services.commandRegistry = commandRegistry
+  // Key bindings.
+  bindings(commandRegistry, emitter)
 
   return services
 }

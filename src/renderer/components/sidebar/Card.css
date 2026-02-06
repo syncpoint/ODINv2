@@ -1,0 +1,75 @@
+.e3de-card {
+  margin: 0.25rem 0;
+  padding: 0.5rem;
+  font-family: sans-serif;
+  box-sizing: border-box;
+  border: 0.07rem solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+
+  &[aria-selected="true"] {
+    background-color: #f4f0ec;
+    outline: 0;
+  }
+
+  .header {
+    font-weight: 400;
+  }
+
+  .body {
+    font-size: 0.86rem;
+    font-weight: 300;
+  }
+
+  .avatar {
+    margin-left: auto;
+    text-align: right;
+  }
+}
+
+.e3de-taglist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.e3de-description {
+  line-height: 1.5;
+}
+
+.e3de-card hr {
+  margin: 0;
+  border-top: 0.5px solid #CCC;
+  width: 100%;
+}
+
+.e3de-card__title {
+  padding: 0;
+  background: inherit;
+  text-align: start;
+  width: 100%;
+  font-size: 100%;
+
+  &:focus {
+    color: var(--color-text-focus);
+  }
+
+  &:hover {
+    color: var(--color-text-focus);
+  }
+}
+
+.e3de-button {
+  height: 20px;
+  background-color: inherit;
+}
+
+.e3de-icon {
+  width: 20px;
+  height: 20px;
+  background-color: inherit;
+
+  &:hover {
+    color: var(--color-text-focus);
+  }
+}

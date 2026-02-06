@@ -31,7 +31,7 @@ const RULES = {
     // Note: loaders are applied from right to left, i.e. css-loader -> style-loader
     //
     test: /\.(scss|css)$/,
-    use: ['style-loader', 'css-loader', 'sass-loader']
+    use: ['style-loader', 'css-loader']
   },
 
   image: {
@@ -51,10 +51,10 @@ const RULES = {
 
   sourcemap: {
     test: /\.js$/,
-    enforce: "pre",
+    enforce: 'pre',
     use: [
       {
-        loader: "source-map-loader",
+        loader: 'source-map-loader',
         options: {
           filterSourceMappingUrl: (url, resourcePath) => {
             // Consume own (@syncpoint) sourcemaps; remove others.

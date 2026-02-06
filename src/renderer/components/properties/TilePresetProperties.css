@@ -1,0 +1,64 @@
+.bf12-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bf12-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bf12-card {
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  padding: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+
+  &[aria-selected="true"] {
+    background-color: #f4f0ec;
+  }
+}
+
+.bf12-card__description {
+  display: inline-block;
+  font-size: 0.9rem;
+  line-height: 16px;
+}
+
+.bf12-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bf12-tile-layer-item {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(84, 84, 241);
+  color: white;
+  margin: 8px;
+  height: 60px;
+  cursor: grab;
+}
+
+.bf12-tile-layer-item--dragged {
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.bf12-opacity {
+  margin-top: 0.25rem;
+}
+
+.bf12-opacity__label {
+  font-size: 0.9rem;
+}

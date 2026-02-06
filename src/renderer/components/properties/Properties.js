@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import React from 'react'
 import { useServices } from '../hooks'
 import * as MILSTD from '../../symbology/2525c'
-import { isFeatureId, lockedId, associatedId, scope, isAssociatedId } from '../../ids'
+import { isFeatureId, lockedId, restrictedId, associatedId, scope, isAssociatedId } from '../../ids'
 import UnitProperties from './UnitProperties'
 import EquipmentProperties from './EquipmentProperties'
 import InstallationProperties from './InstallationProperties'
@@ -14,6 +14,7 @@ import PointProperties from './PointProperties'
 import MarkerProperties from './MarkerProperties'
 import TileServiceProperties from './TileServiceProperties'
 import TilePresetProperties from './TilePresetProperties'
+import SSEServiceProperties from './SSEServiceProperties'
 import SKKMStandardProperties from './SKKMStandardProperties'
 import SKKMUnitProperties from './SKKMUnitProperties'
 import SKKMCommandProperties from './SKKMCommandProperties'
@@ -30,12 +31,13 @@ const propertiesPanels = {
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
   'tile-preset': props => <TilePresetProperties {...props}/>,
+  'sse-service': props => <SSEServiceProperties {...props}/>,
   'feature:SKKM/K': props => <SKKMStandardProperties {...props}/>,
   'feature:SKKM/KU': props => <SKKMUnitProperties {...props}/>,
   'feature:SKKM/KC': props => <SKKMCommandProperties {...props}/>
 }
 
-const singletons = ['tile-service', 'tile-layers']
+const singletons = ['tile-service', 'tile-layers', 'sse-service']
 
 const sidc = feature => feature?.properties?.sidc
 
@@ -178,7 +180,8 @@ const useSelection = () => {
       // Not map features, but objects in general:
       const features = await store.dictionary(keys)
       const locks = await store.dictionary(keys.map(lockedId), key => associatedId(key))
-      dispatch({ type: 'reset', features, locks })
+      const restrictions = await store.dictionary(keys.map(restrictedId), key => associatedId(key))
+      dispatch({ type: 'reset', features, locks: { ...locks, ...restrictions } })
     }
 
     // Update component state from database update.
