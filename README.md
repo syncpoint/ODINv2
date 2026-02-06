@@ -9,6 +9,12 @@ Replication in a distributed command and control environment by making use of th
 
 ![ODINv2 C2IS](assets/ODIN-Splash-3.2.0.jpg?raw=true)
 
+## Elevation Data and Terrain Analysis
+
+ODINv2 supports RGB-encoded terrain tiles (Mapbox Terrain-RGB) for elevation data. When configured, ODIN displays live elevation at the cursor position and provides an **Elevation Profile** tool that charts elevation vs. distance along any line — whether drawn on-the-fly or from an existing feature. Drawn profile lines are fully editable, and the chart updates automatically as the geometry changes. The tool works independently of the current viewport, sampling elevation data directly from terrain tiles.
+
+For setup instructions and usage details, see [docs/elevation-data.md](docs/elevation-data.md).
+
 ## NIDO - External Integration API
 
 NIDO (ODIN reversed) is a WebSocket-based API that enables external applications to integrate with ODIN in real-time. This opens up powerful possibilities for extending ODIN's capabilities:
