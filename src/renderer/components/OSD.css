@@ -16,9 +16,12 @@
 }
 
 .osd__cell {
-  background: white;
   padding: 5px;
   border-radius: 4px;
+}
+
+.osd__cell:not(:empty) {
+  background: white;
 }
 
 .osd__error {
