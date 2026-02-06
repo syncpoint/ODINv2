@@ -24,7 +24,7 @@ export default async function (id) {
   const hierarchy = descriptor ? R.drop(1, descriptor.hierarchy) : ['N/A']
   const geometryType = Geometry.type(descriptor)
   const identity = identityTag(MILSTD.identityCode(sidc))
-  const description = layer.name
+  const description = layer?.name
     ? layer.name.toUpperCase() + ' ⏤ ' + hierarchy.join(' • ')
     : hierarchy.join(' • ')
 
