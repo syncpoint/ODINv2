@@ -21,7 +21,19 @@ import _effectiveStyle from './_effectiveStyle'
 export default feature => {
   const { $ } = feature
 
-  $.sidc = $.properties.map(R.prop('sidc'))
+  // IMPORTANT: Use propOr(null) instead of prop() here.
+  // Features without an SIDC (e.g. custom SVG icons pushed via NIDO API)
+  // would yield undefined for $.sidc. The @syncpoint/signal library treats
+  // undefined as "no value" — a derived signal (Signal.link / .ap) will
+  // NOT compute its initial value when ANY source signal is undefined.
+  // This would poison the entire downstream chain:
+  //   $.sidc (undefined) -> $.schemeStyle -> $.effectiveStyle -> $.styleRegistry
+  // causing .ap($.styleRegistry) to never emit, so OpenLayers never
+  // receives a style and falls back to its default blue circle.
+  // Using null instead of undefined keeps the signal chain alive while
+  // still being falsy for the SIDC-based code paths (identityCode,
+  // statusCode, parameterized all handle null/falsy gracefully).
+  $.sidc = $.properties.map(R.propOr(null, 'sidc'))
   $.parameterizedSIDC = $.sidc.map(parameterized)
   $.colorScheme = Signal.link(_colorScheme, [$.globalStyle, $.layerStyle, $.featureStyle])
   $.schemeStyle = Signal.link(_schemeStyle, [$.sidc, $.colorScheme])
