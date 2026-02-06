@@ -1,4 +1,4 @@
-import { Draw } from 'ol/interaction'
+import { Draw, Modify, Snap } from 'ol/interaction'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point'
 import LineString from 'ol/geom/LineString'
@@ -73,6 +73,8 @@ export default ({ map, services }) => {
   map.addLayer(vector)
 
   let currentDrawInteraction = null
+  let currentModifyInteraction = null
+  let currentSnapInteraction = null
   let profileLineFeature = null
   let hoverPointFeature = null
   let trackedFeature = null
@@ -86,6 +88,34 @@ export default ({ map, services }) => {
     currentDrawInteraction = null
   }
 
+  const removeModifyInteraction = () => {
+    if (currentModifyInteraction) {
+      map.removeInteraction(currentModifyInteraction)
+      currentModifyInteraction = null
+    }
+    if (currentSnapInteraction) {
+      map.removeInteraction(currentSnapInteraction)
+      currentSnapInteraction = null
+    }
+  }
+
+  const onModifyEnd = () => {
+    if (!trackedFeature) return
+    const geom = trackedFeature.getGeometry()
+    if (geom && geom.getType() === GeometryType.LINE_STRING) {
+      computeProfile(geom)
+    }
+  }
+
+  const addModifyInteraction = () => {
+    removeModifyInteraction()
+    currentModifyInteraction = new Modify({ source })
+    currentModifyInteraction.on('modifyend', onModifyEnd)
+    currentSnapInteraction = new Snap({ source, pixelTolerance: 5 })
+    map.addInteraction(currentModifyInteraction)
+    map.addInteraction(currentSnapInteraction)
+  }
+
   const stopTracking = () => {
     if (trackedFeature) {
       trackedFeature.un('change', onTrackedFeatureChange)
@@ -95,6 +125,7 @@ export default ({ map, services }) => {
       clearTimeout(recomputeTimer)
       recomputeTimer = null
     }
+    removeModifyInteraction()
   }
 
   const clearOverlay = () => {
@@ -104,10 +135,25 @@ export default ({ map, services }) => {
   }
 
   const showProfileLine = (geometry) => {
-    clearOverlay()
-    profileLineFeature = new Feature(geometry.clone())
-    profileLineFeature.setStyle(profileLineStyle)
-    source.addFeature(profileLineFeature)
+    // Remove previous overlay line (but not the tracked drawn feature)
+    if (profileLineFeature && profileLineFeature !== trackedFeature) {
+      source.removeFeature(profileLineFeature)
+    }
+    // Remove hover point
+    if (hoverPointFeature) {
+      source.removeFeature(hoverPointFeature)
+      hoverPointFeature = null
+    }
+
+    // For selected features, add a clone as overlay highlight.
+    // For drawn features, the tracked feature is already in the source.
+    if (trackedFeature && source.getFeatures().includes(trackedFeature)) {
+      profileLineFeature = trackedFeature
+    } else {
+      profileLineFeature = new Feature(geometry.clone())
+      profileLineFeature.setStyle(profileLineStyle)
+      source.addFeature(profileLineFeature)
+    }
   }
 
   const computeProfile = async (geometry) => {
@@ -178,7 +224,17 @@ export default ({ map, services }) => {
       drawInteraction.once('drawend', ({ feature }) => {
         map.removeInteraction(drawInteraction)
         currentDrawInteraction = null
-        computeProfile(feature.getGeometry())
+
+        // Place the drawn feature on our overlay and make it editable
+        const drawnFeature = new Feature(feature.getGeometry().clone())
+        drawnFeature.setStyle(profileLineStyle)
+        source.addFeature(drawnFeature)
+
+        trackedFeature = drawnFeature
+        trackedFeature.on('change', onTrackedFeatureChange)
+        addModifyInteraction()
+
+        computeProfile(drawnFeature.getGeometry())
       })
 
       drawInteraction.once('drawabort', () => {
