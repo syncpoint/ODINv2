@@ -324,7 +324,7 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
   const currentLayers = this.layerCollection.getArray()
   const findLayer = id => currentLayers.find(layer => layer.get('id') === id)
   const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
- 
+
   const updateLayer = (layer, properties, index) => {
     layer.setOpacity(properties.contentType === 'terrain/mapbox-rgb' ? 0 : properties.opacity)
     layer.setVisible(properties.contentType === 'terrain/mapbox-rgb' ? true : properties.visible)
