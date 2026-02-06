@@ -16,11 +16,18 @@ export default $ => {
       // This avoids issues with special characters like # in color values
       // that would break a plain data:image/svg+xml;utf8, URI.
       const base64 = btoa(unescape(encodeURIComponent(properties.svg)))
+      // icon-rotate is specified in degrees in the feature properties
+      // but OpenLayers expects radians.
+      const rotation = properties['icon-rotate']
+        ? properties['icon-rotate'] * (Math.PI / 180)
+        : 0
+
       return [{
         id: 'style:custom-svg',
         'icon-url': 'data:image/svg+xml;base64,' + base64,
         'icon-scale': properties['icon-scale'] || 1,
-        'icon-anchor': properties['icon-anchor'] || [0.5, 0.5]
+        'icon-anchor': properties['icon-anchor'] || [0.5, 0.5],
+        'icon-rotate': rotation
       }]
     }
 
