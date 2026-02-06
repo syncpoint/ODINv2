@@ -35,14 +35,18 @@ export const DropdownMenu = props => {
   }
 
   const option = ([key, command]) => {
-    const handleClick = () => command.execute && command.execute()
+    const isDisabled = command.enabled && !command.enabled()
+    const handleClick = () => {
+      if (isDisabled) return
+      command.execute && command.execute()
+    }
     const link =
       <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
         { command.path ? <Icon path={mdi[command.path]} size='20px' /> : null }
         <span>{command.label}</span>
       </div>
 
-    return <a key={key} onClick={handleClick}>{ link }</a>
+    return <a key={key} onClick={handleClick} className={isDisabled ? 'dropdown__option--disabled' : ''}>{ link }</a>
   }
 
   return (
