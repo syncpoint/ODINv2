@@ -4,7 +4,11 @@ ODIN supports RGB-encoded terrain tiles for displaying elevation data. When conf
 
 ## Setting Up Elevation Data
 
-Elevation data is provided through XYZ tile services that encode elevation values in the RGB channels of each pixel (Mapbox Terrain-RGB format).
+Elevation data is provided through tile services that encode elevation values in the RGB channels of each pixel (Mapbox Terrain-RGB format). ODIN supports three tile service types as terrain sources:
+
+- **XYZ** — direct `{z}/{x}/{y}` tile URL
+- **TileJSON** — a single TileJSON endpoint
+- **TileJSON Discovery** — a server (e.g. [mbtileserver](https://github.com/consbio/mbtileserver)) that exposes multiple tilesets, any of which can individually be marked as terrain
 
 ### Step 1: Add a Terrain Tile Service
 
@@ -12,10 +16,24 @@ Elevation data is provided through XYZ tile services that encode elevation value
 2. In the **URL** field, enter the address of your terrain tile server
 3. Press `Tab` or click outside the field to confirm
 
+ODIN automatically detects the service type from the URL response.
+
 ### Step 2: Mark as Terrain Data
+
+**For XYZ and TileJSON services:**
 
 1. In the tile service properties, enable the **RGB-encoded terrain data** checkbox
 2. This tells ODIN to interpret the tile pixels as elevation values instead of displaying them as a visible map layer
+
+**For TileJSON Discovery services:**
+
+A discovery endpoint may expose multiple tilesets — some may be regular map tiles, others may contain elevation data. Terrain is configured per tileset:
+
+1. In the layer list, select the tileset that contains elevation data
+2. Enable the **RGB-encoded terrain data** checkbox
+3. Repeat for any additional terrain tilesets
+
+Each discovered tileset can be independently marked as terrain or left as a regular map layer.
 
 The terrain layer will be active but invisible on the map. Elevation values are decoded using the Mapbox Terrain-RGB formula:
 
@@ -103,7 +121,8 @@ Click the **X** button in the profile panel header. This also removes the line h
 
 ## Tips
 
-- The Elevation Profile button in the toolbar is only enabled when a terrain tile service is configured
+- The Elevation Profile button in the toolbar is only enabled when at least one terrain tile service is configured
+- Disabling the last terrain source automatically closes any open elevation profile
 - You can create multiple profiles in sequence — each new profile replaces the previous one
 - For best results, use a terrain tile service that covers the area of your line
 - Terrain tiles are cached in memory (up to 200 tiles), so revisiting the same area is fast
@@ -113,11 +132,17 @@ Click the **X** button in the profile panel header. This also removes the line h
 
 | Problem | Solution |
 |---------|----------|
-| Elevation Profile is greyed out in the menu | No terrain tile service is configured. Add an XYZ tile service and enable "RGB-encoded terrain data" |
+| Elevation Profile is greyed out in the menu | No terrain tile service is configured. Add a tile service (XYZ, TileJSON, or TileJSON Discovery) and enable "RGB-encoded terrain data" |
 | Profile chart is empty or shows gaps | The line extends beyond the terrain tile coverage area. Gaps indicate coordinates where no elevation data is available |
 | No elevation shown at cursor position | Verify the terrain tile service is correctly configured and the server is accessible |
 | Profile doesn't update after editing | Edits trigger a debounced recalculation (300ms delay). Wait briefly for the profile to refresh |
 
 ## Terrain Tile Sources
 
-Any tile server providing Mapbox Terrain-RGB encoded tiles is compatible. The tiles must be served as standard XYZ tiles with `{z}/{x}/{y}` URL parameters and CORS headers (`Access-Control-Allow-Origin`) enabled.
+Any tile server providing Mapbox Terrain-RGB encoded tiles is compatible. Supported configurations:
+
+- **Direct XYZ URL** — standard `{z}/{x}/{y}` tile endpoint
+- **TileJSON endpoint** — a URL serving a [TileJSON](https://github.com/mapbox/tilejson-spec) document with a `tiles` array
+- **TileJSON Discovery server** — a server like [mbtileserver](https://github.com/consbio/mbtileserver) that lists multiple tilesets; individual tilesets can be marked as terrain independently
+
+In all cases, tiles must be served with CORS headers (`Access-Control-Allow-Origin`) enabled.
