@@ -68,32 +68,25 @@ OSDDriver.prototype.pointermove = function ({ coordinate, map, pixel }) {
   const message = formats[this.coordinatesFormat](lonLat)
   this.emitter.emit('osd', { message, cell: 'C2' })
 
-  const getElevation = async () => {
+  const getElevation = () => {
     const currentMap = map || this.lastMap
     const currentPixel = pixel || this.lastPixel
     if (!currentMap || !currentPixel) return ''
 
-    const candids = currentMap.getLayerGroup().getLayersArray()
-    const terrainLayers = candids.filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
-    if (terrainLayers.length === 0) {
-      return ''
-    }
+    const terrainLayers = currentMap.getLayerGroup().getLayersArray()
+      .filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
+    if (terrainLayers.length === 0) return ''
 
     const data = terrainLayers
       .map(l => l.getData(currentPixel))
       .map(d => elevation(d))
       .filter(Boolean)
 
-    if (data.length === 0) {
-      return ''
-    }
-
-    const elevationMessage = `${data[0].toFixed(1)}m`
-    return elevationMessage
+    if (data.length === 0) return ''
+    return `${data[0].toFixed(1)}m`
   }
 
-  getElevation().then(message => this.emitter.emit('osd', { message, cell: 'C3' }))
-
+  this.emitter.emit('osd', { message: getElevation(), cell: 'C3' })
 }
 
 OSDDriver.prototype.updateDateTime = function () {
