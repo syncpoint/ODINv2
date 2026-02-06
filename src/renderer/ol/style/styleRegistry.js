@@ -165,5 +165,10 @@ export default (options) => {
     'line-width': 1.5
   }
 
+  // Custom SVG icon style - used by NIDO API for custom point graphics
+  registry['style:custom-svg'] = {
+    'icon-scale': 1
+  }
+
   return ({ id, ...props }) => ({ ...(registry[id] || {}), ...props })
 }
