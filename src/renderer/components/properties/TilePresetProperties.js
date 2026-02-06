@@ -44,7 +44,7 @@ const Opacity = props => {
 const Layer = props => {
 
   // terrain data layers must not be invisible, thus we hide controls
-  const icons = props.contentType?.includes('terrain')
+  const icons = props.contentType === 'terrain/mapbox-rgb'
     ? <Icon
         path={mdiTerrain}
         size='24px'

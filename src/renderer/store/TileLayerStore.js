@@ -63,8 +63,8 @@ TileLayerStore.tileLayer = function (services) {
     const layerProps = {
       source,
       id,
-      opacity: capabilities?.contentType?.includes('terrain') ? 0 : opacity,
-      visible: capabilities?.contentType?.includes('terrain') ? true : visible,
+      opacity: capabilities?.contentType === 'terrain/mapbox-rgb' ? 0 : opacity,
+      visible: capabilities?.contentType === 'terrain/mapbox-rgb' ? true : visible,
       zIndex: 0 - index,
       contentType: capabilities?.contentType
     }
@@ -307,8 +307,8 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
   const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
  
   const updateLayer = (layer, properties, index) => {
-    layer.setOpacity(properties.contentType ? 0 : properties.opacity)
-    layer.setVisible(properties.contentType ? 1 : properties.visible)
+    layer.setOpacity(properties.contentType === 'terrain/mapbox-rgb' ? 0 : properties.opacity)
+    layer.setVisible(properties.contentType === 'terrain/mapbox-rgb' ? true : properties.visible)
     layer.setZIndex(0 - index)
     layer.set('contentType', properties.contentType)
     return layer
