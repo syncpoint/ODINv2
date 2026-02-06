@@ -473,6 +473,96 @@ Send a `put` command with the same key and updated value:
 }
 ```
 
+#### Custom SVG Icons
+
+For point features, you can render custom SVG graphics instead of military symbols by providing an `svg` property in the feature properties. This is useful for displaying custom markers, sensor data, or any graphical representation that doesn't fit the military symbology standard.
+
+**Properties:**
+- `svg` - The SVG markup as a string (required for custom rendering)
+- `icon-scale` - Scale factor for the icon (default: 1)
+- `icon-anchor` - Anchor point as `[x, y]` where values are 0-1 representing the fraction of the icon size (default: `[0.5, 0.5]` for center)
+- `icon-rotate` - Rotation angle in degrees, clockwise (default: 0)
+
+When an `svg` property is present, it takes precedence over any `sidc` code.
+
+**Example: Simple Circle Marker**
+
+```json
+{
+  "type": "command",
+  "id": "cmd-1",
+  "payload": {
+    "action": "put",
+    "key": "feature:550e8400-e29b-41d4-a716-446655440001/custom-svg-1",
+    "value": {
+      "type": "Feature",
+      "name": "Sensor Location",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [16.37, 48.21]
+      },
+      "properties": {
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><circle cx='16' cy='16' r='14' fill='#ff6600' stroke='#333' stroke-width='2'/></svg>",
+        "icon-scale": 1
+      }
+    }
+  }
+}
+```
+
+**Example: Custom Icon with Bottom Anchor**
+
+```json
+{
+  "type": "command",
+  "id": "cmd-1",
+  "payload": {
+    "action": "put",
+    "key": "feature:550e8400-e29b-41d4-a716-446655440001/custom-svg-2",
+    "value": {
+      "type": "Feature",
+      "name": "Pin Marker",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [16.38, 48.22]
+      },
+      "properties": {
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='36'><path d='M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12zm0 18c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z' fill='#e74c3c'/></svg>",
+        "icon-scale": 1.5,
+        "icon-anchor": [0.5, 1]
+      }
+    }
+  }
+}
+```
+
+**Example: Sensor Status with Dynamic Color**
+
+```json
+{
+  "type": "command",
+  "id": "cmd-1",
+  "payload": {
+    "action": "put",
+    "key": "feature:550e8400-e29b-41d4-a716-446655440001/sensor-status",
+    "value": {
+      "type": "Feature",
+      "name": "Temperature Sensor #5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [16.39, 48.20]
+      },
+      "properties": {
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect x='2' y='2' width='36' height='36' rx='4' fill='#2ecc71' stroke='#27ae60' stroke-width='2'/><text x='20' y='26' text-anchor='middle' fill='white' font-size='14' font-family='sans-serif'>OK</text></svg>",
+        "icon-scale": 1
+      }
+    }
+  }
+}
+```
+
+> **Note:** Ensure your SVG includes the `xmlns='http://www.w3.org/2000/svg'` attribute for proper rendering. The SVG content should be a complete, self-contained SVG document.
+
 ---
 
 ### Markers
