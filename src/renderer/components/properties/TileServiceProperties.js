@@ -137,14 +137,31 @@ const TileServiceProperties = props => {
   const handleFilterChange = ({ target }) => setFilter(target.value)
 
   const handleRGBTerrain = async ({ target }) => {
-    const contentType = target.checked ? 'terrain/mapbox-rgb' : undefined
-    const updatedService = { ...service, capabilities: { ...service.capabilities, contentType } }
-    tileLayerStore.updateService(key, updatedService)
+    if (service.type === 'TileJSONDiscovery') {
+      const selectedId = list.selected.length === 1 ? list.selected[0] : null
+      if (!selectedId) return
+      const currentTerrain = service.terrain || []
+      const terrain = target.checked
+        ? [...currentTerrain, selectedId]
+        : currentTerrain.filter(id => id !== selectedId)
+      const updatedService = { ...service, terrain }
+      tileLayerStore.updateService(key, updatedService)
 
-    if (target.checked) {
-      store.addTag(key, 'TERRAIN')
+      if (terrain.length > 0) {
+        store.addTag(key, 'TERRAIN')
+      } else {
+        store.removeTag(key, 'TERRAIN')
+      }
     } else {
-      store.removeTag(key, 'TERRAIN')
+      const contentType = target.checked ? 'terrain/mapbox-rgb' : undefined
+      const updatedService = { ...service, capabilities: { ...service.capabilities, contentType } }
+      tileLayerStore.updateService(key, updatedService)
+
+      if (target.checked) {
+        store.addTag(key, 'TERRAIN')
+      } else {
+        store.removeTag(key, 'TERRAIN')
+      }
     }
   }
 
@@ -174,8 +191,13 @@ const TileServiceProperties = props => {
     ? <Zoom key={key} onChange={handleZoomChange} maxZoom={service.capabilities?.maxZoom} />
     : null
 
-  const terrainSelector = (service.type === 'XYZ')
-    ? <Checkbox name='terrain' label='RGB-encoded terrain data (elevation)' onChange={handleRGBTerrain} checked={service.capabilities?.contentType || false}/>
+  const selectedLayerId = list.selected.length === 1 ? list.selected[0] : null
+  const isTerrainChecked = service.type === 'TileJSONDiscovery'
+    ? selectedLayerId && (service.terrain || []).includes(selectedLayerId)
+    : service.capabilities?.contentType === 'terrain/mapbox-rgb'
+
+  const terrainSelector = ['XYZ', 'TileJSON', 'TileJSONDiscovery'].includes(service.type)
+    ? <Checkbox name='terrain' label='RGB-encoded terrain data (elevation)' onChange={handleRGBTerrain} checked={isTerrainChecked || false}/>
     : null
 
 

@@ -3,7 +3,10 @@ import * as ID from '../../ids'
 
 const hasTerrainService = async (store) => {
   const tuples = await store.tuples(ID.TILE_SERVICE_SCOPE)
-  return tuples.some(([, service]) => service?.capabilities?.contentType === 'terrain/mapbox-rgb')
+  return tuples.some(([, service]) =>
+    service?.capabilities?.contentType === 'terrain/mapbox-rgb' ||
+    service?.terrain?.length > 0
+  )
 }
 
 const ElevationProfile = function (services) {
@@ -27,6 +30,7 @@ const ElevationProfile = function (services) {
       if (this.isEnabled !== available) {
         this.isEnabled = available
         this.emit('changed')
+        if (!available) this.emitter.emit('elevation-profile/hide')
       }
     })
   })

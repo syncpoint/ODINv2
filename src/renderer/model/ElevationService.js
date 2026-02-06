@@ -17,7 +17,7 @@ const elevation = rgb => {
 export function ElevationService () {
   this.source_ = null
   this.tileGrid_ = null
-  this.tileUrlTemplate_ = null
+  this.tileUrlFunction_ = null
   this.tileCache_ = new Map()
 }
 
@@ -36,22 +36,20 @@ ElevationService.prototype.setSource = function (map) {
   const source = layer.getSource()
   this.source_ = source
   this.tileGrid_ = source.getTileGrid()
-  this.tileUrlTemplate_ = source.getUrls()[0]
+  this.tileUrlFunction_ = source.getTileUrlFunction()
   return true
 }
 
 /**
- * Build tile URL from template and tile coordinate.
+ * Build tile URL from tile coordinate using the source's URL function.
+ * Works for all source types (XYZ, TileJSON, etc.).
  * @param {number} z
  * @param {number} x
  * @param {number} y
- * @returns {string}
+ * @returns {string|undefined}
  */
 ElevationService.prototype.tileUrl_ = function (z, x, y) {
-  return this.tileUrlTemplate_
-    .replace('{z}', z)
-    .replace('{x}', x)
-    .replace('{y}', y)
+  return this.tileUrlFunction_([z, x, y], 1, this.source_.getProjection())
 }
 
 /**
@@ -105,6 +103,7 @@ ElevationService.prototype.elevationAt = async function (coordinate, zoom) {
   const [tz, tx, ty] = tileCoord
   const key = `${tz}/${tx}/${ty}`
   const url = this.tileUrl_(tz, tx, ty)
+  if (!url) return null
 
   const imageData = await this.fetchTile_(key, url)
   if (!imageData) return null

@@ -57,16 +57,25 @@ export default function TileLayerStore (store) {
 
 TileLayerStore.tileLayer = function (services) {
   return ({ id, opacity, visible }, index) => {
-    const { type, capabilities } = services[ID.tileServiceId(id)]
-    const adapter = TileService.adapters[type](capabilities)
+    const { type, capabilities, terrain } = services[ID.tileServiceId(id)]
+    const adapterCaps = type === 'TileJSONDiscovery' && terrain
+      ? { ...capabilities, terrain }
+      : capabilities
+    const adapter = TileService.adapters[type](adapterCaps)
     const source = adapter.source(ID.containedId(id))
+
+    const isTerrain = type === 'TileJSONDiscovery'
+      ? (terrain || []).includes(ID.containedId(id))
+      : capabilities?.contentType === 'terrain/mapbox-rgb'
+    const effectiveContentType = isTerrain ? 'terrain/mapbox-rgb' : capabilities?.contentType
+
     const layerProps = {
       source,
       id,
-      opacity: capabilities?.contentType === 'terrain/mapbox-rgb' ? 0 : opacity,
-      visible: capabilities?.contentType === 'terrain/mapbox-rgb' ? true : visible,
+      opacity: effectiveContentType === 'terrain/mapbox-rgb' ? 0 : opacity,
+      visible: effectiveContentType === 'terrain/mapbox-rgb' ? true : visible,
       zIndex: 0 - index,
-      contentType: capabilities?.contentType
+      contentType: effectiveContentType
     }
 
     const layer = new WebGLTileLayer(layerProps)
@@ -280,8 +289,13 @@ TileLayerStore.prototype.updatePreset = async function () {
   const contentType = id => {
     // eslint-disable-next-line no-unused-vars
     const [key, service] = findService(ID.tileServiceId(id))
-    return ['XYZ'].includes(service.type)
-      ? service.capabilities.contentType
+    if (service.type === 'TileJSONDiscovery') {
+      return (service.terrain || []).includes(ID.containedId(id))
+        ? 'terrain/mapbox-rgb'
+        : undefined
+    }
+    return ['XYZ', 'TileJSON'].includes(service.type)
+      ? service.capabilities?.contentType
       : undefined
   }
 
