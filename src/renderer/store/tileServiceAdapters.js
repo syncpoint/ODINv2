@@ -92,7 +92,12 @@ const xyzAdapter = caps => {
     layers: () => [],
     boundingBox: () => null,
     layerName: () => null,
-    source: () => new XYZ({ url: caps.url, maxZoom: caps.maxZoom, crossOrigin: 'anonymous' })
+    source: () => new XYZ({
+      url: caps.url,
+      maxZoom: caps.maxZoom,
+      crossOrigin: 'anonymous',
+      interpolate: caps.contentType !== 'terrain/mapbox-rgb'
+    })
   }
 }
 
