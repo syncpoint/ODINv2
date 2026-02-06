@@ -25,12 +25,12 @@ const hoverPointStyle = new Style({
 })
 
 /**
- * Find a LineString geometry from selected features on the map.
+ * Find a selected feature with LineString geometry on the map.
  * @param {import('ol/Map').default} map
  * @param {Array<string>} selectedIds
- * @returns {import('ol/geom/LineString').default|null}
+ * @returns {import('ol/Feature').default|null}
  */
-const findSelectedLineString = (map, selectedIds) => {
+const findSelectedLineStringFeature = (map, selectedIds) => {
   if (selectedIds.length !== 1) return null
 
   const targetId = selectedIds[0]
@@ -43,7 +43,7 @@ const findSelectedLineString = (map, selectedIds) => {
     const feature = source.getFeatureById(targetId)
     if (!feature) continue
     const geom = feature.getGeometry()
-    if (geom && geom.getType() === GeometryType.LINE_STRING) return geom
+    if (geom && geom.getType() === GeometryType.LINE_STRING) return feature
   }
 
   return null
@@ -75,12 +75,26 @@ export default ({ map, services }) => {
   let currentDrawInteraction = null
   let profileLineFeature = null
   let hoverPointFeature = null
+  let trackedFeature = null
+  let profileGeneration = 0
+  let recomputeTimer = null
 
   const cancel = () => {
     if (!currentDrawInteraction) return
     currentDrawInteraction.abortDrawing()
     map.removeInteraction(currentDrawInteraction)
     currentDrawInteraction = null
+  }
+
+  const stopTracking = () => {
+    if (trackedFeature) {
+      trackedFeature.un('change', onTrackedFeatureChange)
+      trackedFeature = null
+    }
+    if (recomputeTimer) {
+      clearTimeout(recomputeTimer)
+      recomputeTimer = null
+    }
   }
 
   const clearOverlay = () => {
@@ -97,6 +111,8 @@ export default ({ map, services }) => {
   }
 
   const computeProfile = async (geometry) => {
+    const generation = ++profileGeneration
+
     // Re-discover terrain source each time (layers may have changed)
     if (!elevationService.setSource(map)) {
       services.emitter.emit('osd', { message: 'No terrain layer available', cell: 'A3' })
@@ -118,19 +134,39 @@ export default ({ map, services }) => {
     showProfileLine(geometry)
 
     const profile = await elevationService.profileAlongLine(geometry, numSamples, zoom)
+
+    // Discard result if a newer computation has started
+    if (generation !== profileGeneration) return
+
     const segmentDistances = segmentBoundaryDistances(geometry)
     services.emitter.emit('elevation-profile/show', { profile, geometry, segmentDistances })
   }
 
+  const onTrackedFeatureChange = () => {
+    // Debounce: during drag, many change events fire in quick succession
+    if (recomputeTimer) clearTimeout(recomputeTimer)
+    recomputeTimer = setTimeout(() => {
+      recomputeTimer = null
+      if (!trackedFeature) return
+      const geom = trackedFeature.getGeometry()
+      if (geom && geom.getType() === GeometryType.LINE_STRING) {
+        computeProfile(geom)
+      }
+    }, 300)
+  }
+
   services.emitter.on('ELEVATION_PROFILE', () => {
     services.emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
+    stopTracking()
 
     // Check if a selected feature has LineString geometry
     const selectedIds = services.selection.selected()
-    const lineGeom = findSelectedLineString(map, selectedIds)
+    const feature = findSelectedLineStringFeature(map, selectedIds)
 
-    if (lineGeom) {
-      computeProfile(lineGeom)
+    if (feature) {
+      trackedFeature = feature
+      trackedFeature.on('change', onTrackedFeatureChange)
+      computeProfile(feature.getGeometry())
     } else {
       // Start draw interaction for a new line
       cancel()
@@ -174,6 +210,7 @@ export default ({ map, services }) => {
   })
 
   services.emitter.on('elevation-profile/hide', () => {
+    stopTracking()
     clearOverlay()
   })
 
