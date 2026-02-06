@@ -45,7 +45,8 @@ export const Toolbar = () => {
   const measureCommands = [
     commandRegistry.command('MEASURE_DISTANCE'),
     commandRegistry.command('MEASURE_AREA'),
-    commandRegistry.command('MEASURE_CIRCLE')
+    commandRegistry.command('MEASURE_CIRCLE'),
+    commandRegistry.command('ELEVATION_PROFILE')
   ]
 
   const replicationCommands = [
