@@ -161,11 +161,18 @@ const makeSymbol = props => {
 }
 
 const makeIcon = props => {
-  return Styles.icon({
+  const options = {
     src: props['icon-url'],
     scale: props['icon-scale'] || 1,
     rotation: props['icon-rotate'] || 0
-  })
+  }
+
+  // Support custom anchor point (default center)
+  if (props['icon-anchor']) {
+    options.anchor = props['icon-anchor']
+  }
+
+  return Styles.icon(options)
 }
 
 const makeImage = props => {
