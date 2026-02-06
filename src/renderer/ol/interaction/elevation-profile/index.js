@@ -171,11 +171,13 @@ export default ({ map, services }) => {
     if (lineLength === 0) return
 
     // Determine resolution-appropriate sample count
+    // Clamp to tile grid's zoom range — terrain tiles have a maxZoom
     const tileGrid = elevationService.tileGrid_
-    const z = Math.round(zoom)
-    const tileResolution = tileGrid.getResolution(z)
-    const pixelResolution = tileResolution / 256
-    const numSamples = Math.min(600, Math.max(20, Math.round(lineLength / pixelResolution)))
+    const maxZ = tileGrid.getMaxZoom()
+    const minZ = tileGrid.getMinZoom()
+    const z = Math.max(minZ, Math.min(maxZ, Math.round(zoom)))
+    const tilePixelResolution = tileGrid.getResolution(z)
+    const numSamples = Math.min(600, Math.max(20, Math.round(lineLength / tilePixelResolution)))
 
     showProfileLine(geometry)
 

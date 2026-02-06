@@ -98,7 +98,9 @@ ElevationService.prototype.fetchTile_ = async function (key, url) {
 ElevationService.prototype.elevationAt = async function (coordinate, zoom) {
   if (!this.source_) return null
 
-  const z = Math.round(zoom)
+  const maxZ = this.tileGrid_.getMaxZoom()
+  const minZ = this.tileGrid_.getMinZoom()
+  const z = Math.max(minZ, Math.min(maxZ, Math.round(zoom)))
   const tileCoord = this.tileGrid_.getTileCoordForCoordAndZ(coordinate, z)
   const [tz, tx, ty] = tileCoord
   const key = `${tz}/${tx}/${ty}`
