@@ -140,6 +140,11 @@ TileLayerStore.prototype.updateService = async function (key, service) {
 
     const { type, title, capabilities } = await fetchCapabilities(service)
     const name = service.name || title
+
+    // Preserve user-designated contentType through capability re-fetch.
+    const contentType = service.capabilities?.contentType
+    if (contentType) capabilities.contentType = contentType
+
     return { ...service, type, name, capabilities }
   }
   const newValue = await capabilities(service)

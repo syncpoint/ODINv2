@@ -128,9 +128,8 @@ const TileServiceProperties = props => {
   }
 
   const handleZoomChange = ({ maxZoom }) => {
-    const updatedService = { ...service }
-    updatedService.capabilities.maxZoom = maxZoom
-    tileLayerStore.updateService(key, updatedService /* { ...service, ...{ capabilities: { maxZoom } } } */)
+    const updatedService = { ...service, capabilities: { ...service.capabilities, maxZoom } }
+    tileLayerStore.updateService(key, updatedService)
   }
 
   const handleEntryChange = async id => tileLayerStore.toggleActiveLayer(key, id)
@@ -138,8 +137,8 @@ const TileServiceProperties = props => {
   const handleFilterChange = ({ target }) => setFilter(target.value)
 
   const handleRGBTerrain = async ({ target }) => {
-    const updatedService = { ...service }
-    updatedService.capabilities.contentType = target.checked ? 'terrain/mapbox-rgb' : undefined
+    const contentType = target.checked ? 'terrain/mapbox-rgb' : undefined
+    const updatedService = { ...service, capabilities: { ...service.capabilities, contentType } }
     tileLayerStore.updateService(key, updatedService)
 
     if (target.checked) {
