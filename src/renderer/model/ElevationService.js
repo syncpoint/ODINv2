@@ -69,7 +69,7 @@ ElevationService.prototype.fetchTile_ = async function (key, url) {
       img.crossOrigin = 'anonymous'
       img.onload = () => {
         const canvas = new OffscreenCanvas(256, 256)
-        const ctx = canvas.getContext('2d')
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })
         ctx.drawImage(img, 0, 0)
         resolve(ctx.getImageData(0, 0, 256, 256))
       }
