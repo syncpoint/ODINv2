@@ -92,7 +92,12 @@ const xyzAdapter = caps => {
     layers: () => [],
     boundingBox: () => null,
     layerName: () => null,
-    source: () => new XYZ({ url: caps.url, maxZoom: caps.maxZoom })
+    source: () => new XYZ({
+      url: caps.url,
+      maxZoom: caps.maxZoom,
+      crossOrigin: 'anonymous',
+      interpolate: caps.contentType !== 'terrain/mapbox-rgb'
+    })
   }
 }
 
@@ -138,7 +143,8 @@ const tileJSONDiscoveryAdapter = caps => {
       if (!service?.url) return null
       // Resolve service URL against base URL (handles both relative and absolute URLs)
       const tileJSONUrl = new URL(service.url, caps.url).href
-      return new TileJSON({ url: tileJSONUrl, crossOrigin: 'anonymous' })
+      const isTerrain = (caps.terrain || []).includes(id)
+      return new TileJSON({ url: tileJSONUrl, crossOrigin: 'anonymous', interpolate: !isTerrain })
     }
   }
 }
@@ -156,7 +162,7 @@ const tileJSONAdapter = caps => ({
   layers: () => [],
   boundingBox: () => caps.tileJSON?.bounds,
   layerName: () => caps.tileJSON?.name,
-  source: () => new TileJSON({ url: caps.url, crossOrigin: 'anonymous' })
+  source: () => new TileJSON({ url: caps.url, crossOrigin: 'anonymous', interpolate: caps.contentType !== 'terrain/mapbox-rgb' })
 })
 
 

@@ -51,6 +51,11 @@
   white-space: nowrap;
 }
 
+.dropdown__option--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .dropdown a:hover {
   color: white;
   background-color: #5590F4;

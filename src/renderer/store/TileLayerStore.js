@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { Tile as TileLayer } from 'ol/layer'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import Collection from 'ol/Collection'
 import LayerGroup from 'ol/layer/Group'
 import * as ID from '../ids'
@@ -40,7 +40,8 @@ const fetchCapabilities = async service => {
   } catch (err) {
     return TileService.adapters.XYZ({
       url: service.url,
-      maxZoom: service.capabilities?.maxZoom || 24
+      maxZoom: service.capabilities?.maxZoom || 24,
+      contentType: service.capabilities?.contentType
     })
   }
 }
@@ -56,10 +57,29 @@ export default function TileLayerStore (store) {
 
 TileLayerStore.tileLayer = function (services) {
   return ({ id, opacity, visible }, index) => {
-    const { type, capabilities } = services[ID.tileServiceId(id)]
-    const adapter = TileService.adapters[type](capabilities)
+    const { type, capabilities, terrain } = services[ID.tileServiceId(id)]
+    const adapterCaps = type === 'TileJSONDiscovery' && terrain
+      ? { ...capabilities, terrain }
+      : capabilities
+    const adapter = TileService.adapters[type](adapterCaps)
     const source = adapter.source(ID.containedId(id))
-    return new TileLayer({ source, id, opacity, visible, zIndex: 0 - index })
+
+    const isTerrain = type === 'TileJSONDiscovery'
+      ? (terrain || []).includes(ID.containedId(id))
+      : capabilities?.contentType === 'terrain/mapbox-rgb'
+    const effectiveContentType = isTerrain ? 'terrain/mapbox-rgb' : capabilities?.contentType
+
+    const layerProps = {
+      source,
+      id,
+      opacity: effectiveContentType === 'terrain/mapbox-rgb' ? 0 : opacity,
+      visible: effectiveContentType === 'terrain/mapbox-rgb' ? true : visible,
+      zIndex: 0 - index,
+      contentType: effectiveContentType
+    }
+
+    const layer = new WebGLTileLayer(layerProps)
+    return layer
   }
 }
 
@@ -129,9 +149,13 @@ TileLayerStore.prototype.updateService = async function (key, service) {
 
     const { type, title, capabilities } = await fetchCapabilities(service)
     const name = service.name || title
+
+    // Preserve user-designated contentType through capability re-fetch.
+    const contentType = service.capabilities?.contentType
+    if (contentType) capabilities.contentType = contentType
+
     return { ...service, type, name, capabilities }
   }
-
   const newValue = await capabilities(service)
   this.store.update([key], [newValue], [service])
 }
@@ -262,15 +286,32 @@ TileLayerStore.prototype.updatePreset = async function () {
       : adapters[key].layerName(ID.containedId(id))
   }
 
+  const contentType = id => {
+    // eslint-disable-next-line no-unused-vars
+    const [key, service] = findService(ID.tileServiceId(id))
+    if (service.type === 'TileJSONDiscovery') {
+      return (service.terrain || []).includes(ID.containedId(id))
+        ? 'terrain/mapbox-rgb'
+        : undefined
+    }
+    return ['XYZ', 'TileJSON'].includes(service.type)
+      ? service.capabilities?.contentType
+      : undefined
+  }
+
   const layer = id => ({ id, opacity: 1.0, visible: false })
   const additions = activeLayerIds.filter(x => !currentLayers.includes(x)).map(layer)
 
   // Propagate name changes from service to preset (for OSM, XYZ, TileJSON).
   //
   const propagateName = layer => ({ ...layer, name: layerName(layer.id) })
+  // Propagate content type (either undefined or terrain/mapbox-rgb)
+  const propagateContentType = layer => ({ ...layer, contentType: contentType(layer.id) })
+
   const preset = (currentPreset.concat(additions))
     .filter(layer => !removals.includes(layer.id))
     .map(propagateName)
+    .map(propagateContentType)
 
   this.store.update([ID.tilePresetId()], [preset])
 }
@@ -285,9 +326,10 @@ TileLayerStore.prototype.updateLayers = async function (preset) {
   const services = Object.fromEntries(await this.store.tuples(ID.TILE_SERVICE_SCOPE))
 
   const updateLayer = (layer, properties, index) => {
-    layer.setOpacity(properties.opacity)
-    layer.setVisible(properties.visible)
+    layer.setOpacity(properties.contentType === 'terrain/mapbox-rgb' ? 0 : properties.opacity)
+    layer.setVisible(properties.contentType === 'terrain/mapbox-rgb' ? true : properties.visible)
     layer.setZIndex(0 - index)
+    layer.set('contentType', properties.contentType)
     return layer
   }
 

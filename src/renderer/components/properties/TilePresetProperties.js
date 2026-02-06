@@ -2,7 +2,7 @@
 import React from 'react'
 import SortableList, { SortableItem } from 'react-easy-sort'
 import Icon from '@mdi/react'
-import { mdiDrag, mdiEyeOutline, mdiEyeOff, mdiSquareOpacity } from '@mdi/js'
+import { mdiDrag, mdiEyeOutline, mdiEyeOff, mdiSquareOpacity, mdiTerrain } from '@mdi/js'
 import { useServices, useList } from '../hooks'
 import Range from './Range'
 import { Tooltip } from 'react-tooltip'
@@ -41,8 +41,33 @@ const Opacity = props => {
 /**
  *
  */
-const Layer = props => (
-  <SortableItem>
+const Layer = props => {
+
+  // terrain data layers must not be invisible, thus we hide controls
+  const icons = props.contentType === 'terrain/mapbox-rgb'
+    ? <Icon
+        path={mdiTerrain}
+        size='24px'
+        className=' tt-tile-preset-terrain'
+        style={{ marginLeft: 'auto' }}
+      />
+    : <>
+        <Icon
+            path={mdiSquareOpacity}
+            size='24px'
+            className=' tt-tile-preset-opacity'
+            style={{ marginLeft: 'auto' }}
+            onClick={props.onSelect}
+          />
+          <Icon
+            path={props.visible ? mdiEyeOutline : mdiEyeOff}
+            size='24px'
+            onClick={props.onToggleVisible}
+            className='tt-tile-preset-visibility'
+          />
+      </>
+
+  return (<SortableItem>
 
     {/* react-easy-sort kills list style => add necessary margins.  */}
     <div
@@ -53,22 +78,11 @@ const Layer = props => (
         <div className='bf12-row'>
           <Icon path={mdiDrag} size='24px' className='tt-tile-preset-handle'/>
           <span className='bf12-card__description'>{props.name}</span>
-          <Icon
-            path={mdiSquareOpacity}
-            size='24px'
-            style={{ marginLeft: 'auto' }}
-            className=' tt-tile-preset-opacity'
-            onClick={props.onSelect}
-          />
-          <Icon
-            path={props.visible ? mdiEyeOutline : mdiEyeOff}
-            size='24px'
-            onClick={props.onToggleVisible}
-            className='tt-tile-preset-visibility'
-          />
+          { icons }
           <Tooltip anchorSelect='.tt-tile-preset-opacity' content='Change the opacity' delayShow={750}/>
           <Tooltip anchorSelect='.tt-tile-preset-handle' content='Drag to change the order of visibility' delayShow={750}/>
           <Tooltip anchorSelect='.tt-tile-preset-visibility' content='Hide/Show this map' delayShow={750}/>
+          <Tooltip anchorSelect='.tt-tile-preset-terrain' content='This layer contains terrain data' delayShow={750}/>
         </div>
         <Opacity
           opacity={props.opacity}
@@ -78,7 +92,8 @@ const Layer = props => (
       </div>
     </div>
   </SortableItem>
-)
+  )
+}
 
 
 /**
@@ -118,16 +133,17 @@ const LayerList = props => {
     tileLayerStore.toggleVisible(props.preset, id)
   }
 
-  const layers = list.entries.map(entry =>
-    <Layer
-      key={entry.id}
-      {...entry}
-      selected={list.selected.includes(entry.id)}
-      onSelect={handleSelect(entry.id)}
-      onOpacityChange={handleOpacityChange(entry.id)}
-      onToggleVisible={handleToggleVisible(entry.id)}
-    />
-  )
+  const layers = list.entries
+    .map(entry =>
+      <Layer
+        key={entry.id}
+        {...entry}
+        selected={list.selected.includes(entry.id)}
+        onSelect={handleSelect(entry.id)}
+        onOpacityChange={handleOpacityChange(entry.id)}
+        onToggleVisible={handleToggleVisible(entry.id)}
+      />
+    )
 
   // There seems to be no way to have decent CSS on list container.
   // We workaround this by applying ad-hoc styles.
@@ -148,8 +164,10 @@ const LayerList = props => {
 /**
  *
  */
-const TilePresetProperties = props => (
+const TilePresetProperties = props => {
+  return (
   <LayerList preset={Object.entries(props.features)[0]}/>
-)
+  )
+}
 
 export default TilePresetProperties

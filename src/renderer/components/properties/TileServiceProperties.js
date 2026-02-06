@@ -17,6 +17,7 @@ import { useList, useServices } from '../hooks'
 import * as TileService from '../../store/tileServiceAdapters'
 import './TileServiceProperties.css'
 import { Tooltip } from 'react-tooltip'
+import Checkbox from './Checkbox'
 
 
 /**
@@ -55,7 +56,7 @@ const fuseOptions = {
  *
  */
 const TileServiceProperties = props => {
-  const { tileLayerStore, sessionStore } = useServices()
+  const { tileLayerStore, sessionStore, store } = useServices()
   const [key, service] = (Object.entries(props.features))[0]
   const [url, setUrl] = React.useState({ dirty: false, value: service.url || '' })
   const [entries, setEntries] = React.useState([])
@@ -127,15 +128,44 @@ const TileServiceProperties = props => {
   }
 
   const handleZoomChange = ({ maxZoom }) => {
-    tileLayerStore.updateService(key, { ...service, ...{ capabilities: { maxZoom } } })
+    const updatedService = { ...service, capabilities: { ...service.capabilities, maxZoom } }
+    tileLayerStore.updateService(key, updatedService)
   }
 
   const handleEntryChange = async id => tileLayerStore.toggleActiveLayer(key, id)
   const handleEntryClick = id => dispatch({ type: 'select', id })
   const handleFilterChange = ({ target }) => setFilter(target.value)
 
-  const showLayerList = ['WMS', 'WMTS', 'TileJSONDiscovery'].includes(service.type)
+  const handleRGBTerrain = async ({ target }) => {
+    if (service.type === 'TileJSONDiscovery') {
+      const selectedId = list.selected.length === 1 ? list.selected[0] : null
+      if (!selectedId) return
+      const currentTerrain = service.terrain || []
+      const terrain = target.checked
+        ? [...currentTerrain, selectedId]
+        : currentTerrain.filter(id => id !== selectedId)
+      const updatedService = { ...service, terrain }
+      tileLayerStore.updateService(key, updatedService)
 
+      if (terrain.length > 0) {
+        store.addTag(key, 'TERRAIN')
+      } else {
+        store.removeTag(key, 'TERRAIN')
+      }
+    } else {
+      const contentType = target.checked ? 'terrain/mapbox-rgb' : undefined
+      const updatedService = { ...service, capabilities: { ...service.capabilities, contentType } }
+      tileLayerStore.updateService(key, updatedService)
+
+      if (target.checked) {
+        store.addTag(key, 'TERRAIN')
+      } else {
+        store.removeTag(key, 'TERRAIN')
+      }
+    }
+  }
+
+  const showLayerList = ['WMS', 'WMTS', 'TileJSONDiscovery'].includes(service.type)
   const layerList = showLayerList
     ? <div className='layer-list'>
       {
@@ -161,6 +191,15 @@ const TileServiceProperties = props => {
     ? <Zoom key={key} onChange={handleZoomChange} maxZoom={service.capabilities?.maxZoom} />
     : null
 
+  const selectedLayerId = list.selected.length === 1 ? list.selected[0] : null
+  const isTerrainChecked = service.type === 'TileJSONDiscovery'
+    ? selectedLayerId && (service.terrain || []).includes(selectedLayerId)
+    : service.capabilities?.contentType === 'terrain/mapbox-rgb'
+
+  const terrainSelector = ['XYZ', 'TileJSON', 'TileJSONDiscovery'].includes(service.type)
+    ? <Checkbox name='terrain' label='RGB-encoded terrain data (elevation)' onChange={handleRGBTerrain} checked={isTerrainChecked || false}/>
+    : null
+
 
   return (
     <FlexColumnGap>
@@ -171,6 +210,7 @@ const TileServiceProperties = props => {
       { layerList }
       <div className='map-preview' id='map-preview'></div>
       { zoomSliders }
+      { terrainSelector }
     </FlexColumnGap>
   )
 

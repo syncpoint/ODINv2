@@ -112,7 +112,7 @@ export const isRoleId = isId(ROLE_PREFIX)
 
 export const isStylableId = R.anyPass([isLayerId, isFeatureId])
 export const isDeletableId = id => !isSymbolId(id)
-export const isTaggableId = id => !isViewId(id)
+export const isTaggableId = id => (!isViewId(id) && !isTagsId(id))
 export const isAssociatedId = R.anyPass([isHiddenId, isLockedId, isRestrictedId, isDefaultId, isTagsId, isRoleId])
 
 export const layerUUID = R.cond([

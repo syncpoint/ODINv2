@@ -24,14 +24,14 @@ export const OSD = () => {
   }, [emitter])
 
   return <div className="osd" id="osd">
-    <div className={ state.A1 ? 'osd__cell' : ''} style={styles.A}>{ state.A1 }</div>
-    <div className={ state.B1 ? 'osd__cell' : ''} style={styles.B}></div>
-    <div className={ state.C1 ? 'osd__cell' : ''} style={styles.C}>{ state.C1 }</div>
-    <div className={ state.A2 ? 'osd__cell' : ''} style={styles.A}>{ state.A2 }</div>
-    <div className={ state.B2 ? 'osd__error' : ''} style={styles.B}>{ state.B2 }</div>
-    <div className={ state.C2 ? 'osd__cell' : ''} style={styles.C}>{ state.C2 }</div>
-    <div className={ state.A3 ? 'osd__cell' : ''} style={styles.A}></div>
-    <div className={ state.B3 ? 'osd__cell' : ''} style={styles.B}></div>
-    <div className={ state.C3 ? 'osd__cell' : ''} style={styles.C}></div>
+    <div className='osd__cell' style={styles.A}>{ state.A1 }</div>
+    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.C}>{ state.C1 }</div>
+    <div className='osd__cell' style={styles.A}>{ state.A2 }</div>
+    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.C}>{ state.C2 }</div>
+    <div className='osd__cell' style={styles.A}></div>
+    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.C}>{ state.C3 }</div>
   </div>
 }

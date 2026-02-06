@@ -8,6 +8,7 @@ import { Toolbar } from './Toolbar'
 import PrintToolbar from './print/Toolbar'
 import { KBar } from './KBar'
 import { OSD } from './OSD'
+import { ElevationProfilePanel } from './ElevationProfilePanel'
 import { Replication } from '../replication/Replication'
 import { useMemento, useServices } from './hooks'
 import './Project.css'
@@ -63,6 +64,7 @@ export const Project = () => {
           <OSD/>
           { propertiesPanel }
         </div>
+        <ElevationProfilePanel/>
         <KBar/>
         <Replication />
       </div>

@@ -14,6 +14,7 @@ import createSSELayers from './sseLayers'
 import registerEventHandlers from './eventHandlers'
 import registerGraticules from './graticules'
 import measure from '../../ol/interaction/measure'
+import elevationProfile from '../../ol/interaction/elevation-profile'
 import print from '../print'
 import './Map.css'
 import './ScaleLine.css'
@@ -67,6 +68,7 @@ export const Map = () => {
     observer.observe(ref.current)
 
     measure({ services, map })
+    elevationProfile({ services, map })
   }
 
   /* eslint-disable react-hooks/exhaustive-deps */

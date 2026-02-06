@@ -11,9 +11,12 @@ export default async function (id) {
     scope: service.type,
     tags: [
       `SCOPE:${service.type}:NONE`,
-      ...((tags || [])).map(label => `USER:${label}:NONE`),
+      (tags || []).some(t => t === 'TERRAIN') ? 'SYSTEM:TERRAIN::mdiTerrain' : null,
+      ...((tags || []))
+        .filter(Boolean)
+        .filter(t => t !== 'TERRAIN').map(label => `USER:${label}:NONE`),
       'PLUS'
-    ].join(' '),
+    ].filter(Boolean).join(' '),
     capabilities: 'TAG|RENAME'
   }
 
