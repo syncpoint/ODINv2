@@ -60,6 +60,8 @@ export const OSDDriver = function (projectUUID, emitter, preferencesStore, proje
 
 OSDDriver.prototype.pointermove = function ({ coordinate, map, pixel }) {
   this.lastCoordinate = coordinate
+  if (map) this.lastMap = map
+  if (pixel) this.lastPixel = pixel
 
   if (!this.coordinatesFormat) return
   const lonLat = toLonLat(coordinate)
@@ -67,14 +69,18 @@ OSDDriver.prototype.pointermove = function ({ coordinate, map, pixel }) {
   this.emitter.emit('osd', { message, cell: 'C2' })
 
   const getElevation = async () => {
-    const candids = map?.getLayerGroup().getLayersArray()
+    const currentMap = map || this.lastMap
+    const currentPixel = pixel || this.lastPixel
+    if (!currentMap || !currentPixel) return ''
+
+    const candids = currentMap.getLayerGroup().getLayersArray()
     const terrainLayers = candids.filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
     if (terrainLayers.length === 0) {
       return ''
     }
 
     const data = terrainLayers
-      .map(l => l.getData(pixel))
+      .map(l => l.getData(currentPixel))
       .map(d => elevation(d))
       .filter(Boolean)
 
