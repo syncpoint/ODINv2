@@ -114,7 +114,7 @@ ButtonBar.propTypes = {
  */
 export const ProjectList = () => {
 
-  const { projectStore, ipcRenderer, replicationProvider } = useServices()
+  const { projectStore, replicationProvider } = useServices()
   const [filter, setFilter] = React.useState('')
   const [state, dispatch] = useList({ multiselect: false })
 
@@ -183,11 +183,9 @@ export const ProjectList = () => {
    * Updates projects as appropriate.
    */
   React.useEffect(() => {
-    const channel = 'ipc:post:project/closed'
-    const handleClosed = () => fetch()
-    ipcRenderer.on(channel, handleClosed)
-    return () => ipcRenderer.off(channel, handleClosed)
-  }, [ipcRenderer, fetch])
+    const unsubscribe = window.odin.window.onProjectClosed(() => fetch())
+    return () => unsubscribe()
+  }, [fetch])
 
 
   /**
@@ -302,7 +300,7 @@ export const ProjectList = () => {
         } else {
           feedback('Replication error: ', error.message)
           await projectStore.putCredentials('PROJECT-LIST', null)
-          ipcRenderer.postMessage('COLLABORATION_REFRESH_LOGIN')
+          window.odin.collaboration.refreshLogin()
         }
       }
     }
@@ -341,7 +339,8 @@ export const ProjectList = () => {
     const { entry: project } = props
 
 
-    const send = message => () => ipcRenderer.send(message, project.id)
+    const openProject = () => window.odin.shell.openProject(project.id)
+    const exportProject = () => window.odin.shell.exportProject(project.id)
     const loadPreview = () => projectStore.getPreview(project.id)
     const handleRename = name => projectStore.updateProject({ ...project, name })
     const handleDelete = () => projectStore.deleteProject(project.id)
@@ -397,8 +396,8 @@ export const ProjectList = () => {
               <span className='card-text'>{militaryFormat.fromISO(project.lastAccess)}</span>
 
               <ButtonBar>
-                <CustomButton onClick={send('OPEN_PROJECT')} text='Open' disabled={isInvited && !isShared}/>
-                <CustomButton onClick={send('EXPORT_PROJECT')} text='Export' disabled={true}/>
+                <CustomButton onClick={openProject} text='Open' disabled={isInvited && !isShared}/>
+                <CustomButton onClick={exportProject} text='Export' disabled={true}/>
                 { (replication && isInvited) && <CustomButton onClick={handleJoin} text='Join' disabled={offline}/> }
                 { (replication && !isInvited && !isShared && !isOpen) && <CustomButton onClick={handleShare} text='Share' disabled={offline}/> }
                 { (replication && isShared) &&
@@ -422,7 +421,7 @@ export const ProjectList = () => {
       </div>
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, ipcRenderer, offline, projectStore, replication])
+  }, [dispatch, offline, projectStore, replication])
   /* eslint-enable react/prop-types */
 
 

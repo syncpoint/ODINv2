@@ -1,5 +1,4 @@
 import React from 'react'
-import { ipcRenderer } from 'electron'
 import { useServices } from '../hooks'
 import { HttpAPI } from '@syncpoint/matrix-client-api/src/http-api.mjs'
 import { discover } from '@syncpoint/matrix-client-api'
@@ -70,9 +69,9 @@ export const Login = () => {
       }
       await HttpAPI.loginWithPassword(credentials)
       await projectStore.putCredentials('default', credentials)
-      ipcRenderer.postMessage('RELOAD_ALL_WINDOWS')
-      ipcRenderer.postMessage('REFRESH_MENU')
-      ipcRenderer.postMessage('CLOSE_WINDOW', 'login')
+      window.odin.collaboration.reloadAllWindows()
+      window.odin.window.refreshMenu()
+      window.odin.window.close('login')
 
     } catch (error) {
       if (error.response?.status === 403) {

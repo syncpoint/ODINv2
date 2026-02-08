@@ -53,7 +53,7 @@ const Strategy = {
  */
 export default function Nominatim (store) {
   this.strategy = Strategy.sticky(store)
-  this.url = process.env.NOMINATIM_URL || 'https://nominatim.openstreetmap.org/search'
+  this.url = window.odin.platform.nominatimUrl
 }
 
 Nominatim.prototype.sync = async function (query) {

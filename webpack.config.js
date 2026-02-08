@@ -6,14 +6,15 @@ const webpack = require('webpack')
 const YAML = require('yaml')
 
 // Pick up Electron version [X.Y] from builder configuration:
-const { rendererTarget, mainTarget } = (() => {
+const { rendererTarget, mainTarget, preloadTarget } = (() => {
   const file = fs.readFileSync('./electron-builder.yml', 'utf8')
   const configuration = YAML.parse(file)
   const version = configuration.electronVersion.match(/(\d+\.\d+)/)[0]
 
   return {
     rendererTarget: 'electron' + version + '-renderer',
-    mainTarget: 'electron' + version + '-main'
+    mainTarget: 'electron' + version + '-main',
+    preloadTarget: 'electron' + version + '-preload'
   }
 })()
 
@@ -117,6 +118,16 @@ const mainConfig = (env, argv) => ({
   }
 })
 
+const preloadConfig = (env, argv) => ({
+  context: path.resolve(__dirname, 'src/main/preload'),
+  target: preloadTarget,
+  mode: mode(env),
+  stats: 'errors-only',
+  entry: {
+    preload: './preload.js'
+  }
+})
+
 const devServer = env => {
   if (env.production) return ({}) // no development server for production
   return ({
@@ -141,7 +152,7 @@ const devServer = env => {
 
 const devtool = env => {
   if (env.production) return ({ devtool: 'source-map' })
-  else return ({ devtool: 'eval-source-map' })
+  else return ({ devtool: 'source-map' })
 }
 
 module.exports = (env, argv) => {
@@ -156,5 +167,6 @@ module.exports = (env, argv) => {
   )
 
   const main = mainConfig(env, argv)
-  return [renderer, main]
+  const preload = Object.assign({}, preloadConfig(env, argv), devtool(env))
+  return [renderer, main, preload]
 }

@@ -22,23 +22,36 @@ const sourceHandlers = (sources, layers) => {
  *
  */
 const sendPreview = (services, map) => {
-  const { ipcRenderer } = services
-
   // Adapted from: https://openlayers.org/en/latest/examples/export-map.html
   const draw = context => canvas => {
     if (canvas.width > 0) {
-      const opacity = canvas.parentNode.style.opacity
+      const opacity = canvas.parentNode.style.opacity || canvas.style.opacity
       context.globalAlpha = opacity === '' ? 1 : Number(opacity)
       const transform = canvas.style.transform
 
-      // Get the transform parameters from the style's transform matrix
-      const matrix = transform
-        .match(/^matrix\(([^(]*)\)$/)[1]
-        .split(',')
-        .map(Number)
+      if (transform) {
+        // Get the transform parameters from the style's transform matrix
+        const matrix = transform
+          .match(/^matrix\(([^(]*)\)$/)[1]
+          .split(',')
+          .map(Number)
+        CanvasRenderingContext2D.prototype.setTransform.apply(context, matrix)
+      } else {
+        // WebGL canvases may not have a CSS transform; derive from size ratio
+        const matrix = [
+          parseFloat(canvas.style.width) / canvas.width,
+          0, 0,
+          parseFloat(canvas.style.height) / canvas.height,
+          0, 0
+        ]
+        CanvasRenderingContext2D.prototype.setTransform.apply(context, matrix)
+      }
 
-      // Apply the transform to the export map context
-      CanvasRenderingContext2D.prototype.setTransform.apply(context, matrix)
+      const backgroundColor = canvas.parentNode.style.backgroundColor
+      if (backgroundColor) {
+        context.fillStyle = backgroundColor
+        context.fillRect(0, 0, canvas.width, canvas.height)
+      }
       context.drawImage(canvas, 0, 0)
     }
   }
@@ -49,12 +62,16 @@ const sendPreview = (services, map) => {
   canvas.height = size[1]
   const context = canvas.getContext('2d')
 
-  const list = document.querySelectorAll('.ol-layer canvas')
+  // Match both child canvases (.ol-layer canvas) and WebGL canvases
+  // that ARE the layer element (canvas.ol-layer).
+  const list = map.getViewport().querySelectorAll('.ol-layer canvas, canvas.ol-layer')
   Array.prototype.forEach.call(list, draw(context))
+  context.globalAlpha = 1
+  context.setTransform(1, 0, 0, 1, 0, 0)
 
   try {
     const url = canvas.toDataURL()
-    ipcRenderer.send('PREVIEW', url)
+    window.odin.shell.sendPreview(url)
   } finally {
     canvas.remove()
   }
@@ -108,7 +125,7 @@ const mapHandlers = (services, map) => {
  *
  */
 const ipcHandlers = (services, sources) => {
-  const { ipcRenderer, selection } = services
+  const { selection } = services
   const { visibleSource } = sources
 
   const selectAll = () => {
@@ -122,7 +139,7 @@ const ipcHandlers = (services, sources) => {
     selection.select(ids)
   }
 
-  ipcRenderer.on('EDIT_SELECT_ALL', selectAll)
+  window.odin.editing.onSelectAll(selectAll)
 }
 
 

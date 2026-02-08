@@ -89,7 +89,7 @@ const useDragAndDrop = (id, acceptDrop) => {
  *
  */
 const useController = id => {
-  const { emitter, ipcRenderer, store, featureStore } = useServices()
+  const { emitter, store, featureStore } = useServices()
 
   const center = async id => {
     const center = await featureStore.center(id)
@@ -108,8 +108,8 @@ const useController = id => {
 
   const scopes = {
     symbol: id => emitter.emit('command/entry/draw', { id }),
-    'link+layer': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
-    'link+feature': async id => (await store.values([id])).forEach(link => ipcRenderer.send('OPEN_LINK', link)),
+    'link+layer': async id => (await store.values([id])).forEach(link => window.odin.shell.openLink(link)),
+    'link+feature': async id => (await store.values([id])).forEach(link => window.odin.shell.openLink(link)),
     marker: async id => {
       const markers = await store.values([id])
       if (markers.length !== 1) return
