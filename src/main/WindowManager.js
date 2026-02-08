@@ -13,7 +13,7 @@ const url = (() => {
 
   return (hot && notCold)
     ? new URL('index.html', 'http://localhost:8080')
-    : new URL(paths.staticIndexPage, 'file:')
+    : new URL('index.html', 'app://odin/')
 })()
 
 
@@ -75,7 +75,6 @@ WindowManager.prototype.createWindow = function (options) {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
-        webSecurity: false,
 
         // See: https://github.com/electron/electron/issues/28511
         nativeWindowOpen: true,

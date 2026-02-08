@@ -1,5 +1,6 @@
 import * as R from 'ramda'
-import { app, ipcMain, shell, BrowserWindow } from 'electron'
+import { app, ipcMain, shell, BrowserWindow, protocol, session, net } from 'electron'
+import path from 'path'
 import URL from 'url'
 import { initPaths } from './paths'
 import { transferLegacy } from './legacy/transfer'
@@ -25,6 +26,55 @@ const ready = async () => {
   // read environment variables from .env file and add to process.env
   dotenv.config({ debug: false, quiet: true, path: paths.dotenv })
 
+  // Register app:// protocol handler to serve static files from dist/.
+  const distPath = path.join(app.getAppPath(), 'dist')
+  protocol.handle('app', (request) => {
+    const requestURL = new globalThis.URL(request.url)
+    const filePath = path.join(distPath, path.normalize(requestURL.pathname))
+    if (!filePath.startsWith(distPath)) {
+      return new Response('Forbidden', { status: 403 })
+    }
+    return net.fetch('file://' + filePath)
+  })
+
+  // Inject Content-Security-Policy and augment CORS headers.
+  const csp = [
+    'default-src \'self\'',
+    'script-src \'self\'',
+    'style-src \'self\' \'unsafe-inline\'',
+    'img-src \'self\' https: http: data: blob:',
+    'connect-src \'self\' https: http: ws: wss:',
+    'font-src \'self\'',
+    'worker-src \'self\' blob:',
+    'child-src \'self\' blob:',
+    'frame-src \'none\'',
+    'base-uri \'self\'',
+    'form-action \'self\''
+  ].join('; ')
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const headers = { ...details.responseHeaders }
+
+    // Add CSP to app-origin and dev-server responses.
+    const isAppOrigin = details.url.startsWith('app://') ||
+      details.url.startsWith('http://localhost')
+    if (isAppOrigin) {
+      headers['Content-Security-Policy'] = [csp]
+    }
+
+    // Add CORS header to external responses that don't already include it.
+    if (!isAppOrigin && !details.url.startsWith('file://')) {
+      const hasACAllowOrigin = Object.keys(headers).some(
+        key => key.toLowerCase() === 'access-control-allow-origin'
+      )
+      if (!hasACAllowOrigin) {
+        headers['Access-Control-Allow-Origin'] = ['*']
+      }
+    }
+
+    callback({ responseHeaders: headers })
+  })
+
   // Open/create master database.
   paths.initStorageLocation()
   const db = leveldb({ location: paths.master, encoding: 'json' })
@@ -45,7 +95,7 @@ const ready = async () => {
   }
 
   const windowManager = new WindowManager()
-  const session = new Session({ sessionStore, projectStore, windowManager })
+  const appSession = new Session({ sessionStore, projectStore, windowManager })
   const menu = new ApplicationMenu({ sessionStore, projectStore })
   const collaboration = new Collaboration({ sessionStore, projectStore, windowManager })
   const preferencesProvider = new PreferencesProvider(windowManager, ipcMain)
@@ -60,13 +110,13 @@ const ready = async () => {
     menu.show(preferences)
   })
 
-  menu.on('project/open/:key', ({ key }) => session.openProject(key))
-  menu.on('project/create', () => session.createProject())
+  menu.on('project/open/:key', ({ key }) => appSession.openProject(key))
+  menu.on('project/create', () => appSession.createProject())
   menu.on('collaboration/enable', () => collaboration.login())
   menu.on('collaboration/disable', () => collaboration.logout())
 
   windowManager.on('window/closed/:id', ({ id }) => {
-    session.windowClosed(id)
+    appSession.windowClosed(id)
     if (id.startsWith('project:')) {
       projectStore.removeTag(id, 'open')
       const splash = windowManager.windowFromHandle('splash')
@@ -88,7 +138,7 @@ const ready = async () => {
   })
 
   ipcMain.on('OPEN_PROJECT', (event, key) => {
-    session.openProject(key)
+    appSession.openProject(key)
   })
 
   ipcMain.on('OPEN_LINK', async (event, link) => {
@@ -122,7 +172,7 @@ const ready = async () => {
 
   ipcMain.on('EXPORT_LAYER', exportLayer)
 
-  await session.restore()
+  await appSession.restore()
   await menu.show()
 
   if (isEnabled('ODIN_SELF_UPDATE', true)) {
@@ -151,6 +201,19 @@ const run = () => {
   app.on('window-all-closed', windowAllClosed)
 }
 
+
+// Register custom protocol scheme before app is ready.
+// Must be called before app.ready per Electron requirements.
+protocol.registerSchemesAsPrivileged([{
+  scheme: 'app',
+  privileges: {
+    standard: true,
+    secure: true,
+    supportFetchAPI: true,
+    corsEnabled: true,
+    stream: true
+  }
+}])
 
 // Run application when lock can be acquired,
 // else exit immediately (second instance).

@@ -141,7 +141,7 @@ const devServer = env => {
 
 const devtool = env => {
   if (env.production) return ({ devtool: 'source-map' })
-  else return ({ devtool: 'eval-source-map' })
+  else return ({ devtool: 'source-map' })
 }
 
 module.exports = (env, argv) => {
