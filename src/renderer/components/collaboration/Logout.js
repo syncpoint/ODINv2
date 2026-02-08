@@ -1,5 +1,4 @@
 import React from 'react'
-import { ipcRenderer } from 'electron'
 import './collaboration.css'
 
 export const Logout = () => {
@@ -7,9 +6,9 @@ export const Logout = () => {
   const handleLogout = async () => {
     console.log('logging out')
 
-    await ipcRenderer.invoke('PURGE_COLLABORATION_SETTINGS')
-    ipcRenderer.postMessage('REFRESH_MENU')
-    ipcRenderer.postMessage('CLOSE_WINDOW', 'logout')
+    await window.odin.collaboration.purge()
+    window.odin.window.refreshMenu()
+    window.odin.window.close('logout')
   }
 
   return (

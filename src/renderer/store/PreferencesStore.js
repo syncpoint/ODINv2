@@ -6,30 +6,31 @@ const COORDINATES_FORMAT = 'coordinates-format'
 const GRATICULE = 'graticule'
 const TILE_LAYERS = 'tile-layers'
 
-export default function PreferencesStore (preferencesDB, ipcRenderer) {
+export default function PreferencesStore (preferencesDB, prefsBridge) {
   Emitter.call(this)
   this.preferencesDB = preferencesDB
-  this.ipcRenderer = ipcRenderer
 
   ;(async () => {
     const tuples = await L.tuples(preferencesDB)
-    ipcRenderer.send('ipc:put:preferences', tuples)
+    prefsBridge.putAll(tuples)
   })()
 
   preferencesDB.on('put', (key, value) => {
-    ipcRenderer.send('ipc:post:preferences', key, value)
+    prefsBridge.post(key, value)
     this.emit(key, { value })
   })
 
   preferencesDB.on('del', key => {
-    ipcRenderer.send('ipc:del:preferences', key)
+    prefsBridge.del(key)
     this.emit(key, { value: undefined })
   })
 
-  ipcRenderer.on('VIEW_COORDINATES_FORMAT', (_, format) => this.setCoordinatesFromat(format))
-  ipcRenderer.on('VIEW_GRATICULE', (_, type, checked) => this.setGraticule(type, checked))
-  ipcRenderer.on('VIEW_SHOW_SIDEBAR', (_, checked) => this.showSidebar(checked))
-  ipcRenderer.on('VIEW_SHOW_TOOLBAR', (_, checked) => this.showToolbar(checked))
+  this.unsubscribers = [
+    prefsBridge.onViewCoordinatesFormat(format => this.setCoordinatesFromat(format)),
+    prefsBridge.onViewGraticule((type, checked) => this.setGraticule(type, checked)),
+    prefsBridge.onViewShowSidebar(checked => this.showSidebar(checked)),
+    prefsBridge.onViewShowToolbar(checked => this.showToolbar(checked))
+  ]
 }
 
 util.inherits(PreferencesStore, Emitter)

@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import util from 'util'
-import path from 'path'
 import { reproject } from 'reproject'
 import Emitter from '../shared/emitter'
 import * as ID from './ids'
@@ -36,7 +35,7 @@ DragAndDrop.prototype.drop = async function (event) {
   event.stopPropagation()
 
   const files = [...event.dataTransfer.files]
-  const extensions = R.groupBy(file => path.extname(file.name), files)
+  const extensions = R.groupBy(file => window.odin.platform.pathExtname(file.name), files)
   Object.entries(extensions).forEach(([extension, files]) => {
     const key = extension.substring(1)
     if (this[key]) this[key](files)
@@ -71,7 +70,7 @@ DragAndDrop.prototype.importGeoJSON = function (geoJSON, files, extension) {
     const tuples = []
 
     // Layer.
-    const basename = path.basename(files[index].name, extension)
+    const basename = window.odin.platform.pathBasename(files[index].name, extension)
     const layerId = ID.layerId()
     const value = { name: collection.name || basename }
     tuples.push([layerId, value])

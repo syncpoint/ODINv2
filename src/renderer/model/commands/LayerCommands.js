@@ -1,4 +1,3 @@
-import { ipcRenderer } from 'electron'
 import { reproject } from 'reproject'
 import { readEntries } from '../../Clipboard'
 import EventEmitter from '../../../shared/emitter'
@@ -113,10 +112,10 @@ const createExportLayerCommand = (format) => {
 
     if (this.format === 'geojson') {
       const content = toGeoJSON(entries, layer.name)
-      ipcRenderer.send('EXPORT_LAYER', layer.name, content, 'geojson')
+      window.odin.shell.exportLayer(layer.name, content, 'geojson')
     } else {
       const content = { contentType: 'application/json;vnd=odin', entries }
-      ipcRenderer.send('EXPORT_LAYER', layer.name, content, 'odin')
+      window.odin.shell.exportLayer(layer.name, content, 'odin')
     }
   }
 

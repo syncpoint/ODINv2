@@ -1,5 +1,3 @@
-import path from 'path'
-import { ipcRenderer } from 'electron'
 import * as L from '../../shared/level'
 import EventEmitter from '../../shared/emitter'
 import SessionStore from '../store/SessionStore'
@@ -37,14 +35,11 @@ export default async projectUUID => {
   const selection = new Selection()
   const undo = new Undo()
 
-  const databases = (() => {
-    const entry = process.argv.find(s => s.startsWith('--databases='))
-    if (entry) return entry.split('=')[1]
-  })()
+  const databases = window.odin.platform.databases
 
   const emitter = new EventEmitter()
 
-  const location = path.join(databases, projectUUID)
+  const location = window.odin.platform.pathJoin(databases, projectUUID)
   const db = L.leveldb({ location })
 
   const jsonDB = L.jsonDB(db)
@@ -55,9 +50,9 @@ export default async projectUUID => {
   const store = new Store(jsonDB, wkbDB, undo, selection)
 
   // PUSH/PULL interface, replicates to main process
-  const preferencesStore = new PreferencesStore(preferencesDB, ipcRenderer)
+  const preferencesStore = new PreferencesStore(preferencesDB, window.odin.preferences)
   const sessionStore = new SessionStore(sessionDB)
-  const projectStore = new ProjectStore(ipcRenderer)
+  const projectStore = new ProjectStore(window.odin.projects, window.odin.replication)
   const tileLayerStore = new TileLayerStore(store)
   const sseLayerStore = new SSELayerStore(store)
   const spatialIndex = new SpatialIndex(wkbDB)
@@ -75,20 +70,19 @@ export default async projectUUID => {
   const activeElement = () => document.activeElement
   const inputFocused = () => inputTypes.some(type => (activeElement() instanceof type))
 
-  ipcRenderer.on('EDIT_UNDO', () => {
-    if (inputFocused()) return ipcRenderer.send('DO_UNDO')
+  window.odin.editing.onUndo(() => {
+    if (inputFocused()) return window.odin.editing.doUndo()
     if (undo.canUndo()) undo.undo()
   })
 
-  ipcRenderer.on('EDIT_REDO', () => {
-    if (inputFocused()) return ipcRenderer.send('DO_REDO')
+  window.odin.editing.onRedo(() => {
+    if (inputFocused()) return window.odin.editing.doRedo()
     if (undo.canRedo()) undo.redo()
   })
 
   const dragAndDrop = new DragAndDrop(store)
 
   services.emitter = emitter
-  services.ipcRenderer = ipcRenderer
   services.sessionStore = sessionStore
   services.undo = undo
   services.selection = selection

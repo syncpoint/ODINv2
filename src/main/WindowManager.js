@@ -1,9 +1,11 @@
 import util from 'util'
+import path from 'path'
 import { BrowserWindow, app } from 'electron'
 import { initPaths } from './paths'
 import Emitter from '../shared/emitter'
 
 const paths = initPaths(app)
+const preloadPath = path.join(app.getAppPath(), 'dist', 'preload.js')
 
 const url = (() => {
   const notCold = process.argv.indexOf('--cold') === -1
@@ -75,6 +77,7 @@ WindowManager.prototype.createWindow = function (options) {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
+        preload: preloadPath,
 
         // See: https://github.com/electron/electron/issues/28511
         nativeWindowOpen: true,

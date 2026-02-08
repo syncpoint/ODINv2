@@ -130,7 +130,12 @@ const toPDF = async (dataURL, settings) => {
     10
   )
 
-  return pdfDocument.save(settings.pdfFileName || 'ODINv2-MAP.pdf', { returnPromise: true })
+  const pdfData = pdfDocument.output('arraybuffer')
+  return window.odin.shell.saveFile(
+    settings.pdfFileName || 'ODINv2-MAP.pdf',
+    new Uint8Array(pdfData),
+    [{ name: 'PDF', extensions: ['pdf'] }]
+  )
 }
 
 export default toPDF

@@ -1,7 +1,7 @@
 import Mousetrap from 'mousetrap'
 import 'mousetrap-global-bind'
 
-const cmdOrCtrl = key => process.platform === 'darwin'
+const cmdOrCtrl = key => window.odin.platform.isMac
   ? `command+${key}`
   : `ctrl+${key}`
 

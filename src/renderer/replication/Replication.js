@@ -20,7 +20,6 @@ const Replication = () => {
   */
   const {
     emitter,
-    ipcRenderer,
     preferencesStore,
     selection,
     sessionStore,
@@ -151,7 +150,7 @@ const Replication = () => {
         setOffline(true)
         feedback('Replication error: ', error.message)
         await sessionStore.del(KEYS.CREDENTIALS, null)
-        ipcRenderer.postMessage('RELOAD_ALL_WINDOWS')
+        window.odin.collaboration.reloadAllWindows()
       }
     }
 

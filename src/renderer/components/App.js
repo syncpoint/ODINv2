@@ -8,10 +8,7 @@ import { Login } from './collaboration/Login'
 import { Logout } from './collaboration/Logout'
 import * as R from 'ramda'
 
-const page = (() => {
-  const entry = process.argv.find(s => s.startsWith('--page='))
-  if (entry) return entry.split('=')[1]
-})()
+const page = window.odin.platform.page
 
 const projectUUID = page => page.split(':')[1]
 

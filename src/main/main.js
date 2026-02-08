@@ -1,5 +1,6 @@
 import * as R from 'ramda'
-import { app, ipcMain, shell, BrowserWindow, protocol, session, net } from 'electron'
+import { app, dialog, ipcMain, shell, BrowserWindow, protocol, session, net } from 'electron'
+import fs from 'fs'
 import path from 'path'
 import URL from 'url'
 import { initPaths } from './paths'
@@ -171,6 +172,17 @@ const ready = async () => {
   ipcMain.on('COLLABORATION_REFRESH_LOGIN', () => collaboration.login())
 
   ipcMain.on('EXPORT_LAYER', exportLayer)
+
+  ipcMain.handle('SAVE_FILE', async (event, fileName, data, filters) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    const { canceled, filePath } = await dialog.showSaveDialog(window, {
+      defaultPath: fileName,
+      filters: filters || []
+    })
+    if (canceled || !filePath) return false
+    await fs.promises.writeFile(filePath, Buffer.from(data))
+    return true
+  })
 
   await appSession.restore()
   await menu.show()
