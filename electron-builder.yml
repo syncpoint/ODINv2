@@ -13,7 +13,8 @@ win:
       arch:
         - x64
   icon: 'build/icon.ico'
-  certificateSha1 : '1a3e4e05664fb6620fea6845ca646601694c5b17'
+  signtoolOptions:
+    certificateSha1: '1a3e4e05664fb6620fea6845ca646601694c5b17'
 nsis:
   perMachine: false
   oneClick: false
@@ -50,4 +51,4 @@ publish:
   - provider: github
     releaseType: release
 
-electronVersion: 38.8.0
+electronVersion: 40.2.1
