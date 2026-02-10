@@ -14,7 +14,8 @@ win:
         - x64
   icon: 'build/icon.ico'
   signtoolOptions:
-    certificateSha1: '1a3e4e05664fb6620fea6845ca646601694c5b17'
+    certificateSubjectName: 'Syncpoint GmbH'
+    certificateSha1: 'BAEDE2D879711151FAFF7E5B11AC2F339A7E4096'
 nsis:
   perMachine: false
   oneClick: false
