@@ -22,7 +22,7 @@ export default ({ map, services }) => {
     currentDraw = null
   }
 
-  const addDrawInteraction = (geometryType) => {
+  const addDrawInteraction = (geometryType, options = {}) => {
     cancel()
     emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
 
@@ -35,12 +35,26 @@ export default ({ map, services }) => {
       // Remove any SIDC — this is a plain shape
       delete geoJSON.properties?.sidc
 
-      // Set a default name based on geometry type
-      const typeName = geometryType === GeometryType.POLYGON ? 'Polygon' : 'Line'
-      geoJSON.name = `${typeName} - ${militaryFormat.now()}`
+      if (options.isTextShape) {
+        geoJSON.name = `Text - ${militaryFormat.now()}`
+        geoJSON.properties = {
+          type: 'TEXT_SHAPE',
+          text: 'Text',
+          'text-color': '#000000',
+          'background-color': '#FFFFFF',
+          'background-opacity': 0.8,
+          'font-size': 14,
+          rotation: 0,
+          'reference-resolution': map.getView().getResolution()
+        }
+      } else {
+        // Set a default name based on geometry type
+        const typeName = geometryType === GeometryType.POLYGON ? 'Polygon' : 'Line'
+        geoJSON.name = `${typeName} - ${militaryFormat.now()}`
 
-      // Ensure properties exist but are clean (no military semantics)
-      geoJSON.properties = {}
+        // Ensure properties exist but are clean (no military semantics)
+        geoJSON.properties = {}
+      }
 
       // Insert as a regular feature in the default layer
       store.insertGeoJSON([geoJSON])
@@ -61,6 +75,10 @@ export default ({ map, services }) => {
 
   emitter.on('DRAW_SHAPE_POLYGON', () => {
     addDrawInteraction(GeometryType.POLYGON)
+  })
+
+  emitter.on('DRAW_SHAPE_TEXT', () => {
+    addDrawInteraction(GeometryType.POINT, { isTextShape: true })
   })
 
   emitter.on('command/draw/cancel', ({ originatorId }) => {

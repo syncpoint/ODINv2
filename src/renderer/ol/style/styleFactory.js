@@ -175,8 +175,19 @@ const makeIcon = props => {
   return Styles.icon(options)
 }
 
+const makeCanvasIcon = props => {
+  return Styles.icon({
+    img: props['icon-image'],
+    imgSize: [props['icon-image'].width, props['icon-image'].height],
+    rotation: props['icon-rotation'] || 0,
+    rotateWithView: props['icon-rotation-with-view'] || false,
+    scale: props['icon-scale'] || (1 / (window.devicePixelRatio || 1))
+  })
+}
+
 const makeImage = props => {
-  if (props['circle-radius']) return makeCircle(props)
+  if (props['icon-image']) return makeCanvasIcon(props)
+  else if (props['circle-radius']) return makeCircle(props)
   else if (props['shape-radius']) return makeShape(props)
   else if (props['symbol-code']) return makeSymbol(props)
   else if (props['icon-url']) return makeIcon(props)
