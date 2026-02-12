@@ -23,15 +23,15 @@ export default $ => {
 
   // Build shape styles based on effective style (which includes featureStyle)
   $.shape = Signal.link((geometry, geometryType, effectiveStyle) => {
-    const lineDash = effectiveStyle['line-dash']
+    const lineDash = effectiveStyle['line-dash'] || 'solid'
     const dashArray = lineDash === 'dashed'
       ? [14, 6]
       : lineDash === 'dotted'
         ? [2, 6]
         : undefined
 
-    const lineColor = effectiveStyle['line-color']
-    const lineWidth = effectiveStyle['line-width']
+    const lineColor = effectiveStyle['line-color'] || '#000000'
+    const lineWidth = effectiveStyle['line-width'] || 2
 
     const styles = [{
       id: 'style:shape/stroke',
@@ -41,7 +41,7 @@ export default $ => {
       ...(dashArray ? { 'line-dash-array': dashArray } : {})
     }]
 
-    // Add fill for polygons
+    // Add fill for polygons (default: transparent — no fill unless explicitly set)
     if (geometryType === 'Polygon' && effectiveStyle['fill-color']) {
       const fillOpacity = effectiveStyle['fill-opacity'] !== undefined
         ? effectiveStyle['fill-opacity']

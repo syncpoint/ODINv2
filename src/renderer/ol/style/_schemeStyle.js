@@ -5,6 +5,9 @@ import { identityCode, statusCode } from '../../symbology/2525c'
  *
  */
 export default (sidc, colorScheme) => {
+  // No scheme style for features without SIDC (e.g. shapes)
+  if (!sidc) return {}
+
   const status = statusCode(sidc)
   const identity = identityCode(sidc)
   const simpleIdentity = identity === 'H' || identity === 'S'
