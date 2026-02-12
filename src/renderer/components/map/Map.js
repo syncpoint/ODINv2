@@ -71,6 +71,9 @@ export const Map = () => {
     measure({ services, map })
     shapeInteraction({ services, map })
     elevationProfile({ services, map })
+
+    // Expose a function to query the current map resolution.
+    services.getMapResolution = () => map.getView().getResolution()
   }
 
   /* eslint-disable react-hooks/exhaustive-deps */

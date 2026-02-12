@@ -19,6 +19,7 @@ import SKKMStandardProperties from './SKKMStandardProperties'
 import SKKMUnitProperties from './SKKMUnitProperties'
 import SKKMCommandProperties from './SKKMCommandProperties'
 import ShapeProperties from './ShapeProperties'
+import TextShapeProperties from './TextShapeProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -30,6 +31,7 @@ const propertiesPanels = {
   'feature:BOUNDARIES': props => <BoundariesProperties {...props}/>,
   'feature:POINT': props => <PointProperties {...props}/>,
   'feature:SHAPE': props => <ShapeProperties {...props}/>,
+  'feature:TEXT_SHAPE': props => <TextShapeProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
   'tile-preset': props => <TilePresetProperties {...props}/>,

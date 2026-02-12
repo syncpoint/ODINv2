@@ -63,6 +63,7 @@ const textBoundingBox = (resolution, style) => {
 const iconBoundingBox = (resolution, style) => {
   const scale = style['icon-scale']
   if (!scale) return null
+  if (!style['icon-width'] || !style['icon-height']) return null
 
   const width = style['icon-width'] * scale / 4
   const height = style['icon-height'] * scale / 4

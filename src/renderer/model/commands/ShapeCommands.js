@@ -1,5 +1,5 @@
 /**
- * Commands for drawing shapes (lines and polygons without military semantics).
+ * Commands for drawing shapes (lines, polygons, and text without military semantics).
  */
 
 const DrawShapeLine = function (services) {
@@ -24,7 +24,19 @@ DrawShapePolygon.prototype.execute = function () {
 }
 
 
+const DrawShapeText = function (services) {
+  this.emitter = services.emitter
+  this.label = 'Place Text'
+  this.path = 'mdiFormatText'
+}
+
+DrawShapeText.prototype.execute = function () {
+  this.emitter.emit('DRAW_SHAPE_TEXT')
+}
+
+
 export default services => ({
   DRAW_SHAPE_LINE: new DrawShapeLine(services),
-  DRAW_SHAPE_POLYGON: new DrawShapePolygon(services)
+  DRAW_SHAPE_POLYGON: new DrawShapePolygon(services),
+  DRAW_SHAPE_TEXT: new DrawShapeText(services)
 })

@@ -11,6 +11,7 @@ import corridor from './corridor'
 import marker from './marker'
 import measure from './measure'
 import shape from './shape'
+import textShape from './text-shape'
 import fallback from './fallback'
 import { styleFactory } from './styleFactory'
 import * as ID from '../../ids'
@@ -47,11 +48,13 @@ export default feature => {
   const featureId = feature.getId()
   const geometryType = Geometry.geometryType(feature.getGeometry())
   const properties = feature.getProperties()
+  const isTextShape = properties?.type === 'TEXT_SHAPE' && geometryType === 'Point'
   const isShape = !properties?.sidc && !properties?.svg &&
     (geometryType === 'LineString' || geometryType === 'Polygon')
 
   if (ID.isMarkerId(featureId)) return marker($)
   else if (ID.isMeasureId(featureId)) return measure($)
+  else if (isTextShape) return textShape($)
   else if (isShape) return shape($)
   else if (geometryType === 'Point') return symbol($)
   else if (geometryType === 'Polygon') return polygon($)
