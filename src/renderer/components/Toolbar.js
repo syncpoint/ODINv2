@@ -42,6 +42,11 @@ export const Toolbar = () => {
     commandRegistry.command('SSE_SERVICE_CREATE')
   ]
 
+  const shapeCommands = [
+    commandRegistry.command('DRAW_SHAPE_LINE'),
+    commandRegistry.command('DRAW_SHAPE_POLYGON')
+  ]
+
   const measureCommands = [
     commandRegistry.command('MEASURE_DISTANCE'),
     commandRegistry.command('MEASURE_AREA'),
@@ -74,6 +79,7 @@ export const Toolbar = () => {
           })
         }
         <DropdownMenu path='mdiExport' options={exportCommands} toolTip='Export layer...' command={exportOdinCommand[1]} />
+        <DropdownMenu path='mdiShapeOutline' options={shapeCommands} toolTip='Draw shapes ...'/>
         <DropdownMenu path='mdiAndroidStudio' options={measureCommands} toolTip='Measure ...'/>
         {
           replicationCommands.map(([key, command]) => {

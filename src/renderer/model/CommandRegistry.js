@@ -5,6 +5,7 @@ import clipboardCommands from './commands/ClipboardCommands'
 import layerCommands from './commands/LayerCommands'
 import creationCommand from './commands/CreationCommands'
 import measureCommands from './commands/MeasureCommands'
+import shapeCommands from './commands/ShapeCommands'
 import elevationProfileCommands from './commands/ElevationProfileCommands'
 import printCommands from './commands/PrintCommands'
 import replicationCommands from './commands/ReplicationCommands'
@@ -20,6 +21,7 @@ export function CommandRegistry (services) {
   Object.assign(this, layerCommands(services))
   Object.assign(this, creationCommand(services))
   Object.assign(this, measureCommands(services))
+  Object.assign(this, shapeCommands(services))
   Object.assign(this, elevationProfileCommands(services))
   Object.assign(this, printCommands(services))
   Object.assign(this, replicationCommands(services))

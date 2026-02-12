@@ -11,6 +11,23 @@ const identityTag = R.cond([
   [R.T, R.always([])]
 ])
 
+/**
+ * Check if a feature is a shape (line/polygon without military semantics).
+ */
+const isShape = feature => {
+  const properties = feature?.properties || {}
+  if (properties.sidc) return false
+  const geomType = feature?.geometry?.type
+  return geomType === 'LineString' || geomType === 'Polygon'
+}
+
+const shapeGeometryLabel = feature => {
+  const geomType = feature?.geometry?.type
+  if (geomType === 'LineString') return 'Line'
+  if (geomType === 'Polygon') return 'Polygon'
+  return 'Shape'
+}
+
 export default async function (id) {
   const keys = [R.identity, ID.layerId, ID.hiddenId, ID.lockedId, ID.restrictedId, ID.tagsId]
   const [feature, layer, hidden, locked, restricted, tags] = await this.store.collect(id, keys)
@@ -18,6 +35,38 @@ export default async function (id) {
 
   const properties = feature.properties || {}
   const sidc = properties.sidc
+
+  // Handle shapes (features without military semantics)
+  if (isShape(feature)) {
+    const geomType = feature.geometry?.type
+    const geometryTag = geomType === 'Polygon'
+      ? 'SYSTEM:polygon'
+      : 'SYSTEM:linestring:NONE'
+
+    const description = layer?.name
+      ? layer.name.toUpperCase() + ' ⏤ ' + shapeGeometryLabel(feature)
+      : shapeGeometryLabel(feature)
+
+    return {
+      id,
+      title: feature.name || shapeGeometryLabel(feature),
+      description,
+      // No military symbol SVG — use MDI icon path instead
+      path: geomType === 'Polygon' ? 'mdiVectorPolygon' : 'mdiVectorLine',
+      tags: [
+        'SCOPE:FEATURE',
+        hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
+        restricted ? 'SYSTEM:RESTRICTED:NONE:mdiShieldLockOutline' : (locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline'),
+        ...(links.length ? ['SYSTEM:LINK::mdiLinkVariant'] : []),
+        geometryTag,
+        'SYSTEM:SHAPE:NONE',
+        ...(tags || []).map(label => `USER:${label}:NONE::${!restricted ?? false}`),
+        restricted ? undefined : 'PLUS'
+      ].filter(Boolean).join(' '),
+      capabilities: restricted ? 'FOLLOW' : 'RENAME|DROP|FOLLOW'
+    }
+  }
+
   const descriptor = MILSTD.descriptor(sidc)
   const dimensions = descriptor ? descriptor.dimensions : []
   const scope = descriptor && descriptor.scope ? [descriptor.scope] : []
