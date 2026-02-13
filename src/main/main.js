@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { app, dialog, ipcMain, shell, BrowserWindow, protocol, session, net } from 'electron'
 import fs from 'fs'
 import path from 'path'
@@ -143,16 +142,12 @@ const ready = async () => {
   })
 
   ipcMain.on('OPEN_LINK', async (event, link) => {
-    const fileURLToPath = URL.fileURLToPath
-    const openPath = shell.openPath
-    const openExternal = url => shell.openExternal(url, { activate: true })
-
-    const open =
-      link.url.startsWith('file:')
-        ? R.compose(openPath, fileURLToPath)
-        : openExternal
-
-    open(link.url)
+    if (link.url.startsWith('file:')) {
+      const filePath = URL.fileURLToPath(link.url)
+      await shell.openPath(filePath)
+    } else {
+      shell.openExternal(link.url, { activate: true })
+    }
   })
 
   ipcMain.on('RELOAD_ALL_WINDOWS', () => {

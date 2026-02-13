@@ -8,3 +8,4 @@ dist/
 jsdoc/
 .vscode
 .env
+docs/mdview*.html
