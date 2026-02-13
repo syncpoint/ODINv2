@@ -44,7 +44,8 @@ export const Toolbar = () => {
 
   const shapeCommands = [
     commandRegistry.command('DRAW_SHAPE_LINE'),
-    commandRegistry.command('DRAW_SHAPE_POLYGON')
+    commandRegistry.command('DRAW_SHAPE_POLYGON'),
+    commandRegistry.command('DRAW_SHAPE_TEXT')
   ]
 
   const measureCommands = [

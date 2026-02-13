@@ -12,13 +12,29 @@ const identityTag = R.cond([
 ])
 
 /**
- * Check if a feature is a shape (line/polygon without military semantics).
+ * Check if a feature is a text shape.
  */
-const isShape = feature => {
+const isTextShape = feature => {
+  return feature?.properties?.type === 'TEXT_SHAPE'
+}
+
+/**
+ * Check if a feature is a shape (line/polygon without military semantics).
+ * Geometry is passed separately since it's stored in wkbDB.
+ */
+const isShape = (feature, geometry) => {
   const properties = feature?.properties || {}
   if (properties.sidc) return false
-  const geomType = feature?.geometry?.type
+  if (isTextShape(feature)) return false
+  const geomType = geometry?.type || feature?.geometry?.type
   return geomType === 'LineString' || geomType === 'Polygon'
+}
+
+/**
+ * Get geometry type from separately loaded geometry or feature.
+ */
+const getGeomType = (feature, geometry) => {
+  return geometry?.type || feature?.geometry?.type
 }
 
 const shapeGeometryLabel = feature => {
@@ -33,15 +49,43 @@ export default async function (id) {
   const [feature, layer, hidden, locked, restricted, tags] = await this.store.collect(id, keys)
   const links = await this.store.keys(ID.prefix('link')(id))
 
+  // Geometry is stored separately in wkbDB — load it for shape detection.
+  const geometry = await this.store.geometry(id).catch(() => null)
+
   const properties = feature.properties || {}
   const sidc = properties.sidc
 
+  // Handle text shapes
+  if (isTextShape(feature)) {
+    const description = layer?.name
+      ? layer.name.toUpperCase() + ' ⏤ Text'
+      : 'Text'
+
+    return {
+      id,
+      title: feature.name || 'Text',
+      description,
+      path: 'mdiFormatText',
+      tags: [
+        'SCOPE:FEATURE',
+        hidden ? 'SYSTEM:HIDDEN::mdiEyeOff' : 'SYSTEM:VISIBLE::mdiEyeOutline',
+        restricted ? 'SYSTEM:RESTRICTED:NONE:mdiShieldLockOutline' : (locked ? 'SYSTEM:LOCKED::mdiLock' : 'SYSTEM:UNLOCKED::mdiLockOpenVariantOutline'),
+        ...(links.length ? ['SYSTEM:LINK::mdiLinkVariant'] : []),
+        'SYSTEM:TEXT:NONE',
+        'SYSTEM:SHAPE:NONE',
+        ...(tags || []).map(label => `USER:${label}:NONE::${!restricted ?? false}`),
+        restricted ? undefined : 'PLUS'
+      ].filter(Boolean).join(' '),
+      capabilities: restricted ? 'FOLLOW' : 'RENAME|DROP|FOLLOW'
+    }
+  }
+
   // Handle shapes (features without military semantics)
-  if (isShape(feature)) {
-    const geomType = feature.geometry?.type
+  if (isShape(feature, geometry)) {
+    const geomType = getGeomType(feature, geometry)
     const geometryTag = geomType === 'Polygon'
-      ? 'SYSTEM:polygon'
-      : 'SYSTEM:linestring:NONE'
+      ? 'SYSTEM:POLYGON:NONE'
+      : 'SYSTEM:LINE:NONE'
 
     const description = layer?.name
       ? layer.name.toUpperCase() + ' ⏤ ' + shapeGeometryLabel(feature)

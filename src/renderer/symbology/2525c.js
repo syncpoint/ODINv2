@@ -150,9 +150,10 @@ export const geometryType = sidc => {
 }
 
 export const className = (sidc, feature) => {
-  // Features without SIDC are shapes (plain lines/polygons).
+  // Features without SIDC are shapes (plain lines/polygons/text).
   if (!sidc) {
     if (!feature) return
+    if (feature?.properties?.type === 'TEXT_SHAPE') return 'TEXT_SHAPE'
     const geomType = feature?.geometry?.type
     if (geomType === 'LineString' || geomType === 'Polygon') return 'SHAPE'
     return
