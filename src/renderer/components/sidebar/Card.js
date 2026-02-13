@@ -48,7 +48,8 @@ const useDragAndDrop = (id, acceptDrop) => {
     // Process files first (if any):
     const [...files] = event.dataTransfer.files
     const fileLinks = files.reduce((acc, file) => {
-      const url = new URL(`file:${file.path}`)
+      const filePath = window.odin.webUtils.getPathForFile(file)
+      const url = new URL(`file:${filePath}`)
       const value = { name: file.name, url: url.href }
       acc.push([ID.linkId(id), value])
       return acc
