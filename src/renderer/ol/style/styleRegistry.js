@@ -170,5 +170,21 @@ export default (options) => {
     'icon-scale': 1
   }
 
+  // Shape styles - lines and polygons without military semantics
+  registry['style:shape/stroke'] = {
+    'line-color': options['line-color'] || '#000000',
+    'line-width': options['line-width'] || 2,
+    'line-cap': 'round',
+    'line-join': 'round'
+  }
+
+  registry['style:shape/fill'] = {
+    'line-color': options['line-color'] || '#000000',
+    'line-width': options['line-width'] || 2,
+    'line-cap': 'round',
+    'line-join': 'round',
+    'fill-color': options['fill-color']
+  }
+
   return ({ id, ...props }) => ({ ...(registry[id] || {}), ...props })
 }

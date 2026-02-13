@@ -18,6 +18,7 @@ import SSEServiceProperties from './SSEServiceProperties'
 import SKKMStandardProperties from './SKKMStandardProperties'
 import SKKMUnitProperties from './SKKMUnitProperties'
 import SKKMCommandProperties from './SKKMCommandProperties'
+import ShapeProperties from './ShapeProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -28,6 +29,7 @@ const propertiesPanels = {
   'feature:GRAPHICS': props => <GraphicsProperties {...props}/>,
   'feature:BOUNDARIES': props => <BoundariesProperties {...props}/>,
   'feature:POINT': props => <PointProperties {...props}/>,
+  'feature:SHAPE': props => <ShapeProperties {...props}/>,
   marker: props => <MarkerProperties {...props}/>,
   'tile-service': props => <TileServiceProperties {...props}/>,
   'tile-preset': props => <TilePresetProperties {...props}/>,
@@ -49,7 +51,7 @@ const propertiesClasses = features => Object
   .reduce((acc, [key, value]) => {
     const push = name => name && R.tap(acc => acc.push(name), acc)
     const className = isFeatureId(key)
-      ? `feature:${MILSTD.className(sidc(value)) || ''}`
+      ? `feature:${MILSTD.className(sidc(value), value) || ''}`
       : scope(key)
 
     return push(className)

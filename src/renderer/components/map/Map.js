@@ -14,6 +14,7 @@ import createSSELayers from './sseLayers'
 import registerEventHandlers from './eventHandlers'
 import registerGraticules from './graticules'
 import measure from '../../ol/interaction/measure'
+import shapeInteraction from '../../ol/interaction/shape-interaction'
 import elevationProfile from '../../ol/interaction/elevation-profile'
 import print from '../print'
 import './Map.css'
@@ -68,6 +69,7 @@ export const Map = () => {
     observer.observe(ref.current)
 
     measure({ services, map })
+    shapeInteraction({ services, map })
     elevationProfile({ services, map })
   }
 

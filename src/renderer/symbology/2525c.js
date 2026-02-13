@@ -149,8 +149,14 @@ export const geometryType = sidc => {
   return descriptor && descriptor.geometry && descriptor.geometry.type
 }
 
-export const className = sidc => {
-  if (!sidc) return
+export const className = (sidc, feature) => {
+  // Features without SIDC are shapes (plain lines/polygons).
+  if (!sidc) {
+    if (!feature) return
+    const geomType = feature?.geometry?.type
+    if (geomType === 'LineString' || geomType === 'Polygon') return 'SHAPE'
+    return
+  }
   const descriptor = descriptors[parameterized(sidc)]
   if (!descriptor) return
 
