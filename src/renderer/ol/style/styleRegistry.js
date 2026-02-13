@@ -186,5 +186,8 @@ export default (options) => {
     'fill-color': options['fill-color']
   }
 
+  // Text shape style — pass through as-is (rendered via canvas)
+  registry['style:text-shape/icon'] = {}
+
   return ({ id, ...props }) => ({ ...(registry[id] || {}), ...props })
 }
