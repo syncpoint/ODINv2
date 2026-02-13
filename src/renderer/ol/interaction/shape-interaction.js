@@ -1,7 +1,6 @@
 import { Draw } from 'ol/interaction'
 import uuid from '../../../shared/uuid'
 import { writeFeatureObject } from '../../ol/format'
-import * as ID from '../../ids'
 import GeometryType from './GeometryType'
 import { militaryFormat } from '../../../shared/datetime'
 
