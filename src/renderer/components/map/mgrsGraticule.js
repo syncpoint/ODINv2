@@ -92,6 +92,54 @@ const getZonesForExtent = (lonMin, lonMax, latMin, latMax) => {
   return zones
 }
 
+// Band boundaries where zone widths change (special zones)
+// At these latitudes, clipToZone changes its clip bounds, so we need
+// extra interpolation points nearby for smooth transitions.
+const SPECIAL_BAND_LATS = [56, 64, 72, 84]
+
+/**
+ * Generate northing sample values for vertical lines, ensuring extra
+ * points near special band boundaries for smooth clipping transitions.
+ */
+const verticalLineSamples = (zone, e, n0, n1, steps) => {
+  // Generate regular samples
+  const northings = new Set()
+  for (let s = 0; s <= steps; s++) {
+    northings.add(n0 + (n1 - n0) * (s / steps))
+  }
+
+  // Add extra samples near special band boundaries
+  for (const lat of SPECIAL_BAND_LATS) {
+    // Convert lat to approximate northing using a mid-zone easting
+    const ll = (() => {
+      try {
+        const p = new LatLon(lat, (zone - 1) * 6 - 180 + 3)
+        const utm = p.toUtm()
+        return utm.northing
+      } catch (_) { return null }
+    })()
+    if (ll === null || ll < n0 || ll > n1) continue
+
+    // Add points at, just below, and just above the boundary
+    const delta = (n1 - n0) / steps / 4 // quarter step
+    for (const offset of [-delta, 0, delta]) {
+      const n = ll + offset
+      if (n >= n0 && n <= n1) northings.add(n)
+    }
+  }
+
+  // Sort and generate lon/lat points
+  const sorted = [...northings].sort((a, b) => a - b)
+  const points = []
+  for (const n of sorted) {
+    const lonlat = utmToLonLat(zone, 'N', e, n)
+    if (lonlat && lonlat[1] >= LAT_MIN && lonlat[1] <= LAT_MAX) {
+      points.push(lonlat)
+    }
+  }
+  return points
+}
+
 // Resolution thresholds (meters per pixel)
 const THRESHOLD_100K = 1200
 const THRESHOLD_10K = 120
@@ -472,12 +520,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
 
     // Vertical lines (constant easting)
     for (let e = e0; e <= e1; e += 100000) {
-      const rawPoints = []
-      for (let s = 0; s <= GRID_100K_STEPS; s++) {
-        const n = n0 + (n1 - n0) * (s / GRID_100K_STEPS)
-        const ll = utmToLonLat(z, 'N', e, n)
-        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
-      }
+      const rawPoints = verticalLineSamples(z, e, n0, n1, GRID_100K_STEPS)
       for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
@@ -599,12 +642,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     // Vertical lines (constant easting), skip 100k boundaries
     for (let e = e0; e <= e1; e += 10000) {
       if (e % 100000 === 0) continue
-      const rawPoints = []
-      for (let s = 0; s <= GRID_10K_STEPS; s++) {
-        const n = n0 + (n1 - n0) * (s / GRID_10K_STEPS)
-        const ll = utmToLonLat(z, 'N', e, n)
-        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
-      }
+      const rawPoints = verticalLineSamples(z, e, n0, n1, GRID_10K_STEPS)
       for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
@@ -727,12 +765,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
     // Vertical lines (constant easting), skip 10k/100k boundaries
     for (let e = e0; e <= e1; e += 1000) {
       if (e % 10000 === 0) continue
-      const rawPoints = []
-      for (let s = 0; s <= GRID_1K_STEPS; s++) {
-        const n = n0 + (n1 - n0) * (s / GRID_1K_STEPS)
-        const ll = utmToLonLat(z, 'N', e, n)
-        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
-      }
+      const rawPoints = verticalLineSamples(z, e, n0, n1, GRID_1K_STEPS)
       for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
