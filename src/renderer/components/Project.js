@@ -21,7 +21,7 @@ export const Project = () => {
   const { emitter } = useServices()
   const [sidebarShowing] = useMemento('ui.sidebar.showing', true)
   const [toolbarShowing] = useMemento('ui.toolbar.showing', true)
-  const [properties] = useMemento('ui.properties', '')
+  const [properties] = useMemento('ui.properties', 'properties')
 
   const [toolbarScope, setToolbarScope] = React.useState('STANDARD')
 
