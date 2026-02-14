@@ -35,10 +35,10 @@ const GRID_1K_STEPS = 3
 // --- Styles ---
 // Red tones for visibility on both light and dark basemaps.
 
-const gzdStroke = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 2.5 })
-const grid100kStroke = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 1.5 })
-const grid10kStroke = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 1 })
-const grid1kStroke = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 0.7 })
+const gzdStroke = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 3 })
+const grid100kStroke = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 2 })
+const grid10kStroke = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 1.5 })
+const grid1kStroke = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 1.2 })
 
 const gzdStyle = new Style({ stroke: gzdStroke })
 const grid100kStyle = new Style({ stroke: grid100kStroke })
@@ -399,6 +399,31 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
         features.push(f)
       }
     }
+
+    // 10k square labels — positioned at center of each 10km square
+    for (let e = e0; e < e1; e += 10000) {
+      if (e + 10000 > e1) continue
+      for (let n = n0; n < n1; n += 10000) {
+        if (n + 10000 > n1) continue
+        const centerE = e + 5000
+        const centerN = n + 5000
+        const ll = utmToLonLat(z, 'N', centerE, centerN)
+        if (!ll) continue
+        if (ll[0] < visibleLonMin || ll[0] > visibleLonMax) continue
+        if (ll[1] < visibleLatMin || ll[1] > visibleLatMax) continue
+
+        // Label: two-digit easting + two-digit northing within the 100k square
+        const eDigit = Math.floor((e % 100000) / 10000)
+        const nDigit = Math.floor((n % 100000) / 10000)
+        const text = `${eDigit}${nDigit}`
+
+        const coord = toMapCoord(ll[0], ll[1])
+        const f = new Feature({ geometry: new Point(coord) })
+        f.setStyle(labelStyle(text, 11))
+        f.set('level', '10k-label')
+        features.push(f)
+      }
+    }
   }
 
   return features
@@ -488,6 +513,31 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid1kStyle)
         f.set('level', '1k')
+        features.push(f)
+      }
+    }
+
+    // 1k square labels — positioned at center of each 1km square
+    for (let e = e0; e < e1; e += 1000) {
+      if (e + 1000 > e1) continue
+      for (let n = n0; n < n1; n += 1000) {
+        if (n + 1000 > n1) continue
+        const centerE = e + 500
+        const centerN = n + 500
+        const ll = utmToLonLat(z, 'N', centerE, centerN)
+        if (!ll) continue
+        if (ll[0] < visibleLonMin || ll[0] > visibleLonMax) continue
+        if (ll[1] < visibleLatMin || ll[1] > visibleLatMax) continue
+
+        // Label: three-digit easting + three-digit northing within the 100k square
+        const eDigit = String(Math.floor((e % 100000) / 1000)).padStart(2, '0')
+        const nDigit = String(Math.floor((n % 100000) / 1000)).padStart(2, '0')
+        const text = `${eDigit}${nDigit}`
+
+        const coord = toMapCoord(ll[0], ll[1])
+        const f = new Feature({ geometry: new Point(coord) })
+        f.setStyle(labelStyle(text, 9))
+        f.set('level', '1k-label')
         features.push(f)
       }
     }
