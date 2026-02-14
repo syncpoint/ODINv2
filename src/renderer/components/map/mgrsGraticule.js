@@ -214,42 +214,39 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
     const zoneLonMin = (z - 1) * 6 - 180
     const zoneLonMax = zoneLonMin + 6
 
-    // Determine UTM easting/northing range for visible area
     const visibleLonMin = Math.max(lonMin, zoneLonMin)
     const visibleLonMax = Math.min(lonMax, zoneLonMax)
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
 
-    // Convert corners to UTM to find easting/northing range
-    const corners = [
-      [visibleLonMin, visibleLatMin],
-      [visibleLonMax, visibleLatMin],
-      [visibleLonMin, visibleLatMax],
-      [visibleLonMax, visibleLatMax],
-      [(visibleLonMin + visibleLonMax) / 2, visibleLatMin],
-      [(visibleLonMin + visibleLonMax) / 2, visibleLatMax]
-    ]
+    // Sample multiple points to determine northing range.
+    // For easting, use the full valid UTM range (100k–900k) to avoid
+    // gaps at zone boundaries where corner points fall into adjacent zones.
+    const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
+    const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
-    let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity
+    let minN = Infinity, maxN = -Infinity
 
-    for (const [lon, lat] of corners) {
-      try {
-        const ll = new LatLon(lat, lon)
-        const utm = ll.toUtm()
-        if (utm.zone === z) {
-          minE = Math.min(minE, utm.easting)
-          maxE = Math.max(maxE, utm.easting)
-          minN = Math.min(minN, utm.northing)
-          maxN = Math.max(maxN, utm.northing)
-        }
-      } catch (e) { /* skip invalid coords */ }
+    for (const lon of sampleLons) {
+      for (const lat of sampleLats) {
+        try {
+          const ll = new LatLon(lat, lon)
+          const utm = ll.toUtm()
+          // Accept points from this zone or adjacent zones (for northing estimation)
+          if (Math.abs(utm.zone - z) <= 1) {
+            minN = Math.min(minN, utm.northing)
+            maxN = Math.max(maxN, utm.northing)
+          }
+        } catch (e) { /* skip invalid coords */ }
+      }
     }
 
-    if (minE === Infinity) continue
+    if (minN === Infinity) continue
 
-    // Snap to 100k boundaries
-    const e0 = Math.floor(minE / 100000) * 100000
-    const e1 = Math.ceil(maxE / 100000) * 100000
+    // Full valid UTM easting range for grid generation.
+    // Actual lines are clipped by lon/lat bounds during point conversion.
+    const e0 = 100000
+    const e1 = 900000
     const n0 = Math.floor(minN / 100000) * 100000
     const n1 = Math.ceil(maxN / 100000) * 100000
 
@@ -332,34 +329,45 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
 
-    const corners = [
-      [visibleLonMin, visibleLatMin],
-      [visibleLonMax, visibleLatMin],
-      [visibleLonMin, visibleLatMax],
-      [visibleLonMax, visibleLatMax],
-      [(visibleLonMin + visibleLonMax) / 2, visibleLatMin],
-      [(visibleLonMin + visibleLonMax) / 2, visibleLatMax]
-    ]
+    const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
+    const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
-    let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity
+    let minN = Infinity, maxN = -Infinity
 
-    for (const [lon, lat] of corners) {
-      try {
-        const ll = new LatLon(lat, lon)
-        const utm = ll.toUtm()
-        if (utm.zone === z) {
-          minE = Math.min(minE, utm.easting)
-          maxE = Math.max(maxE, utm.easting)
-          minN = Math.min(minN, utm.northing)
-          maxN = Math.max(maxN, utm.northing)
-        }
-      } catch (e) { /* skip */ }
+    for (const lon of sampleLons) {
+      for (const lat of sampleLats) {
+        try {
+          const ll = new LatLon(lat, lon)
+          const utm = ll.toUtm()
+          if (Math.abs(utm.zone - z) <= 1) {
+            minN = Math.min(minN, utm.northing)
+            maxN = Math.max(maxN, utm.northing)
+          }
+        } catch (e) { /* skip */ }
+      }
     }
 
-    if (minE === Infinity) continue
+    if (minN === Infinity) continue
 
-    const e0 = Math.floor(minE / 10000) * 10000
-    const e1 = Math.ceil(maxE / 10000) * 10000
+    // Estimate easting range from visible lon, with generous padding for zone edges
+    let minE = Infinity, maxE = -Infinity
+    for (const lon of sampleLons) {
+      for (const lat of sampleLats) {
+        try {
+          const ll = new LatLon(lat, lon)
+          const utm = ll.toUtm()
+          if (utm.zone === z) {
+            minE = Math.min(minE, utm.easting)
+            maxE = Math.max(maxE, utm.easting)
+          }
+        } catch (e) { /* skip */ }
+      }
+    }
+    // If no samples fell in this zone, use full range
+    if (minE === Infinity) { minE = 100000; maxE = 900000 }
+    // Pad by 20km to avoid gaps at zone edges
+    const e0 = Math.max(100000, Math.floor((minE - 20000) / 10000) * 10000)
+    const e1 = Math.min(900000, Math.ceil((maxE + 20000) / 10000) * 10000)
     const n0 = Math.floor(minN / 10000) * 10000
     const n1 = Math.ceil(maxN / 10000) * 10000
 
@@ -449,34 +457,42 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
 
-    const corners = [
-      [visibleLonMin, visibleLatMin],
-      [visibleLonMax, visibleLatMin],
-      [visibleLonMin, visibleLatMax],
-      [visibleLonMax, visibleLatMax],
-      [(visibleLonMin + visibleLonMax) / 2, visibleLatMin],
-      [(visibleLonMin + visibleLonMax) / 2, visibleLatMax]
-    ]
+    const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
+    const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
-    let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity
+    let minN = Infinity, maxN = -Infinity
 
-    for (const [lon, lat] of corners) {
-      try {
-        const ll = new LatLon(lat, lon)
-        const utm = ll.toUtm()
-        if (utm.zone === z) {
-          minE = Math.min(minE, utm.easting)
-          maxE = Math.max(maxE, utm.easting)
-          minN = Math.min(minN, utm.northing)
-          maxN = Math.max(maxN, utm.northing)
-        }
-      } catch (e) { /* skip */ }
+    for (const lon of sampleLons) {
+      for (const lat of sampleLats) {
+        try {
+          const ll = new LatLon(lat, lon)
+          const utm = ll.toUtm()
+          if (Math.abs(utm.zone - z) <= 1) {
+            minN = Math.min(minN, utm.northing)
+            maxN = Math.max(maxN, utm.northing)
+          }
+        } catch (e) { /* skip */ }
+      }
     }
 
-    if (minE === Infinity) continue
+    if (minN === Infinity) continue
 
-    const e0 = Math.floor(minE / 1000) * 1000
-    const e1 = Math.ceil(maxE / 1000) * 1000
+    let minE = Infinity, maxE = -Infinity
+    for (const lon of sampleLons) {
+      for (const lat of sampleLats) {
+        try {
+          const ll = new LatLon(lat, lon)
+          const utm = ll.toUtm()
+          if (utm.zone === z) {
+            minE = Math.min(minE, utm.easting)
+            maxE = Math.max(maxE, utm.easting)
+          }
+        } catch (e) { /* skip */ }
+      }
+    }
+    if (minE === Infinity) { minE = 100000; maxE = 900000 }
+    const e0 = Math.max(100000, Math.floor((minE - 2000) / 1000) * 1000)
+    const e1 = Math.min(900000, Math.ceil((maxE + 2000) / 1000) * 1000)
     const n0 = Math.floor(minN / 1000) * 1000
     const n1 = Math.ceil(maxN / 1000) * 1000
 
