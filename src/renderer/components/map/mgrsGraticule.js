@@ -415,11 +415,11 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
         // Label: two-digit easting + two-digit northing within the 100k square
         const eDigit = Math.floor((e % 100000) / 10000)
         const nDigit = Math.floor((n % 100000) / 10000)
-        const text = `${eDigit}${nDigit}`
+        const text = `${eDigit} · ${nDigit}`
 
         const coord = toMapCoord(ll[0], ll[1])
         const f = new Feature({ geometry: new Point(coord) })
-        f.setStyle(labelStyle(text, 11))
+        f.setStyle(labelStyle(text, 16))
         f.set('level', '10k-label')
         features.push(f)
       }
@@ -532,11 +532,11 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
         // Label: three-digit easting + three-digit northing within the 100k square
         const eDigit = String(Math.floor((e % 100000) / 1000)).padStart(2, '0')
         const nDigit = String(Math.floor((n % 100000) / 1000)).padStart(2, '0')
-        const text = `${eDigit}${nDigit}`
+        const text = `${eDigit} · ${nDigit}`
 
         const coord = toMapCoord(ll[0], ll[1])
         const f = new Feature({ geometry: new Point(coord) })
-        f.setStyle(labelStyle(text, 9))
+        f.setStyle(labelStyle(text, 13))
         f.set('level', '1k-label')
         features.push(f)
       }
