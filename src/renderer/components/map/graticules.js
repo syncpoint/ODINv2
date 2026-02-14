@@ -15,12 +15,26 @@ const removeGraticule = (graticule, map) => {
 }
 
 export default async options => {
-  const { services, map } = options
+  const { services, map, vectorLayers } = options
   const { preferencesStore } = services
+
+  // Insert graticule below the first vector (feature) layer.
+  const addGraticule = (layer) => {
+    const layers = map.getLayers()
+    const firstVectorLayer = vectorLayers && Object.values(vectorLayers)[0]
+    if (firstVectorLayer) {
+      const idx = layers.getArray().indexOf(firstVectorLayer)
+      if (idx >= 0) {
+        layers.insertAt(idx, layer)
+        return
+      }
+    }
+    map.addLayer(layer)
+  }
 
   const type = await preferencesStore.get('graticule', null)
   let graticule = type ? createGraticule(type, map) : null
-  if (graticule) map.addLayer(graticule)
+  if (graticule) addGraticule(graticule)
 
   preferencesStore.on('graticuleChanged', ({ type, checked }) => {
     removeGraticule(graticule, map)
@@ -28,7 +42,7 @@ export default async options => {
 
     if (checked) {
       graticule = createGraticule(type, map)
-      if (graticule) map.addLayer(graticule)
+      if (graticule) addGraticule(graticule)
     }
   })
 }
