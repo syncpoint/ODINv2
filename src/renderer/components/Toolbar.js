@@ -8,7 +8,7 @@ import { NIDOPopover } from './NIDOPopover'
 
 
 export const Toolbar = () => {
-  const [properties, setProperties] = useMemento('ui.properties', '')
+  const [properties, setProperties] = useMemento('ui.properties', 'properties')
   const { commandRegistry, replicationProvider } = useServices()
 
   const commands = [
