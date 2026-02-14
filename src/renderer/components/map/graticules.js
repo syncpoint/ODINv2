@@ -18,9 +18,24 @@ export default async options => {
   const { services, map } = options
   const { preferencesStore } = services
 
+  // Insert graticule above tile layers but below vector (feature) layers.
+  const insertGraticule = (layer) => {
+    const layers = map.getLayers()
+    // Find the first vector layer (non-tile, non-graticule) and insert before it.
+    let insertIndex = layers.getLength()
+    for (let i = 0; i < layers.getLength(); i++) {
+      const l = layers.item(i)
+      if (l.getSource && l.getSource() && typeof l.getSource().getFeatures === 'function') {
+        insertIndex = i
+        break
+      }
+    }
+    layers.insertAt(insertIndex, layer)
+  }
+
   const type = await preferencesStore.get('graticule', null)
   let graticule = type ? createGraticule(type, map) : null
-  if (graticule) map.addLayer(graticule)
+  if (graticule) insertGraticule(graticule)
 
   preferencesStore.on('graticuleChanged', ({ type, checked }) => {
     removeGraticule(graticule, map)
@@ -28,7 +43,7 @@ export default async options => {
 
     if (checked) {
       graticule = createGraticule(type, map)
-      if (graticule) map.addLayer(graticule)
+      if (graticule) insertGraticule(graticule)
     }
   })
 }
