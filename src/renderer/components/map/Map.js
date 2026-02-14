@@ -61,7 +61,7 @@ export const Map = () => {
     })
 
     registerEventHandlers({ services, sources, vectorLayers, map })
-    registerGraticules({ services, map })
+    registerGraticules({ services, map, vectorLayers })
     print({ map, services })
 
     // Force map resize on container resize:
