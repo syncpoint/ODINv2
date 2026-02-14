@@ -744,7 +744,7 @@ export const createMGRSGraticule = (map) => {
   const source = new VectorSource()
   const layer = new VectorLayer({
     source,
-    zIndex: 1000,
+    zIndex: 1,
     updateWhileAnimating: false,
     updateWhileInteracting: false
   })
