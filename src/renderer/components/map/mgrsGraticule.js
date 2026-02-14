@@ -251,16 +251,12 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
     const n1 = Math.ceil(maxN / 100000) * 100000
 
     // Vertical lines (constant easting)
-    // Skip lines too close to zone boundaries (within ~5km of 500000 ± 330000)
-    // as they visually overlap with GZD meridian lines.
     for (let e = e0; e <= e1; e += 100000) {
-      if (e <= 166000 || e >= 834000) continue // too close to zone edge
       const linePoints = []
       for (let s = 0; s <= GRID_100K_STEPS; s++) {
         const n = n0 + (n1 - n0) * (s / GRID_100K_STEPS)
         const ll = utmToLonLat(z, 'N', e, n)
         if (!ll) continue
-        // Clip to zone longitude bounds
         if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
         if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
       }
@@ -276,13 +272,11 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
     // Horizontal lines (constant northing)
     for (let n = n0; n <= n1; n += 100000) {
       const linePoints = []
-      // Use more interpolation steps for better accuracy across the zone
       const hSteps = GRID_100K_STEPS * 2
       for (let s = 0; s <= hSteps; s++) {
-        const e = 166000 + (834000 - 166000) * (s / hSteps) // valid easting range within zone
+        const e = e0 + (e1 - e0) * (s / hSteps)
         const ll = utmToLonLat(z, 'N', e, n)
         if (!ll) continue
-        // Clip to zone longitude bounds
         if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
         if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
       }
@@ -381,10 +375,9 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     const n0 = Math.floor(minN / 10000) * 10000
     const n1 = Math.ceil(maxN / 10000) * 10000
 
-    // Vertical lines (constant easting), skip 100k boundaries and zone edges
+    // Vertical lines (constant easting), skip 100k boundaries
     for (let e = e0; e <= e1; e += 10000) {
-      if (e % 100000 === 0) continue // already drawn by 100k grid
-      if (e <= 166000 || e >= 834000) continue // too close to zone edge
+      if (e % 100000 === 0) continue
       const linePoints = []
       for (let s = 0; s <= GRID_10K_STEPS; s++) {
         const n = n0 + (n1 - n0) * (s / GRID_10K_STEPS)
@@ -408,7 +401,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
       const linePoints = []
       const hSteps = GRID_10K_STEPS * 2
       for (let s = 0; s <= hSteps; s++) {
-        const e = Math.max(e0, 166000) + (Math.min(e1, 834000) - Math.max(e0, 166000)) * (s / hSteps)
+        const e = e0 + (e1 - e0) * (s / hSteps)
         const ll = utmToLonLat(z, 'N', e, n)
         if (!ll) continue
         if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
@@ -511,10 +504,9 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
     const n0 = Math.floor(minN / 1000) * 1000
     const n1 = Math.ceil(maxN / 1000) * 1000
 
-    // Vertical lines (constant easting), skip 10k/100k boundaries and zone edges
+    // Vertical lines (constant easting), skip 10k/100k boundaries
     for (let e = e0; e <= e1; e += 1000) {
-      if (e % 10000 === 0) continue // already drawn by 10k or 100k grid
-      if (e <= 166000 || e >= 834000) continue
+      if (e % 10000 === 0) continue
       const linePoints = []
       for (let s = 0; s <= GRID_1K_STEPS; s++) {
         const n = n0 + (n1 - n0) * (s / GRID_1K_STEPS)
@@ -537,7 +529,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
       if (n % 10000 === 0) continue
       const linePoints = []
       for (let s = 0; s <= GRID_1K_STEPS; s++) {
-        const e = Math.max(e0, 166000) + (Math.min(e1, 834000) - Math.max(e0, 166000)) * (s / GRID_1K_STEPS)
+        const e = e0 + (e1 - e0) * (s / GRID_1K_STEPS)
         const ll = utmToLonLat(z, 'N', e, n)
         if (!ll) continue
         if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
