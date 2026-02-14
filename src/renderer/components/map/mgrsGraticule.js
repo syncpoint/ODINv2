@@ -24,28 +24,42 @@ for (let lat = LAT_MIN; lat <= LAT_MAX; lat += 8) BAND_BOUNDARIES.push(lat)
 // Resolution thresholds (meters per pixel)
 const THRESHOLD_100K = 1200
 const THRESHOLD_10K = 120
+const THRESHOLD_1K = 12
 
 // Line interpolation steps
 const GZD_STEPS = 20
 const GRID_100K_STEPS = 10
 const GRID_10K_STEPS = 5
+const GRID_1K_STEPS = 3
 
 // --- Styles ---
+// Red tones for visibility on both light and dark basemaps.
+// Vertical lines are rendered thicker than horizontal lines for orientation.
 
-const gzdStroke = new Stroke({ color: 'rgba(60, 60, 60, 0.6)', width: 2 })
-const grid100kStroke = new Stroke({ color: 'rgba(80, 80, 80, 0.5)', width: 1.2 })
-const grid10kStroke = new Stroke({ color: 'rgba(100, 100, 100, 0.4)', width: 0.8 })
+const gzdStrokeV = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 3 })
+const gzdStrokeH = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 2 })
+const grid100kStrokeV = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 2 })
+const grid100kStrokeH = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 1.2 })
+const grid10kStrokeV = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 1.5 })
+const grid10kStrokeH = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 0.8 })
+const grid1kStrokeV = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 1.2 })
+const grid1kStrokeH = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 0.6 })
 
-const gzdStyle = new Style({ stroke: gzdStroke })
-const grid100kStyle = new Style({ stroke: grid100kStroke })
-const grid10kStyle = new Style({ stroke: grid10kStroke })
+const gzdStyleV = new Style({ stroke: gzdStrokeV })
+const gzdStyleH = new Style({ stroke: gzdStrokeH })
+const grid100kStyleV = new Style({ stroke: grid100kStrokeV })
+const grid100kStyleH = new Style({ stroke: grid100kStrokeH })
+const grid10kStyleV = new Style({ stroke: grid10kStrokeV })
+const grid10kStyleH = new Style({ stroke: grid10kStrokeH })
+const grid1kStyleV = new Style({ stroke: grid1kStrokeV })
+const grid1kStyleH = new Style({ stroke: grid1kStrokeH })
 
 const labelStyle = (text, fontSize = 12) => new Style({
   geometry: feature => feature.getGeometry(),
   text: new Text({
     text,
     font: `bold ${fontSize}px sans-serif`,
-    fill: new Fill({ color: 'rgba(40, 40, 40, 0.8)' }),
+    fill: new Fill({ color: 'rgba(180, 30, 30, 0.85)' }),
     stroke: new Stroke({ color: 'rgba(255, 255, 255, 0.9)', width: 3 }),
     overflow: true
   })
@@ -134,7 +148,7 @@ const generateGZD = (lonMin, lonMax, latMin, latMax) => {
     )
     if (coords.length >= 2) {
       const f = new Feature({ geometry: new LineString(coords) })
-      f.setStyle(gzdStyle)
+      f.setStyle(gzdStyleV)
       f.set('level', 'gzd')
       features.push(f)
     }
@@ -150,7 +164,7 @@ const generateGZD = (lonMin, lonMax, latMin, latMax) => {
     )
     if (coords.length >= 2) {
       const f = new Feature({ geometry: new LineString(coords) })
-      f.setStyle(gzdStyle)
+      f.setStyle(gzdStyleH)
       f.set('level', 'gzd')
       features.push(f)
     }
@@ -259,7 +273,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid100kStyle)
+        f.setStyle(grid100kStyleV)
         f.set('level', '100k')
         features.push(f)
       }
@@ -277,7 +291,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid100kStyle)
+        f.setStyle(grid100kStyleH)
         f.set('level', '100k')
         features.push(f)
       }
@@ -370,7 +384,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid10kStyle)
+        f.setStyle(grid10kStyleV)
         f.set('level', '10k')
         features.push(f)
       }
@@ -389,8 +403,100 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid10kStyle)
+        f.setStyle(grid10kStyleH)
         f.set('level', '10k')
+        features.push(f)
+      }
+    }
+  }
+
+  return features
+}
+
+// --- 1 km Grid ---
+
+/**
+ * Generate 1 km grid features within visible UTM zones.
+ */
+const generate1k = (lonMin, lonMax, latMin, latMax) => {
+  const features = []
+
+  const zoneStart = Math.max(1, utmZone(lonMin))
+  const zoneEnd = Math.min(60, utmZone(lonMax))
+
+  for (let z = zoneStart; z <= zoneEnd; z++) {
+    const zoneLonMin = (z - 1) * 6 - 180
+    const zoneLonMax = zoneLonMin + 6
+
+    const visibleLonMin = Math.max(lonMin, zoneLonMin)
+    const visibleLonMax = Math.min(lonMax, zoneLonMax)
+    const visibleLatMin = Math.max(latMin, LAT_MIN)
+    const visibleLatMax = Math.min(latMax, LAT_MAX)
+
+    const corners = [
+      [visibleLonMin, visibleLatMin],
+      [visibleLonMax, visibleLatMin],
+      [visibleLonMin, visibleLatMax],
+      [visibleLonMax, visibleLatMax],
+      [(visibleLonMin + visibleLonMax) / 2, visibleLatMin],
+      [(visibleLonMin + visibleLonMax) / 2, visibleLatMax]
+    ]
+
+    let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity
+
+    for (const [lon, lat] of corners) {
+      try {
+        const ll = new LatLon(lat, lon)
+        const utm = ll.toUtm()
+        if (utm.zone === z) {
+          minE = Math.min(minE, utm.easting)
+          maxE = Math.max(maxE, utm.easting)
+          minN = Math.min(minN, utm.northing)
+          maxN = Math.max(maxN, utm.northing)
+        }
+      } catch (e) { /* skip */ }
+    }
+
+    if (minE === Infinity) continue
+
+    const e0 = Math.floor(minE / 1000) * 1000
+    const e1 = Math.ceil(maxE / 1000) * 1000
+    const n0 = Math.floor(minN / 1000) * 1000
+    const n1 = Math.ceil(maxN / 1000) * 1000
+
+    // Vertical lines (constant easting), skip 10k and 100k boundaries
+    for (let e = e0; e <= e1; e += 1000) {
+      if (e % 10000 === 0) continue // already drawn by 10k or 100k grid
+      const linePoints = []
+      for (let s = 0; s <= GRID_1K_STEPS; s++) {
+        const n = n0 + (n1 - n0) * (s / GRID_1K_STEPS)
+        const ll = utmToLonLat(z, 'N', e, n)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+      }
+      if (linePoints.length >= 2) {
+        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+        const f = new Feature({ geometry: new LineString(coords) })
+        f.setStyle(grid1kStyleV)
+        f.set('level', '1k')
+        features.push(f)
+      }
+    }
+
+    // Horizontal lines (constant northing), skip 10k and 100k boundaries
+    for (let n = n0; n <= n1; n += 1000) {
+      if (n % 10000 === 0) continue
+      const linePoints = []
+      for (let s = 0; s <= GRID_1K_STEPS; s++) {
+        const e = e0 + (e1 - e0) * (s / GRID_1K_STEPS)
+        if (e < 100000 || e > 900000) continue
+        const ll = utmToLonLat(z, 'N', e, n)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+      }
+      if (linePoints.length >= 2) {
+        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+        const f = new Feature({ geometry: new LineString(coords) })
+        f.setStyle(grid1kStyleH)
+        f.set('level', '1k')
         features.push(f)
       }
     }
@@ -436,6 +542,11 @@ export const createMGRSGraticule = (map) => {
     // Show 10k grid at high zoom
     if (resolution <= THRESHOLD_10K) {
       features.push(...generate10k(lonMin, lonMax, latMin, latMax))
+    }
+
+    // Show 1k grid at very high zoom
+    if (resolution <= THRESHOLD_1K) {
+      features.push(...generate1k(lonMin, lonMax, latMin, latMax))
     }
 
     source.clear(true)
