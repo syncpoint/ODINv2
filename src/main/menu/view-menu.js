@@ -6,6 +6,7 @@ export default options => {
   const graticule = preferences.graticule
   const sidebarShowing = preferences['ui.sidebar.showing'] ?? true
   const toolbarShowing = preferences['ui.toolbar.showing'] ?? true
+  const mapQuality = preferences['map.quality'] || 'balanced'
 
   return [{
     label: 'View',
@@ -94,6 +95,29 @@ export default options => {
             click: ({ checked }, browserWindow) => {
               if (browserWindow) browserWindow.webContents.send('VIEW_SHOW_TOOLBAR', checked)
             }
+          }
+        ]
+      },
+      {
+        label: 'Map Quality',
+        submenu: [
+          {
+            label: 'Full',
+            type: 'checkbox',
+            checked: mapQuality === 'full',
+            click: dispatch(browserWindow => send(browserWindow, 'VIEW_MAP_QUALITY', 'full'))
+          },
+          {
+            label: 'Balanced',
+            type: 'checkbox',
+            checked: mapQuality === 'balanced',
+            click: dispatch(browserWindow => send(browserWindow, 'VIEW_MAP_QUALITY', 'balanced'))
+          },
+          {
+            label: 'Performance',
+            type: 'checkbox',
+            checked: mapQuality === 'performance',
+            click: dispatch(browserWindow => send(browserWindow, 'VIEW_MAP_QUALITY', 'performance'))
           }
         ]
       },

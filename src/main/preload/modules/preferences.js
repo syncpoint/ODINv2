@@ -23,5 +23,10 @@ module.exports = {
     const listener = (_, checked) => handler(checked)
     ipcRenderer.on('VIEW_SHOW_TOOLBAR', listener)
     return () => ipcRenderer.removeListener('VIEW_SHOW_TOOLBAR', listener)
+  },
+  onViewMapQuality: (handler) => {
+    const listener = (_, quality) => handler(quality)
+    ipcRenderer.on('VIEW_MAP_QUALITY', listener)
+    return () => ipcRenderer.removeListener('VIEW_MAP_QUALITY', listener)
   }
 }
