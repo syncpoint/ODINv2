@@ -29,6 +29,7 @@ export const Map = () => {
   const ref = React.useRef()
 
   const effect = async () => {
+    const { preferencesStore } = services
     const view = await createMapView(services)
     const sources = await vectorSources(services)
     const styles = createLayerStyles(services, sources)
@@ -44,12 +45,22 @@ export const Map = () => {
     const sseLayers = await createSSELayers(services)
     const layers = [...tileLayers, ...sseLayers, ...Object.values(vectorLayers)]
 
+    const qualityToPixelRatio = { full: undefined, balanced: 1.5, performance: 1 }
+    const mapQuality = await preferencesStore.get('map.quality', 'full')
+    const pixelRatio = qualityToPixelRatio[mapQuality]
+
     const map = new ol.Map({
       target: 'map',
       controls,
       layers,
       view,
-      interactions: []
+      interactions: [],
+      pixelRatio
+    })
+
+    preferencesStore.on('mapQualityChanged', ({ quality }) => {
+      // pixelRatio can only be set at construction time, so we need to reload
+      window.location.reload()
     })
 
     defaultInteractions({
