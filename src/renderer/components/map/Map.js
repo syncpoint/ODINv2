@@ -46,7 +46,7 @@ export const Map = () => {
     const layers = [...tileLayers, ...sseLayers, ...Object.values(vectorLayers)]
 
     const qualityToPixelRatio = { full: undefined, balanced: 1.5, performance: 1 }
-    const mapQuality = await preferencesStore.get('map.quality', 'full')
+    const mapQuality = await preferencesStore.get('map.quality', 'balanced')
     const pixelRatio = qualityToPixelRatio[mapQuality]
 
     const map = new ol.Map({

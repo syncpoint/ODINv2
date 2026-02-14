@@ -6,7 +6,7 @@ export default options => {
   const graticule = preferences.graticule
   const sidebarShowing = preferences['ui.sidebar.showing'] ?? true
   const toolbarShowing = preferences['ui.toolbar.showing'] ?? true
-  const mapQuality = preferences['map.quality'] || 'full'
+  const mapQuality = preferences['map.quality'] || 'balanced'
 
   return [{
     label: 'View',
