@@ -478,7 +478,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
         const ll = utmToLonLat(z, 'N', e, n)
         if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+      for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
@@ -497,7 +497,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
         const ll = utmToLonLat(z, 'N', e, n)
         if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+      for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
@@ -516,7 +516,11 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
         if (!letters) continue
         const ll = utmToLonLat(z, 'N', centerE, centerN)
         if (!ll) continue
-        if (ll[0] < visibleLonMin || ll[0] > visibleLonMax) continue
+        // Check against actual zone bounds at this latitude
+        const labelBounds = getZoneBounds(z, ll[1])
+        if (!labelBounds) continue
+        if (ll[0] < labelBounds[0] || ll[0] > labelBounds[1]) continue
+        if (ll[0] < lonMin || ll[0] > lonMax) continue
         if (ll[1] < visibleLatMin || ll[1] > visibleLatMax) continue
 
         const coord = toMapCoord(ll[0], ll[1])
@@ -601,7 +605,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
         const ll = utmToLonLat(z, 'N', e, n)
         if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+      for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
@@ -621,7 +625,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
         const ll = utmToLonLat(z, 'N', e, n)
         if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+      for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
@@ -640,7 +644,9 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
         const centerN = n + 5000
         const ll = utmToLonLat(z, 'N', centerE, centerN)
         if (!ll) continue
-        if (ll[0] < visibleLonMin || ll[0] > visibleLonMax) continue
+        const lb = getZoneBounds(z, ll[1])
+        if (!lb || ll[0] < lb[0] || ll[0] > lb[1]) continue
+        if (ll[0] < lonMin || ll[0] > lonMax) continue
         if (ll[1] < visibleLatMin || ll[1] > visibleLatMax) continue
 
         // Label: two-digit easting + two-digit northing within the 100k square
@@ -727,7 +733,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
         const ll = utmToLonLat(z, 'N', e, n)
         if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+      for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
@@ -746,7 +752,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
         const ll = utmToLonLat(z, 'N', e, n)
         if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+      for (const seg of clipToZone(rawPoints, z)) {
         if (seg.length < 2) continue
         const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
@@ -765,7 +771,9 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
         const centerN = n + 500
         const ll = utmToLonLat(z, 'N', centerE, centerN)
         if (!ll) continue
-        if (ll[0] < visibleLonMin || ll[0] > visibleLonMax) continue
+        const lb1k = getZoneBounds(z, ll[1])
+        if (!lb1k || ll[0] < lb1k[0] || ll[0] > lb1k[1]) continue
+        if (ll[0] < lonMin || ll[0] > lonMax) continue
         if (ll[1] < visibleLatMin || ll[1] > visibleLatMax) continue
 
         // Label: three-digit easting + three-digit northing within the 100k square
