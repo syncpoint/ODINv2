@@ -5,16 +5,19 @@ export default async function (id) {
   const keys = [R.identity, ID.tagsId]
   const [service, tags] = await this.store.collect(id, keys)
 
+  const isTerrain = (service.terrain || []).length > 0 ||
+    service.capabilities?.contentType === 'terrain/mapbox-rgb'
+
   const option = {
     id,
     title: service.name,
     scope: service.type,
     tags: [
       `SCOPE:${service.type}:NONE`,
-      (tags || []).some(t => t === 'TERRAIN') ? 'SYSTEM:TERRAIN::mdiTerrain' : null,
+      isTerrain ? 'SYSTEM:TERRAIN::mdiTerrain' : null,
       ...((tags || []))
         .filter(Boolean)
-        .filter(t => t !== 'TERRAIN').map(label => `USER:${label}:NONE`),
+        .map(label => `USER:${label}:NONE`),
       'PLUS'
     ].filter(Boolean).join(' '),
     capabilities: 'TAG|RENAME'
