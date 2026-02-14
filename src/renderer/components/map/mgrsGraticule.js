@@ -435,25 +435,12 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
 
   for (let z = zoneStart; z <= zoneEnd; z++) {
     // Compute widest longitude bounds for this zone across all visible bands
-    const stdLonMin = (z - 1) * 6 - 180
-    const stdLonMax = stdLonMin + 6
-    let zoneLonMin = stdLonMin, zoneLonMax = stdLonMax
+    // Use standard 6° zone bounds for grid generation.
+    // clipToZone() handles per-latitude clipping for special zones.
+    const zoneLonMin = (z - 1) * 6 - 180
+    const zoneLonMax = zoneLonMin + 6
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
-
-    // Check special zone bounds at multiple latitudes
-    const checkLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2, 60, 76]
-    let zoneExists = false
-    for (const lat of checkLats) {
-      if (lat < LAT_MIN || lat > LAT_MAX) continue
-      const bounds = getZoneBounds(z, lat)
-      if (bounds) {
-        zoneExists = true
-        zoneLonMin = Math.min(zoneLonMin, bounds[0])
-        zoneLonMax = Math.max(zoneLonMax, bounds[1])
-      }
-    }
-    if (!zoneExists) continue
 
     const visibleLonMin = Math.max(lonMin, zoneLonMin)
     const visibleLonMax = Math.min(lonMax, zoneLonMax)
@@ -468,7 +455,6 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
         try {
           const ll = new LatLon(lat, lon)
           const utm = ll.toUtm()
-          // Accept points from this zone or adjacent zones (for northing estimation)
           if (Math.abs(utm.zone - z) <= 1) {
             minN = Math.min(minN, utm.northing)
             maxN = Math.max(maxN, utm.northing)
@@ -479,8 +465,6 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
 
     if (minN === Infinity) continue
 
-    // Full valid UTM easting range for grid generation.
-    // Actual lines are clipped by lon/lat bounds during point conversion.
     const e0 = 100000
     const e1 = 900000
     const n0 = Math.floor(minN / 100000) * 100000
@@ -563,16 +547,10 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
   const zoneEnd = Math.min(60, utmZone(lonMax))
 
   for (let z = zoneStart; z <= zoneEnd; z++) {
-    const stdLonMin = (z - 1) * 6 - 180
-    const stdLonMax = stdLonMin + 6
-    let zoneLonMin = stdLonMin, zoneLonMax = stdLonMax
+    const zoneLonMin = (z - 1) * 6 - 180
+    const zoneLonMax = zoneLonMin + 6
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
-    for (const lat of [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2, 60, 76]) {
-      if (lat < LAT_MIN || lat > LAT_MAX) continue
-      const bounds = getZoneBounds(z, lat)
-      if (bounds) { zoneLonMin = Math.min(zoneLonMin, bounds[0]); zoneLonMax = Math.max(zoneLonMax, bounds[1]) }
-    }
     const visibleLonMin = Math.max(lonMin, zoneLonMin)
     const visibleLonMax = Math.min(lonMax, zoneLonMax)
 
@@ -700,16 +678,10 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
   const zoneEnd = Math.min(60, utmZone(lonMax))
 
   for (let z = zoneStart; z <= zoneEnd; z++) {
-    const stdLonMin = (z - 1) * 6 - 180
-    const stdLonMax = stdLonMin + 6
-    let zoneLonMin = stdLonMin, zoneLonMax = stdLonMax
+    const zoneLonMin = (z - 1) * 6 - 180
+    const zoneLonMax = zoneLonMin + 6
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
-    for (const lat of [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2, 60, 76]) {
-      if (lat < LAT_MIN || lat > LAT_MAX) continue
-      const bounds = getZoneBounds(z, lat)
-      if (bounds) { zoneLonMin = Math.min(zoneLonMin, bounds[0]); zoneLonMax = Math.max(zoneLonMax, bounds[1]) }
-    }
     const visibleLonMin = Math.max(lonMin, zoneLonMin)
     const visibleLonMax = Math.min(lonMax, zoneLonMax)
 
