@@ -13,7 +13,7 @@ import Utm from 'geodesy/utm.js'
 const LON_MIN = -180
 const LON_MAX = 180
 const LAT_MIN = -80 // MGRS/UTM southern limit
-const LAT_MAX = 84  // MGRS/UTM northern limit
+const LAT_MAX = 84 // MGRS/UTM northern limit
 
 // Latitude band boundaries (each 8° except the last which is 12°)
 const BAND_LETTERS = 'CDEFGHJKLMNPQRSTUVWX'
@@ -38,16 +38,16 @@ const getZoneBounds = (zone, lat) => {
   // Band V (56°-64°N): Norway exception
   if (lat >= 56 && lat < 64) {
     if (zone === 31) return [standardLonMin, 3] // narrowed: ends at 3°E
-    if (zone === 32) return [3, standardLonMax]  // widened: starts at 3°E
+    if (zone === 32) return [3, standardLonMax] // widened: starts at 3°E
   }
 
   // Band X (72°-84°N): Svalbard exception
   if (lat >= 72 && lat < 84) {
     if (zone === 32 || zone === 34 || zone === 36) return null // these zones don't exist
-    if (zone === 31) return [standardLonMin, 9]   // 0°-9°E
-    if (zone === 33) return [9, 21]                // 9°-21°E
-    if (zone === 35) return [21, 33]               // 21°-33°E
-    if (zone === 37) return [33, 42]               // 33°-42°E
+    if (zone === 31) return [standardLonMin, 9] // 0°-9°E
+    if (zone === 33) return [9, 21] // 9°-21°E
+    if (zone === 35) return [21, 33] // 21°-33°E
+    if (zone === 37) return [33, 42] // 33°-42°E
   }
 
   return [standardLonMin, standardLonMax]
@@ -58,40 +58,6 @@ const getZoneBounds = (zone, lat) => {
  * with their actual longitude bounds.
  * Returns array of { zone, lonMin, lonMax }.
  */
-const getZonesForExtent = (lonMin, lonMax, latMin, latMax) => {
-  const zones = []
-  const zoneStart = Math.max(1, utmZone(lonMin))
-  const zoneEnd = Math.min(60, utmZone(lonMax))
-
-  for (let z = zoneStart; z <= zoneEnd; z++) {
-    // A zone may have different bounds at different latitudes.
-    // Collect the widest extent across all latitude bands in view.
-    let minLon = Infinity, maxLon = -Infinity
-    let exists = false
-
-    // Sample at band boundaries within the view
-    const lats = [latMin, latMax, (latMin + latMax) / 2]
-    for (const bLat of BAND_BOUNDARIES) {
-      if (bLat >= latMin && bLat <= latMax) lats.push(bLat)
-    }
-
-    for (const lat of lats) {
-      const bounds = getZoneBounds(z, lat)
-      if (bounds) {
-        exists = true
-        minLon = Math.min(minLon, bounds[0])
-        maxLon = Math.max(maxLon, bounds[1])
-      }
-    }
-
-    if (exists) {
-      zones.push({ zone: z, lonMin: minLon, lonMax: maxLon })
-    }
-  }
-
-  return zones
-}
-
 // Band boundaries where zone widths change (special zones)
 // At these latitudes, clipToZone changes its clip bounds, so we need
 // extra interpolation points nearby for smooth transitions.
@@ -192,16 +158,6 @@ const toMapCoord = (lon, lat) => {
 const utmZone = lon => Math.floor((lon + 180) / 6) + 1
 
 /**
- * Get the MGRS band letter for a given latitude.
- */
-const bandLetter = lat => {
-  if (lat < LAT_MIN || lat >= LAT_MAX) return null
-  let index = Math.floor((lat - LAT_MIN) / 8)
-  if (index >= BAND_LETTERS.length) index = BAND_LETTERS.length - 1
-  return BAND_LETTERS[index]
-}
-
-/**
  * Build an interpolated line in map coordinates from a series of lon/lat waypoints.
  */
 const interpolateLine = (points, steps) => {
@@ -232,54 +188,6 @@ const utmToLonLat = (zone, hemisphere, easting, northing) => {
   } catch (e) {
     return null
   }
-}
-
-/**
- * Clip an array of [lon, lat] points to a longitude range.
- * Points outside the range are replaced by interpolated boundary points.
- * Returns an array of line segments (arrays of [lon, lat] points).
- */
-const clipToLonRange = (points, lonMin, lonMax) => {
-  if (points.length < 2) return []
-
-  const segments = []
-  let current = []
-
-  for (let i = 0; i < points.length; i++) {
-    const [lon, lat] = points[i]
-
-    if (lon >= lonMin && lon <= lonMax) {
-      // Point is inside — if previous was outside, add interpolated entry point
-      if (current.length === 0 && i > 0) {
-        const [pLon, pLat] = points[i - 1]
-        if (pLon < lonMin) {
-          const t = (lonMin - pLon) / (lon - pLon)
-          current.push([lonMin, pLat + t * (lat - pLat)])
-        } else if (pLon > lonMax) {
-          const t = (lonMax - pLon) / (lon - pLon)
-          current.push([lonMax, pLat + t * (lat - pLat)])
-        }
-      }
-      current.push([lon, lat])
-    } else {
-      // Point is outside — if previous was inside, add interpolated exit point
-      if (current.length > 0) {
-        const [pLon, pLat] = points[i - 1]
-        if (lon < lonMin) {
-          const t = (lonMin - pLon) / (lon - pLon)
-          current.push([lonMin, pLat + t * (lat - pLat)])
-        } else if (lon > lonMax) {
-          const t = (lonMax - pLon) / (lon - pLon)
-          current.push([lonMax, pLat + t * (lat - pLat)])
-        }
-        segments.push(current)
-        current = []
-      }
-    }
-  }
-
-  if (current.length >= 2) segments.push(current)
-  return segments
 }
 
 /**
@@ -496,7 +404,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
     const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
     const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
-    let minN = Infinity, maxN = -Infinity
+    let minN = Infinity; let maxN = -Infinity
 
     for (const lon of sampleLons) {
       for (const lat of sampleLats) {
@@ -600,7 +508,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
     const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
-    let minN = Infinity, maxN = -Infinity
+    let minN = Infinity; let maxN = -Infinity
 
     for (const lon of sampleLons) {
       for (const lat of sampleLats) {
@@ -618,7 +526,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     if (minN === Infinity) continue
 
     // Estimate easting range from visible lon, with generous padding for zone edges
-    let minE = Infinity, maxE = -Infinity
+    let minE = Infinity; let maxE = -Infinity
     for (const lon of sampleLons) {
       for (const lat of sampleLats) {
         try {
@@ -726,7 +634,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
     const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
     const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
-    let minN = Infinity, maxN = -Infinity
+    let minN = Infinity; let maxN = -Infinity
 
     for (const lon of sampleLons) {
       for (const lat of sampleLats) {
@@ -743,7 +651,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
 
     if (minN === Infinity) continue
 
-    let minE = Infinity, maxE = -Infinity
+    let minE = Infinity; let maxE = -Infinity
     for (const lon of sampleLons) {
       for (const lat of sampleLats) {
         try {
