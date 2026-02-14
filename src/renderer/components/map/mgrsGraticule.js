@@ -21,6 +21,77 @@ const BAND_BOUNDARIES = []
 for (let lat = LAT_MIN; lat <= LAT_MAX; lat += 8) BAND_BOUNDARIES.push(lat)
 // Last band X goes from 72 to 84 (12° tall), already covered by the loop
 
+// --- UTM Special Zones ---
+// Norway (band V, 56°-64°N): zone 31V is 3° wide (0°-3°E), zone 32V is 9° wide (3°-12°E)
+// Svalbard (band X, 72°-84°N): zones 32X, 34X don't exist;
+//   31X=0°-9°E, 33X=9°-21°E, 35X=21°-33°E, 37X=33°-42°E
+
+/**
+ * Get the actual longitude bounds for a UTM zone at a given latitude,
+ * accounting for Norway and Svalbard exceptions.
+ * Returns [lonMin, lonMax] or null if the zone doesn't exist at that latitude.
+ */
+const getZoneBounds = (zone, lat) => {
+  const standardLonMin = (zone - 1) * 6 - 180
+  const standardLonMax = standardLonMin + 6
+
+  // Band V (56°-64°N): Norway exception
+  if (lat >= 56 && lat < 64) {
+    if (zone === 31) return [standardLonMin, 3] // narrowed: ends at 3°E
+    if (zone === 32) return [3, standardLonMax]  // widened: starts at 3°E
+  }
+
+  // Band X (72°-84°N): Svalbard exception
+  if (lat >= 72 && lat < 84) {
+    if (zone === 32 || zone === 34 || zone === 36) return null // these zones don't exist
+    if (zone === 31) return [standardLonMin, 9]   // 0°-9°E
+    if (zone === 33) return [9, 21]                // 9°-21°E
+    if (zone === 35) return [21, 33]               // 21°-33°E
+    if (zone === 37) return [33, 42]               // 33°-42°E
+  }
+
+  return [standardLonMin, standardLonMax]
+}
+
+/**
+ * Get all zones that exist for a given latitude range,
+ * with their actual longitude bounds.
+ * Returns array of { zone, lonMin, lonMax }.
+ */
+const getZonesForExtent = (lonMin, lonMax, latMin, latMax) => {
+  const zones = []
+  const zoneStart = Math.max(1, utmZone(lonMin))
+  const zoneEnd = Math.min(60, utmZone(lonMax))
+
+  for (let z = zoneStart; z <= zoneEnd; z++) {
+    // A zone may have different bounds at different latitudes.
+    // Collect the widest extent across all latitude bands in view.
+    let minLon = Infinity, maxLon = -Infinity
+    let exists = false
+
+    // Sample at band boundaries within the view
+    const lats = [latMin, latMax, (latMin + latMax) / 2]
+    for (const bLat of BAND_BOUNDARIES) {
+      if (bLat >= latMin && bLat <= latMax) lats.push(bLat)
+    }
+
+    for (const lat of lats) {
+      const bounds = getZoneBounds(z, lat)
+      if (bounds) {
+        exists = true
+        minLon = Math.min(minLon, bounds[0])
+        maxLon = Math.max(maxLon, bounds[1])
+      }
+    }
+
+    if (exists) {
+      zones.push({ zone: z, lonMin: minLon, lonMax: maxLon })
+    }
+  }
+
+  return zones
+}
+
 // Resolution thresholds (meters per pixel)
 const THRESHOLD_100K = 1200
 const THRESHOLD_10K = 120
@@ -167,29 +238,71 @@ const clipToLonRange = (points, lonMin, lonMax) => {
 
 /**
  * Generate GZD boundary features for the visible extent.
+ * Handles Norway (band V) and Svalbard (band X) exceptions.
  */
 const generateGZD = (lonMin, lonMax, latMin, latMax) => {
   const features = []
 
-  const zoneStart = Math.max(1, utmZone(lonMin))
-  const zoneEnd = Math.min(60, utmZone(lonMax))
+  const zoneStart = Math.max(1, utmZone(lonMin) - 1)
+  const zoneEnd = Math.min(60, utmZone(lonMax) + 1)
   const effectiveLatMin = Math.max(LAT_MIN, latMin)
   const effectiveLatMax = Math.min(LAT_MAX, latMax)
 
-  // Meridian lines (vertical zone boundaries)
-  for (let z = zoneStart; z <= zoneEnd + 1; z++) {
-    const lon = (z - 1) * 6 - 180
-    if (lon < lonMin - 6 || lon > lonMax + 6) continue
+  // Collect all unique zone boundary longitudes per band segment.
+  // Each band may have different zone boundaries due to exceptions.
+  const drawnLines = new Set() // track "lon:latMin:latMax" to avoid duplicates
 
-    const coords = interpolateLine(
-      [[lon, effectiveLatMin], [lon, effectiveLatMax]],
-      GZD_STEPS
-    )
-    if (coords.length >= 2) {
-      const f = new Feature({ geometry: new LineString(coords) })
-      f.setStyle(gzdStyle)
-      f.set('level', 'gzd')
-      features.push(f)
+  for (let bi = 0; bi < BAND_LETTERS.length; bi++) {
+    const bandLatMin = LAT_MIN + bi * 8
+    const bandLatMax = bi === BAND_LETTERS.length - 1 ? LAT_MAX : bandLatMin + 8
+
+    // Skip bands outside view
+    if (bandLatMax < effectiveLatMin || bandLatMin > effectiveLatMax) continue
+
+    const segLatMin = Math.max(effectiveLatMin, bandLatMin)
+    const segLatMax = Math.min(effectiveLatMax, bandLatMax)
+
+    for (let z = zoneStart; z <= zoneEnd + 1; z++) {
+      // Get the left boundary of this zone in this band
+      const bounds = getZoneBounds(z, (bandLatMin + bandLatMax) / 2)
+      if (!bounds) continue
+
+      const lon = bounds[0]
+      if (lon < lonMin - 6 || lon > lonMax + 6) continue
+
+      const key = `${lon.toFixed(2)}:${segLatMin}:${segLatMax}`
+      if (drawnLines.has(key)) continue
+      drawnLines.add(key)
+
+      const coords = interpolateLine(
+        [[lon, segLatMin], [lon, segLatMax]],
+        GZD_STEPS
+      )
+      if (coords.length >= 2) {
+        const f = new Feature({ geometry: new LineString(coords) })
+        f.setStyle(gzdStyle)
+        f.set('level', 'gzd')
+        features.push(f)
+      }
+
+      // Also draw the right boundary of the last zone in view
+      if (z === zoneEnd + 1 || z === 60) {
+        const rLon = bounds[1]
+        const rKey = `${rLon.toFixed(2)}:${segLatMin}:${segLatMax}`
+        if (!drawnLines.has(rKey) && rLon >= lonMin - 6 && rLon <= lonMax + 6) {
+          drawnLines.add(rKey)
+          const rCoords = interpolateLine(
+            [[rLon, segLatMin], [rLon, segLatMax]],
+            GZD_STEPS
+          )
+          if (rCoords.length >= 2) {
+            const rf = new Feature({ geometry: new LineString(rCoords) })
+            rf.setStyle(gzdStyle)
+            rf.set('level', 'gzd')
+            features.push(rf)
+          }
+        }
+      }
     }
   }
 
@@ -209,16 +322,19 @@ const generateGZD = (lonMin, lonMax, latMin, latMax) => {
     }
   }
 
-  // Zone labels
+  // Zone labels — use actual zone bounds for label placement
   for (let z = zoneStart; z <= zoneEnd; z++) {
-    const lonCenter = (z - 1) * 6 - 180 + 3
-
     for (let bi = 0; bi < BAND_LETTERS.length; bi++) {
-      const latBottom = LAT_MIN + bi * 8
-      const latTop = bi === BAND_LETTERS.length - 1 ? LAT_MAX : latBottom + 8
-      const latCenter = (latBottom + latTop) / 2
+      const bandLatMin = LAT_MIN + bi * 8
+      const bandLatMax = bi === BAND_LETTERS.length - 1 ? LAT_MAX : bandLatMin + 8
+      const latCenter = (bandLatMin + bandLatMax) / 2
 
       if (latCenter < effectiveLatMin || latCenter > effectiveLatMax) continue
+
+      const bounds = getZoneBounds(z, latCenter)
+      if (!bounds) continue // zone doesn't exist in this band
+
+      const lonCenter = (bounds[0] + bounds[1]) / 2
       if (lonCenter < lonMin || lonCenter > lonMax) continue
 
       const coord = toMapCoord(lonCenter, latCenter)
@@ -259,17 +375,30 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
   const zoneEnd = Math.min(60, utmZone(lonMax))
 
   for (let z = zoneStart; z <= zoneEnd; z++) {
-    const zoneLonMin = (z - 1) * 6 - 180
-    const zoneLonMax = zoneLonMin + 6
-
-    const visibleLonMin = Math.max(lonMin, zoneLonMin)
-    const visibleLonMax = Math.min(lonMax, zoneLonMax)
+    // Compute widest longitude bounds for this zone across all visible bands
+    const stdLonMin = (z - 1) * 6 - 180
+    const stdLonMax = stdLonMin + 6
+    let zoneLonMin = stdLonMin, zoneLonMax = stdLonMax
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
 
-    // Sample multiple points to determine northing range.
-    // For easting, use the full valid UTM range (100k–900k) to avoid
-    // gaps at zone boundaries where corner points fall into adjacent zones.
+    // Check special zone bounds at multiple latitudes
+    const checkLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2, 60, 76]
+    let zoneExists = false
+    for (const lat of checkLats) {
+      if (lat < LAT_MIN || lat > LAT_MAX) continue
+      const bounds = getZoneBounds(z, lat)
+      if (bounds) {
+        zoneExists = true
+        zoneLonMin = Math.min(zoneLonMin, bounds[0])
+        zoneLonMax = Math.max(zoneLonMax, bounds[1])
+      }
+    }
+    if (!zoneExists) continue
+
+    const visibleLonMin = Math.max(lonMin, zoneLonMin)
+    const visibleLonMax = Math.min(lonMax, zoneLonMax)
+
     const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
     const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
 
@@ -371,13 +500,18 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
   const zoneEnd = Math.min(60, utmZone(lonMax))
 
   for (let z = zoneStart; z <= zoneEnd; z++) {
-    const zoneLonMin = (z - 1) * 6 - 180
-    const zoneLonMax = zoneLonMin + 6
-
-    const visibleLonMin = Math.max(lonMin, zoneLonMin)
-    const visibleLonMax = Math.min(lonMax, zoneLonMax)
+    const stdLonMin = (z - 1) * 6 - 180
+    const stdLonMax = stdLonMin + 6
+    let zoneLonMin = stdLonMin, zoneLonMax = stdLonMax
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
+    for (const lat of [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2, 60, 76]) {
+      if (lat < LAT_MIN || lat > LAT_MAX) continue
+      const bounds = getZoneBounds(z, lat)
+      if (bounds) { zoneLonMin = Math.min(zoneLonMin, bounds[0]); zoneLonMax = Math.max(zoneLonMax, bounds[1]) }
+    }
+    const visibleLonMin = Math.max(lonMin, zoneLonMin)
+    const visibleLonMax = Math.min(lonMax, zoneLonMax)
 
     const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
     const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
@@ -501,13 +635,18 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
   const zoneEnd = Math.min(60, utmZone(lonMax))
 
   for (let z = zoneStart; z <= zoneEnd; z++) {
-    const zoneLonMin = (z - 1) * 6 - 180
-    const zoneLonMax = zoneLonMin + 6
-
-    const visibleLonMin = Math.max(lonMin, zoneLonMin)
-    const visibleLonMax = Math.min(lonMax, zoneLonMax)
+    const stdLonMin = (z - 1) * 6 - 180
+    const stdLonMax = stdLonMin + 6
+    let zoneLonMin = stdLonMin, zoneLonMax = stdLonMax
     const visibleLatMin = Math.max(latMin, LAT_MIN)
     const visibleLatMax = Math.min(latMax, LAT_MAX)
+    for (const lat of [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2, 60, 76]) {
+      if (lat < LAT_MIN || lat > LAT_MAX) continue
+      const bounds = getZoneBounds(z, lat)
+      if (bounds) { zoneLonMin = Math.min(zoneLonMin, bounds[0]); zoneLonMax = Math.max(zoneLonMax, bounds[1]) }
+    }
+    const visibleLonMin = Math.max(lonMin, zoneLonMin)
+    const visibleLonMax = Math.min(lonMax, zoneLonMax)
 
     const sampleLons = [visibleLonMin, visibleLonMax, (visibleLonMin + visibleLonMax) / 2]
     const sampleLats = [visibleLatMin, visibleLatMax, (visibleLatMin + visibleLatMax) / 2]
