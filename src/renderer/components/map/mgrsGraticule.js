@@ -115,6 +115,54 @@ const utmToLonLat = (zone, hemisphere, easting, northing) => {
   }
 }
 
+/**
+ * Clip an array of [lon, lat] points to a longitude range.
+ * Points outside the range are replaced by interpolated boundary points.
+ * Returns an array of line segments (arrays of [lon, lat] points).
+ */
+const clipToLonRange = (points, lonMin, lonMax) => {
+  if (points.length < 2) return []
+
+  const segments = []
+  let current = []
+
+  for (let i = 0; i < points.length; i++) {
+    const [lon, lat] = points[i]
+
+    if (lon >= lonMin && lon <= lonMax) {
+      // Point is inside — if previous was outside, add interpolated entry point
+      if (current.length === 0 && i > 0) {
+        const [pLon, pLat] = points[i - 1]
+        if (pLon < lonMin) {
+          const t = (lonMin - pLon) / (lon - pLon)
+          current.push([lonMin, pLat + t * (lat - pLat)])
+        } else if (pLon > lonMax) {
+          const t = (lonMax - pLon) / (lon - pLon)
+          current.push([lonMax, pLat + t * (lat - pLat)])
+        }
+      }
+      current.push([lon, lat])
+    } else {
+      // Point is outside — if previous was inside, add interpolated exit point
+      if (current.length > 0) {
+        const [pLon, pLat] = points[i - 1]
+        if (lon < lonMin) {
+          const t = (lonMin - pLon) / (lon - pLon)
+          current.push([lonMin, pLat + t * (lat - pLat)])
+        } else if (lon > lonMax) {
+          const t = (lonMax - pLon) / (lon - pLon)
+          current.push([lonMax, pLat + t * (lat - pLat)])
+        }
+        segments.push(current)
+        current = []
+      }
+    }
+  }
+
+  if (current.length >= 2) segments.push(current)
+  return segments
+}
+
 // --- Grid Zone Designations (GZD) ---
 
 /**
@@ -252,16 +300,15 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
 
     // Vertical lines (constant easting)
     for (let e = e0; e <= e1; e += 100000) {
-      const linePoints = []
+      const rawPoints = []
       for (let s = 0; s <= GRID_100K_STEPS; s++) {
         const n = n0 + (n1 - n0) * (s / GRID_100K_STEPS)
         const ll = utmToLonLat(z, 'N', e, n)
-        if (!ll) continue
-        if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
-        if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      if (linePoints.length >= 2) {
-        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+        if (seg.length < 2) continue
+        const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid100kStyle)
         f.set('level', '100k')
@@ -271,17 +318,16 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
 
     // Horizontal lines (constant northing)
     for (let n = n0; n <= n1; n += 100000) {
-      const linePoints = []
+      const rawPoints = []
       const hSteps = GRID_100K_STEPS * 2
       for (let s = 0; s <= hSteps; s++) {
         const e = e0 + (e1 - e0) * (s / hSteps)
         const ll = utmToLonLat(z, 'N', e, n)
-        if (!ll) continue
-        if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
-        if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      if (linePoints.length >= 2) {
-        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+        if (seg.length < 2) continue
+        const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid100kStyle)
         f.set('level', '100k')
@@ -378,16 +424,15 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     // Vertical lines (constant easting), skip 100k boundaries
     for (let e = e0; e <= e1; e += 10000) {
       if (e % 100000 === 0) continue
-      const linePoints = []
+      const rawPoints = []
       for (let s = 0; s <= GRID_10K_STEPS; s++) {
         const n = n0 + (n1 - n0) * (s / GRID_10K_STEPS)
         const ll = utmToLonLat(z, 'N', e, n)
-        if (!ll) continue
-        if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
-        if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      if (linePoints.length >= 2) {
-        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+        if (seg.length < 2) continue
+        const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid10kStyle)
         f.set('level', '10k')
@@ -398,17 +443,16 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
     // Horizontal lines (constant northing), skip 100k boundaries
     for (let n = n0; n <= n1; n += 10000) {
       if (n % 100000 === 0) continue
-      const linePoints = []
+      const rawPoints = []
       const hSteps = GRID_10K_STEPS * 2
       for (let s = 0; s <= hSteps; s++) {
         const e = e0 + (e1 - e0) * (s / hSteps)
         const ll = utmToLonLat(z, 'N', e, n)
-        if (!ll) continue
-        if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
-        if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      if (linePoints.length >= 2) {
-        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+        if (seg.length < 2) continue
+        const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid10kStyle)
         f.set('level', '10k')
@@ -507,16 +551,15 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
     // Vertical lines (constant easting), skip 10k/100k boundaries
     for (let e = e0; e <= e1; e += 1000) {
       if (e % 10000 === 0) continue
-      const linePoints = []
+      const rawPoints = []
       for (let s = 0; s <= GRID_1K_STEPS; s++) {
         const n = n0 + (n1 - n0) * (s / GRID_1K_STEPS)
         const ll = utmToLonLat(z, 'N', e, n)
-        if (!ll) continue
-        if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
-        if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      if (linePoints.length >= 2) {
-        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+        if (seg.length < 2) continue
+        const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid1kStyle)
         f.set('level', '1k')
@@ -527,16 +570,15 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
     // Horizontal lines (constant northing), skip 10k/100k boundaries
     for (let n = n0; n <= n1; n += 1000) {
       if (n % 10000 === 0) continue
-      const linePoints = []
+      const rawPoints = []
       for (let s = 0; s <= GRID_1K_STEPS; s++) {
         const e = e0 + (e1 - e0) * (s / GRID_1K_STEPS)
         const ll = utmToLonLat(z, 'N', e, n)
-        if (!ll) continue
-        if (ll[0] < zoneLonMin || ll[0] > zoneLonMax) continue
-        if (ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) linePoints.push(ll)
+        if (ll && ll[1] >= LAT_MIN && ll[1] <= LAT_MAX) rawPoints.push(ll)
       }
-      if (linePoints.length >= 2) {
-        const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
+      for (const seg of clipToLonRange(rawPoints, zoneLonMin, zoneLonMax)) {
+        if (seg.length < 2) continue
+        const coords = seg.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
         f.setStyle(grid1kStyle)
         f.set('level', '1k')
