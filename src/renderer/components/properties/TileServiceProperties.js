@@ -56,7 +56,7 @@ const fuseOptions = {
  *
  */
 const TileServiceProperties = props => {
-  const { tileLayerStore, sessionStore, store } = useServices()
+  const { tileLayerStore, sessionStore } = useServices()
   const [key, service] = (Object.entries(props.features))[0]
   const [url, setUrl] = React.useState({ dirty: false, value: service.url || '' })
   const [entries, setEntries] = React.useState([])
@@ -146,22 +146,10 @@ const TileServiceProperties = props => {
         : currentTerrain.filter(id => id !== selectedId)
       const updatedService = { ...service, terrain }
       tileLayerStore.updateService(key, updatedService)
-
-      if (terrain.length > 0) {
-        store.addTag(key, 'TERRAIN')
-      } else {
-        store.removeTag(key, 'TERRAIN')
-      }
     } else {
       const contentType = target.checked ? 'terrain/mapbox-rgb' : undefined
       const updatedService = { ...service, capabilities: { ...service.capabilities, contentType } }
       tileLayerStore.updateService(key, updatedService)
-
-      if (target.checked) {
-        store.addTag(key, 'TERRAIN')
-      } else {
-        store.removeTag(key, 'TERRAIN')
-      }
     }
   }
 
