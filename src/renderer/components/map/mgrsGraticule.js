@@ -34,25 +34,16 @@ const GRID_1K_STEPS = 3
 
 // --- Styles ---
 // Red tones for visibility on both light and dark basemaps.
-// Vertical lines are rendered thicker than horizontal lines for orientation.
 
-const gzdStrokeV = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 3 })
-const gzdStrokeH = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 2 })
-const grid100kStrokeV = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 2 })
-const grid100kStrokeH = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 1.2 })
-const grid10kStrokeV = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 1.5 })
-const grid10kStrokeH = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 0.8 })
-const grid1kStrokeV = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 1.2 })
-const grid1kStrokeH = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 0.6 })
+const gzdStroke = new Stroke({ color: 'rgba(180, 30, 30, 0.7)', width: 2.5 })
+const grid100kStroke = new Stroke({ color: 'rgba(200, 50, 50, 0.55)', width: 1.5 })
+const grid10kStroke = new Stroke({ color: 'rgba(210, 70, 70, 0.45)', width: 1 })
+const grid1kStroke = new Stroke({ color: 'rgba(220, 90, 90, 0.35)', width: 0.7 })
 
-const gzdStyleV = new Style({ stroke: gzdStrokeV })
-const gzdStyleH = new Style({ stroke: gzdStrokeH })
-const grid100kStyleV = new Style({ stroke: grid100kStrokeV })
-const grid100kStyleH = new Style({ stroke: grid100kStrokeH })
-const grid10kStyleV = new Style({ stroke: grid10kStrokeV })
-const grid10kStyleH = new Style({ stroke: grid10kStrokeH })
-const grid1kStyleV = new Style({ stroke: grid1kStrokeV })
-const grid1kStyleH = new Style({ stroke: grid1kStrokeH })
+const gzdStyle = new Style({ stroke: gzdStroke })
+const grid100kStyle = new Style({ stroke: grid100kStroke })
+const grid10kStyle = new Style({ stroke: grid10kStroke })
+const grid1kStyle = new Style({ stroke: grid1kStroke })
 
 const labelStyle = (text, fontSize = 12) => new Style({
   geometry: feature => feature.getGeometry(),
@@ -148,7 +139,7 @@ const generateGZD = (lonMin, lonMax, latMin, latMax) => {
     )
     if (coords.length >= 2) {
       const f = new Feature({ geometry: new LineString(coords) })
-      f.setStyle(gzdStyleV)
+      f.setStyle(gzdStyle)
       f.set('level', 'gzd')
       features.push(f)
     }
@@ -164,7 +155,7 @@ const generateGZD = (lonMin, lonMax, latMin, latMax) => {
     )
     if (coords.length >= 2) {
       const f = new Feature({ geometry: new LineString(coords) })
-      f.setStyle(gzdStyleH)
+      f.setStyle(gzdStyle)
       f.set('level', 'gzd')
       features.push(f)
     }
@@ -273,7 +264,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid100kStyleV)
+        f.setStyle(grid100kStyle)
         f.set('level', '100k')
         features.push(f)
       }
@@ -291,7 +282,7 @@ const generate100k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid100kStyleH)
+        f.setStyle(grid100kStyle)
         f.set('level', '100k')
         features.push(f)
       }
@@ -384,7 +375,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid10kStyleV)
+        f.setStyle(grid10kStyle)
         f.set('level', '10k')
         features.push(f)
       }
@@ -403,7 +394,7 @@ const generate10k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid10kStyleH)
+        f.setStyle(grid10kStyle)
         f.set('level', '10k')
         features.push(f)
       }
@@ -476,7 +467,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid1kStyleV)
+        f.setStyle(grid1kStyle)
         f.set('level', '1k')
         features.push(f)
       }
@@ -495,7 +486,7 @@ const generate1k = (lonMin, lonMax, latMin, latMax) => {
       if (linePoints.length >= 2) {
         const coords = linePoints.map(([lon, lat]) => toMapCoord(lon, lat))
         const f = new Feature({ geometry: new LineString(coords) })
-        f.setStyle(grid1kStyleH)
+        f.setStyle(grid1kStyle)
         f.set('level', '1k')
         features.push(f)
       }
