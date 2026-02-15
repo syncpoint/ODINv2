@@ -28,40 +28,70 @@ export default $ => {
         ? [2, 6]
         : undefined
 
-    const lineColor = effectiveStyle['line-color'] || '#000000'
+    // line-color may be explicitly undefined/null ("none" in palette)
+    const hasLine = effectiveStyle['line-color'] !== undefined && effectiveStyle['line-color'] !== null
+    const lineColor = hasLine ? effectiveStyle['line-color'] : undefined
     const lineWidth = effectiveStyle['line-width'] || 2
 
-    const styles = [{
-      id: 'style:shape/stroke',
-      geometry,
-      ...(lineColor ? { 'line-color': lineColor } : {}),
-      ...(lineWidth ? { 'line-width': lineWidth } : {}),
-      ...(dashArray ? { 'line-dash-array': dashArray } : {})
-    }]
-
-    // Add fill for polygons (default: transparent — no fill unless explicitly set)
-    if (geometryType === 'Polygon' && effectiveStyle['fill-color']) {
+    // Compute fill for polygons (only when explicitly set)
+    let finalFillColor
+    const hasFill = geometryType === 'Polygon' && effectiveStyle['fill-color']
+    if (hasFill) {
       const fillOpacity = effectiveStyle['fill-opacity'] !== undefined
         ? effectiveStyle['fill-opacity']
         : 0.2
 
       const fillColor = effectiveStyle['fill-color']
-      let finalFillColor = fillColor
       if (fillColor && fillOpacity < 1) {
         const r = parseInt(fillColor.slice(1, 3), 16)
         const g = parseInt(fillColor.slice(3, 5), 16)
         const b = parseInt(fillColor.slice(5, 7), 16)
         finalFillColor = `rgba(${r}, ${g}, ${b}, ${fillOpacity})`
+      } else {
+        finalFillColor = fillColor
       }
+    }
 
-      styles[0] = {
+    // Build style: fill-only, stroke-only, or both
+    const styles = []
+
+    if (hasFill && hasLine) {
+      // Combined stroke + fill
+      styles.push({
         id: 'style:shape/fill',
         geometry,
-        ...(lineColor ? { 'line-color': lineColor } : {}),
-        ...(lineWidth ? { 'line-width': lineWidth } : {}),
+        'line-color': lineColor,
+        'line-width': lineWidth,
         ...(dashArray ? { 'line-dash-array': dashArray } : {}),
         'fill-color': finalFillColor
-      }
+      })
+    } else if (hasFill) {
+      // Fill only, no stroke — override registry default with transparent
+      styles.push({
+        id: 'style:shape/fill',
+        geometry,
+        'line-color': 'transparent',
+        'line-width': 0,
+        'fill-color': finalFillColor
+      })
+    } else if (hasLine) {
+      // Stroke only (lines, or polygons without fill)
+      styles.push({
+        id: 'style:shape/stroke',
+        geometry,
+        'line-color': lineColor,
+        'line-width': lineWidth,
+        ...(dashArray ? { 'line-dash-array': dashArray } : {})
+      })
+    } else {
+      // Neither stroke nor fill — default to black stroke so the shape stays visible
+      // (this is the initial state before any styling is applied)
+      styles.push({
+        id: 'style:shape/stroke',
+        geometry,
+        'line-color': '#000000',
+        'line-width': lineWidth
+      })
     }
 
     return styles

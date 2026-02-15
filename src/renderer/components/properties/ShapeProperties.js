@@ -85,15 +85,15 @@ export default props => {
 const ShapeStyleEditor = ({ featureId, hasPolygon, props }) => {
   const [style, update] = useFeatureStyle(featureId)
 
-  const lineColor = style['line-color'] || '#000000'
+  const lineColor = 'line-color' in style ? style['line-color'] : '#000000'
   const lineWidth = style['line-width'] || 2
   const fillColor = style['fill-color']
   const fillOpacity = style['fill-opacity'] !== undefined ? style['fill-opacity'] : 0.2
   const lineDash = style['line-dash'] || 'solid'
 
-  const setLineColor = color => update({ ...style, 'line-color': color })
+  const setLineColor = color => update({ ...style, 'line-color': color || null })
   const setLineWidth = ({ target }) => update({ ...style, 'line-width': parseInt(target.value) })
-  const setFillColor = color => update({ ...style, 'fill-color': color })
+  const setFillColor = color => update({ ...style, 'fill-color': color || null })
   const setFillOpacity = ({ target }) => update({ ...style, 'fill-opacity': parseFloat(target.value) })
   const setLineDash = ({ target }) => update({
     ...style,
