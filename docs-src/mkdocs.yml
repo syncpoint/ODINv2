@@ -1,0 +1,84 @@
+site_name: ODIN Documentation
+site_description: Documentation for ODIN — Open Source Command & Control Information System
+site_url: https://odin.syncpoint.io/docs/
+repo_url: https://github.com/syncpoint/ODINv2
+repo_name: syncpoint/ODINv2
+edit_uri: edit/main/docs-src/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Inter
+    code: Roboto Mono
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Overview: getting-started/overview.md
+    - Installation: getting-started/installation.md
+    - Core Concepts: getting-started/core-concepts.md
+  - Features:
+    - Military Symbology: features/symbology.md
+    - Shapes: features/shapes.md
+    - MGRS Graticule: features/mgrs-graticule.md
+    - Elevation Data: features/elevation-data.md
+    - Tile Services: features/tile-services.md
+    - Collaboration: features/collaboration.md
+  - Integration:
+    - NIDO API: integration/nido.md
+    - Live Data Sources: integration/live-data-sources.md
+  - Reference:
+    - Keyboard Shortcuts: reference/keyboard-shortcuts.md
+    - Configuration: reference/configuration.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/syncpoint/ODINv2
+    - icon: fontawesome/brands/mastodon
+      link: https://matrix.to/#/#ODIN.Community:syncpoint.io
+
+copyright: Copyright &copy; Syncpoint GmbH — Licensed under AGPL-3.0
