@@ -66,10 +66,12 @@ export default $ => {
         'fill-color': finalFillColor
       })
     } else if (hasFill) {
-      // Fill only, no stroke
+      // Fill only, no stroke — override registry default with transparent
       styles.push({
         id: 'style:shape/fill',
         geometry,
+        'line-color': 'transparent',
+        'line-width': 0,
         'fill-color': finalFillColor
       })
     } else if (hasLine) {
