@@ -77,6 +77,7 @@ nav:
   - Reference:
     - Keyboard Shortcuts: reference/keyboard-shortcuts.md
     - Configuration: reference/configuration.md
+  - What's New: changelog.md
 
 extra:
   social:
