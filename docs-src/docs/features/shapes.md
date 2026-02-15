@@ -9,8 +9,6 @@ freely place on the map and style to your liking.
 All shape tools are available from the **Shapes dropdown** in the toolbar
 (the icon with the geometric shape outline).
 
-![Shapes dropdown menu](img/shapes-dropdown.jpg)
-*The Shapes dropdown offers three drawing tools: Line, Polygon, and Text.*
 
 ### Drawing a Line
 
@@ -82,8 +80,6 @@ Plain text on multiple lines
 - `-` or `*` at the start of a line creates a bullet list item
 - Everything else is rendered as plain text
 
-![Text shape with markdown](img/shapes-text-markdown.jpg)
-*A text shape using markdown for structured annotations. The properties panel on the right shows the text input and style options.*
 
 #### Style Options
 
