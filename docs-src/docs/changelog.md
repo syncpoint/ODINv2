@@ -13,12 +13,16 @@ Release notes for ODIN. For the full changelog, see [GitHub Releases](https://gi
 - **Elevation Data** — Mapbox RGB-encoded terrain layers for real-time elevation display and elevation profiles along line geometries. ([PR #41](https://github.com/syncpoint/ODINv2/pull/41))
 - **Shapes** — Draw non-military lines, polygons, and text annotations with custom styling. ([PR #84](https://github.com/syncpoint/ODINv2/pull/84))
 - **Text Boxes** — Place text on the map with simplified markdown (headings, sub-headings, bullet points).
+- **MGRS Graticule** — Military Grid Reference System overlay with support for special zones (Norway, Svalbard). ([PR #93](https://github.com/syncpoint/ODINv2/pull/93))
+- **Map Quality Setting** — Adjust map rendering quality for different hardware capabilities. ([PR #92](https://github.com/syncpoint/ODINv2/pull/92))
+- **Online Documentation** — Full MkDocs Material documentation at [odin.syncpoint.io/docs](https://odin.syncpoint.io/docs/). ([PR #95](https://github.com/syncpoint/ODINv2/pull/95))
 - **Documentation** — German tutorial (Grundkonzepte) and shape/text documentation added.
 
 ### Fixes
 
 - Avoid duplicate tags due to casing. ([PR #76](https://github.com/syncpoint/ODINv2/pull/76))
 - Fix `File.path` removed in Electron 38 — dropped files had undefined paths.
+- Default properties panel to open for new projects. ([PR #90](https://github.com/syncpoint/ODINv2/pull/90))
 - Improved security following Electron best practices. ([PR #82](https://github.com/syncpoint/ODINv2/pull/82))
 
 ---
