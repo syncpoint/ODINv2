@@ -8,6 +8,75 @@ import { useServices } from '../hooks'
 import { Tooltip } from 'react-tooltip'
 import './SSEServiceProperties.css'
 
+/**
+ * Displays the connection status indicator (green/gray dot with text).
+ * Polls independently so re-renders don't affect the parent form.
+ */
+const SSEConnectionStatus = ({ sseLayerStore, serviceKey }) => {
+  const [connected, setConnected] = React.useState(false)
+
+  React.useEffect(() => {
+    const check = () => {
+      if (sseLayerStore) {
+        const stats = sseLayerStore.getServiceStats(serviceKey)
+        setConnected(!!stats.isConnected)
+      }
+    }
+    check()
+    const interval = setInterval(check, 1000)
+    return () => clearInterval(interval)
+  }, [serviceKey, sseLayerStore])
+
+  const className = connected
+    ? 'sse-status sse-status--connected'
+    : 'sse-status sse-status--disconnected'
+
+  return (
+    <div className={className}>
+      <span className='sse-status-indicator'></span>
+      <span>{connected ? 'Connected' : 'Disconnected'}</span>
+    </div>
+  )
+}
+
+/**
+ * Displays live stats (feature count, messages, updates).
+ * Polls independently so re-renders don't affect the parent form.
+ */
+const SSEServiceStatsPanel = ({ sseLayerStore, serviceKey }) => {
+  const [stats, setStats] = React.useState(null)
+
+  React.useEffect(() => {
+    const update = () => {
+      if (sseLayerStore) {
+        setStats(sseLayerStore.getServiceStats(serviceKey))
+      }
+    }
+    update()
+    const interval = setInterval(update, 1000)
+    return () => clearInterval(interval)
+  }, [serviceKey, sseLayerStore])
+
+  if (!stats?.isConnected) return null
+
+  return (
+    <div className='sse-stats'>
+      <div className='sse-stat'>
+        <span className='sse-stat-label'>Features:</span>
+        <span className='sse-stat-value'>{stats.featureCount}</span>
+      </div>
+      <div className='sse-stat'>
+        <span className='sse-stat-label'>Messages:</span>
+        <span className='sse-stat-value'>{stats.messagesReceived}</span>
+      </div>
+      <div className='sse-stat'>
+        <span className='sse-stat-label'>Updates:</span>
+        <span className='sse-stat-value'>{stats.mapUpdates}</span>
+      </div>
+    </div>
+  )
+}
+
 const SSEServiceProperties = props => {
   const { sseLayerStore, store } = useServices()
   const [key, service] = (Object.entries(props.features))[0]
@@ -20,21 +89,24 @@ const SSEServiceProperties = props => {
   const [heatmapInterval, setHeatmapInterval] = React.useState({ dirty: false, value: service.heatmapInterval ?? 1000 })
   const [maxHeatmapFeatures, setMaxHeatmapFeatures] = React.useState({ dirty: false, value: service.maxHeatmapFeatures ?? 50000 })
   const [vectorOpacity, setVectorOpacity] = React.useState({ dirty: false, value: service.vectorOpacity ?? 1 })
-  const [stats, setStats] = React.useState({ isConnected: false, featureCount: 0 })
+  const [connected, setConnected] = React.useState(false)
 
   const renderMode = service.renderMode || 'vector'
   const isHeatmap = renderMode === 'heatmap'
 
-  // Update stats periodically
+  // Track connection status as a primitive boolean.
+  // React skips re-renders when the value hasn't changed,
+  // so this won't cause re-renders during steady streaming.
   React.useEffect(() => {
-    const updateStats = () => {
+    const checkConnection = () => {
       if (sseLayerStore) {
-        setStats(sseLayerStore.getServiceStats(key))
+        const stats = sseLayerStore.getServiceStats(key)
+        setConnected(!!stats.isConnected)
       }
     }
 
-    updateStats()
-    const interval = setInterval(updateStats, 1000)
+    checkConnection()
+    const interval = setInterval(checkConnection, 1000)
     return () => clearInterval(interval)
   }, [key, sseLayerStore])
 
@@ -165,12 +237,7 @@ const SSEServiceProperties = props => {
     updateService({ useFeatureIds: target.checked })
   }
 
-  const connectionStatusClass = stats.isConnected
-    ? 'sse-status sse-status--connected'
-    : 'sse-status sse-status--disconnected'
-
-  const connectionStatusText = stats.isConnected ? 'Connected' : 'Disconnected'
-  const isConnected = service.enabled && stats.isConnected
+  const isConnected = service.enabled && connected
 
   return (
     <FlexColumnGap>
@@ -334,28 +401,10 @@ const SSEServiceProperties = props => {
           />
           <span>Enabled</span>
         </label>
-        <div className={connectionStatusClass}>
-          <span className='sse-status-indicator'></span>
-          <span>{connectionStatusText}</span>
-        </div>
+        <SSEConnectionStatus sseLayerStore={sseLayerStore} serviceKey={key} />
       </div>
 
-      {stats.isConnected && (
-        <div className='sse-stats'>
-          <div className='sse-stat'>
-            <span className='sse-stat-label'>Features:</span>
-            <span className='sse-stat-value'>{stats.featureCount}</span>
-          </div>
-          <div className='sse-stat'>
-            <span className='sse-stat-label'>Messages:</span>
-            <span className='sse-stat-value'>{stats.messagesReceived}</span>
-          </div>
-          <div className='sse-stat'>
-            <span className='sse-stat-label'>Updates:</span>
-            <span className='sse-stat-value'>{stats.mapUpdates}</span>
-          </div>
-        </div>
-      )}
+      <SSEServiceStatsPanel sseLayerStore={sseLayerStore} serviceKey={key} />
     </FlexColumnGap>
   )
 }
