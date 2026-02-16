@@ -233,7 +233,13 @@ class SSEVectorSource extends VectorSource {
       try {
         /** @type {GeoJSONData} */
         const data = JSON.parse(event.data)
-        if (data.id) {
+        if (data.type === 'FeatureCollection' && data.features) {
+          data.features.forEach(feature => {
+            if (feature.id) {
+              feature.id = `${this.idPrefix}${feature.id}`
+            }
+          })
+        } else if (data.id) {
           data.id = `${this.idPrefix}${data.id}`
         }
         if (this.onMessage) {
