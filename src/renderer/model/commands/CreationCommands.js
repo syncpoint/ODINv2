@@ -104,7 +104,14 @@ CreateSSEService.prototype.execute = function () {
     dataProjection: 'EPSG:4326',
     updateInterval: 100,
     featureIdPrefix: `feature:${layerId}/`,
-    useFeatureIds: true
+    useFeatureIds: true,
+    renderMode: 'vector',
+    heatmapRadius: 20,
+    heatmapBlur: 15,
+    heatmapOpacity: 0.75,
+    heatmapInterval: 1000,
+    maxHeatmapFeatures: 50000,
+    vectorOpacity: 1
   }]])
   this.selection.focus(key)
 }

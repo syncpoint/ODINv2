@@ -1,5 +1,6 @@
 import Collection from 'ol/Collection'
 import LayerGroup from 'ol/layer/Group'
+import HeatmapLayer from 'ol/layer/Heatmap'
 import VectorLayer from 'ol/layer/Vector'
 import * as ID from '../ids'
 import SSEVectorSource from '../components/map/SSEVectorSource'
@@ -28,7 +29,7 @@ SSELayerStore.prototype.bootstrap = async function () {
 }
 
 /**
- * Create LayerGroup with VectorLayers for enabled services.
+ * Create LayerGroup with layers for enabled services.
  */
 SSELayerStore.prototype.sseLayers = async function () {
   const services = await this.store.tuples(ID.SSE_SERVICE_SCOPE)
@@ -39,18 +40,30 @@ SSELayerStore.prototype.sseLayers = async function () {
     }
   }
 
-  this.layerCollection = new Collection(Array.from(this.layers.values()).map(({ layer }) => layer))
+  const heatmapLayers = []
+  const vectorLayers = []
+  for (const { layer } of this.layers.values()) {
+    if (layer instanceof HeatmapLayer) {
+      heatmapLayers.push(layer)
+    } else {
+      vectorLayers.push(layer)
+    }
+  }
+
+  this.layerCollection = new Collection([...heatmapLayers, ...vectorLayers])
   this.layerGroup = new LayerGroup({ layers: this.layerCollection })
   return [this.layerGroup]
 }
 
 /**
- * Create VectorLayer with SSEVectorSource for a service.
+ * Create a VectorLayer or HeatmapLayer with SSEVectorSource for a service.
  */
 SSELayerStore.prototype.createLayer = function (key, service) {
   if (this.layers.has(key)) {
     return this.layers.get(key)
   }
+
+  const renderMode = service.renderMode || 'vector'
 
   const source = new SSEVectorSource({
     sseUrl: service.url,
@@ -58,13 +71,29 @@ SSELayerStore.prototype.createLayer = function (key, service) {
     dataProjection: service.dataProjection || 'EPSG:4326',
     updateInterval: service.updateInterval || 100,
     idPrefix: service.featureIdPrefix || 'feature:',
-    useFeatureIds: service.useFeatureIds !== false
+    useFeatureIds: service.useFeatureIds !== false,
+    renderMode,
+    heatmapInterval: service.heatmapInterval ?? 1000,
+    maxHeatmapFeatures: service.maxHeatmapFeatures ?? 50000
   })
 
-  const layer = new VectorLayer({
-    source,
-    id: key
-  })
+  let layer
+  if (renderMode === 'heatmap') {
+    layer = new HeatmapLayer({
+      source,
+      id: key,
+      blur: service.heatmapBlur ?? 15,
+      radius: service.heatmapRadius ?? 20,
+      opacity: service.heatmapOpacity ?? 0.75,
+      weight: feature => feature.get('weight') ?? 0.5
+    })
+  } else {
+    layer = new VectorLayer({
+      source,
+      id: key,
+      opacity: service.vectorOpacity ?? 1
+    })
+  }
 
   this.layers.set(key, { layer, source })
 
@@ -95,7 +124,29 @@ SSELayerStore.prototype.updateOrCreateService = function (key, service) {
   const existing = this.layers.get(key)
 
   if (existing) {
-    const { source } = existing
+    const { source, layer } = existing
+
+    // Render mode change requires full layer recreate
+    const renderMode = service.renderMode || 'vector'
+    if (source.renderMode !== renderMode) {
+      this.removeLayer(key)
+      if (service.enabled) {
+        const { layer: newLayer } = this.createLayer(key, service)
+        this.insertLayerOrdered(newLayer)
+      }
+      return
+    }
+
+    // Dynamically update layer properties based on mode
+    if (renderMode === 'heatmap' && layer instanceof HeatmapLayer) {
+      layer.setBlur(service.heatmapBlur ?? 15)
+      layer.setRadius(service.heatmapRadius ?? 20)
+      layer.setOpacity(service.heatmapOpacity ?? 0.75)
+      source.heatmapInterval = service.heatmapInterval ?? 1000
+      source.maxHeatmapFeatures = service.maxHeatmapFeatures ?? 50000
+    } else {
+      layer.setOpacity(service.vectorOpacity ?? 1)
+    }
 
     // Check if we need to reconnect due to config changes
     const configChanged = source.sseUrl !== service.url ||
@@ -126,9 +177,24 @@ SSELayerStore.prototype.updateOrCreateService = function (key, service) {
   } else if (service.enabled) {
     // Create new layer for enabled service
     const { layer } = this.createLayer(key, service)
-    if (this.layerCollection) {
+    this.insertLayerOrdered(layer)
+  }
+}
+
+/**
+ * Insert a layer at the correct position: heatmap layers before all vector layers.
+ */
+SSELayerStore.prototype.insertLayerOrdered = function (layer) {
+  if (!this.layerCollection) return
+  if (layer instanceof HeatmapLayer) {
+    const index = this.layerCollection.getArray().findIndex(l => !(l instanceof HeatmapLayer))
+    if (index === -1) {
       this.layerCollection.push(layer)
+    } else {
+      this.layerCollection.insertAt(index, layer)
     }
+  } else {
+    this.layerCollection.push(layer)
   }
 }
 

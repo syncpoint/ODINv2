@@ -84,7 +84,7 @@ class SSEVectorSource extends VectorSource {
       strategy: function (extent, resolution) {
         if (state.resolution !== resolution) {
           state.resolution = resolution
-          this.getFeatures().map(feature => feature.$.centerResolution(resolution))
+          this.getFeatures().forEach(feature => feature.$?.centerResolution(resolution))
         }
         return [extent]
       }
@@ -127,6 +127,30 @@ class SSEVectorSource extends VectorSource {
      * @type {boolean}
      */
     this.useFeatureIds = options.useFeatureIds !== false
+
+    /**
+     * Render mode: 'vector' for normal rendering, 'heatmap' for density visualization
+     * @type {string}
+     */
+    this.renderMode = options.renderMode || 'vector'
+
+    /**
+     * Rate limiting interval for heatmap accumulation in milliseconds
+     * @type {number}
+     */
+    this.heatmapInterval = options.heatmapInterval || 1000
+
+    /**
+     * Timestamp of last heatmap accumulation (ms since epoch)
+     * @type {number}
+     */
+    this.lastHeatmapUpdate = 0
+
+    /**
+     * Maximum number of accumulated heatmap features before oldest are dropped
+     * @type {number}
+     */
+    this.maxHeatmapFeatures = options.maxHeatmapFeatures || 50000
 
     /**
      * Prefix added to feature IDs
@@ -285,6 +309,8 @@ class SSEVectorSource extends VectorSource {
       this.timerId = null
     }
 
+    this.lastHeatmapUpdate = 0
+
     this.dispatchEvent({
       type: 'sse-disconnected',
       source: this
@@ -336,7 +362,13 @@ class SSEVectorSource extends VectorSource {
         console.warn('Unknown feature type ' + this.pendingData.type)
       }
 
-      if (this.useFeatureIds) {
+      if (this.renderMode === 'heatmap') {
+        const now = Date.now()
+        if (now - this.lastHeatmapUpdate >= this.heatmapInterval) {
+          this.accumulateFeatures(features)
+          this.lastHeatmapUpdate = now
+        }
+      } else if (this.useFeatureIds) {
         this.updateFeaturesById(features)
       } else {
         this.replaceAllFeatures(features)
@@ -399,6 +431,37 @@ class SSEVectorSource extends VectorSource {
       return this.featureReader(reprojectedFeature)
     })
     this.addFeatures(olFeatures)
+  }
+
+  /**
+   * Accumulates features without clearing existing ones (for heatmap mode).
+   * Uses lightweight format.readFeature() instead of signal-based featureReader.
+   * Maps properties.confidence to a 'weight' property for heatmap rendering.
+   *
+   * @param {GeoJSONFeature[]} features - Array of GeoJSON features
+   * @returns {void}
+   */
+  accumulateFeatures (features) {
+    const olFeatures = features.map(feature => {
+      const reprojectedFeature = {
+        ...feature,
+        geometry: this.reprojectGeometry(feature.geometry)
+      }
+      const olFeature = format.readFeature(reprojectedFeature)
+      const confidence = feature.properties?.confidence
+      olFeature.set('weight', confidence != null ? confidence : 0.5)
+      return olFeature
+    })
+    this.addFeatures(olFeatures)
+
+    // Evict oldest features when cap is exceeded
+    const all = this.getFeatures()
+    const excess = all.length - this.maxHeatmapFeatures
+    if (excess > 0) {
+      for (let i = 0; i < excess; i++) {
+        this.removeFeature(all[i])
+      }
+    }
   }
 
   /**
