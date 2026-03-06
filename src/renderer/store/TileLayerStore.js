@@ -28,6 +28,16 @@ const fetchCapabilities = async service => {
         if (Array.isArray(json)) {
           return TileService.adapters.TileJSONDiscovery({ url: service.url, services: json })
         }
+        // martin catalog format: { tiles: { name: { content_type, name, description } } }
+        if (json.tiles && !Array.isArray(json.tiles) && typeof json.tiles === 'object') {
+          const services = Object.entries(json.tiles).map(([id, info]) => ({
+            name: info.name || id,
+            imageType: info.content_type?.split('/')[1] || 'png',
+            url: `${service.url.replace(/\/catalog\/?$/, '')}/${id}`,
+            description: info.description || ''
+          }))
+          return TileService.adapters.TileJSONDiscovery({ url: service.url, services })
+        }
         // Single TileJSON document
         if (json.tiles && Array.isArray(json.tiles)) {
           return TileService.adapters.TileJSON({ url: service.url, tileJSON: json })
