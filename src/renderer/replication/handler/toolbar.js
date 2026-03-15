@@ -26,7 +26,9 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
       }
       case 'share': {
         const { name } = await store.value(id)
-        const layer = await replicatedProject.shareLayer(id, name)
+        // Inherit encryption setting from the project (set during handleShare in ProjectList)
+        const cryptoEnabled = replicatedProject.cryptoManager !== null
+        const layer = await replicatedProject.shareLayer(id, name, '', { encrypted: cryptoEnabled })
         if (!layer) {
           console.log('layer is already shared')
           return

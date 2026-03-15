@@ -10,5 +10,6 @@ module.exports = {
 
   // E2EE: passphrase management via safeStorage (main process only)
   encryptPassphrase: (passphrase) => ipcRenderer.invoke('ipc:replication/encryptPassphrase', passphrase),
-  decryptPassphrase: (encrypted) => ipcRenderer.invoke('ipc:replication/decryptPassphrase', encrypted)
+  decryptPassphrase: (encrypted) => ipcRenderer.invoke('ipc:replication/decryptPassphrase', encrypted),
+  setCryptoEnabled: (id, enabled) => ipcRenderer.invoke('ipc:put:project:crypto/enabled', id, enabled)
 }

@@ -84,6 +84,20 @@ export const ipc = (ipcMain, projectStore) => {
     }
   })
 
+  // E2EE: store crypto:enabled flag in project's session DB
+  ipcMain.handle('ipc:put:project:crypto/enabled', async (_, id, enabled) => {
+    try {
+      const uuid = id.split(':')[1]
+      const location = path.join(paths.databases, uuid)
+      const db = leveldb({ location })
+      const session = sessionDB(db)
+      await session.put('crypto:enabled', enabled)
+      await db.close()
+    } catch (error) {
+      console.error('Failed to store crypto:enabled:', error)
+    }
+  })
+
   // E2EE: encrypt/decrypt passphrases via Electron's safeStorage API.
   // safeStorage uses the OS keychain (DPAPI on Windows, Keychain on macOS, libsecret on Linux)
   // to protect the passphrase at rest.
