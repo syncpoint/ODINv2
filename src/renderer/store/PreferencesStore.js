@@ -29,7 +29,8 @@ export default function PreferencesStore (preferencesDB, prefsBridge) {
     prefsBridge.onViewCoordinatesFormat(format => this.setCoordinatesFromat(format)),
     prefsBridge.onViewGraticule((type, checked) => this.setGraticule(type, checked)),
     prefsBridge.onViewShowSidebar(checked => this.showSidebar(checked)),
-    prefsBridge.onViewShowToolbar(checked => this.showToolbar(checked))
+    prefsBridge.onViewShowToolbar(checked => this.showToolbar(checked)),
+    prefsBridge.onViewMapQuality(quality => this.setMapQuality(quality))
   ]
 }
 
@@ -52,6 +53,11 @@ PreferencesStore.prototype.showSidebar = function (checked) {
 
 PreferencesStore.prototype.showToolbar = function (checked) {
   this.put('ui.toolbar.showing', checked)
+}
+
+PreferencesStore.prototype.setMapQuality = function (quality) {
+  this.put('map.quality', quality)
+  this.emit('mapQualityChanged', { quality })
 }
 
 /**

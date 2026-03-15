@@ -78,7 +78,7 @@ jobs:
         node-version: 22.x
         cache: 'npm'
 
-    - run: npm ci --no-audit --no-optional
+    - run: npm ci --no-audit
     - run: npm run webpack:production
 
     - name: Build and notarize macOS app

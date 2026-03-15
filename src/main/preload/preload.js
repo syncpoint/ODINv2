@@ -1,3 +1,4 @@
+const { webUtils } = require('electron')
 const projects = require('./modules/projects')
 const replication = require('./modules/replication')
 const collaboration = require('./modules/collaboration')
@@ -17,5 +18,6 @@ window.odin = {
   window: window_,
   preferences,
   editing,
-  platform
+  platform,
+  webUtils
 }

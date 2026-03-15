@@ -119,7 +119,7 @@ SSELayerStore.prototype.updateOrCreateService = function (key, service) {
     // Handle enabled state change
     if (service.enabled && service.url && !source.isConnected()) {
       source.connect()
-    } else if (!service.enabled && source.isConnected()) {
+    } else if (!service.enabled) {
       source.disconnect()
       source.clear()
     }

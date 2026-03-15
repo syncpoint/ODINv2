@@ -21,8 +21,14 @@ const formats = {
   DMS: ([lng, lat]) => `${Dms.toLat(lat, 'dms')} ${Dms.toLon(lng, 'dms')}`,
   DDM: ([lng, lat]) => `${Dms.toLat(lat, 'dm')} ${Dms.toLon(lng, 'dm')}`,
   DD: ([lng, lat]) => `${Dms.toLat(lat, 'd')} ${Dms.toLon(lng, 'd')}`,
-  MGRS: ([lng, lat]) => new LatLon(lat, lng).toUtm().toMgrs().toString(),
-  UTM: ([lng, lat]) => new LatLon(lat, lng).toUtm().toString()
+  MGRS: ([lng, lat]) => {
+    if (lat < -80 || lat > 84) return 'Outside MGRS limits'
+    return new LatLon(lat, lng).toUtm().toMgrs().toString()
+  },
+  UTM: ([lng, lat]) => {
+    if (lat < -80 || lat > 84) return 'Outside UTM limits'
+    return new LatLon(lat, lng).toUtm().toString()
+  }
 }
 
 const elevation = rgb => {
