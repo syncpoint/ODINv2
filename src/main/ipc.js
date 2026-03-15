@@ -1,6 +1,6 @@
 import path from 'path'
 import { promises as fs } from 'fs'
-import { app } from 'electron'
+import { app, safeStorage } from 'electron'
 import { leveldb, sessionDB } from '../shared/level'
 import { initPaths } from './paths'
 
@@ -82,5 +82,25 @@ export const ipc = (ipcMain, projectStore) => {
     } catch (error) {
       console.error(error)
     }
+  })
+
+  // E2EE: encrypt/decrypt passphrases via Electron's safeStorage API.
+  // safeStorage uses the OS keychain (DPAPI on Windows, Keychain on macOS, libsecret on Linux)
+  // to protect the passphrase at rest.
+
+  ipcMain.handle('ipc:replication/encryptPassphrase', (_, passphrase) => {
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new Error('safeStorage encryption is not available on this platform')
+    }
+    // Returns a Buffer; convert to base64 for storage in LevelDB
+    return safeStorage.encryptString(passphrase).toString('base64')
+  })
+
+  ipcMain.handle('ipc:replication/decryptPassphrase', (_, encryptedBase64) => {
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new Error('safeStorage encryption is not available on this platform')
+    }
+    const encrypted = Buffer.from(encryptedBase64, 'base64')
+    return safeStorage.decryptString(encrypted)
   })
 }

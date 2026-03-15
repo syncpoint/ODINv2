@@ -6,5 +6,9 @@ module.exports = {
   getCredentials: (id) => ipcRenderer.invoke('ipc:get:replication/credentials', id),
   putCredentials: (id, credentials) => ipcRenderer.invoke('ipc:put:replication/credentials', id, credentials),
   delCredentials: (id) => ipcRenderer.invoke('ipc:del:replication/credentials', id),
-  putReplicationSeed: (id, seed) => ipcRenderer.invoke('ipc:put:project:replication/seed', id, seed)
+  putReplicationSeed: (id, seed) => ipcRenderer.invoke('ipc:put:project:replication/seed', id, seed),
+
+  // E2EE: passphrase management via safeStorage (main process only)
+  encryptPassphrase: (passphrase) => ipcRenderer.invoke('ipc:replication/encryptPassphrase', passphrase),
+  decryptPassphrase: (encrypted) => ipcRenderer.invoke('ipc:replication/decryptPassphrase', encrypted)
 }
