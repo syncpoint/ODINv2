@@ -1,4 +1,5 @@
 import * as ID from '../../ids'
+import { rolesReducer } from '../shared'
 
 export default ({ store, replicatedProject, CREATOR_ID }) => {
   return async ({ action, id, parameter }) => {
@@ -20,7 +21,11 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         const operations = await replicatedProject.content(layer.id)
         console.log(`Initial sync has ${operations.length} operations`)
         await store.import(operations, { creatorId: CREATOR_ID })
-        // TODO: check the powerlevel and apply restrictions if required
+
+        // Apply layer restrictions based on the user's role
+        const permissions = [layer].reduce(rolesReducer, { restrict: [], permit: [] })
+        if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
+        if (permissions.permit.length > 0) await store.permit(permissions.permit)
         break
       }
       case 'share': {
