@@ -14,11 +14,13 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         ], { creatorId: CREATOR_ID })
         await store.delete(id) // invitation ID
         /*
-          Content loading is deferred to the selfJoined event handler
-          (upstream.js). This ensures the server has fully processed
-          the join before we attempt to load content — avoids empty
-          responses on federated or slow servers.
+          Load the entire existing content. The join HTTP call is synchronous —
+          once it returns 200, the messages endpoint should have the content.
         */
+        const operations = await replicatedProject.content(layer.id)
+        console.log(`Initial sync has ${operations.length} operations`)
+        await store.import(operations, { creatorId: CREATOR_ID })
+        // TODO: check the powerlevel and apply restrictions if required
         break
       }
       case 'share': {
