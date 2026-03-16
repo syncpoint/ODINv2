@@ -42,7 +42,11 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         const keys = await store.collectKeys([id], [ID.STYLE, ID.LINK, ID.TAGS, ID.FEATURE])
         const tuples = await store.tuples(keys)
         const operations = tuples.map(([key, value]) => ({ type: 'put', key, value }))
-        replicatedProject.post(id, operations)
+        await replicatedProject.post(id, operations)
+
+        /* Share Megolm session keys with all project members so they can
+           decrypt this layer's content even if they join later (offline). */
+        await replicatedProject.shareHistoricalKeys(id)
         break
       }
       case 'leave': {
