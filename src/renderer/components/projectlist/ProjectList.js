@@ -372,6 +372,10 @@ export const ProjectList = () => {
       // createProject requires the id to be a UUID without prefix
       await projectStore.createProject(project.id.split(':')[1], project.name, ['SHARED'])
       await projectStore.putReplicationSeed(project.id, seed)
+      // Persist the project's E2EE setting so Project-services.js picks it up on open.
+      if (seed.encrypted) {
+        await window.odin.replication.setCryptoEnabled(project.id, true)
+      }
     }
 
     const handleShare = () => {
