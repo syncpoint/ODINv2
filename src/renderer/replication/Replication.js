@@ -140,7 +140,7 @@ const Replication = () => {
           Start the timeline sync process with the most recent stream token
         */
         const mostRecentStreamToken = await sessionStore.get(KEYS.STREAM_TOKEN, null)
-        replicatedProject.start(mostRecentStreamToken, upstreamHandler({ sessionStore, setOffline, store, CREATOR_ID, replicatedProject }))
+        replicatedProject.start(mostRecentStreamToken, upstreamHandler({ sessionStore, setOffline, store, CREATOR_ID }))
         feedback(null)
         signals['replication/operational'](true)
         setInitialized(true)

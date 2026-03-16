@@ -1,7 +1,7 @@
 import * as ID from '../../ids'
 import { KEYS, rolesReducer } from '../shared'
 
-export default ({ sessionStore, setOffline, store, CREATOR_ID, replicatedProject }) => {
+export default ({ sessionStore, setOffline, store, CREATOR_ID }) => {
   /*
     Handling upstream events triggered by the timeline API
   */
@@ -40,19 +40,6 @@ export default ({ sessionStore, setOffline, store, CREATOR_ID, replicatedProject
       if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
       const rolesOperations = roles.map(l => ({ type: 'put', key: ID.roleId(l.id), value: l.role }))
       await store.import(rolesOperations, { creatorId: CREATOR_ID })
-    },
-    selfJoined: async ({ roomId, id }) => {
-      if (!id) return
-      console.log(`Self joined room ${roomId}, loading initial content for layer ${id}`)
-      try {
-        const operations = await replicatedProject.content(id)
-        console.log(`Initial sync (via selfJoined) has ${operations.length} operations`)
-        if (operations.length > 0) {
-          await store.import(operations, { creatorId: CREATOR_ID })
-        }
-      } catch (err) {
-        console.error(`Failed to load content after self-join for ${id}:`, err)
-      }
     },
     error: async (error) => {
       console.error(error)
