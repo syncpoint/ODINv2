@@ -18,14 +18,21 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
           Load the entire existing content. The join HTTP call is synchronous —
           once it returns 200, the messages endpoint should have the content.
         */
+        // Apply layer restrictions based on the user's role BEFORE importing content,
+        // so the layer is marked as restricted first.
+        const permissions = [layer].reduce(rolesReducer, { restrict: [], permit: [] })
+        if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
+        if (permissions.permit.length > 0) await store.permit(permissions.permit)
+
         const operations = await replicatedProject.content(layer.id)
         console.log(`Initial sync has ${operations.length} operations`)
         await store.import(operations, { creatorId: CREATOR_ID })
 
-        // Apply layer restrictions based on the user's role
-        const permissions = [layer].reduce(rolesReducer, { restrict: [], permit: [] })
-        if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
-        if (permissions.permit.length > 0) await store.permit(permissions.permit)
+        // Restrict individual features if the layer is restricted
+        if (permissions.restrict.length > 0 && operations.length > 0) {
+          const operationKeys = operations.map(o => o.key)
+          await store.restrict(operationKeys)
+        }
         break
       }
       case 'share': {
