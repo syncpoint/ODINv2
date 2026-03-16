@@ -18,14 +18,15 @@ import SelfUpdate from './SelfUpdate'
 import { isEnabled } from './environment'
 
 // Override userData path before Electron/Chromium initializes.
-// --user-data-dir is a Chromium flag that breaks custom protocol handlers (app://),
-// so we intercept it and use Electron's app.setPath() instead.
-const userDataArg = process.argv.find(a => a.startsWith('--user-data-dir='))
-if (userDataArg) {
-  const userDataPath = userDataArg.split('=')[1]
+// --user-data-dir is a Chromium flag that changes the session context,
+// which breaks custom protocol handlers registered on the default session.
+// We must remove it from process.argv before Chromium reads it and use
+// Electron's app.setPath() instead.
+const userDataArgIndex = process.argv.findIndex(a => a.startsWith('--user-data-dir='))
+if (userDataArgIndex !== -1) {
+  const userDataPath = process.argv[userDataArgIndex].split('=')[1]
+  process.argv.splice(userDataArgIndex, 1)
   app.setPath('userData', userDataPath)
-  // Remove the flag from argv so Chromium doesn't process it.
-  app.commandLine.removeSwitch('user-data-dir')
 }
 
 const paths = initPaths(app)
