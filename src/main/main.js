@@ -17,6 +17,17 @@ import * as dotenv from 'dotenv'
 import SelfUpdate from './SelfUpdate'
 import { isEnabled } from './environment'
 
+// Override userData path before Electron/Chromium initializes.
+// --user-data-dir is a Chromium flag that breaks custom protocol handlers (app://),
+// so we intercept it and use Electron's app.setPath() instead.
+const userDataArg = process.argv.find(a => a.startsWith('--user-data-dir='))
+if (userDataArg) {
+  const userDataPath = userDataArg.split('=')[1]
+  app.setPath('userData', userDataPath)
+  // Remove the flag from argv so Chromium doesn't process it.
+  app.commandLine.removeSwitch('user-data-dir')
+}
+
 const paths = initPaths(app)
 
 /**
