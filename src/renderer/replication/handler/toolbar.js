@@ -39,6 +39,18 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         if (permissions.permit.length > 0) await store.permit(permissions.permit)
 
         // Load and import initial content (respects layer restrictions)
+        console.log(`DEBUG: layer.id = "${layer.id}"`)
+        console.log(`DEBUG: idMapping for layer.id = "${replicatedProject.idMapping.get(layer.id)}"`)
+        const upstreamId = replicatedProject.idMapping.get(layer.id)
+        if (upstreamId) {
+          // Raw fetch to compare with our API
+          const creds = replicatedProject.timelineAPI.credentials()
+          const rawUrl = `${creds.home_server_url}/_matrix/client/v3/rooms/${encodeURIComponent(upstreamId)}/messages?dir=f&limit=100`
+          const rawRes = await fetch(rawUrl, { headers: { Authorization: `Bearer ${creds.access_token}` } })
+          const rawData = await rawRes.json()
+          console.log(`DEBUG: raw /messages returned ${rawData.chunk?.length || 0} events`)
+          rawData.chunk?.forEach(e => console.log(`DEBUG:   → type=${e.type} sender=${e.sender}`))
+        }
         const operations = await replicatedProject.content(layer.id)
         console.log(`Initial sync has ${operations.length} operations`)
         await importOperations(store, layer.id, operations, CREATOR_ID)
