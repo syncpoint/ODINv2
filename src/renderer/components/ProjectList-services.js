@@ -1,3 +1,6 @@
+import levelup from 'levelup'
+import memdown from 'memdown'
+import sublevel from 'subleveldown'
 import ProjectStore from '../store/ProjectStore'
 import { Selection } from '../Selection'
 import { MatrixClient } from '@syncpoint/matrix-client-api'
@@ -13,7 +16,8 @@ export default async () => {
   services.replicationProvider = credentials
     ? MatrixClient({
       ...credentials,
-      device_id: 'PROJECT-LIST'
+      device_id: 'PROJECT-LIST',
+      db: sublevel(levelup(memdown()), 'command-queue', { valueEncoding: 'json' })
     })
     : {
         disabled: true
