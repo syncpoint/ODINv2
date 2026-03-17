@@ -38,14 +38,6 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
         if (permissions.permit.length > 0) await store.permit(permissions.permit)
 
-        // When E2EE is active, historical keys arrive via the sync stream's
-        // to_device events (receiveSyncChanges → importRoomKeys). The stream
-        // runs in parallel, so we need to give it time to process the keys
-        // before attempting to decrypt content.
-        if (replicatedProject.cryptoManager) {
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-
         // Load and import initial content (respects layer restrictions)
         const operations = await replicatedProject.content(layer.id)
         console.log(`Initial sync has ${operations.length} operations`)
