@@ -38,10 +38,10 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
         if (permissions.permit.length > 0) await store.permit(permissions.permit)
 
-        // Load and import initial content (respects layer restrictions)
-        const operations = await replicatedProject.content(layer.id)
-        console.log(`Initial sync has ${operations.length} operations`)
-        await importOperations(store, layer.id, operations, CREATOR_ID)
+        // Content is NOT fetched here. It will arrive via the sync-gated
+        // mechanism in matrix-client-api: Project.start() detects the room
+        // in the next sync cycle and delivers operations through the
+        // received() stream handler.
         break
       }
       case 'share': {
