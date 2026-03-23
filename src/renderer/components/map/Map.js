@@ -1,7 +1,7 @@
 import React from 'react'
 import 'ol/ol.css'
 import * as ol from 'ol'
-import { ScaleLine, Rotate } from 'ol/control'
+import { Attribution, ScaleLine, Rotate } from 'ol/control'
 import '../../epsg'
 import { useServices } from '../hooks'
 import defaultInteractions from '../../ol/interaction'
@@ -37,6 +37,7 @@ export const Map = () => {
 
     const controlsTarget = document.getElementById('osd')
     const controls = [
+      new Attribution({ target: controlsTarget, collapsible: false }),
       new Rotate({ target: controlsTarget }), // macOS: OPTION + SHIFT + DRAG
       new ScaleLine({ bar: true, text: true, minWidth: 128, target: controlsTarget })
     ]

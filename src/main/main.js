@@ -52,6 +52,17 @@ const ready = async () => {
     'form-action \'self\''
   ].join('; ')
 
+  // Set a Referer header for outbound tile requests.
+  // OSM tile servers require a valid Referer (see https://operations.osmfoundation.org/policies/tiles/).
+  // Electron doesn't send one from app:// or file:// origins.
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    const headers = { ...details.requestHeaders }
+    if (!headers.Referer && !details.url.startsWith('app://') && !details.url.startsWith('file://')) {
+      headers.Referer = 'https://odin.syncpoint.io/'
+    }
+    callback({ requestHeaders: headers })
+  })
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     const headers = { ...details.responseHeaders }
 
