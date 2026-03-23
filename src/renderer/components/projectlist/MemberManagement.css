@@ -32,7 +32,7 @@
 
 .mm-title {
   flex: 1;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
   color: #1a1a1a;
   white-space: nowrap;
@@ -44,7 +44,7 @@
 }
 
 .mm-self-role {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   color: #8c8c8c;
   text-transform: uppercase;
@@ -63,7 +63,7 @@
 }
 
 .mm-role-select {
-  font-size: 13px;
+  font-size: 16px;
   padding: 3px 6px;
   border: 1px solid #d9d9d9;
   border-radius: 3px;
@@ -138,7 +138,7 @@
 
 /* Search input for invite view */
 .mm-content .search {
-  font-size: 13px;
+  font-size: 16px;
   padding: 5px 8px;
   border: 1px solid #d9d9d9;
   border-radius: 3px;
