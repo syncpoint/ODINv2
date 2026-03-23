@@ -108,3 +108,28 @@ export const useEmitter = key => {
     return services.emitters[key]
   }, [key, services])
 }
+
+/**
+ * Track the number of pending invitations (invited:* keys in the store).
+ * Re-counts on every batch event that touches invited keys.
+ */
+export const useInvitationCount = () => {
+  const { store } = useServices()
+  const [count, setCount] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!store) return
+
+    const recount = () => store.keys('invited').then(keys => setCount(keys.length))
+    recount()
+
+    const handler = ({ operations }) => {
+      if (operations.some(op => op.key && op.key.startsWith('invited:'))) recount()
+    }
+
+    store.on('batch', handler)
+    return () => store.off('batch', handler)
+  }, [store])
+
+  return count
+}

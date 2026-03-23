@@ -64,6 +64,24 @@
   opacity: 1;
 }
 
+.a74a-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #e9746c;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
 .a74a-breadcrumb {
   display: flex;
   flex-direction: column;
