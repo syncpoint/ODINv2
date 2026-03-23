@@ -34,13 +34,13 @@ const List = props => {
 
   const card = index => {
     const entry = entries[index]
-    return child({
+    return React.cloneElement(child({
       entry,
       id: entry.id,
       focused: R.last(selected) === entry.id,
       selected: selected.includes(entry.id),
       ref: cardrefs[index]
-    })
+    }), { key: entry.id })
   }
 
   const list = entries.length
