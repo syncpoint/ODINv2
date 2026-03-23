@@ -1,38 +1,40 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Card } from './Card'
 import Avatar from './Avatar'
 
-import './ProjectList.css'
+import './User.css'
 
 
-const User = props => {
-  const { entry } = props
+const User = React.forwardRef((props, ref) => {
+  const { entry, id, selected, onClick } = props
 
-  const handleClick = () => {
-    props.onClick(props.id)
-  }
+  const handleClick = () => onClick && onClick(id)
 
   return (
     <div
-      style={{ padding: '3px 6px' }}
+      ref={ref}
+      className={`user-item${selected ? ' user-item--selected' : ''}`}
+      onClick={handleClick}
+      role='option'
+      aria-selected={selected}
     >
-      <Card
-          onClick={handleClick}
-          selected={props.selected}
-          id={props.id} >
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
-          <Avatar entry={entry} />
-          <div>
-            <div className='card-title'>{entry.displayName ? entry.displayName : entry.userId}</div>
-            <div className='card-content'>{entry.userId}</div>
-          </div>
-        </div>
-      </Card>
+      <Avatar entry={entry} size={32} />
+      <div className='user-item__info'>
+        <span className='user-item__name'>
+          {entry.displayName || entry.userId}
+        </span>
+        <span className='user-item__id'>{entry.userId}</span>
+      </div>
+      {entry.role && (
+        <span className={`user-item__role user-item__role--${entry.role?.toLowerCase()}`}>
+          {entry.role}
+        </span>
+      )}
     </div>
   )
-}
+})
 
+User.displayName = 'User'
 
 User.propTypes = {
   entry: PropTypes.object.isRequired,
@@ -41,20 +43,9 @@ User.propTypes = {
   selected: PropTypes.bool
 }
 
-const UserWrapper = ({ onClick, ...props }) => {
-  return <User key={props.id} onClick={onClick} {...props} />
-}
-
-UserWrapper.propTypes = {
-  id: PropTypes.string.isRequired,
-  onClick: PropTypes.func
-}
-
 const userProvider = onClick => props => {
-  return <UserWrapper onClick={onClick} {...props} />
+  return <User onClick={onClick} {...props} />
 }
 
 export default User
-export {
-  userProvider
-}
+export { userProvider }
