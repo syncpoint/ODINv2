@@ -14,7 +14,7 @@ ODIN uses the [Matrix](https://matrix.org) protocol for real-time collaboration 
 
 - **Federation** — Each organisation can run its own server while still collaborating with partners. No single point of failure, no central authority.
 - **Open Standard** — No vendor lock-in. Your data stays yours. Switch servers, self-host, or use a managed service — ODIN works with any Matrix-compatible server.
-- **Battle-Tested Infrastructure** — Leverage an existing ecosystem of servers (Synapse, Dendrite, Conduit) instead of building and maintaining a custom sync protocol.
+- **Battle-Tested Infrastructure** — Leverage existing server implementations like [Synapse](https://github.com/element-hq/synapse) or [Tuwunel](https://github.com/matrix-construct/tuwunel) instead of building and maintaining a custom sync protocol.
 - **Offline-First** — Full sync on reconnect. Work offline, and ODIN catches up automatically when connectivity is restored.
 
 ### End-to-End Encryption (E2EE)
