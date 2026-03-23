@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: 3px;
   cursor: pointer;
   transition: background-color 0.1s;
