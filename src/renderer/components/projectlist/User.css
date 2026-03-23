@@ -1,8 +1,8 @@
 .user-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
+  gap: 10px;
+  padding: 6px 8px;
   border-radius: 3px;
   cursor: pointer;
   transition: background-color 0.1s;
