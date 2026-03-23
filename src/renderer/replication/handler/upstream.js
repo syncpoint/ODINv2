@@ -1,5 +1,6 @@
 import * as ID from '../../ids'
 import { KEYS, rolesReducer } from '../shared'
+import { importOperations } from './toolbar'
 
 export default ({ sessionStore, setOffline, store, CREATOR_ID }) => {
   /*
@@ -16,12 +17,7 @@ export default ({ sessionStore, setOffline, store, CREATOR_ID }) => {
       await store.import([content], { creatorId: CREATOR_ID })
     },
     received: async ({ id, operations }) => {
-      const [restricted] = await store.collect(id, [ID.restrictedId])
-      await store.import(operations, { creatorId: CREATOR_ID })
-      if (restricted) {
-        const operationKeys = operations.map(o => o.key)
-        await store.restrict(operationKeys)
-      }
+      await importOperations(store, id, operations, CREATOR_ID)
     },
     renamed: async (renamed) => {
       /*

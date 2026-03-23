@@ -1,0 +1,18 @@
+services:
+  homeserver:
+    image: jevolk/tuwunel:latest
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./tuwunel.toml:/etc/tuwunel.toml:ro
+      - tuwunel-data:/var/lib/tuwunel
+    command: ["-c", "/etc/tuwunel.toml"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8008/_matrix/client/versions"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      start_period: 5s
+
+volumes:
+  tuwunel-data:

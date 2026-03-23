@@ -25,13 +25,13 @@ export const OSD = () => {
 
   return <div className="osd" id="osd">
     <div className='osd__cell' style={styles.A}>{ state.A1 }</div>
-    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.B}>{ state.B1 }</div>
     <div className='osd__cell' style={styles.C}>{ state.C1 }</div>
     <div className='osd__cell' style={styles.A}>{ state.A2 }</div>
-    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.B}>{ state.B2 }</div>
     <div className='osd__cell' style={styles.C}>{ state.C2 }</div>
-    <div className='osd__cell' style={styles.A}></div>
-    <div className='osd__cell' style={styles.B}></div>
+    <div className='osd__cell' style={styles.A}>{ state.A3 }</div>
+    <div className='osd__cell' style={styles.B}>{ state.B3 }</div>
     <div className='osd__cell' style={styles.C}>{ state.C3 }</div>
   </div>
 }

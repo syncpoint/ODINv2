@@ -81,6 +81,17 @@ const rendererConfig = (env, argv) => ({
   mode: mode(env),
   stats: 'errors-only',
   module: { rules: rules() },
+  resolve: {
+    // Force the browser/wasm entrypoint for matrix-sdk-crypto-wasm.
+    // Without this, Webpack's electron-renderer target resolves the 'node' export condition
+    // which loads node.mjs (uses fileURLToPath, incompatible with Webpack bundling).
+    // The Wasm bindings run natively in Chromium's renderer (IndexedDB available).
+    alias: {
+      '@matrix-org/matrix-sdk-crypto-wasm': path.resolve(
+        __dirname, 'node_modules/@matrix-org/matrix-sdk-crypto-wasm/index.mjs'
+      )
+    }
+  },
   entry: {
     renderer: ['./index.js']
   },
