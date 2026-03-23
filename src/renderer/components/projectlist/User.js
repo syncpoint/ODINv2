@@ -18,7 +18,7 @@ const User = React.forwardRef((props, ref) => {
       role='option'
       aria-selected={selected}
     >
-      <Avatar entry={entry} size={32} />
+      <Avatar entry={entry} size={28} />
       <div className='user-item__info'>
         <span className='user-item__name'>
           {entry.displayName || entry.userId}
