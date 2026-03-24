@@ -27,6 +27,16 @@ All collaboration data in ODIN can be **end-to-end encrypted by default**. This 
 - **SAS Emoji Verification** — Verify device identity through emoji comparison to prevent man-in-the-middle attacks.
 - **Per-project control** — Enable or disable encryption when sharing a project. Once enabled, it cannot be downgraded.
 
+#### Forward Secrecy Trade-Off
+
+Standard Matrix E2EE provides **Perfect Forward Secrecy (PFS)**: members who join a room cannot decrypt messages sent before their join. This is ideal for messaging, but incompatible with collaborative map editing — a new team member joining an operation must see the complete operational picture, not just changes made after their arrival.
+
+ODIN deliberately trades PFS for **full data availability**: when a layer is shared, the encryption keys for existing content are proactively distributed to all project members. When new members join later, keys are shared automatically — even if the sharing member is offline at that point (keys are queued server-side for delivery).
+
+This means: anyone with access to a project's layer can decrypt its entire history. This is a conscious design decision — ODIN is a C2IS, not a messenger. Operational data must be complete and consistent for all authorized participants.
+
+> **Known limitation:** After Megolm key rotation (triggered by message count, time, or membership changes), keys for the new session are shared with current layer members automatically during encryption. Members who join after a rotation receive older keys at share time and newer keys via the safety-net mechanism when an online member detects their join. In the rare case where no existing member is online during the join, post-rotation content may be temporarily undecryptable until an existing member comes online.
+
 E2EE makes ODIN suitable for handling classified and sensitive operational data in environments where data sovereignty and confidentiality are non-negotiable.
 
 ### Member Management
