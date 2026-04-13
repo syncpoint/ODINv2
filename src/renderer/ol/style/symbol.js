@@ -32,6 +32,20 @@ export default $ => {
     }
 
     const sidc = properties.sidc
+
+    // Fallback: features without an SIDC (and without a custom SVG) would
+    // otherwise produce a Style with no image and stay invisible on the map.
+    // Render OpenLayers' canonical blue dot so the feature is at least locatable.
+    if (!sidc) {
+      return [{
+        id: 'style:default/bluedot',
+        'circle-radius': 6,
+        'circle-fill-color': 'rgba(51,153,204,1)',
+        'circle-line-color': '#ffffff',
+        'circle-line-width': 1.5
+      }]
+    }
+
     const modifiers = Object.entries(properties)
       .filter(([key, value]) => MODIFIERS[key] && value)
       .reduce((acc, [key, value]) => R.tap(acc => (acc[MODIFIERS[key]] = value), acc), {})
