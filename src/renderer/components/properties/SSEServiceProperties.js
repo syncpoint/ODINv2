@@ -153,15 +153,16 @@ const SSEServiceProperties = props => {
   }
 
   const handleUpdateIntervalChange = ({ target }) => {
-    const value = parseInt(target.value, 10) || 100
-    if (updateInterval.value === value) return
-    setUpdateInterval({ dirty: true, value })
+    if (updateInterval.value === target.value) return
+    setUpdateInterval({ dirty: true, value: target.value })
   }
 
   const handleUpdateIntervalBlur = () => {
     if (!updateInterval.dirty) return
-    setUpdateInterval({ dirty: false, value: updateInterval.value })
-    updateService({ updateInterval: updateInterval.value })
+    const parsed = parseInt(updateInterval.value, 10)
+    const value = Number.isFinite(parsed) && parsed > 0 ? parsed : 100
+    setUpdateInterval({ dirty: false, value })
+    updateService({ updateInterval: value })
   }
 
   const handleRenderModeChange = (mode) => {
@@ -170,27 +171,29 @@ const SSEServiceProperties = props => {
   }
 
   const handleHeatmapRadiusChange = ({ target }) => {
-    const value = parseInt(target.value, 10) || 20
-    if (heatmapRadius.value === value) return
-    setHeatmapRadius({ dirty: true, value })
+    if (heatmapRadius.value === target.value) return
+    setHeatmapRadius({ dirty: true, value: target.value })
   }
 
   const handleHeatmapRadiusBlur = () => {
     if (!heatmapRadius.dirty) return
-    setHeatmapRadius({ dirty: false, value: heatmapRadius.value })
-    updateService({ heatmapRadius: heatmapRadius.value })
+    const parsed = parseInt(heatmapRadius.value, 10)
+    const value = Number.isFinite(parsed) && parsed > 0 ? parsed : 20
+    setHeatmapRadius({ dirty: false, value })
+    updateService({ heatmapRadius: value })
   }
 
   const handleHeatmapBlurChange = ({ target }) => {
-    const value = parseInt(target.value, 10) || 15
-    if (heatmapBlur.value === value) return
-    setHeatmapBlur({ dirty: true, value })
+    if (heatmapBlur.value === target.value) return
+    setHeatmapBlur({ dirty: true, value: target.value })
   }
 
   const handleHeatmapBlurBlur = () => {
     if (!heatmapBlur.dirty) return
-    setHeatmapBlur({ dirty: false, value: heatmapBlur.value })
-    updateService({ heatmapBlur: heatmapBlur.value })
+    const parsed = parseInt(heatmapBlur.value, 10)
+    const value = Number.isFinite(parsed) && parsed >= 0 ? parsed : 15
+    setHeatmapBlur({ dirty: false, value })
+    updateService({ heatmapBlur: value })
   }
 
   const handleHeatmapOpacityChange = ({ target }) => {
@@ -200,27 +203,29 @@ const SSEServiceProperties = props => {
   }
 
   const handleHeatmapIntervalChange = ({ target }) => {
-    const value = parseInt(target.value, 10) || 1000
-    if (heatmapInterval.value === value) return
-    setHeatmapInterval({ dirty: true, value })
+    if (heatmapInterval.value === target.value) return
+    setHeatmapInterval({ dirty: true, value: target.value })
   }
 
   const handleHeatmapIntervalBlur = () => {
     if (!heatmapInterval.dirty) return
-    setHeatmapInterval({ dirty: false, value: heatmapInterval.value })
-    updateService({ heatmapInterval: heatmapInterval.value })
+    const parsed = parseInt(heatmapInterval.value, 10)
+    const value = Number.isFinite(parsed) && parsed > 0 ? parsed : 1000
+    setHeatmapInterval({ dirty: false, value })
+    updateService({ heatmapInterval: value })
   }
 
   const handleMaxHeatmapFeaturesChange = ({ target }) => {
-    const value = parseInt(target.value, 10) || 50000
-    if (maxHeatmapFeatures.value === value) return
-    setMaxHeatmapFeatures({ dirty: true, value })
+    if (maxHeatmapFeatures.value === target.value) return
+    setMaxHeatmapFeatures({ dirty: true, value: target.value })
   }
 
   const handleMaxHeatmapFeaturesBlur = () => {
     if (!maxHeatmapFeatures.dirty) return
-    setMaxHeatmapFeatures({ dirty: false, value: maxHeatmapFeatures.value })
-    updateService({ maxHeatmapFeatures: maxHeatmapFeatures.value })
+    const parsed = parseInt(maxHeatmapFeatures.value, 10)
+    const value = Number.isFinite(parsed) && parsed > 0 ? parsed : 50000
+    setMaxHeatmapFeatures({ dirty: false, value })
+    updateService({ maxHeatmapFeatures: value })
   }
 
   const handleVectorOpacityChange = ({ target }) => {
