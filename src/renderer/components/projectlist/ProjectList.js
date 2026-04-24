@@ -7,6 +7,7 @@ import { Card } from './Card'
 import { useList, useServices } from '../hooks'
 import { militaryFormat } from '../../../shared/datetime'
 import MemberManagement from './MemberManagement'
+import ShareDialog from './ShareDialog'
 
 /**
  *
@@ -120,6 +121,7 @@ export const ProjectList = () => {
 
   const [replication, setReplication] = React.useState(undefined)
   const [managedProject, setManagedProject] = React.useState(null)
+  const [shareProject, setShareProject] = React.useState(null)
 
   /* system/OS level notifications */
   const notifications = React.useRef(new Set())
@@ -334,6 +336,24 @@ export const ProjectList = () => {
   const handleFilterChange = React.useCallback(value => setFilter(value), [])
   const handleCreate = () => projectStore.createProject()
 
+  const doShare = async ({ encrypted }) => {
+    if (!shareProject) return
+    const project = shareProject
+    const options = encrypted ? { encrypted: true } : {}
+    const seed = await replication.share(project.id, project.name, project.description || '', options)
+    await projectStore.addTag(project.id, 'SHARED')
+    await projectStore.putReplicationSeed(project.id, seed)
+
+    // Store E2EE preference in the project's session DB (via IPC to main process).
+    // The crypto:enabled flag is read by Project-services.js when opening the project.
+    if (encrypted) {
+      await window.odin.replication.setCryptoEnabled(project.id, true)
+    }
+
+    setShareProject(null)
+    fetch(project.id)
+  }
+
   /* eslint-disable react/prop-types */
   const child = React.useCallback(props => {
     const { entry: project } = props
@@ -352,13 +372,14 @@ export const ProjectList = () => {
       // createProject requires the id to be a UUID without prefix
       await projectStore.createProject(project.id.split(':')[1], project.name, ['SHARED'])
       await projectStore.putReplicationSeed(project.id, seed)
+      // Persist the project's E2EE setting so Project-services.js picks it up on open.
+      if (seed.encrypted) {
+        await window.odin.replication.setCryptoEnabled(project.id, true)
+      }
     }
 
-    const handleShare = async () => {
-      const seed = await replication.share(project.id, project.name, project.description || '')
-      await projectStore.addTag(project.id, 'SHARED')
-      await projectStore.putReplicationSeed(project.id, seed)
-      fetch(project.id)
+    const handleShare = () => {
+      setShareProject(project)
     }
 
     /* const handleMembers = async () => {
@@ -429,6 +450,7 @@ export const ProjectList = () => {
   return (
     <div >
       { managedProject && <MemberManagement replication={replication} managedProject={managedProject} onClose={() => setManagedProject(null)}/>}
+      { shareProject && <ShareDialog projectName={shareProject.name} onConfirm={doShare} onCancel={() => setShareProject(null)}/>}
       <div
         onKeyDown={handleKeyDown}
         style={{

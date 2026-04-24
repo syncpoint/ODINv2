@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import * as mdi from '@mdi/js'
-import { useMemento } from '../hooks'
+import { useMemento, useInvitationCount } from '../hooks'
 import { defaultSearch } from './state'
 import * as ID from '../../ids'
 import { Tooltip } from 'react-tooltip'
@@ -99,6 +99,11 @@ const ScopeSwitch = props => {
     <>
       <span id={`ss-${props.label}`} className={className} onClick={handleClick}>
         <Icon className={ enabled ? 'a74a-icon-active' : 'a74a-icon'} path={mdi[props.label]} />
+        {props.badge > 0 && (
+          <span className='a74a-badge'>
+            {props.badge > 99 ? '99+' : props.badge}
+          </span>
+        )}
       </span>
       <Tooltip anchorSelect={`#ss-${props.label}`} content={props.toolTip} delayShow={750} />
     </>
@@ -112,6 +117,7 @@ ScopeSwitch.propTypes = {
   label: PropTypes.string.isRequired,
   scope: PropTypes.string.isRequired,
   toolTip: PropTypes.string,
+  badge: PropTypes.number,
   onScopeClick: PropTypes.func
 }
 
@@ -120,12 +126,15 @@ ScopeSwitch.propTypes = {
  * Vertical column of scope icons
  */
 export const ScopeSwitcher = ({ onScopeClick }) => {
+  const invitationCount = useInvitationCount()
+
   const defaultSwitches = Object.entries(SCOPES).map(([scope, label]) =>
     <ScopeSwitch
       key={scope}
       scope={scope}
       label={label}
       toolTip={TOOLTIPS[scope]}
+      badge={scope === `@${ID.INVITED}` ? invitationCount : 0}
       onScopeClick={onScopeClick}
     />
   )

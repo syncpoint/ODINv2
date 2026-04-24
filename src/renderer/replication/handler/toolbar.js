@@ -1,4 +1,20 @@
 import * as ID from '../../ids'
+import { rolesReducer } from '../shared'
+
+/**
+ * Import operations into the store, respecting layer restrictions.
+ * Used by both the initial content load (join) and the stream handler (received).
+ */
+const importOperations = async (store, id, operations, CREATOR_ID) => {
+  const [restricted] = await store.collect(id, [ID.restrictedId])
+  await store.import(operations, { creatorId: CREATOR_ID })
+  if (restricted) {
+    const operationKeys = operations.map(o => o.key)
+    await store.restrict(operationKeys)
+  }
+}
+
+export { importOperations }
 
 export default ({ store, replicatedProject, CREATOR_ID }) => {
   return async ({ action, id, parameter }) => {
@@ -14,19 +30,25 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         ], { creatorId: CREATOR_ID })
         await store.delete(id) // invitation ID
         /*
-          We load the entire existing content. This may be huge, especially
-          if you join long running rooms. Unless we have a solid solution
-          for managing snapshots: this is the way.
+          Load the entire existing content. The join HTTP call is synchronous —
+          once it returns 200, the messages endpoint should have the content.
         */
-        const operations = await replicatedProject.content(layer.id)
-        console.log(`Initial sync has ${operations.length} operations`)
-        await store.import(operations, { creatorId: CREATOR_ID })
-        // TODO: check the powerlevel and apply restrictions if required
+        // Apply layer restrictions based on the user's role
+        const permissions = [layer].reduce(rolesReducer, { restrict: [], permit: [] })
+        if (permissions.restrict.length > 0) await store.restrict(permissions.restrict)
+        if (permissions.permit.length > 0) await store.permit(permissions.permit)
+
+        // Content is NOT fetched here. It will arrive via the sync-gated
+        // mechanism in matrix-client-api: Project.start() detects the room
+        // in the next sync cycle and delivers operations through the
+        // received() stream handler.
         break
       }
       case 'share': {
         const { name } = await store.value(id)
-        const layer = await replicatedProject.shareLayer(id, name)
+        // Inherit encryption setting from the project (set during handleShare in ProjectList)
+        const cryptoEnabled = replicatedProject.cryptoManager !== null
+        const layer = await replicatedProject.shareLayer(id, name, '', { encrypted: cryptoEnabled })
         if (!layer) {
           console.log('layer is already shared')
           return
@@ -40,7 +62,11 @@ export default ({ store, replicatedProject, CREATOR_ID }) => {
         const keys = await store.collectKeys([id], [ID.STYLE, ID.LINK, ID.TAGS, ID.FEATURE])
         const tuples = await store.tuples(keys)
         const operations = tuples.map(([key, value]) => ({ type: 'put', key, value }))
-        replicatedProject.post(id, operations)
+        await replicatedProject.post(id, operations)
+
+        /* Share Megolm session keys with all project members so they can
+           decrypt this layer's content even if they join later (offline). */
+        await replicatedProject.shareHistoricalKeys(id)
         break
       }
       case 'leave': {

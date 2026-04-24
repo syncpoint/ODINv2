@@ -1,7 +1,7 @@
 {
   "name": "odin-v2",
   "productName": "ODINv2",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Open Source Command and Control Information System (C2IS)",
   "main": "dist/main.js",
   "scripts": {
@@ -63,7 +63,7 @@
   "dependencies": {
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.6.0",
-    "@syncpoint/matrix-client-api": "^1.11.1",
+    "@syncpoint/matrix-client-api": "^2.3.0",
     "@syncpoint/signal": "^1.3.0",
     "@syncpoint/signs": "^1.1.0",
     "@syncpoint/wkx": "^0.5.2",

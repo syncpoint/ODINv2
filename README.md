@@ -4,10 +4,51 @@ ODINv2 is the successor of [ODINv1](https://github.com/syncpoint/ODIN). ODIN has
 
 [![Get it from the Snap Store](https://snapcraft.io/en/light/install.svg)](https://snapcraft.io/odin-v2)
 
-## Online collaboration
-Replication in a distributed command and control environment by making use of the [[matrix]](https://matrix.org) ecosystem is here. Make sure to join our [[matrix] ODIN Community Chat Room](https://matrix.to/#/#ODIN.Community:syncpoint.io) to get the latest news about ODIN.
-
 ![ODINv2 C2IS](assets/ODIN-Splash-3.2.0.jpg?raw=true)
+
+## Real-Time Collaboration via Matrix
+
+ODIN uses the [Matrix](https://matrix.org) protocol for real-time collaboration in distributed command and control environments. Matrix is an open, federated communication standard — the same technology used by NATO, the German Bundeswehr, and the French government for secure messaging.
+
+### Why Matrix?
+
+- **Federation** — Each organisation can run its own server while still collaborating with partners. No single point of failure, no central authority.
+- **Open Standard** — No vendor lock-in. Your data stays yours. Switch servers, self-host, or use a managed service — ODIN works with any Matrix-compatible server.
+- **Battle-Tested Infrastructure** — Leverage existing server implementations like [Synapse](https://github.com/element-hq/synapse) or [Tuwunel](https://github.com/matrix-construct/tuwunel) instead of building and maintaining a custom sync protocol.
+- **Offline-First** — Full sync on reconnect. Work offline, and ODIN catches up automatically when connectivity is restored.
+
+### End-to-End Encryption (E2EE)
+
+All collaboration data in ODIN can be **end-to-end encrypted by default**. This means:
+
+- **Only participants can read the data.** Not the server operator, not the network provider, not even Syncpoint. The encryption keys never leave the devices.
+- **Megolm/Olm cryptography** — the same proven, audited crypto stack used by Signal and Element. AES-256 for message encryption, Ed25519 for device verification.
+- **Historical Key Sharing** — When a new member joins a project, existing participants securely share historical encryption keys via Olm-encrypted channels. New members get full access to existing data without compromising security.
+- **SAS Emoji Verification** — Verify device identity through emoji comparison to prevent man-in-the-middle attacks.
+- **Per-project control** — Enable or disable encryption when sharing a project. Once enabled, it cannot be downgraded.
+
+#### Forward Secrecy Trade-Off
+
+Standard Matrix E2EE provides **Perfect Forward Secrecy (PFS)**: members who join a room cannot decrypt messages sent before their join. This is ideal for messaging, but incompatible with collaborative map editing — a new team member joining an operation must see the complete operational picture, not just changes made after their arrival.
+
+ODIN deliberately trades PFS for **full data availability**: when a layer is shared, the encryption keys for existing content are proactively distributed to all project members. When new members join later, keys are shared automatically — even if the sharing member is offline at that point (keys are queued server-side for delivery).
+
+This means: anyone with access to a project's layer can decrypt its entire history. This is a conscious design decision — ODIN is a C2IS, not a messenger. Operational data must be complete and consistent for all authorized participants.
+
+> **Known limitation:** After Megolm key rotation (triggered by message count, time, or membership changes), keys for the new session are shared with current layer members automatically during encryption. Members who join after a rotation receive older keys at share time and newer keys via the safety-net mechanism when an online member detects their join. In the rare case where no existing member is online during the join, post-rotation content may be temporarily undecryptable until an existing member comes online.
+
+E2EE makes ODIN suitable for handling classified and sensitive operational data in environments where data sovereignty and confidentiality are non-negotiable.
+
+### Member Management
+
+Project owners and administrators can manage team membership directly from ODIN:
+
+- Invite new members by searching the Matrix user directory
+- Assign roles (Owner, Administrator, Contributor) with different permission levels
+- Remove members from projects
+- All role changes are enforced server-side through Matrix power levels
+
+Make sure to join our [Matrix ODIN Community Chat Room](https://matrix.to/#/#ODIN.Community:syncpoint.io) to get the latest news about ODIN.
 
 ## Elevation Data and Terrain Analysis
 

@@ -1,0 +1,13 @@
+# Tuwunel config for ODIN E2EE testing
+# Local only, no federation, open registration
+
+[global]
+server_name = "odin.battlefield"
+database_path = "/var/lib/tuwunel"
+address = ["0.0.0.0"]
+port = 8008
+
+allow_registration = true
+yes_i_am_very_very_sure_i_want_an_open_registration_server_prone_to_abuse = true
+allow_federation = false
+new_user_displayname_suffix = ""

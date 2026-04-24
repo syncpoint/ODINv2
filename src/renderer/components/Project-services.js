@@ -131,12 +131,41 @@ export default async projectUUID => {
   const isRemoteProject = projectTags.includes('SHARED')
   const credentials = await projectStore.getCredentials('default')
 
-  services.replicationProvider = (isRemoteProject && credentials)
-    ? MatrixClient({
+  if (isRemoteProject && credentials) {
+    // Check if E2EE is enabled for this project
+    const cryptoEnabled = await sessionStore.get('crypto:enabled', false)
+    let encryption = null
+
+    if (cryptoEnabled) {
+      let passphrase
+      const encryptedPassphrase = await sessionStore.get('crypto:passphrase', null)
+
+      if (encryptedPassphrase) {
+        // Decrypt existing passphrase via safeStorage (main process)
+        passphrase = await window.odin.replication.decryptPassphrase(encryptedPassphrase)
+      } else {
+        // First time: generate random passphrase, encrypt and store it
+        passphrase = crypto.randomUUID() + crypto.randomUUID() // 72 chars of randomness
+        const encrypted = await window.odin.replication.encryptPassphrase(passphrase)
+        await sessionStore.put('crypto:passphrase', encrypted)
+      }
+
+      encryption = {
+        enabled: true,
+        storeName: `crypto-${projectUUID}`,
+        passphrase
+      }
+    }
+
+    services.replicationProvider = MatrixClient({
       ...credentials,
-      device_id: projectUUID
+      device_id: projectUUID,
+      db: L.leveldb({ up: db, encoding: 'json', prefix: 'command-queue' }),
+      ...(encryption && { encryption })
     })
-    : { disabled: true }
+  } else {
+    services.replicationProvider = { disabled: true }
+  }
 
   services.signals = {}
   services.signals['replication/operational'] = Signal.of(false)

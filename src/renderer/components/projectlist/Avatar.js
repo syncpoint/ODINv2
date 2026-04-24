@@ -5,8 +5,9 @@ import './ProjectList.css'
 const Avatar = props => {
   const { entry } = props
 
-  const width = '48px'
-  const height = '48px'
+  const size = props.size || 32
+  const width = `${size}px`
+  const height = `${size}px`
 
   const abreviate = entry => {
     if (entry.displayName) return entry.displayName.substring(0, 1).toUpperCase()
@@ -25,7 +26,8 @@ const Avatar = props => {
   )
 }
 Avatar.propTypes = {
-  entry: PropTypes.object.isRequired
+  entry: PropTypes.object.isRequired,
+  size: PropTypes.number
 }
 
 export default Avatar

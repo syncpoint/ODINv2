@@ -3,47 +3,46 @@ import PropTypes from 'prop-types'
 import { Tooltip } from 'react-tooltip'
 import Members from './Members'
 import Invite from './Invite'
-import './ProjectList.css'
 import Icon from '@mdi/react'
 import { mdiAccountPlus, mdiAccountMinus, mdiAccountMultiplePlus, mdiAccountMultiple } from '@mdi/js'
+import './MemberManagement.css'
 
-const MemberManagement = props => {
-  const { onClose, replication, managedProject } = props
+const ACTIONS = {
+  KICK: 'kick',
+  INVITE: 'invite'
+}
 
-  const ACTIONS = {
-    KICK: 'kick',
-    INVITE: 'invite'
-  }
-
+const MemberManagement = ({ onClose, replication, managedProject }) => {
   const [memberList, setMemberList] = React.useState([])
   const [permissions, setPermissions] = React.useState({})
   const [action, setAction] = React.useState(ACTIONS.KICK)
   const [selected, setSelected] = React.useState([])
   const [roles, setRoles] = React.useState(undefined)
 
-  const getMembers = async () => {
-    // if (!replication) return
+  const getMembers = React.useCallback(async () => {
     const members = await replication.members(managedProject.id)
     const roles = await replication.getRoles(managedProject.id)
-    const p = {
-      [ACTIONS.INVITE]: ['OWNER', 'ADMINISTRATOR', 'MANAGER'].includes(roles.self),
-      [ACTIONS.KICK]: ['OWNER', 'ADMINISTRATOR', 'MANAGER'].includes(roles.self)
-    }
 
-    const enhancedMembersList = members
-      .filter(m => m.membership !== 'leave')
-      .map(m => ({ ...m, id: m.userId, role: roles.users[m.userId] ? roles.users[m.userId] : roles.default }))
-
-    setPermissions(p)
+    const canManage = ['OWNER', 'ADMINISTRATOR', 'MANAGER'].includes(roles.self)
+    setPermissions({
+      [ACTIONS.INVITE]: canManage,
+      [ACTIONS.KICK]: canManage
+    })
     setRoles(roles)
-    setMemberList(enhancedMembersList)
-  }
+    setMemberList(
+      members
+        .filter(m => m.membership !== 'leave')
+        .map(m => ({
+          ...m,
+          id: m.userId,
+          role: roles.users[m.userId] || roles.default
+        }))
+    )
+  }, [replication, managedProject.id])
 
   React.useEffect(() => {
     getMembers()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replication])
-
+  }, [getMembers])
 
   const handleKick = async () => {
     try {
@@ -65,16 +64,11 @@ const MemberManagement = props => {
 
   const handleRoleChange = async (event) => {
     const role = event.target.value
-    console.log(`New role for ${selected[0]} will be ${role}`)
     try {
       await replication.setRole(managedProject.id, selected[0], role)
-      /*
-        Since the API call to getMembers() will most likely not contain the changes (not fast enaugh!) we
-        do an optimistic change here.
-      */
-      const members = [...memberList]
-      members.find(m => m.userId === selected[0]).role = role
-      setMemberList(members)
+      setMemberList(prev => prev.map(m =>
+        m.userId === selected[0] ? { ...m, role } : m
+      ))
     } catch (error) {
       console.error(error)
     }
@@ -85,86 +79,97 @@ const MemberManagement = props => {
     setSelected([])
   }
 
-  const changeSelection = selection => {
-    if (!selection) return
-    setSelected(selection)
-  }
+  const changeSelection = React.useCallback(selection => {
+    if (selection) setSelected(selection)
+  }, [])
 
-  const getCurrentView = () => {
-    if (action === ACTIONS.KICK) return <Members memberlist={memberList} handleSelect={changeSelection}/>
-    return <Invite replication={replication} handleSelect={changeSelection}/>
-  }
-
-  const isKickable = () => {
-    if (selected.length !== 1) return false
-    if (!permissions[ACTIONS.KICK]) return false
+  const kickable = React.useMemo(() => {
+    if (selected.length !== 1 || !permissions[ACTIONS.KICK]) return false
     const current = memberList.find(m => m.userId === selected[0])
-    return !(['OWNER', 'ADMINISTRATOR'].includes(current?.role))
-  }
+    return !['OWNER', 'ADMINISTRATOR'].includes(current?.role)
+  }, [selected, permissions, memberList])
 
-  const isInvitable = () => {
-    if (selected.length !== 1) return false
-    if (!permissions[ACTIONS.INVITE]) return false
-    const r = memberList
-      .filter(m => selected.includes(m.userId))
-    return r.length === 0
-  }
+  const invitable = React.useMemo(() => {
+    if (selected.length !== 1 || !permissions[ACTIONS.INVITE]) return false
+    return !memberList.some(m => selected.includes(m.userId))
+  }, [selected, permissions, memberList])
 
-  const defaultValue = (memberList.find(m => m.userId === selected[0]))?.role || 'NONE'
-  const kickable = isKickable()
-  const invitable = isInvitable()
+  const selectedRole = memberList.find(m => m.userId === selected[0])?.role || ''
 
   return (
-  <div className='popup-container' onClick={() => onClose()}>
-    <div className='member-container' onClick={ e => e.stopPropagation() } >
-      <div className='mm-header'>
-        <div className='title'>{ managedProject.name } ({roles?.self})</div>
-        <button className='mm-interaction' disabled={!permissions[ACTIONS.INVITE]} onClick={toggleView} id='mm-toogle-view'>
-          <Icon size={1.7} path={action === ACTIONS.KICK ? mdiAccountMultiplePlus : mdiAccountMultiple } />
-        </button>
-        <Tooltip anchorSelect='#mm-toogle-view' content='Toggle view (add/remove members)' style={{ zIndex: 200 }} delayShow={750}/>
-      </div>
-      <div className='mm-header'>
-        { action === ACTIONS.KICK &&
-          <>
-            <select value={ defaultValue } onChange={handleRoleChange} disabled={!kickable} style={{ marginLeft: 'auto', marginRight: '16px', fontSize: 'larger', alignSelf: 'center', textAlign: 'right' }} id='mm-change-role'>
-              <option value='NONE' hidden={true}></option>
-              <option value='CONTRIBUTOR'>Contributor</option>
-              <option value='ADMINISTRATOR'>Administrator</option>
-              <option value='OWNER' disabled={true}>Owner</option>
-            </select>
-            <button className='mm-interaction'
-              style={{ marginRight: '6px' }}
-              disabled={!kickable}
-              onClick={handleKick}
-              id='mm-remove-member'
-              >
-                <Icon size={1.2} path={mdiAccountMinus} />
-            </button>
-            <Tooltip anchorSelect='#mm-change-role' content='Change the role of the selected entry' style={{ zIndex: 200 }} delayShow={750}/>
-            <Tooltip anchorSelect='#mm-remove-member' content='Remove the selected entry from the project' style={{ zIndex: 200 }} delayShow={750}/>
-          </>
-        }
-        {
-          action === ACTIONS.INVITE &&
+    <div className='mm-overlay' onClick={onClose}>
+      <div className='mm-panel' onClick={e => e.stopPropagation()}>
+
+        {/* Header: project name + view toggle */}
+        <div className='mm-toolbar'>
+          <div className='mm-title'>
+            {managedProject.name}
+            {roles?.self && <span className='mm-self-role'>{roles.self}</span>}
+          </div>
+          <button
+            className='mm-btn'
+            disabled={!permissions[ACTIONS.INVITE]}
+            onClick={toggleView}
+            id='mm-toggle-view'
+          >
+            <Icon size={0.8} path={action === ACTIONS.KICK ? mdiAccountMultiplePlus : mdiAccountMultiple} />
+          </button>
+          <Tooltip anchorSelect='#mm-toggle-view' content={action === ACTIONS.KICK ? 'Add members' : 'Show members'} style={{ zIndex: 200 }} delayShow={750} />
+        </div>
+
+        {/* Actions bar */}
+        <div className='mm-actions'>
+          {action === ACTIONS.KICK && (
             <>
-              <button onClick={handleInvite}
-                className='mm-interaction'
-                style={{ marginLeft: 'auto', marginRight: '6px' }}
+              <select
+                className='mm-role-select'
+                value={selectedRole}
+                onChange={handleRoleChange}
+                disabled={!kickable}
+                id='mm-change-role'
+              >
+                <option value='' hidden></option>
+                <option value='CONTRIBUTOR'>Contributor</option>
+                <option value='ADMINISTRATOR'>Administrator</option>
+                <option value='OWNER' disabled>Owner</option>
+              </select>
+              <button
+                className='mm-btn mm-btn--danger'
+                disabled={!kickable}
+                onClick={handleKick}
+                id='mm-remove-member'
+              >
+                <Icon size={0.7} path={mdiAccountMinus} />
+              </button>
+              <Tooltip anchorSelect='#mm-change-role' content='Change role' style={{ zIndex: 200 }} delayShow={750} />
+              <Tooltip anchorSelect='#mm-remove-member' content='Remove from project' style={{ zIndex: 200 }} delayShow={750} />
+            </>
+          )}
+          {action === ACTIONS.INVITE && (
+            <>
+              <button
+                className='mm-btn mm-btn--primary'
                 disabled={!invitable}
+                onClick={handleInvite}
                 id='mm-add-member'
               >
-                  <Icon size={1.2} path={mdiAccountPlus} />
+                <Icon size={0.7} path={mdiAccountPlus} />
               </button>
-              <Tooltip anchorSelect='#mm-add-member' content='Add the selected entry to the project' style={{ zIndex: 200 }} delayShow={750} />
+              <Tooltip anchorSelect='#mm-add-member' content='Invite to project' style={{ zIndex: 200 }} delayShow={750} />
             </>
+          )}
+        </div>
 
-        }
+        {/* List content */}
+        <div className='mm-content'>
+          {action === ACTIONS.KICK
+            ? <Members memberlist={memberList} handleSelect={changeSelection} />
+            : <Invite replication={replication} handleSelect={changeSelection} />
+          }
+        </div>
       </div>
-      { getCurrentView() }
     </div>
-
-  </div>)
+  )
 }
 
 MemberManagement.propTypes = {
