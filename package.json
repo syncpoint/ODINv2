@@ -13,6 +13,8 @@
     "test:watch": "mocha 'src/**/*.test.js' --recursive --watch --reporter min",
     "coverage": "c8 --all --include 'src/**/*' --reporter=html mocha 'test/**/*-test.js' --recursive",
     "lint": "eslint src/",
+    "licenses:check": "node tools/check-licenses.js",
+    "licenses:generate": "node tools/generate-third-party-licenses.js",
     "build:win": "electron-builder --win --publish never",
     "build:mac": "electron-builder --mac --publish never",
     "build:linux": "electron-builder --linux --publish never",

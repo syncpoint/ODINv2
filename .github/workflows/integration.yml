@@ -33,5 +33,6 @@ jobs:
         cache: 'npm'
     - run: npm ci --no-audit --no-optional
     - run: npm run lint
+    - run: npm run licenses:check
     - run: npm run webpack:production
     - run: npm test
