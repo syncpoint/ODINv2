@@ -92,6 +92,7 @@ describe('WKB encoding', function () {
     const db = geometries()
     await db.put('key', samples.Point)
     await db.del('key')
-    await assert.rejects(() => db.get('key'))
+    // abstract-level returns undefined for a missing key (no rejection).
+    assert.strictEqual(await db.get('key'), undefined)
   })
 })

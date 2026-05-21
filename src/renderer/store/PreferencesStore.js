@@ -15,14 +15,18 @@ export default function PreferencesStore (preferencesDB, prefsBridge) {
     prefsBridge.putAll(tuples)
   })()
 
-  preferencesDB.on('put', (key, value) => {
-    prefsBridge.post(key, value)
-    this.emit(key, { value })
-  })
-
-  preferencesDB.on('del', key => {
-    prefsBridge.del(key)
-    this.emit(key, { value: undefined })
+  // abstract-level emits a single 'write' event carrying an operations
+  // array for put/del/batch alike.
+  preferencesDB.on('write', operations => {
+    operations.forEach(op => {
+      if (op.type === 'put') {
+        prefsBridge.post(op.key, op.value)
+        this.emit(op.key, { value: op.value })
+      } else {
+        prefsBridge.del(op.key)
+        this.emit(op.key, { value: undefined })
+      }
+    })
   })
 
   this.unsubscribers = [

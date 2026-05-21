@@ -74,9 +74,9 @@ SearchIndex.prototype.bootstrap = async function () {
   documents.forEach(doc => (this.cachedDocuments[doc.id] = doc))
   this.index.addAll(documents)
 
-  // Register store listeners:
-  this.jsonDB.on('del', key => this.handleBatch([{ type: 'del', key }]))
-  this.jsonDB.on('batch', event => this.handleBatch(event))
+  // Register store listener. abstract-level emits a single 'write' event
+  // carrying an operations array for put/del/batch alike.
+  this.jsonDB.on('write', operations => this.handleBatch(operations))
 }
 
 

@@ -8,6 +8,10 @@ with the actively maintained `abstract-level` family. The on-disk LevelDB
 format is unchanged, so **no data migration is required** — `classic-level`
 opens existing `leveldown` databases.
 
+Sublevel on-disk compatibility confirmed: `abstract-level/UPGRADING.md`
+states the sublevel key structure is equal to that of `subleveldown`, so an
+`abstract-level` sublevel reads data previously written by `subleveldown`.
+
 ## Package changes
 
 - **Remove:** `leveldown`, `levelup`, `memdown`, `subleveldown`,
@@ -78,6 +82,15 @@ is confined to 6 files.
 - Adapt `PreferencesStore.js`, `SearchIndex.js`, `SpatialIndex.js` from the
   `put`/`del`/`batch` events to the single `write` event (filter the
   `operations` array by `type`).
+
+**Coupling finding (phases 2/3/4 cannot land separately with green tests):**
+Once `index.js` is migrated, the child databases passed to `PartitionDOWN`
+and `IPCServer` are `abstract-level` instances. Their iterator API is
+promise-based (`for await`, `iterator.next()` returns `[key, value]`),
+incompatible with the callback `next(cb)` style the custom stores still
+use. The `levelup` bridge only wraps the *outer* `down:` database; it does
+not help the custom store talk to its *children*. Phases 3 and 4 must
+therefore land together with phase 2 to reach a green test suite.
 
 ### Phase 3 — `PartitionDOWN.js` (core piece)
 - Reimplement as an `AbstractLevel` subclass delegating to two child DBs
