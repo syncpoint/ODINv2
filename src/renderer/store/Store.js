@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import Emitter from '../../shared/emitter'
 import * as ID from '../ids'
 import * as L from '../../shared/level'
-import { PartitionDOWN } from '../../shared/level/PartitionDOWN'
+import { PartitionStore } from '../../shared/level/PartitionStore'
 import * as TS from '../ol/ts'
 import { transform, geometryType } from '../model/geometry'
 import { readGeometry } from '../ol/format'
@@ -57,7 +57,7 @@ export default function Store (jsonDB, wkbDB, undo, selection) {
   this.wkbDB = wkbDB
   this.undo = undo
   this.selection = selection
-  this.db = new PartitionDOWN(jsonDB, wkbDB)
+  this.db = new PartitionStore(jsonDB, wkbDB)
 }
 
 util.inherits(Store, Emitter)

@@ -11,19 +11,19 @@ export const ITERATOR = 'level:iterator'
  *
  * @param {*} ipc ipcMain or ipcRenderer instance.
  */
-export function IPCDownClient (ipc) {
+export function IPCClient (ipc) {
   this._ipc = ipc
 }
 
-IPCDownClient.prototype.get = function (key, options) {
+IPCClient.prototype.get = function (key, options) {
   return this._ipc.invoke(GET, key, options)
 }
 
-IPCDownClient.prototype.put = function (key, value, options) {
+IPCClient.prototype.put = function (key, value, options) {
   return this._ipc.invoke(PUT, key, value, options)
 }
 
-IPCDownClient.prototype.del = function (key, options) {
+IPCClient.prototype.del = function (key, options) {
   return this._ipc.invoke(DEL, key, options)
 }
 
@@ -31,22 +31,22 @@ IPCDownClient.prototype.del = function (key, options) {
  * Fetches the complete result at once, then yields it. The IPC round-trip
  * does not support incremental streaming.
  */
-IPCDownClient.prototype.iterator = async function * (options) {
+IPCClient.prototype.iterator = async function * (options) {
   const result = await this._ipc.invoke(ITERATOR, options)
   for (const { key, value } of result) yield [key, value]
 }
 
-IPCDownClient.prototype.keys = async function * (options) {
+IPCClient.prototype.keys = async function * (options) {
   for await (const [key] of this.iterator(options)) yield key
 }
 
-IPCDownClient.prototype.values = async function * (options) {
+IPCClient.prototype.values = async function * (options) {
   for await (const entry of this.iterator(options)) yield entry[1]
 }
 
 
 /**
- * Exposes an abstract-level database as an IPC endpoint for `IPCDownClient`.
+ * Exposes an abstract-level database as an IPC endpoint for `IPCClient`.
  *
  * @param {*} db abstract-level database.
  * @param {*} ipc ipcMain instance.

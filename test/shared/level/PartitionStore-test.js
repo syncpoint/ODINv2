@@ -1,10 +1,10 @@
 import assert from 'assert'
-import { PartitionDOWN } from '../../../src/shared/level/PartitionDOWN'
+import { PartitionStore } from '../../../src/shared/level/PartitionStore'
 import { leveldb, jsonDB, wkbDB } from '../../../src/shared/level'
 
 const createdb = () => {
   const db = leveldb({})
-  return new PartitionDOWN(jsonDB(db), wkbDB(db))
+  return new PartitionStore(jsonDB(db), wkbDB(db))
 }
 
 // One sample per routing case: properties-only, geometry-only and split.
@@ -25,7 +25,7 @@ const samples = [
   }]
 ]
 
-describe('PartitionDOWN', function () {
+describe('PartitionStore', function () {
 
   describe('argument validation', function () {
     it('get rejects a null/undefined key', async function () {

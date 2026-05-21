@@ -15,7 +15,7 @@ export default async () => {
     ? MatrixClient({
       ...credentials,
       device_id: 'PROJECT-LIST',
-      db: L.leveldb({ up: L.leveldb(), encoding: 'json', prefix: 'command-queue' })
+      db: L.leveldb({ parent: L.leveldb(), encoding: 'json', prefix: 'command-queue' })
     })
     : {
         disabled: true

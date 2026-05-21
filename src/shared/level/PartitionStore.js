@@ -7,7 +7,7 @@
  * itself, but exposes the subset of the API the `L.*` helpers and `Store`
  * use: get / getMany / put / del / batch / iterator / keys / values.
  */
-export function PartitionDOWN (jsonDB, wkbDB) {
+export function PartitionStore (jsonDB, wkbDB) {
   this.jsonDB = jsonDB
   this.wkbDB = wkbDB
 }
@@ -58,7 +58,7 @@ const combine = (geometry, properties) => {
   return properties
 }
 
-PartitionDOWN.prototype.put = async function (key, value) {
+PartitionStore.prototype.put = async function (key, value) {
   checkKey(key)
   checkValue(value)
   const { geometry, properties } = split(value)
@@ -68,7 +68,7 @@ PartitionDOWN.prototype.put = async function (key, value) {
   ])
 }
 
-PartitionDOWN.prototype.get = async function (key) {
+PartitionStore.prototype.get = async function (key) {
   checkKey(key)
   const [geometry, properties] = await Promise.all([
     this.wkbDB.get(key),
@@ -77,7 +77,7 @@ PartitionDOWN.prototype.get = async function (key) {
   return combine(geometry, properties)
 }
 
-PartitionDOWN.prototype.getMany = async function (keys) {
+PartitionStore.prototype.getMany = async function (keys) {
   const [geometries, properties] = await Promise.all([
     this.wkbDB.getMany(keys),
     this.jsonDB.getMany(keys)
@@ -85,12 +85,12 @@ PartitionDOWN.prototype.getMany = async function (keys) {
   return keys.map((_, index) => combine(geometries[index], properties[index]))
 }
 
-PartitionDOWN.prototype.del = async function (key) {
+PartitionStore.prototype.del = async function (key) {
   checkKey(key)
   await Promise.all([this.wkbDB.del(key), this.jsonDB.del(key)])
 }
 
-PartitionDOWN.prototype.batch = async function (operations) {
+PartitionStore.prototype.batch = async function (operations) {
   if (!Array.isArray(operations)) {
     throw new Error('batch(array) requires an array argument')
   }
@@ -163,14 +163,14 @@ async function * merge (jsonDB, wkbDB, options) {
   }
 }
 
-PartitionDOWN.prototype.iterator = function (options) {
+PartitionStore.prototype.iterator = function (options) {
   return merge(this.jsonDB, this.wkbDB, options || {})
 }
 
-PartitionDOWN.prototype.keys = async function * (options) {
+PartitionStore.prototype.keys = async function * (options) {
   for await (const [key] of this.iterator(options)) yield key
 }
 
-PartitionDOWN.prototype.values = async function * (options) {
+PartitionStore.prototype.values = async function * (options) {
   for await (const entry of this.iterator(options)) yield entry[1]
 }

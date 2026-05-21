@@ -5,10 +5,8 @@ import { leveldb, wkbDB } from '../../../src/shared/level'
 /**
  * Regression coverage for the WKB value encoding.
  *
- * Captures the behaviour of the current (leveldown/encoding-down) stack so
- * the abstract-level migration can be verified against it. The tests only
- * touch the public surface (`leveldb`, `wkbDB`, `L.*` helpers), which stays
- * stable across the migration.
+ * Exercises the WKB value encoding through the public surface (`leveldb`,
+ * `wkbDB`, `L.*` helpers).
  */
 describe('WKB encoding', function () {
   const geometries = () => wkbDB(leveldb({ encoding: 'json' }))

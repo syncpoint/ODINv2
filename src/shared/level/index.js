@@ -16,7 +16,7 @@ export const leveldb = (options = {}) => {
   const valueEncoding = valueEncodings[options.encoding]
   const dbOptions = valueEncoding ? { valueEncoding } : {}
 
-  if (options.up) return options.up.sublevel(options.prefix, dbOptions)
+  if (options.parent) return options.parent.sublevel(options.prefix, dbOptions)
 
   return options.location
     ? new ClassicLevel(options.location, dbOptions)
@@ -28,14 +28,14 @@ export const leveldb = (options = {}) => {
  * JSON-encoded 'tuples' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const jsonDB = db => leveldb({ up: db, encoding: 'json', prefix: 'tuples' })
+export const jsonDB = db => leveldb({ parent: db, encoding: 'json', prefix: 'tuples' })
 
 
 /**
  * WKB-encoded 'geometries' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const wkbDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometries' })
+export const wkbDB = db => leveldb({ parent: db, encoding: 'wkb', prefix: 'geometries' })
 
 
 /**
@@ -172,8 +172,8 @@ export const existsKey = async (db, range) => {
  * get :: db -> k -> v -> v
  *
  * Get value for given key with optional default value if key was not found.
- * abstract-level returns `undefined` for a missing key; the levelup-bridged
- * stores (PartitionDOWN, IPC) still reject — both are treated as "not found".
+ * abstract-level returns `undefined` for a missing key; PartitionStore and the
+ * IPC client may reject — both are treated as "not found".
  */
 export const get = async (db, key, value) => {
   let result

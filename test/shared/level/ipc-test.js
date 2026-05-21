@@ -1,16 +1,16 @@
 import assert from 'assert'
-import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from '../../../src/shared/level/ipc'
+import { IPCClient, IPCServer, GET, PUT, DEL, ITERATOR } from '../../../src/shared/level/ipc'
 import { leveldb } from '../../../src/shared/level'
 
-describe('IPCDownClient', function () {
+describe('IPCClient', function () {
   it('get', async function () {
     const values = { a: 0 }
-    const client = new IPCDownClient({ invoke: async (message, key) => values[key] })
+    const client = new IPCClient({ invoke: async (message, key) => values[key] })
     assert.strictEqual(await client.get('a'), 0)
   })
 
   it('get rejects when the server rejects', async function () {
-    const client = new IPCDownClient({
+    const client = new IPCClient({
       invoke: async (message, key) => { throw new Error(`key not found [${key}]`) }
     })
     await assert.rejects(() => client.get('a'))
@@ -18,21 +18,21 @@ describe('IPCDownClient', function () {
 
   it('put', async function () {
     const values = {}
-    const client = new IPCDownClient({ invoke: async (message, key, value) => { values[key] = value } })
+    const client = new IPCClient({ invoke: async (message, key, value) => { values[key] = value } })
     await client.put('a', 0)
     assert.strictEqual(values.a, 0)
   })
 
   it('del', async function () {
     const values = { a: 0 }
-    const client = new IPCDownClient({ invoke: async (message, key) => { delete values[key] } })
+    const client = new IPCClient({ invoke: async (message, key) => { delete values[key] } })
     await client.del('a')
     assert.deepStrictEqual(values, {})
   })
 
   it('iterator', async function () {
     const expected = [{ key: 'a', value: 0 }, { key: 'b', value: 1 }]
-    const client = new IPCDownClient({ invoke: async () => expected })
+    const client = new IPCClient({ invoke: async () => expected })
 
     const actual = []
     for await (const [key, value] of client.iterator()) actual.push({ key, value })

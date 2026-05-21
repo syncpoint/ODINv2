@@ -160,7 +160,7 @@ export default async projectUUID => {
     services.replicationProvider = MatrixClient({
       ...credentials,
       device_id: projectUUID,
-      db: L.leveldb({ up: db, encoding: 'json', prefix: 'command-queue' }),
+      db: L.leveldb({ parent: db, encoding: 'json', prefix: 'command-queue' }),
       ...(encryption && { encryption })
     })
   } else {
