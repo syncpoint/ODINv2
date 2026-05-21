@@ -38,19 +38,27 @@ is confined to 6 files.
 - Install the new packages *alongside* the old ones, so the migration can
   proceed file by file with tests staying green.
 
-### Phase 1 — `wkb.js`
-- Port the WKB encoding to the `abstract-level` custom-encoding shape
-  (`{ encode, decode, format }`, via `level-transcoder`). Open question:
-  current `format` (`'buffer'` vs `'view'`).
-- Adapt `test/shared/level/wkb-test.js`, keep green.
+### Phase 1 — WKB regression tests (done)
+- The `wkb.js` encoding-format conversion cannot be done in isolation: the
+  exported encoding object is consumed by `index.js`, and the old
+  (`encoding-down`: `{ buffer, encode, decode }`) and new
+  (`abstract-level` / `level-transcoder`: `{ name, format, encode, decode }`)
+  shapes are incompatible. The `wkb.js` code change therefore moves into
+  Phase 2, alongside its consumer.
+- Phase 1 delivers the safety net: expand `test/shared/level/wkb-test.js`
+  on the old stack — every geometry type plus batch/getMany/iterator/del —
+  so Phase 2 can be verified against identical behaviour.
 
-### Phase 2 — `index.js` (factory + helpers)
+### Phase 2 — `index.js` + `wkb.js` (factory, helpers, encoding)
 - New `leveldb()` factory: `classic-level` / `memory-level` instead of the
   `levelup`/`encode`/`leveldown` nesting; `sublevel` branches → `db.sublevel()`.
+- Port the WKB encoding in `wkb.js` to the `abstract-level` custom-encoding
+  shape (`{ name, format, encode, decode }`, via `level-transcoder`). Open
+  question: current `format` (`'buffer'` vs `'view'`).
 - Rewrite the stream readers (`read`, `Streams`, `readStream`,
   `readTuples/Keys/Values`, `existsKey`) on async iterators.
 - `get()` helper: check for `undefined` instead of `try/catch` on `NotFound`.
-- **Keep the exported signatures identical.**
+- **Keep the exported signatures identical.** Verify with the Phase 1 tests.
 
 ### Phase 3 — `PartitionDOWN.js` (core piece)
 - Reimplement as an `AbstractLevel` subclass delegating to two child DBs
