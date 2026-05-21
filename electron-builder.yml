@@ -51,5 +51,3 @@ snap:
 publish:
   - provider: github
     releaseType: release
-
-electronVersion: 42.2.0

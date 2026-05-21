@@ -1,15 +1,13 @@
 const path = require('path')
-const fs = require('fs')
 const { spawn } = require('child_process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
-const YAML = require('yaml')
 
-// Pick up Electron version [X.Y] from builder configuration:
+// Pick up Electron version [X.Y] from the installed electron package.
+// This is the single source of truth — electron-builder auto-detects the
+// same dependency, so the build target and the packaged runtime cannot drift.
 const { rendererTarget, mainTarget, preloadTarget } = (() => {
-  const file = fs.readFileSync('./electron-builder.yml', 'utf8')
-  const configuration = YAML.parse(file)
-  const version = configuration.electronVersion.match(/(\d+\.\d+)/)[0]
+  const version = require('electron/package.json').version.match(/(\d+\.\d+)/)[0]
 
   return {
     rendererTarget: 'electron' + version + '-renderer',
