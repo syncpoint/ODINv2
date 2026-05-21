@@ -57,7 +57,7 @@ export default function Store (jsonDB, wkbDB, undo, selection) {
   this.wkbDB = wkbDB
   this.undo = undo
   this.selection = selection
-  this.db = L.leveldb({ down: new PartitionDOWN(jsonDB, wkbDB) })
+  this.db = new PartitionDOWN(jsonDB, wkbDB)
 }
 
 util.inherits(Store, Emitter)

@@ -3,77 +3,39 @@ import { IPCDownClient, IPCServer, GET, PUT, DEL, ITERATOR } from '../../../src/
 import { leveldb } from '../../../src/shared/level'
 
 describe('IPCDownClient', function () {
-  it('GET', async function () {
+  it('get', async function () {
     const values = { a: 0 }
-    const client = new IPCDownClient({
-      invoke: async function (message, key, options) {
-        return values[key]
-      }
-    })
-
-    const db = leveldb({ down: client })
-    const actual = await db.get('a')
-    assert.strictEqual(actual, 0)
+    const client = new IPCDownClient({ invoke: async (message, key) => values[key] })
+    assert.strictEqual(await client.get('a'), 0)
   })
 
-  it('GET (key not found)', async function () {
+  it('get rejects when the server rejects', async function () {
     const client = new IPCDownClient({
-      invoke: async function (message, key, options) {
-        throw new Error(`Key not found in database [${key}]`)
-      }
+      invoke: async (message, key) => { throw new Error(`key not found [${key}]`) }
     })
-
-    const db = leveldb({ down: client })
-    try {
-      await db.get('a')
-      assert.fail()
-    } catch (err) {
-      // all good.
-    }
+    await assert.rejects(() => client.get('a'))
   })
 
-  it('PUT', async function () {
+  it('put', async function () {
     const values = {}
-    const client = new IPCDownClient({
-      invoke: async function (message, key, value, options) {
-        values[key] = value
-      }
-    })
-
-    const db = leveldb({ down: client })
-    await db.put('a', 0)
+    const client = new IPCDownClient({ invoke: async (message, key, value) => { values[key] = value } })
+    await client.put('a', 0)
     assert.strictEqual(values.a, 0)
   })
 
-  it('DEL', async function () {
+  it('del', async function () {
     const values = { a: 0 }
-    const client = new IPCDownClient({
-      invoke: async function (message, key, options) {
-        delete values[key]
-      }
-    })
-
-    const db = leveldb({ down: client })
-    await db.del('a')
+    const client = new IPCDownClient({ invoke: async (message, key) => { delete values[key] } })
+    await client.del('a')
     assert.deepStrictEqual(values, {})
   })
 
-  it('ITERATOR', async function () {
+  it('iterator', async function () {
     const expected = [{ key: 'a', value: 0 }, { key: 'b', value: 1 }]
-    const client = new IPCDownClient({
-      invoke: async function (message, options) {
-        return expected
-      }
-    })
+    const client = new IPCDownClient({ invoke: async () => expected })
 
-    const db = leveldb({ down: client })
-    const actual = await new Promise(resolve => {
-      const acc = []
-      db.createReadStream()
-        .on('data', data => acc.push(data))
-        .on('end', () => resolve(acc))
-    })
-
+    const actual = []
+    for await (const [key, value] of client.iterator()) actual.push({ key, value })
     assert.deepStrictEqual(actual, expected)
   })
 })
@@ -89,48 +51,31 @@ describe('IPCServer', function () {
   it('GET', async function () {
     const db = leveldb({ encoding: 'json' })
     await db.put('a', 0)
-    /* eslint-disable no-new */
-    new IPCServer(db, ipc)
-    /* eslint-enable no-new */
-    const actual = await ipc.invoke(GET, 'a')
-    assert.strictEqual(actual, 0)
+    new IPCServer(db, ipc) // eslint-disable-line no-new
+    assert.strictEqual(await ipc.invoke(GET, 'a'), 0)
   })
 
   it('PUT', async function () {
     const db = leveldb({ encoding: 'json' })
-    /* eslint-disable no-new */
-    new IPCServer(db, ipc)
-    /* eslint-enable no-new */
+    new IPCServer(db, ipc) // eslint-disable-line no-new
     await ipc.invoke(PUT, 'a', 0)
-    const actual = await db.get('a')
-    assert.strictEqual(actual, 0)
+    assert.strictEqual(await db.get('a'), 0)
   })
 
   it('DEL', async function () {
     const db = leveldb({ encoding: 'json' })
     await db.put('a', 0)
-    /* eslint-disable no-new */
-    new IPCServer(db, ipc)
-    /* eslint-enable no-new */
+    new IPCServer(db, ipc) // eslint-disable-line no-new
     await ipc.invoke(DEL, 'a')
-
-    try {
-      await db.get('a')
-      assert.fail()
-    } catch (err) {
-      // all good
-    }
+    assert.strictEqual(await db.get('a'), undefined)
   })
 
   it('ITERATOR', async function () {
     const db = leveldb({ encoding: 'json' })
     await db.put('a', 0)
     await db.put('b', 1)
-    /* eslint-disable no-new */
-    new IPCServer(db, ipc)
-    /* eslint-enable no-new */
+    new IPCServer(db, ipc) // eslint-disable-line no-new
     const actual = await ipc.invoke(ITERATOR, { keys: true, values: true })
-    const expected = [{ key: 'a', value: 0 }, { key: 'b', value: 1 }]
-    assert.deepStrictEqual(actual, expected)
+    assert.deepStrictEqual(actual, [{ key: 'a', value: 0 }, { key: 'b', value: 1 }])
   })
 })

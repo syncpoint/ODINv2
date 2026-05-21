@@ -1,7 +1,6 @@
 import * as R from 'ramda'
 import { ClassicLevel } from 'classic-level'
 import { MemoryLevel } from 'memory-level'
-import levelup from 'levelup'
 import { wkb } from './wkb'
 
 // Value encodings accepted via the `encoding` factory option.
@@ -14,11 +13,6 @@ const valueEncodings = {
  * leveldb :: Options -> AbstractLevel
  */
 export const leveldb = (options = {}) => {
-  // Temporary bridge: the custom abstract-leveldown stores (PartitionDOWN,
-  // IPCDownClient) are still wrapped via levelup until phases 3/4 of the
-  // abstract-level migration. See docs/level-migration.md.
-  if (options.down) return levelup(options.down)
-
   const valueEncoding = valueEncodings[options.encoding]
   const dbOptions = valueEncoding ? { valueEncoding } : {}
 

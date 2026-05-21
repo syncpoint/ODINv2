@@ -1,252 +1,176 @@
-import util from 'util'
-import { AbstractLevelDOWN, AbstractIterator } from 'abstract-leveldown'
-
 /**
+ * Value-partitioning store.
  *
+ * Routes a value's `geometry` to `wkbDB` (encoded as WKB) and the remaining
+ * properties to `jsonDB` (encoded as JSON). A plain adapter over two
+ * abstract-level child databases — it is not an abstract-level database
+ * itself, but exposes the subset of the API the `L.*` helpers and `Store`
+ * use: get / getMany / put / del / batch / iterator / keys / values.
  */
-function Iterator (db, options) {
-  AbstractIterator.call(this, db)
-  this.options_ = options // remember if keys are requested
-  this.properties = options.properties
-  this.geometry = options.geometry
-
-  // synched :: Boolean
-  // Whether properties/geometry keys are in sync.
-  this.insync = true
-}
-
-util.inherits(Iterator, AbstractIterator)
-
-const next = it => new Promise((resolve, reject) => {
-  it.next((err, key, value) => {
-    if (err) reject(err)
-    else resolve({ key, value })
-  })
-})
-
-const consumed = it => it.key === undefined
-
-Iterator.prototype._next = async function (callback) {
-
-  try {
-    // Fetch properties unconditionally and geometry only when keys matched.
-    this.propertiesKV = await next(this.properties)
-    if (this.insync) this.geometryKV = await next(this.geometry)
-
-    // We are done, when both iterators are consumed.
-    if (consumed(this.geometryKV) && consumed(this.propertiesKV)) {
-      return this._nextTick(callback)
-    }
-
-    this.insync = this.propertiesKV.key === this.geometryKV.key
-
-    const key = this.propertiesKV.key
-    const value = this.insync
-      ? { ...this.propertiesKV.value, geometry: this.geometryKV.value }
-      : this.propertiesKV.value
-
-    this._nextTick(callback, null, key, value)
-  } catch (err) {
-    this._nextTick(callback, err)
-  }
-}
-
-
-/**
- * AbstractLevelDOWN which splits values into two different databases.
- * The value's optional `geometry` property is encoded as WKB to `wkbDB`.
- * All other properties are written as JSON to `jsonDB`.
- */
-export const PartitionDOWN = function (jsonDB, wkbDB) {
-  const manifest = { getMany: true }
-  AbstractLevelDOWN.call(this, manifest)
-
+export function PartitionDOWN (jsonDB, wkbDB) {
   this.jsonDB = jsonDB
   this.wkbDB = wkbDB
 }
 
-util.inherits(PartitionDOWN, AbstractLevelDOWN)
-
 const isGeometry = value => {
   if (!value) return false
-  else if (typeof value !== 'object') return false
-  else {
-    if (!value.type) return false
-    else if (!value.coordinates && !value.geometries) return false
-    return true
-  }
-}
-
-const safeget = async (level, key) => {
-  try {
-    return await level.get(key)
-  } catch (err) {
-    return undefined
-  }
-}
-
-const safedel = async (level, key) => {
-  try {
-    return await level.del(key)
-  } catch (err) {
-    // Let it slide.
-  }
+  if (typeof value !== 'object') return false
+  if (!value.type) return false
+  if (!value.coordinates && !value.geometries) return false
+  return true
 }
 
 /**
- * _put :: k -> {k, v}
- * _put :: k -> GeoJSON/Geometry
- * _put :: k -> *
+ * split :: value -> { geometry, properties }
+ * Either part may be `undefined`:
+ *   - value is a geometry           -> { geometry: value, properties: undefined }
+ *   - value has a geometry property -> { geometry, properties: rest }
+ *   - anything else                 -> { geometry: undefined, properties: value }
  */
-PartitionDOWN.prototype._put = async function (key, value, options, callback) {
-  const err = this._checkKey(key) || this._checkValue(value)
-  if (err) return this._nextTick(callback, err)
+const split = value => {
+  if (isGeometry(value)) return { geometry: value, properties: undefined }
 
-  // Cases
-  // 1. value is GeoJSON/Geometry
-  // 2. value is object with geometry property
-  // 3. none of the above
+  if (value && typeof value === 'object') {
+    const { geometry, ...properties } = value
+    if (isGeometry(geometry)) return { geometry, properties }
+  }
+
+  return { geometry: undefined, properties: value }
+}
+
+const checkKey = key => {
+  if (key === null || key === undefined) {
+    throw new Error('key cannot be `null` or `undefined`')
+  }
+}
+
+const checkValue = value => {
+  if (value === null || value === undefined) {
+    throw new Error('value cannot be `null` or `undefined`')
+  }
+}
+
+/** combine :: (geometry, properties) -> value */
+const combine = (geometry, properties) => {
+  if (isGeometry(geometry)) {
+    return properties === undefined ? geometry : { geometry, ...properties }
+  }
+  return properties
+}
+
+PartitionDOWN.prototype.put = async function (key, value) {
+  checkKey(key)
+  checkValue(value)
+  const { geometry, properties } = split(value)
+  await Promise.all([
+    geometry !== undefined ? this.wkbDB.put(key, geometry) : Promise.resolve(),
+    properties !== undefined ? this.jsonDB.put(key, properties) : Promise.resolve()
+  ])
+}
+
+PartitionDOWN.prototype.get = async function (key) {
+  checkKey(key)
+  const [geometry, properties] = await Promise.all([
+    this.wkbDB.get(key),
+    this.jsonDB.get(key)
+  ])
+  return combine(geometry, properties)
+}
+
+PartitionDOWN.prototype.getMany = async function (keys) {
+  const [geometries, properties] = await Promise.all([
+    this.wkbDB.getMany(keys),
+    this.jsonDB.getMany(keys)
+  ])
+  return keys.map((_, index) => combine(geometries[index], properties[index]))
+}
+
+PartitionDOWN.prototype.del = async function (key) {
+  checkKey(key)
+  await Promise.all([this.wkbDB.del(key), this.jsonDB.del(key)])
+}
+
+PartitionDOWN.prototype.batch = async function (operations) {
+  if (!Array.isArray(operations)) {
+    throw new Error('batch(array) requires an array argument')
+  }
+
+  const geometryOps = []
+  const propertyOps = []
+
+  for (const op of operations) {
+    checkKey(op.key)
+    if (op.type === 'del') {
+      // A partition that never held the key ignores the del.
+      geometryOps.push(op)
+      propertyOps.push(op)
+    } else if (op.type === 'put') {
+      checkValue(op.value)
+      const { geometry, properties } = split(op.value)
+      if (geometry !== undefined) geometryOps.push({ type: 'put', key: op.key, value: geometry })
+      if (properties !== undefined) propertyOps.push({ type: 'put', key: op.key, value: properties })
+    }
+  }
+
+  await Promise.all([
+    geometryOps.length ? this.wkbDB.batch(geometryOps) : Promise.resolve(),
+    propertyOps.length ? this.jsonDB.batch(propertyOps) : Promise.resolve()
+  ])
+}
+
+/**
+ * Merge the two child iterators (both ascending by key) into a single
+ * stream of reconstructed [key, value] entries.
+ */
+async function * merge (jsonDB, wkbDB, options) {
+  const opts = { ...options }
+  const limit = typeof opts.limit === 'number' && opts.limit >= 0 ? opts.limit : Infinity
+  delete opts.limit
+
+  const properties = jsonDB.iterator(opts)
+  const geometries = wkbDB.iterator(opts)
 
   try {
-    if (isGeometry(value)) {
-      // 1. Only write geometry:
-      await this.wkbDB.put(key, value)
-    } else {
-      const { geometry, ...others } = value
-      // 2. Write geometry and other properties:
-      if (isGeometry(geometry)) {
-        await this.wkbDB.put(key, geometry)
-        await this.jsonDB.put(key, others)
+    let p = await properties.next()
+    let g = await geometries.next()
+    let count = 0
+
+    while (count < limit && (p !== undefined || g !== undefined)) {
+      let key, value
+
+      if (g === undefined || (p !== undefined && p[0] < g[0])) {
+        // properties-only key
+        [key, value] = p
+        p = await properties.next()
+      } else if (p === undefined || g[0] < p[0]) {
+        // geometry-only key
+        [key, value] = g
+        g = await geometries.next()
       } else {
-        // 3. Write value as-is:
-        await this.jsonDB.put(key, value)
+        // same key in both partitions
+        key = p[0]
+        value = combine(g[1], p[1])
+        p = await properties.next()
+        g = await geometries.next()
       }
+
+      count += 1
+      yield [key, value]
     }
-
-    this._nextTick(callback)
-  } catch (err) {
-    this._nextTick(callback, err)
+  } finally {
+    await properties.close()
+    await geometries.close()
   }
 }
 
-/**
- * _get :: k
- */
-PartitionDOWN.prototype._get = async function (key, options, callback) {
-  const err = this._checkKey(key)
-  if (err) return this._nextTick(callback, err)
-
-  try {
-    const geometry = await safeget(this.wkbDB, key)
-    const others = await safeget(this.jsonDB, key)
-
-    if (isGeometry(geometry)) {
-      if (others === undefined) return this._nextTick(callback, null, geometry)
-      else return this._nextTick(callback, null, { geometry, ...others })
-    } else {
-      if (others === undefined) return this._nextTick(callback, new Error('NotFound'))
-      else return this._nextTick(callback, null, others)
-    }
-  } catch (err) {
-    this._nextTick(callback, err)
-  }
+PartitionDOWN.prototype.iterator = function (options) {
+  return merge(this.jsonDB, this.wkbDB, options || {})
 }
 
-/**
- * _getMany :: [k]
- */
-PartitionDOWN.prototype._getMany = async function (keys, options, callback) {
-  const err = keys
-    .map(key => this._checkKey(key))
-    .find(err => err)
-
-  if (err) return this._nextTick(callback, err)
-
-  try {
-    const geometry = await this.wkbDB.getMany(keys)
-    const others = await this.jsonDB.getMany(keys)
-    const entries = keys.map((_, index) => {
-      if (isGeometry(geometry[index])) {
-        if (!others[index]) return geometry[index]
-        else return { geometry: geometry[index], ...others[index] }
-      } else {
-        if (!others) return undefined
-        else return others[index]
-      }
-    })
-
-    return this._nextTick(callback, null, entries)
-  } catch (err) {
-    this._nextTick(callback, err)
-  }
+PartitionDOWN.prototype.keys = async function * (options) {
+  for await (const [key] of this.iterator(options)) yield key
 }
 
-/**
- * Note: We do not check if key exists at all.
- */
-PartitionDOWN.prototype._del = async function (key, options, callback) {
-  const err = this._checkKey(key)
-  if (err) return this._nextTick(callback, err)
-
-  try {
-    await safedel(this.wkbDB, key)
-    await safedel(this.jsonDB, key)
-    this._nextTick(callback)
-  } catch (err) {
-    this._nextTick(callback, err)
-  }
-}
-
-/**
- *
- */
-PartitionDOWN.prototype._batch = async function (array, options, callback) {
-
-  if (!Array.isArray(array)) {
-    return this._nextTick(callback, new Error('batch(array) requires an array argument'))
-  }
-
-  const [geometries, properties] = array.reduce((acc, op) => {
-    const [geometries, properties] = acc
-    const { type, key, value } = op
-
-    if (type === 'del') {
-      // For 'del' batch seems to ignore keys which do not exist.
-      geometries.push(op)
-      properties.push(op)
-    } else if (type === 'put') {
-      if (isGeometry(value)) geometries.push(op)
-      else {
-        const { geometry, ...others } = value
-        if (isGeometry(geometry)) {
-          geometries.push({ type: 'put', key, value: geometry })
-          properties.push({ type: 'put', key, value: others })
-        } else {
-          properties.push({ type: 'put', key, value })
-        }
-      }
-    }
-
-    return acc
-  }, [[], []])
-
-  try {
-    if (geometries.length) await this.wkbDB.batch(geometries)
-    if (properties.length) await this.jsonDB.batch(properties)
-    this._nextTick(callback)
-  } catch (err) {
-    this._nextTick(callback, err)
-  }
-}
-
-/**
- *
- */
-PartitionDOWN.prototype._iterator = function (options) {
-  // Keys are necessary to synchronize iterators:
-  return new Iterator(this, {
-    ...options,
-    properties: this.jsonDB.iterator({ ...options, keys: true }),
-    geometry: this.wkbDB.iterator({ ...options, keys: true })
-  })
+PartitionDOWN.prototype.values = async function * (options) {
+  for await (const entry of this.iterator(options)) yield entry[1]
 }
