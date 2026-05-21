@@ -28,13 +28,22 @@ const ready = async () => {
 
   // Register app:// protocol handler to serve static files from dist/.
   const distPath = path.join(app.getAppPath(), 'dist')
-  protocol.handle('app', (request) => {
+  protocol.handle('app', async (request) => {
     const requestURL = new globalThis.URL(request.url)
     const filePath = path.join(distPath, path.normalize(requestURL.pathname))
     if (!filePath.startsWith(distPath)) {
       return new Response('Forbidden', { status: 403 })
     }
-    return net.fetch('file://' + filePath)
+
+    // The handler must always resolve to a Response. Returning a rejected
+    // net.fetch() promise (e.g. for a missing file) leaves the request
+    // unresolved, which freezes the renderer when DevTools requests source
+    // maps or webpack-virtual source paths that have no file on disk.
+    try {
+      return await net.fetch('file://' + filePath)
+    } catch {
+      return new Response('Not Found', { status: 404 })
+    }
   })
 
   // Inject Content-Security-Policy and augment CORS headers.

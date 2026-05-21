@@ -106,6 +106,25 @@ to make ODIN use your on-premise instance of Nominatim you cat use the environme
 
 You are an offline-first user and want to host your own map server (i.e. on your laptop)? GeoWebServer is way to big and uses too many resources? Just fire up [mbtileserver](https://github.com/consbio/mbtileserver), provide a _mbtile_ file that contains all your map tiles and you are done.
 
+## Development
+
+### Build hygiene
+
+`npm start` runs the app against the prebuilt `dist/` directory — it does **not** build.
+After an interrupted or partial webpack build, `dist/` can contain a bundle and a
+source map that do not match each other. Opening the Chrome DevTools against such a
+mismatched build freezes the renderer (the inspector blocks while trying to reconcile
+bundle and source map).
+
+If the app freezes when DevTools opens, do a clean build before starting:
+
+```
+rm -rf dist && npm run webpack && npm start
+```
+
+`npm run hot` (webpack-dev-server) is unaffected, since it always serves a consistent
+in-memory build.
+
 ## License
 
 Copyright (c) Syncpoint GmbH. All rights reserved.
