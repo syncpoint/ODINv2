@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import * as ID from '../ids'
+import uuid from '../../shared/uuid'
 
 export const clone = async (defaultLayerId, unsorted) => {
   const entries = unsorted.sort(([a], [b]) => ID.ord(a) - ID.ord(b))
@@ -45,13 +46,22 @@ export const clone = async (defaultLayerId, unsorted) => {
     [ID.isTagsId, key => replace(key)(ID.tagsId(keymap[ID.associatedId(key)]))],
     [ID.isMarkerId, key => replace(key)(ID.markerId())],
     [ID.isTileServiceId, key => replace(key)(ID.tileServiceId())],
+    [ID.isSSEServiceId, key => replace(key)(ID.sseServiceId())],
     [ID.isStyleId, key => replace(key)(ID.styleId(keymap[ID.associatedId(key)]))],
     [R.T, key => key]
   ])
 
+  // Rewrite values where a plain key remap is not sufficient.
+  // A duplicated live data source must not share the original's
+  // feature namespace and must not auto-connect.
+
+  const rewriteValue = (key, value) => ID.isSSEServiceId(key)
+    ? { ...value, enabled: false, featureIdPrefix: `feature:${uuid()}/` }
+    : value
+
   // Nasty side-effect: adds tuples (aka acc):
   entries.reduce((acc, [key, value]) => {
-    acc.push([rewrite(key), value])
+    acc.push([rewrite(key), rewriteValue(key, value)])
     return acc
   }, tuples)
 

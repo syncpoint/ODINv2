@@ -1,3 +1,32 @@
+.sse-section-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.sse-render-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.sse-radio-group {
+  display: flex;
+  gap: 16px;
+}
+
+.sse-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.sse-radio-label input:disabled + span {
+  color: #999;
+}
+
 .sse-option-row {
   display: flex;
   align-items: center;

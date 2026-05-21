@@ -7,7 +7,8 @@ const canCopy = id =>
   ID.isLayerId(id) ||
   ID.isFeatureId(id) ||
   ID.isMarkerId(id) ||
-  ID.isTileServiceId(id)
+  ID.isTileServiceId(id) ||
+  ID.isSSEServiceId(id)
 
 /**
  * @async implicit

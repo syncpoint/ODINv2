@@ -219,12 +219,16 @@ export const associatedId = id => {
     : id.substring(indexStart + 1)
 }
 
+// Entity types must sort before their dependent entries (link, tags, style),
+// because clone() rewrites dependent keys via a keymap populated when the
+// owning entity is processed.
 export const ord = R.cond([
   [isLayerId, R.always(0)],
   [isFeatureId, R.always(1)],
   [isMarkerId, R.always(2)],
-  [isLinkId, R.always(3)],
-  [isTagsId, R.always(4)],
-  [isStyleId, R.always(5)],
-  [isTileServiceId, R.always(6)]
+  [isTileServiceId, R.always(3)],
+  [isSSEServiceId, R.always(4)],
+  [isLinkId, R.always(5)],
+  [isTagsId, R.always(6)],
+  [isStyleId, R.always(7)]
 ])
