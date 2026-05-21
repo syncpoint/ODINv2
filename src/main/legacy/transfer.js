@@ -9,7 +9,7 @@ import * as L from '../../shared/level'
  * Project databases are only created once from main process and
  * are then used only by renderer.
  *
- * @param {*} db plain leveldown instance, i.e. without encodings
+ * @param {*} db plain abstract-level instance, i.e. without encodings
  * @param {*} project project to transfer
  */
 export const transferProject = async (db, project) => {

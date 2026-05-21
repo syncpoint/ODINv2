@@ -97,7 +97,9 @@ const rendererConfig = (env, argv) => ({
   plugins: [
     // Title is managed by BrowserWindow title option.
     new HtmlWebpackPlugin(),
-    new webpack.ExternalsPlugin('commonjs', ['leveldown'])
+    // classic-level is a native module — keep it as a runtime require so
+    // node-gyp-build resolves the prebuilt binary from node_modules.
+    new webpack.ExternalsPlugin('commonjs', ['classic-level'])
   ],
   externals: {
     // unused dependencies referenced by jsPDF
@@ -117,7 +119,8 @@ const mainConfig = (env, argv) => ({
   },
   plugins: [
     // NOTE: Required. Else "Error: No native build was found for ..."
-    new webpack.ExternalsPlugin('commonjs', ['leveldown'])
+    // classic-level is a native module and must not be bundled.
+    new webpack.ExternalsPlugin('commonjs', ['classic-level'])
   ],
   externals: {
     // unused dependencies referenced by jsPDF

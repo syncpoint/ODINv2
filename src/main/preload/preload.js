@@ -8,7 +8,7 @@ const preferences = require('./modules/preferences')
 const editing = require('./modules/editing')
 const platform = require('./modules/platform')
 
-// contextIsolation is off (renderer needs nodeIntegration for leveldown),
+// contextIsolation is off (renderer needs nodeIntegration for classic-level),
 // so we assign directly instead of using contextBridge.
 window.odin = {
   projects,

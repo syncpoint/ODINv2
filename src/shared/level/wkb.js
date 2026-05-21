@@ -6,18 +6,17 @@ const toGeoJSON = geometry => geometry.toGeoJSON()
 const parse = wkx.Geometry.parse
 const toWkb = geometry => geometry.toWkb()
 
+/**
+ * abstract-level custom value encoding: GeoJSON geometry <-> WKB buffer.
+ * Shape follows level-transcoder ({ name, format, encode, decode }).
+ */
 export const wkb = {
-  valueEncoding: {
-    buffer: true,
+  name: 'wkb',
+  format: 'buffer',
 
-    /**
-     * Encode JSON (GeoJSON geometry) as WKB buffer.
-     */
-    encode: R.compose(toWkb, parseGeoJSON),
+  /** Encode JSON (GeoJSON geometry) as WKB buffer. */
+  encode: R.compose(toWkb, parseGeoJSON),
 
-    /**
-     * Deocde WKB buffer to JSON (GeoJSON geometry).
-     */
-    decode: R.compose(toGeoJSON, parse)
-  }
+  /** Decode WKB buffer to JSON (GeoJSON geometry). */
+  decode: R.compose(toGeoJSON, parse)
 }

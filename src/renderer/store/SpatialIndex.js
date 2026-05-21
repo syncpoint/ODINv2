@@ -12,7 +12,7 @@ export function SpatialIndex (wkbDB) {
   this.tree = new RBush()
   this.geoJSONReader = new TS.GeoJSONReader()
 
-  wkbDB.on('batch', this.update.bind(this))
+  wkbDB.on('write', this.update.bind(this))
 }
 
 

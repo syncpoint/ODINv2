@@ -1,25 +1,26 @@
 import * as R from 'ramda'
-import levelup from 'levelup'
-import leveldown from 'leveldown'
-import memdown from 'memdown'
-import sublevel from 'subleveldown'
-import encode from 'encoding-down'
+import { ClassicLevel } from 'classic-level'
+import { MemoryLevel } from 'memory-level'
 import { wkb } from './wkb'
 
-const encodings = {
+// Value encodings accepted via the `encoding` factory option.
+const valueEncodings = {
   wkb,
-  json: { valueEncoding: 'json' }
+  json: 'json'
 }
 
+/**
+ * leveldb :: Options -> AbstractLevel
+ */
 export const leveldb = (options = {}) => {
-  const encoding = encodings[options.encoding]
-  if (options.down) return levelup(options.down)
-  else if (options.up) return sublevel(options.up, options.prefix, encoding)
-  else {
-    const down = options.location ? leveldown(options.location) : memdown()
-    const encoded = encoding ? encode(down, encoding) : down
-    return leveldb({ down: encoded })
-  }
+  const valueEncoding = valueEncodings[options.encoding]
+  const dbOptions = valueEncoding ? { valueEncoding } : {}
+
+  if (options.parent) return options.parent.sublevel(options.prefix, dbOptions)
+
+  return options.location
+    ? new ClassicLevel(options.location, dbOptions)
+    : new MemoryLevel(dbOptions)
 }
 
 
@@ -27,28 +28,28 @@ export const leveldb = (options = {}) => {
  * JSON-encoded 'tuples' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const jsonDB = db => leveldb({ up: db, encoding: 'json', prefix: 'tuples' })
+export const jsonDB = db => leveldb({ parent: db, encoding: 'json', prefix: 'tuples' })
 
 
 /**
  * WKB-encoded 'geometries' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const wkbDB = db => leveldb({ up: db, encoding: 'wkb', prefix: 'geometries' })
+export const wkbDB = db => leveldb({ parent: db, encoding: 'wkb', prefix: 'geometries' })
 
 
 /**
  * JSON-encoded 'preferences' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const preferencesDB = db => sublevel(db, 'preferences', { valueEncoding: 'json' })
+export const preferencesDB = db => db.sublevel('preferences', { valueEncoding: 'json' })
 
 
 /**
  * JSON-encoded 'session' partition on top of plain store.
  * @param {*} db plain store without explicit encoding.
  */
-export const sessionDB = db => sublevel(db, 'session', { valueEncoding: 'json' })
+export const sessionDB = db => db.sublevel('session', { valueEncoding: 'json' })
 
 
 /**
@@ -56,7 +57,7 @@ export const sessionDB = db => sublevel(db, 'session', { valueEncoding: 'json' }
  * Holds database schema options for upgrading/downgrading schema between versions.
  * @param {*} db plain store without explicit encoding.
  */
-export const schemaDB = db => sublevel(db, 'schema', { valueEncoding: 'json' })
+export const schemaDB = db => db.sublevel('schema', { valueEncoding: 'json' })
 
 
 /**
@@ -75,36 +76,26 @@ export const putOp = (key, value) => ({ type: 'put', key, value })
 export const delOp = key => ({ type: 'del', key })
 
 /**
- * read :: (stream, fn) -> [fn(k, v)]
+ * collect :: (AsyncIterable a, a -> b) -> Promise [b]
  */
-export const read = (stream, decode) => new Promise((resolve, reject) => {
+const collect = async (iterable, decode) => {
   const acc = []
-  stream
-    .on('data', data => acc.push(decode(data)))
-    .on('error', reject)
-    .on('close', () => resolve(acc))
-})
+  for await (const item of iterable) acc.push(decode(item))
+  return acc
+}
 
 export const Decoders = {
-  TUPLE: ({ key, value }) => [key, value],
-  ENTITY: ({ key, value }) => ({ id: key, ...value })
+  TUPLE: ([key, value]) => [key, value],
+  ENTITY: ([key, value]) => ({ id: key, ...value })
 }
 
-export const readStream = (db, options) => db.createReadStream(options)
-
-export const Streams = {
-  TUPLE: (db, options) => readStream(db, { ...options, keys: true, values: true }),
-  VALUE: (db, options) => readStream(db, { ...options, keys: false, values: true }),
-  KEY: (db, options) => readStream(db, { ...options, keys: true, values: false })
-}
-
-export const readTuples = (db, options) => read(Streams.TUPLE(db, options), Decoders.TUPLE)
-export const readEntities = (db, options) => read(Streams.TUPLE(db, options), Decoders.ENTITY)
-export const readKeys = (db, options) => read(Streams.KEY(db, options), R.identity)
-export const readValues = (db, options) => read(Streams.VALUE(db, options), R.identity)
+export const readTuples = (db, options) => collect(db.iterator(options), Decoders.TUPLE)
+export const readEntities = (db, options) => collect(db.iterator(options), Decoders.ENTITY)
+export const readKeys = (db, options) => collect(db.keys(options), R.identity)
+export const readValues = (db, options) => collect(db.values(options), R.identity)
 
 /**
- * mget :: fn -> (levelup, [k]) -> [fn(k, v)]
+ * mget :: fn -> (db, [k]) -> [fn(k, v)]
  */
 export const mget = (decode, defaultValue) => async (db, keys) => {
   const values = await db.getMany(keys)
@@ -121,22 +112,22 @@ export const mget = (decode, defaultValue) => async (db, keys) => {
 }
 
 /**
- * mgetTuples :: (levelup, [k]) -> [[k, v]]
+ * mgetTuples :: (db, [k]) -> [[k, v]]
  */
 export const mgetTuples = mget((key, value) => [key, value])
 
 /**
- * mgetKeys :: (levelup, [k]) -> [k]
+ * mgetKeys :: (db, [k]) -> [k]
  */
 export const mgetKeys = mget((key, _) => key)
 
 /**
- * mgetKeys :: (levelup, [k]) -> [v]
+ * mgetValues :: (db, [k]) -> [v]
  */
 export const mgetValues = defaultValue => mget((_, value) => value, defaultValue)
 
 /**
- * mgetEntities :: (levelup, [k]) -> [{id: k, ...v}]
+ * mgetEntities :: (db, [k]) -> [{id: k, ...v}]
  */
 export const mgetEntities = mget((key, value) => ({ id: key, ...value }))
 
@@ -161,42 +152,46 @@ export const keys = (db, arg) => Array.isArray(arg)
     : readKeys(db, {})
 
 /**
- * values :: levelup -> [k] -> [v]
- * values :: levelup -> String -> [v]
+ * values :: db -> [k] -> [v]
+ * values :: db -> String -> [v]
  */
 export const values = (db, arg, defaultValue) => Array.isArray(arg)
   ? mgetValues(defaultValue)(db, arg)
   : readValues(db, prefix(arg))
 
 /**
- * existsKey :: levelup -> String -> Boolean
+ * existsKey :: db -> {gte, lte} -> Boolean
  */
-export const existsKey = (db, prefix) => new Promise((resolve, reject) => {
-  db.createReadStream({ keys: true, values: false, limit: 1, ...prefix })
-    .on('data', () => resolve(true))
-    .on('error', reject)
-    .on('close', () => resolve(false))
-})
-
-/**
- * get :: levelup -> k -> v
- * get :: levelup -> k -> v -> v
- *
- * Get value for given key with optional default value if key was not found.
- */
-export const get = async (db, key, value) => {
-  try {
-    return await db.get(key)
-  } catch (err) {
-    if (typeof value === 'undefined') throw err
-    else return value
-  }
+export const existsKey = async (db, range) => {
+  const found = await collect(db.keys({ ...range, limit: 1 }), R.identity)
+  return found.length > 0
 }
 
 /**
- * mput :: levelup -> (k, v) -> unit
- * mput :: levelup -> {k: v} -> unit
- * mput :: levelup -> [[k, v]] -> unit
+ * get :: db -> k -> v
+ * get :: db -> k -> v -> v
+ *
+ * Get value for given key with optional default value if key was not found.
+ * abstract-level returns `undefined` for a missing key; PartitionStore and the
+ * IPC client may reject — both are treated as "not found".
+ */
+export const get = async (db, key, value) => {
+  let result
+  try {
+    result = await db.get(key)
+  } catch (err) {
+    result = undefined
+  }
+
+  if (result !== undefined) return result
+  if (typeof value === 'undefined') throw new Error(`key not found: ${key}`)
+  return value
+}
+
+/**
+ * mput :: db -> (k, v) -> unit
+ * mput :: db -> {k: v} -> unit
+ * mput :: db -> [[k, v]] -> unit
  */
 export const mput = (db, ...args) => {
   if (args.length === 2) return db.put(args[0], args[1]) // key/value
@@ -211,7 +206,7 @@ export const mput = (db, ...args) => {
 }
 
 /**
- * mdel :: levelup -> [k] -> unit
+ * mdel :: db -> [k] -> unit
  */
 export const mdel = async (db, arg) => {
   if (Array.isArray(arg)) return db.batch(arg.map(key => delOp(key)))
@@ -219,7 +214,7 @@ export const mdel = async (db, arg) => {
 }
 
 /**
- * tap :: levelup -> k -> (v -> v) -> unit
+ * tap :: db -> k -> (v -> v) -> unit
  */
 export const tap = async function (db, key, fn) {
   const value = await db.get(key)
