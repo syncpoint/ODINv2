@@ -52,4 +52,4 @@ publish:
   - provider: github
     releaseType: release
 
-electronVersion: 38.8.0
+electronVersion: 42.2.0
