@@ -60,6 +60,25 @@ is confined to 6 files.
 - `get()` helper: check for `undefined` instead of `try/catch` on `NotFound`.
 - **Keep the exported signatures identical.** Verify with the Phase 1 tests.
 
+**Findings from the phase 2 investigation:**
+- The `leveldb({ down })` factory path is used by `Store.js`
+  (`PartitionDOWN`) and `ipc-test.js` (`IPCDownClient`), so it couples
+  phase 2 to phases 3/4. Mitigation: keep `levelup` (still installed from
+  phase 0) as a temporary bridge for the `down:` path only, until phases
+  3/4 replace the custom stores.
+- `abstract-level` changed the event model: there is **no** `put` / `del`
+  / `batch` event anymore, only a single `write` event carrying an
+  `operations` array. This affects `PreferencesStore.js` (`on('put'/'del')`),
+  `SearchIndex.js` (`on('del'/'batch')`) and `SpatialIndex.js`
+  (`on('batch')`). These listeners attach directly to the db objects, so
+  they are not covered by the "consumers unchanged via `L.*`" principle and
+  must be migrated explicitly (phase 2b).
+
+### Phase 2b — event-model migration
+- Adapt `PreferencesStore.js`, `SearchIndex.js`, `SpatialIndex.js` from the
+  `put`/`del`/`batch` events to the single `write` event (filter the
+  `operations` array by `type`).
+
 ### Phase 3 — `PartitionDOWN.js` (core piece)
 - Reimplement as an `AbstractLevel` subclass delegating to two child DBs
   (JSON + WKB).
