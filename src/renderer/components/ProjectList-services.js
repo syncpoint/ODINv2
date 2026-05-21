@@ -1,6 +1,4 @@
-import levelup from 'levelup'
-import memdown from 'memdown'
-import sublevel from 'subleveldown'
+import * as L from '../../shared/level'
 import ProjectStore from '../store/ProjectStore'
 import { Selection } from '../Selection'
 import { MatrixClient } from '@syncpoint/matrix-client-api'
@@ -17,7 +15,7 @@ export default async () => {
     ? MatrixClient({
       ...credentials,
       device_id: 'PROJECT-LIST',
-      db: sublevel(levelup(memdown()), 'command-queue', { valueEncoding: 'json' })
+      db: L.leveldb({ up: L.leveldb(), encoding: 'json', prefix: 'command-queue' })
     })
     : {
         disabled: true
