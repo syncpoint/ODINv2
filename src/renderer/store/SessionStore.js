@@ -7,8 +7,13 @@ export default function SessionStore (db) {
   this.db = db
   this.cache = {}
 
-  this.db.on('put', (key, value) => this.emit('put', { key, value }))
-  this.db.on('del', (key) => this.emit('del', { key }))
+  // abstract-level emits a single 'write' event carrying an operations
+  // array for put/del/batch alike.
+  this.db.on('write', operations => {
+    operations.forEach(op => op.type === 'put'
+      ? this.emit('put', { key: op.key, value: op.value })
+      : this.emit('del', { key: op.key }))
+  })
 }
 
 util.inherits(SessionStore, Emitter)
