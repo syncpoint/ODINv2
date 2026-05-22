@@ -167,7 +167,10 @@ export const featureSource = services => {
 
   layerStyle.on(({ type, key, value }) => {
     const layerId = ID.layerId(key)
+    // Keep state.styles in sync so features created later in the same batch
+    // (readFeature reads their initial style from state.styles) pick it up.
     if (type === 'del') delete state.styles[key]
+    else state.styles[key] = value
     source.getFeatures()
       .filter(feature => ID.layerId(feature.getId()) === layerId)
       .forEach(feature => feature.$.layerStyle(type === 'put' ? value : {}))
@@ -176,7 +179,10 @@ export const featureSource = services => {
   featureStyle.on(({ type, key, value }) => {
     const featureId = ID.featureId(key)
     const feature = getFeatureById(featureId)
+    // Keep state.styles in sync so features created later in the same batch
+    // (readFeature reads their initial style from state.styles) pick it up.
     if (type === 'del') delete state.styles[key]
+    else state.styles[key] = value
     if (feature) feature.$.featureStyle(type === 'put' ? value : {})
   })
 
