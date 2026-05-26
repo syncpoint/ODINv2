@@ -20,6 +20,7 @@ import SKKMUnitProperties from './SKKMUnitProperties'
 import SKKMCommandProperties from './SKKMCommandProperties'
 import ShapeProperties from './ShapeProperties'
 import TextShapeProperties from './TextShapeProperties'
+import LineOfSightProperties from './LineOfSightProperties'
 import './Properties.css'
 
 const propertiesPanels = {
@@ -38,7 +39,8 @@ const propertiesPanels = {
   'sse-service': props => <SSEServiceProperties {...props}/>,
   'feature:SKKM/K': props => <SKKMStandardProperties {...props}/>,
   'feature:SKKM/KU': props => <SKKMUnitProperties {...props}/>,
-  'feature:SKKM/KC': props => <SKKMCommandProperties {...props}/>
+  'feature:SKKM/KC': props => <SKKMCommandProperties {...props}/>,
+  los: props => <LineOfSightProperties {...props}/>
 }
 
 const singletons = ['tile-service', 'tile-layers', 'sse-service']

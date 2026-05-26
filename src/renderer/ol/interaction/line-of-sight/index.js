@@ -3,6 +3,7 @@ import Point from 'ol/geom/Point'
 import LineString from 'ol/geom/LineString'
 import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
+import { Select } from 'ol/interaction'
 import { unByKey } from 'ol/Observable'
 import uuid from '../../../../shared/uuid'
 import * as ID from '../../../ids'
@@ -28,10 +29,13 @@ export default ({ map, services }) => {
 
   const source = new VectorSource()
   const vector = new VectorLayer({ source, style: null })
+  vector.set('selectable', true)
   map.addLayer(vector)
 
-  // Features per persisted LoS, keyed by losId.
-  // Each entry: { observer, visible, blocked?, blocker?, clip? }
+  // Per persisted LoS, keyed by losId. Each entry:
+  //   { doc, features: { observer, visible, blocked?, blocker?, clip? } }
+  // `doc` is the last value used to render so we can detect actual changes
+  // (heights, observer, target) on store batch put operations.
   const featuresByLosId = new Map()
 
   // In-progress (live-preview) features. Hand-over to featuresByLosId on finalise.
@@ -166,7 +170,7 @@ export default ({ map, services }) => {
   // Persisted LoS rendering (store-driven)
   // ────────────────────────────────────────────────────────────
 
-  const buildFeaturesFromResult = (result) => {
+  const buildFeaturesFromResult = (losId, result) => {
     const { samples, firstBlocker, clipped } = result
     const observerCoord = samples[0].coordinate
     const lastCoord = samples[samples.length - 1].coordinate
@@ -174,38 +178,51 @@ export default ({ map, services }) => {
     const visibleEndIdx = firstBlocker ? firstBlocker.index : samples.length - 1
     const visibleCoords = samples.slice(0, visibleEndIdx + 1).map(s => s.coordinate)
 
-    const entry = {}
+    const features = {}
 
-    entry.observer = new Feature(new Point(observerCoord))
-    entry.observer.setStyle(observerPointStyle)
-    source.addFeature(entry.observer)
+    features.observer = new Feature(new Point(observerCoord))
+    features.observer.setStyle(observerPointStyle)
+    features.observer.setId(losId)
+    source.addFeature(features.observer)
 
-    entry.visible = new Feature(new LineString(visibleCoords))
-    entry.visible.setStyle(visibleSegmentStyle)
-    source.addFeature(entry.visible)
+    features.visible = new Feature(new LineString(visibleCoords))
+    features.visible.setStyle(visibleSegmentStyle)
+    features.visible.setId(losId)
+    source.addFeature(features.visible)
 
     if (firstBlocker) {
       const blockedCoords = samples.slice(firstBlocker.index).map(s => s.coordinate)
-      entry.blocked = new Feature(new LineString(blockedCoords))
-      entry.blocked.setStyle(blockedSegmentStyle)
-      source.addFeature(entry.blocked)
+      features.blocked = new Feature(new LineString(blockedCoords))
+      features.blocked.setStyle(blockedSegmentStyle)
+      features.blocked.setId(losId)
+      source.addFeature(features.blocked)
 
-      entry.blocker = new Feature(new Point(firstBlocker.coordinate))
-      entry.blocker.setStyle(blockerPointStyle)
-      source.addFeature(entry.blocker)
+      features.blocker = new Feature(new Point(firstBlocker.coordinate))
+      features.blocker.setStyle(blockerPointStyle)
+      features.blocker.setId(losId)
+      source.addFeature(features.blocker)
     }
 
     if (clipped) {
-      entry.clip = new Feature(new Point(lastCoord))
-      entry.clip.setStyle(clipMarkerStyle)
-      source.addFeature(entry.clip)
+      features.clip = new Feature(new Point(lastCoord))
+      features.clip.setStyle(clipMarkerStyle)
+      features.clip.setId(losId)
+      source.addFeature(features.clip)
     }
 
-    return entry
+    return features
   }
 
+  const sameCoord = (a, b) => a && b && a[0] === b[0] && a[1] === b[1]
+
+  const docChanged = (a, b) =>
+    !a || !b ||
+    a.observerHeight !== b.observerHeight ||
+    a.targetHeight !== b.targetHeight ||
+    !sameCoord(a.observer, b.observer) ||
+    !sameCoord(a.target, b.target)
+
   const renderPersistedLos = async (losId, doc) => {
-    if (featuresByLosId.has(losId)) return
     if (!elevationService.setSource(map)) return
     if (!doc || !doc.observer || !doc.target) return
 
@@ -218,17 +235,18 @@ export default ({ map, services }) => {
       zoom: map.getView().getZoom()
     })
     if (!result) return
-    // Re-check after await — could have been added by a concurrent path.
-    if (featuresByLosId.has(losId)) return
+    // A concurrent path may have rendered it while we awaited; if so,
+    // drop the existing features so we win and stay consistent with `doc`.
+    if (featuresByLosId.has(losId)) removePersistedLos(losId)
 
-    const entry = buildFeaturesFromResult(result)
-    featuresByLosId.set(losId, entry)
+    const features = buildFeaturesFromResult(losId, result)
+    featuresByLosId.set(losId, { doc, features })
   }
 
   const removePersistedLos = (losId) => {
     const entry = featuresByLosId.get(losId)
     if (!entry) return
-    Object.values(entry).forEach(f => source.removeFeature(f))
+    Object.values(entry.features).forEach(f => f && source.removeFeature(f))
     featuresByLosId.delete(losId)
   }
 
@@ -236,7 +254,8 @@ export default ({ map, services }) => {
     if (!elevationService.setSource(map)) return false
     const tuples = await services.store.tuples(ID.LOS_SCOPE)
     for (const [id, doc] of tuples) {
-      if (!featuresByLosId.has(id)) renderPersistedLos(id, doc)
+      const existing = featuresByLosId.get(id)
+      if (!existing || docChanged(existing.doc, doc)) renderPersistedLos(id, doc)
     }
     return true
   }
@@ -252,8 +271,15 @@ export default ({ map, services }) => {
   services.store.on('batch', ({ operations }) => {
     for (const op of operations) {
       if (!ID.isLosId(op.key)) continue
-      if (op.type === 'put') renderPersistedLos(op.key, op.value)
-      else if (op.type === 'del') removePersistedLos(op.key)
+      if (op.type === 'del') {
+        removePersistedLos(op.key)
+        continue
+      }
+      // put: skip when the stored doc matches what we already rendered
+      // (e.g. our own self-echo right after finalise).
+      const existing = featuresByLosId.get(op.key)
+      if (existing && !docChanged(existing.doc, op.value)) continue
+      renderPersistedLos(op.key, op.value)
     }
   })
 
@@ -266,12 +292,24 @@ export default ({ map, services }) => {
     if (moveKey) { unByKey(moveKey); moveKey = null }
   }
 
+  // The map's Select interaction reacts to the same singleclick events we
+  // use for placing the observer/target. Deactivate it while the LoS tool
+  // is live so a click does not also select the LoS that was just drawn.
+  const selectInteraction = () =>
+    map.getInteractions().getArray().find(i => i instanceof Select)
+
+  const setSelectActive = (active) => {
+    const select = selectInteraction()
+    if (select) select.setActive(active)
+  }
+
   const reset = () => {
     detachMapListeners()
     clearInProgressOverlay()
     observer = null
     mode = 'idle'
     setCursor('')
+    setSelectActive(true)
     // Invalidate any in-flight compute so its result will not be rendered.
     computeGeneration++
     showOSD('')
@@ -284,24 +322,21 @@ export default ({ map, services }) => {
       return
     }
 
-    // Hand the in-progress features over as a persistent entry.
+    // Hand the in-progress features over as a persistent entry; assigning
+    // the losId lets the select-interaction map clicks on any sub-feature
+    // back to the same document.
     const losId = ID.losId()
-    featuresByLosId.set(losId, {
+    const features = {
       observer: observerFeature,
       visible: visibleSegmentFeature,
       blocked: blockedSegmentFeature,
       blocker: blockerFeature,
       clip: clipMarkerFeature
-    })
-    visibleSegmentFeature = null
-    blockedSegmentFeature = null
-    observerFeature = null
-    blockerFeature = null
-    clipMarkerFeature = null
+    }
+    Object.values(features).forEach(f => f && f.setId(losId))
 
     // Persist using the clamped target (so re-render after reload is identical).
-    const samples = result.samples
-    const persistedTarget = samples[samples.length - 1].coordinate
+    const persistedTarget = result.samples[result.samples.length - 1].coordinate
     const doc = {
       type: LOS_DOC_TYPE,
       observer: result.samples[0].coordinate,
@@ -309,6 +344,14 @@ export default ({ map, services }) => {
       observerHeight,
       targetHeight
     }
+    featuresByLosId.set(losId, { doc, features })
+
+    visibleSegmentFeature = null
+    blockedSegmentFeature = null
+    observerFeature = null
+    blockerFeature = null
+    clipMarkerFeature = null
+
     services.store.insert([[losId, doc]])
   }
 
@@ -329,6 +372,7 @@ export default ({ map, services }) => {
       mode = 'idle'
       setCursor('')
       detachMapListeners()
+      setSelectActive(true)
       await finalise(coordinate)
       observer = null
       showOSD('')
@@ -344,6 +388,7 @@ export default ({ map, services }) => {
     }
     mode = 'placing-observer'
     setCursor('crosshair')
+    setSelectActive(false)
     showOSD('LoS: click to place observer')
     clickKey = map.on('singleclick', onSingleClick)
     moveKey = map.on('pointermove', onPointerMove)
