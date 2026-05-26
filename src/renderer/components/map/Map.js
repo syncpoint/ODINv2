@@ -16,6 +16,7 @@ import registerGraticules from './graticules'
 import measure from '../../ol/interaction/measure'
 import shapeInteraction from '../../ol/interaction/shape-interaction'
 import elevationProfile from '../../ol/interaction/elevation-profile'
+import lineOfSight from '../../ol/interaction/line-of-sight'
 import print from '../print'
 import './Map.css'
 import './ScaleLine.css'
@@ -83,6 +84,7 @@ export const Map = () => {
     measure({ services, map })
     shapeInteraction({ services, map })
     elevationProfile({ services, map })
+    lineOfSight({ services, map })
 
     // Expose a function to query the current map resolution.
     services.getMapResolution = () => map.getView().getResolution()
