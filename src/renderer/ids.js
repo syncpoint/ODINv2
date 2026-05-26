@@ -29,6 +29,7 @@ export const DEFAULT = 'default'
 export const TAGS = 'tags'
 export const STICKY = 'sticky'
 export const MEASURE = 'measure'
+export const LOS = 'los'
 export const SHARED = 'shared'
 export const INVITED = 'invited'
 
@@ -45,6 +46,7 @@ export const TILE_PRESET_SCOPE = TILE_PRESET + COLON
 export const TILE_LAYER_SCOPE = TILE_LAYER + COLON
 export const SSE_SERVICE_SCOPE = SSE_SERVICE + COLON
 export const MEASURE_SCOPE = MEASURE + COLON
+export const LOS_SCOPE = LOS + COLON
 
 export const LINK_PREFIX = 'link' + PLUS
 export const STYLE_PREFIX = 'style' + PLUS
@@ -106,6 +108,7 @@ export const isHiddenId = isId(HIDDEN_PREFIX)
 export const isDefaultId = isId(DEFAULT_PREFIX)
 export const isTagsId = isId(TAGS_PREFIX)
 export const isMeasureId = isId(MEASURE_SCOPE)
+export const isLosId = isId(LOS_SCOPE)
 export const isSharedLayerId = isId(sharedId(LAYER_SCOPE))
 export const isInvitedId = isId(INVITED)
 export const isRoleId = isId(ROLE_PREFIX)
@@ -173,6 +176,7 @@ export const tileLayerId = (tileServiceId, layerId) =>
 export const markerId = () => makeId(MARKER, uuid())
 export const bookmarkId = () => makeId(BOOKMARK, uuid())
 export const measureId = () => makeId(MEASURE, uuid())
+export const losId = () => makeId(LOS, uuid())
 export const linkId = id => LINK + PLUS + id + SLASH + uuid()
 export const invitationId = () => makeId(INVITED, uuid())
 

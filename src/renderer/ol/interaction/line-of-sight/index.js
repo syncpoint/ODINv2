@@ -5,6 +5,7 @@ import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import { unByKey } from 'ol/Observable'
 import uuid from '../../../../shared/uuid'
+import * as ID from '../../../ids'
 import { ElevationService } from '../../../model/ElevationService'
 import {
   computeLineOfSight,
@@ -20,6 +21,7 @@ import {
 } from './style'
 
 const ORIGINATOR_ID = uuid()
+const LOS_DOC_TYPE = 'los'
 
 export default ({ map, services }) => {
   const elevationService = new ElevationService()
@@ -27,6 +29,17 @@ export default ({ map, services }) => {
   const source = new VectorSource()
   const vector = new VectorLayer({ source, style: null })
   map.addLayer(vector)
+
+  // Features per persisted LoS, keyed by losId.
+  // Each entry: { observer, visible, blocked?, blocker?, clip? }
+  const featuresByLosId = new Map()
+
+  // In-progress (live-preview) features. Hand-over to featuresByLosId on finalise.
+  let visibleSegmentFeature = null
+  let blockedSegmentFeature = null
+  let observerFeature = null
+  let blockerFeature = null
+  let clipMarkerFeature = null
 
   /** @type {'idle' | 'placing-observer' | 'tracking-target'} */
   let mode = 'idle'
@@ -42,57 +55,22 @@ export default ({ map, services }) => {
     if (viewport) viewport.style.cursor = value
   }
 
-  let visibleSegmentFeature = null
-  let blockedSegmentFeature = null
-  let observerFeature = null
-  let blockerFeature = null
-  let clipMarkerFeature = null
-
   const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
 
-  /**
-   * Remove only the in-progress features (those held by the current slot).
-   * Previously finalised LoS features stay on the map.
-   */
-  const clearOverlay = () => {
-    if (visibleSegmentFeature) source.removeFeature(visibleSegmentFeature)
-    if (blockedSegmentFeature) source.removeFeature(blockedSegmentFeature)
-    if (observerFeature) source.removeFeature(observerFeature)
-    if (blockerFeature) source.removeFeature(blockerFeature)
-    if (clipMarkerFeature) source.removeFeature(clipMarkerFeature)
-    visibleSegmentFeature = null
-    blockedSegmentFeature = null
-    observerFeature = null
-    blockerFeature = null
-    clipMarkerFeature = null
+  // ────────────────────────────────────────────────────────────
+  // In-progress overlay (live preview during placement)
+  // ────────────────────────────────────────────────────────────
+
+  const removeFeatureIfPresent = (feature) => {
+    if (feature) source.removeFeature(feature)
   }
 
-  /**
-   * Detach the current feature handles without removing features from the source.
-   * The features then become a frozen, persistent LoS on the map.
-   */
-  const detachCurrentFeatures = () => {
-    visibleSegmentFeature = null
-    blockedSegmentFeature = null
-    observerFeature = null
-    blockerFeature = null
-    clipMarkerFeature = null
-  }
-
-  const detachMapListeners = () => {
-    if (clickKey) { unByKey(clickKey); clickKey = null }
-    if (moveKey) { unByKey(moveKey); moveKey = null }
-  }
-
-  const reset = () => {
-    detachMapListeners()
-    clearOverlay()
-    observer = null
-    mode = 'idle'
-    setCursor('')
-    // Invalidate any in-flight compute so its result will not be rendered.
-    computeGeneration++
-    showOSD('')
+  const clearInProgressOverlay = () => {
+    removeFeatureIfPresent(visibleSegmentFeature); visibleSegmentFeature = null
+    removeFeatureIfPresent(blockedSegmentFeature); blockedSegmentFeature = null
+    removeFeatureIfPresent(observerFeature); observerFeature = null
+    removeFeatureIfPresent(blockerFeature); blockerFeature = null
+    removeFeatureIfPresent(clipMarkerFeature); clipMarkerFeature = null
   }
 
   const setObserverFeature = (coord) => {
@@ -103,10 +81,6 @@ export default ({ map, services }) => {
     } else {
       observerFeature.getGeometry().setCoordinates(coord)
     }
-  }
-
-  const removeFeatureIfPresent = (feature) => {
-    if (feature) source.removeFeature(feature)
   }
 
   const renderResult = (result) => {
@@ -183,8 +157,159 @@ export default ({ map, services }) => {
       elevationService,
       zoom: map.getView().getZoom()
     })
-    if (gen !== computeGeneration) return
+    if (gen !== computeGeneration) return null
     renderResult(result)
+    return result
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Persisted LoS rendering (store-driven)
+  // ────────────────────────────────────────────────────────────
+
+  const buildFeaturesFromResult = (result) => {
+    const { samples, firstBlocker, clipped } = result
+    const observerCoord = samples[0].coordinate
+    const lastCoord = samples[samples.length - 1].coordinate
+
+    const visibleEndIdx = firstBlocker ? firstBlocker.index : samples.length - 1
+    const visibleCoords = samples.slice(0, visibleEndIdx + 1).map(s => s.coordinate)
+
+    const entry = {}
+
+    entry.observer = new Feature(new Point(observerCoord))
+    entry.observer.setStyle(observerPointStyle)
+    source.addFeature(entry.observer)
+
+    entry.visible = new Feature(new LineString(visibleCoords))
+    entry.visible.setStyle(visibleSegmentStyle)
+    source.addFeature(entry.visible)
+
+    if (firstBlocker) {
+      const blockedCoords = samples.slice(firstBlocker.index).map(s => s.coordinate)
+      entry.blocked = new Feature(new LineString(blockedCoords))
+      entry.blocked.setStyle(blockedSegmentStyle)
+      source.addFeature(entry.blocked)
+
+      entry.blocker = new Feature(new Point(firstBlocker.coordinate))
+      entry.blocker.setStyle(blockerPointStyle)
+      source.addFeature(entry.blocker)
+    }
+
+    if (clipped) {
+      entry.clip = new Feature(new Point(lastCoord))
+      entry.clip.setStyle(clipMarkerStyle)
+      source.addFeature(entry.clip)
+    }
+
+    return entry
+  }
+
+  const renderPersistedLos = async (losId, doc) => {
+    if (featuresByLosId.has(losId)) return
+    if (!elevationService.setSource(map)) return
+    if (!doc || !doc.observer || !doc.target) return
+
+    const result = await computeLineOfSight({
+      observer: doc.observer,
+      target: doc.target,
+      observerHeight: doc.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
+      targetHeight: doc.targetHeight ?? DEFAULT_TARGET_HEIGHT_M,
+      elevationService,
+      zoom: map.getView().getZoom()
+    })
+    if (!result) return
+    // Re-check after await — could have been added by a concurrent path.
+    if (featuresByLosId.has(losId)) return
+
+    const entry = buildFeaturesFromResult(result)
+    featuresByLosId.set(losId, entry)
+  }
+
+  const removePersistedLos = (losId) => {
+    const entry = featuresByLosId.get(losId)
+    if (!entry) return
+    Object.values(entry).forEach(f => source.removeFeature(f))
+    featuresByLosId.delete(losId)
+  }
+
+  const tryInitialLoad = async () => {
+    if (!elevationService.setSource(map)) return false
+    const tuples = await services.store.tuples(ID.LOS_SCOPE)
+    for (const [id, doc] of tuples) {
+      if (!featuresByLosId.has(id)) renderPersistedLos(id, doc)
+    }
+    return true
+  }
+
+  ;(async () => {
+    if (await tryInitialLoad()) return
+    // Terrain not available yet — retry once a layer is added.
+    const key = map.getLayers().on('add', async () => {
+      if (await tryInitialLoad()) unByKey(key)
+    })
+  })()
+
+  services.store.on('batch', ({ operations }) => {
+    for (const op of operations) {
+      if (!ID.isLosId(op.key)) continue
+      if (op.type === 'put') renderPersistedLos(op.key, op.value)
+      else if (op.type === 'del') removePersistedLos(op.key)
+    }
+  })
+
+  // ────────────────────────────────────────────────────────────
+  // Tool lifecycle
+  // ────────────────────────────────────────────────────────────
+
+  const detachMapListeners = () => {
+    if (clickKey) { unByKey(clickKey); clickKey = null }
+    if (moveKey) { unByKey(moveKey); moveKey = null }
+  }
+
+  const reset = () => {
+    detachMapListeners()
+    clearInProgressOverlay()
+    observer = null
+    mode = 'idle'
+    setCursor('')
+    // Invalidate any in-flight compute so its result will not be rendered.
+    computeGeneration++
+    showOSD('')
+  }
+
+  const finalise = async (coordinate) => {
+    const result = await recompute(coordinate)
+    if (!result || !observerFeature || !visibleSegmentFeature) {
+      clearInProgressOverlay()
+      return
+    }
+
+    // Hand the in-progress features over as a persistent entry.
+    const losId = ID.losId()
+    featuresByLosId.set(losId, {
+      observer: observerFeature,
+      visible: visibleSegmentFeature,
+      blocked: blockedSegmentFeature,
+      blocker: blockerFeature,
+      clip: clipMarkerFeature
+    })
+    visibleSegmentFeature = null
+    blockedSegmentFeature = null
+    observerFeature = null
+    blockerFeature = null
+    clipMarkerFeature = null
+
+    // Persist using the clamped target (so re-render after reload is identical).
+    const samples = result.samples
+    const persistedTarget = samples[samples.length - 1].coordinate
+    const doc = {
+      type: LOS_DOC_TYPE,
+      observer: result.samples[0].coordinate,
+      target: persistedTarget,
+      observerHeight,
+      targetHeight
+    }
+    services.store.insert([[losId, doc]])
   }
 
   const onPointerMove = (event) => {
@@ -204,10 +329,7 @@ export default ({ map, services }) => {
       mode = 'idle'
       setCursor('')
       detachMapListeners()
-      // Finalise: run one last compute with the click coordinate, then
-      // release the current feature handles so the result stays on the map.
-      await recompute(coordinate)
-      detachCurrentFeatures()
+      await finalise(coordinate)
       observer = null
       showOSD('')
     }
