@@ -1,20 +1,16 @@
-import Feature from 'ol/Feature'
-import Point from 'ol/geom/Point'
-import { Vector as VectorSource } from 'ol/source'
-import { Vector as VectorLayer, Image as ImageLayer } from 'ol/layer'
+import { Image as ImageLayer } from 'ol/layer'
 import ImageCanvas from 'ol/source/ImageCanvas'
 import { Select } from 'ol/interaction'
 import { unByKey } from 'ol/Observable'
 import { toLonLat } from 'ol/proj'
 import { containsExtent } from 'ol/extent'
 import uuid from '../../../../shared/uuid'
+import { militaryFormat } from '../../../../shared/datetime'
 import * as ID from '../../../ids'
 import { ElevationService } from '../../../model/ElevationService'
 import { ViewshedEngine, VISIBLE, HIDDEN, NO_DATA } from './engine'
-import { observerPointStyle } from '../line-of-sight/style'
 
 const ORIGINATOR_ID = uuid()
-const AOS_DOC_TYPE = 'aos'
 
 export const DEFAULT_RADIUS_M = 2500
 export const MAX_RADIUS_M = 10000
@@ -24,6 +20,16 @@ const DEFAULT_TARGET_HEIGHT_M = 2
 const VISIBLE_RGBA = [40, 170, 60, 100]
 const HIDDEN_RGBA = [200, 40, 40, 100]
 
+/**
+ * Area-of-Sight tool. Persisted AoS documents are plain GeoJSON features
+ * (Point observer + radius/height properties) whose vector representation
+ * (observer point, radius rim) is rendered by the standard feature
+ * pipeline (style: ol/style/aos.js). This module handles:
+ *   - the placement tool with its live raster preview
+ *   - computing and compositing the visibility rasters (store-driven)
+ *   - hide/show state for the rasters (mirroring visibilityTracker)
+ *   - migrating pre-pipeline documents to GeoJSON
+ */
 export default ({ map, services }) => {
   const elevationService = new ElevationService()
   const engine = new ViewshedEngine()
@@ -33,8 +39,9 @@ export default ({ map, services }) => {
   // preview and all persisted viewsheds into the current view.
   // ────────────────────────────────────────────────────────────
 
-  // aosId -> { doc, canvas, extent, feature }
+  // aosId -> { doc, canvas, extent }
   const entries = new Map()
+  const hiddenIds = new Set()
   let preview = null // { canvas, extent }
 
   const composite = document.createElement('canvas')
@@ -55,18 +62,13 @@ export default ({ map, services }) => {
         (maxY - minY) * scale
       )
     }
-    entries.forEach(draw)
+    entries.forEach((entry, id) => { if (!hiddenIds.has(id)) draw(entry) })
     draw(preview)
     return composite
   }
 
   const rasterSource = new ImageCanvas({ canvasFunction, ratio: 1 })
   map.addLayer(new ImageLayer({ source: rasterSource }))
-
-  const vectorSource = new VectorSource()
-  const vector = new VectorLayer({ source: vectorSource, style: null })
-  vector.set('selectable', true)
-  map.addLayer(vector)
 
   /**
    * Render a mask window into a colorized canvas, clipped to the
@@ -145,11 +147,10 @@ export default ({ map, services }) => {
   }
 
   /**
-   * Compute viewshed for observer coordinate; returns everything the
-   * render side needs, or null (no data at observer, no terrain, ...).
+   * Compute viewshed for observer coordinate + doc properties.
    */
-  const computeViewshed = async (coordinate, doc) => {
-    const radiusM = Math.min(doc.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
+  const computeViewshed = async (coordinate, properties) => {
+    const radiusM = Math.min(properties.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
     const g = await ensureGrid(coordinate, radiusM)
     if (!g) return null
 
@@ -165,8 +166,8 @@ export default ({ map, services }) => {
       oy,
       radius,
       metersPerCell,
-      observerHeight: doc.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
-      targetHeight: doc.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
+      observerHeight: properties.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
+      targetHeight: properties.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
     })
     if (!result) return null
 
@@ -180,37 +181,31 @@ export default ({ map, services }) => {
   // Persisted AoS rendering (store-driven)
   // ────────────────────────────────────────────────────────────
 
-  const removePersistedAos = (aosId) => {
-    const entry = entries.get(aosId)
-    if (!entry) return
-    if (entry.feature) vectorSource.removeFeature(entry.feature)
-    entries.delete(aosId)
-    rasterSource.changed()
-  }
+  const observerOf = doc => doc?.geometry?.type === 'Point' ? doc.geometry.coordinates : null
 
   const sameCoord = (a, b) => a && b && a[0] === b[0] && a[1] === b[1]
 
+  // Only analysis-relevant parts trigger a recompute (rename does not).
   const docChanged = (a, b) =>
     !a || !b ||
-    a.radius !== b.radius ||
-    a.observerHeight !== b.observerHeight ||
-    a.targetHeight !== b.targetHeight ||
-    !sameCoord(a.observer, b.observer)
+    a.properties?.radius !== b.properties?.radius ||
+    a.properties?.observerHeight !== b.properties?.observerHeight ||
+    a.properties?.targetHeight !== b.properties?.targetHeight ||
+    !sameCoord(observerOf(a), observerOf(b))
+
+  const removePersistedAos = (aosId) => {
+    if (!entries.delete(aosId)) return
+    rasterSource.changed()
+  }
 
   const renderPersistedAos = async (aosId, doc) => {
+    const observer = observerOf(doc)
+    if (!observer) return
     if (!elevationService.setSource(map)) return
-    if (!doc || !doc.observer) return
 
-    const rendered = await computeViewshed(doc.observer, doc)
+    const rendered = await computeViewshed(observer, doc.properties ?? {})
     if (!rendered) return
-    if (entries.has(aosId)) removePersistedAos(aosId)
-
-    const feature = new Feature(new Point(doc.observer))
-    feature.setStyle(observerPointStyle)
-    feature.setId(aosId)
-    vectorSource.addFeature(feature)
-
-    entries.set(aosId, { doc, ...rendered, feature })
+    entries.set(aosId, { doc, ...rendered })
     rasterSource.changed()
   }
 
@@ -225,6 +220,29 @@ export default ({ map, services }) => {
   }
 
   ;(async () => {
+    // Migration: pre-pipeline docs {observer, radius, heights} → GeoJSON
+    const tuples = await services.store.tuples(ID.AOS_SCOPE)
+    const legacy = tuples.filter(([, doc]) => doc && !doc.geometry && doc.observer)
+    if (legacy.length) {
+      services.store.insert(legacy.map(([id, doc]) => [id, {
+        type: 'Feature',
+        name: `AoS - ${militaryFormat.now()}`,
+        geometry: { type: 'Point', coordinates: doc.observer },
+        properties: {
+          radius: doc.radius ?? DEFAULT_RADIUS_M,
+          observerHeight: doc.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
+          targetHeight: doc.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
+        }
+      }]))
+    }
+
+    // Initial hidden state (mirrors visibilityTracker).
+    const hiddenKeys = await services.store.keys(ID.hiddenId())
+    hiddenKeys
+      .map(ID.associatedId)
+      .filter(ID.isAosId)
+      .forEach(id => hiddenIds.add(id))
+
     if (await tryInitialLoad()) return
     const key = map.getLayers().on('add', async () => {
       if (await tryInitialLoad()) unByKey(key)
@@ -233,16 +251,39 @@ export default ({ map, services }) => {
 
   services.store.on('batch', ({ operations }) => {
     for (const op of operations) {
+      // hide/show tombstones for aos ids
+      if (ID.isHiddenId(op.key)) {
+        const id = ID.associatedId(op.key)
+        if (!ID.isAosId(id)) continue
+        if (op.type === 'put') hiddenIds.add(id)
+        else hiddenIds.delete(id)
+        rasterSource.changed()
+        continue
+      }
+
       if (!ID.isAosId(op.key)) continue
       if (op.type === 'del') {
         removePersistedAos(op.key)
         continue
       }
       const existing = entries.get(op.key)
-      if (existing && !docChanged(existing.doc, op.value)) continue
+      if (existing && !docChanged(existing.doc, op.value)) {
+        existing.doc = op.value // keep rename etc. without recompute
+        continue
+      }
       renderPersistedAos(op.key, op.value)
     }
   })
+
+  // Temporary reveal of hidden features while highlighted in search.
+  const onTemporaryVisibility = hide => ({ ids }) => {
+    const relevant = ids.map(ID.associatedId).filter(ID.isAosId)
+    if (!relevant.length) return
+    relevant.forEach(id => hide ? hiddenIds.add(id) : hiddenIds.delete(id))
+    rasterSource.changed()
+  }
+  services.emitter.on('feature/show', onTemporaryVisibility(false))
+  services.emitter.on('feature/hide', onTemporaryVisibility(true))
 
   // ────────────────────────────────────────────────────────────
   // Tool lifecycle: viewshed follows the cursor, click to fix
@@ -256,7 +297,7 @@ export default ({ map, services }) => {
   let pending = null
   let generation = 0
 
-  const liveDoc = {
+  const liveProperties = {
     radius: DEFAULT_RADIUS_M,
     observerHeight: DEFAULT_OBSERVER_HEIGHT_M,
     targetHeight: DEFAULT_TARGET_HEIGHT_M
@@ -284,7 +325,7 @@ export default ({ map, services }) => {
 
   const showPreview = async (coordinate) => {
     const gen = generation
-    const rendered = await computeViewshed(coordinate, liveDoc)
+    const rendered = await computeViewshed(coordinate, liveProperties)
     if (gen !== generation) return
     preview = rendered
     rasterSource.changed()
@@ -324,19 +365,14 @@ export default ({ map, services }) => {
     showOSD('')
   }
 
-  const finalise = async (coordinate) => {
+  const finalise = (coordinate) => {
     const doc = {
-      type: AOS_DOC_TYPE,
-      observer: coordinate,
-      radius: liveDoc.radius,
-      observerHeight: liveDoc.observerHeight,
-      targetHeight: liveDoc.targetHeight
+      type: 'Feature',
+      name: `AoS - ${militaryFormat.now()}`,
+      geometry: { type: 'Point', coordinates: coordinate },
+      properties: { ...liveProperties }
     }
-    // Render as persisted entry; store insert echoes back via batch but
-    // docChanged() will skip the redundant recompute.
-    const aosId = ID.aosId()
-    await renderPersistedAos(aosId, doc)
-    services.store.insert([[aosId, doc]])
+    services.store.insert([[ID.aosId(), doc]])
   }
 
   const onPointerMove = (event) => {
@@ -344,7 +380,7 @@ export default ({ map, services }) => {
     track(event.coordinate)
   }
 
-  const onSingleClick = async (event) => {
+  const onSingleClick = (event) => {
     if (mode !== 'tracking') return
     mode = 'idle'
     detachMapListeners()
@@ -353,7 +389,7 @@ export default ({ map, services }) => {
     generation++
     clearPreview()
     showOSD('')
-    await finalise(event.coordinate)
+    finalise(event.coordinate)
   }
 
   const start = () => {

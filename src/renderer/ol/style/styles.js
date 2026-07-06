@@ -10,6 +10,8 @@ import multipoint from './multipoint'
 import corridor from './corridor'
 import marker from './marker'
 import measure from './measure'
+import los from './los'
+import aos from './aos'
 import shape from './shape'
 import textShape from './text-shape'
 import fallback from './fallback'
@@ -54,6 +56,8 @@ export default feature => {
 
   if (ID.isMarkerId(featureId)) return marker($)
   else if (ID.isMeasureId(featureId)) return measure($)
+  else if (ID.isLosId(featureId)) return los($, featureId)
+  else if (ID.isAosId(featureId)) return aos($)
   else if (isTextShape) return textShape($)
   else if (isShape) return shape($)
   else if (geometryType === 'Point') return symbol($)

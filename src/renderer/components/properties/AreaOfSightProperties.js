@@ -7,32 +7,35 @@ import { DEFAULT_RADIUS_M, MAX_RADIUS_M } from '../../ol/interaction/area-of-sig
 
 const formatNumber = value => (typeof value === 'number' ? String(value) : '')
 
-const setHeight = key => value => feature => {
+const setProperty = (key, valid) => value => feature => {
   const num = parseFloat(value)
-  if (!Number.isFinite(num) || num < 0) return feature
-  return { ...feature, [key]: num }
+  if (!valid(num)) return feature
+  return { ...feature, properties: { ...feature.properties, [key]: num } }
 }
 
 const Radius = textProperty({
   label: `Radius [m] (max ${MAX_RADIUS_M})`,
-  get: feature => formatNumber(feature.radius ?? DEFAULT_RADIUS_M),
+  get: feature => formatNumber(feature.properties?.radius ?? DEFAULT_RADIUS_M),
   set: value => feature => {
     const num = parseFloat(value)
     if (!Number.isFinite(num) || num < 100) return feature
-    return { ...feature, radius: Math.min(num, MAX_RADIUS_M) }
+    return {
+      ...feature,
+      properties: { ...feature.properties, radius: Math.min(num, MAX_RADIUS_M) }
+    }
   }
 })
 
 const ObserverHeight = textProperty({
   label: 'Observer height [m]',
-  get: feature => formatNumber(feature.observerHeight),
-  set: setHeight('observerHeight')
+  get: feature => formatNumber(feature.properties?.observerHeight),
+  set: setProperty('observerHeight', num => Number.isFinite(num) && num >= 0)
 })
 
 const TargetHeight = textProperty({
   label: 'Target height [m]',
-  get: feature => formatNumber(feature.targetHeight),
-  set: setHeight('targetHeight')
+  get: feature => formatNumber(feature.properties?.targetHeight),
+  set: setProperty('targetHeight', num => Number.isFinite(num) && num >= 0)
 })
 
 const AreaOfSightProperties = (props) => (

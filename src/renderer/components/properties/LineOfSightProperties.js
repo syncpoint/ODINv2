@@ -11,24 +11,25 @@ const formatHeight = h => (typeof h === 'number' ? h.toFixed(2) : '')
 const setHeight = key => value => feature => {
   const num = parseFloat(value)
   if (!Number.isFinite(num) || num < 0) return feature
-  return { ...feature, [key]: num }
+  return { ...feature, properties: { ...feature.properties, [key]: num } }
 }
 
 const ObserverHeight = textProperty({
   label: 'Observer height [m]',
-  get: feature => formatHeight(feature.observerHeight),
+  get: feature => formatHeight(feature.properties?.observerHeight),
   set: setHeight('observerHeight')
 })
 
 const TargetHeight = textProperty({
   label: 'Target height [m]',
-  get: feature => formatHeight(feature.targetHeight),
+  get: feature => formatHeight(feature.properties?.targetHeight),
   set: setHeight('targetHeight')
 })
 
 const distanceKm = (doc) => {
-  if (!doc?.observer || !doc?.target) return null
-  return getLength(new LineString([doc.observer, doc.target])) / 1000
+  const coordinates = doc?.geometry?.type === 'LineString' && doc.geometry.coordinates
+  if (!coordinates || coordinates.length < 2) return null
+  return getLength(new LineString(coordinates)) / 1000
 }
 
 const LineOfSightProperties = (props) => {

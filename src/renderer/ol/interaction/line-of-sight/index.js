@@ -6,8 +6,10 @@ import { Vector as VectorLayer } from 'ol/layer'
 import { Select } from 'ol/interaction'
 import { unByKey } from 'ol/Observable'
 import uuid from '../../../../shared/uuid'
+import { militaryFormat } from '../../../../shared/datetime'
 import * as ID from '../../../ids'
 import { ElevationService } from '../../../model/ElevationService'
+import { setComputer } from '../../style/losCompute'
 import {
   computeLineOfSight,
   DEFAULT_OBSERVER_HEIGHT_M,
@@ -22,23 +24,23 @@ import {
 } from './style'
 
 const ORIGINATOR_ID = uuid()
-const LOS_DOC_TYPE = 'los'
 
+/**
+ * Line-of-Sight tool. Persisted LoS documents are plain GeoJSON features
+ * (LineString observer→target) rendered by the standard feature pipeline
+ * (style: ol/style/los.js) — this module only handles:
+ *   - the placement tool with its live preview overlay
+ *   - registering the profile computer once terrain is available
+ *   - migrating pre-pipeline documents to GeoJSON
+ */
 export default ({ map, services }) => {
   const elevationService = new ElevationService()
 
+  // In-progress (live-preview) overlay during placement.
   const source = new VectorSource()
   const vector = new VectorLayer({ source, style: null })
-  vector.set('selectable', true)
   map.addLayer(vector)
 
-  // Per persisted LoS, keyed by losId. Each entry:
-  //   { doc, features: { observer, visible, blocked?, blocker?, clip? } }
-  // `doc` is the last value used to render so we can detect actual changes
-  // (heights, observer, target) on store batch put operations.
-  const featuresByLosId = new Map()
-
-  // In-progress (live-preview) features. Hand-over to featuresByLosId on finalise.
   let visibleSegmentFeature = null
   let blockedSegmentFeature = null
   let observerFeature = null
@@ -62,7 +64,42 @@ export default ({ map, services }) => {
   const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
 
   // ────────────────────────────────────────────────────────────
-  // In-progress overlay (live preview during placement)
+  // Terrain discovery: the los style computes through this bridge.
+  // ────────────────────────────────────────────────────────────
+
+  const tryEnableComputer = () => {
+    if (!elevationService.setSource(map)) return false
+    setComputer(params => computeLineOfSight({ ...params, elevationService }))
+    return true
+  }
+
+  if (!tryEnableComputer()) {
+    const key = map.getLayers().on('add', () => {
+      if (tryEnableComputer()) unByKey(key)
+    })
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Migration: pre-pipeline docs {observer, target, heights} → GeoJSON
+  // ────────────────────────────────────────────────────────────
+
+  (async () => {
+    const tuples = await services.store.tuples(ID.LOS_SCOPE)
+    const legacy = tuples.filter(([, doc]) => doc && !doc.geometry && doc.observer && doc.target)
+    if (!legacy.length) return
+    services.store.insert(legacy.map(([id, doc]) => [id, {
+      type: 'Feature',
+      name: `LoS - ${militaryFormat.now()}`,
+      geometry: { type: 'LineString', coordinates: [doc.observer, doc.target] },
+      properties: {
+        observerHeight: doc.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
+        targetHeight: doc.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
+      }
+    }]))
+  })()
+
+  // ────────────────────────────────────────────────────────────
+  // Live preview overlay
   // ────────────────────────────────────────────────────────────
 
   const removeFeatureIfPresent = (feature) => {
@@ -166,122 +203,6 @@ export default ({ map, services }) => {
   }
 
   // ────────────────────────────────────────────────────────────
-  // Persisted LoS rendering (store-driven)
-  // ────────────────────────────────────────────────────────────
-
-  const buildFeaturesFromResult = (losId, result) => {
-    const { samples, firstBlocker, clipped } = result
-    const observerCoord = samples[0].coordinate
-    const lastCoord = samples[samples.length - 1].coordinate
-
-    const visibleEndIdx = firstBlocker ? firstBlocker.index : samples.length - 1
-    const visibleCoords = samples.slice(0, visibleEndIdx + 1).map(s => s.coordinate)
-
-    const features = {}
-
-    features.observer = new Feature(new Point(observerCoord))
-    features.observer.setStyle(observerPointStyle)
-    features.observer.setId(losId)
-    source.addFeature(features.observer)
-
-    features.visible = new Feature(new LineString(visibleCoords))
-    features.visible.setStyle(visibleSegmentStyle)
-    features.visible.setId(losId)
-    source.addFeature(features.visible)
-
-    if (firstBlocker) {
-      const blockedCoords = samples.slice(firstBlocker.index).map(s => s.coordinate)
-      features.blocked = new Feature(new LineString(blockedCoords))
-      features.blocked.setStyle(blockedSegmentStyle)
-      features.blocked.setId(losId)
-      source.addFeature(features.blocked)
-
-      features.blocker = new Feature(new Point(firstBlocker.coordinate))
-      features.blocker.setStyle(blockerPointStyle)
-      features.blocker.setId(losId)
-      source.addFeature(features.blocker)
-    }
-
-    if (clipped) {
-      features.clip = new Feature(new Point(lastCoord))
-      features.clip.setStyle(clipMarkerStyle)
-      features.clip.setId(losId)
-      source.addFeature(features.clip)
-    }
-
-    return features
-  }
-
-  const sameCoord = (a, b) => a && b && a[0] === b[0] && a[1] === b[1]
-
-  const docChanged = (a, b) =>
-    !a || !b ||
-    a.observerHeight !== b.observerHeight ||
-    a.targetHeight !== b.targetHeight ||
-    !sameCoord(a.observer, b.observer) ||
-    !sameCoord(a.target, b.target)
-
-  const renderPersistedLos = async (losId, doc) => {
-    if (!elevationService.setSource(map)) return
-    if (!doc || !doc.observer || !doc.target) return
-
-    const result = await computeLineOfSight({
-      observer: doc.observer,
-      target: doc.target,
-      observerHeight: doc.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
-      targetHeight: doc.targetHeight ?? DEFAULT_TARGET_HEIGHT_M,
-      elevationService
-    })
-    if (!result) return
-    // A concurrent path may have rendered it while we awaited; if so,
-    // drop the existing features so we win and stay consistent with `doc`.
-    if (featuresByLosId.has(losId)) removePersistedLos(losId)
-
-    const features = buildFeaturesFromResult(losId, result)
-    featuresByLosId.set(losId, { doc, features })
-  }
-
-  const removePersistedLos = (losId) => {
-    const entry = featuresByLosId.get(losId)
-    if (!entry) return
-    Object.values(entry.features).forEach(f => f && source.removeFeature(f))
-    featuresByLosId.delete(losId)
-  }
-
-  const tryInitialLoad = async () => {
-    if (!elevationService.setSource(map)) return false
-    const tuples = await services.store.tuples(ID.LOS_SCOPE)
-    for (const [id, doc] of tuples) {
-      const existing = featuresByLosId.get(id)
-      if (!existing || docChanged(existing.doc, doc)) renderPersistedLos(id, doc)
-    }
-    return true
-  }
-
-  ;(async () => {
-    if (await tryInitialLoad()) return
-    // Terrain not available yet — retry once a layer is added.
-    const key = map.getLayers().on('add', async () => {
-      if (await tryInitialLoad()) unByKey(key)
-    })
-  })()
-
-  services.store.on('batch', ({ operations }) => {
-    for (const op of operations) {
-      if (!ID.isLosId(op.key)) continue
-      if (op.type === 'del') {
-        removePersistedLos(op.key)
-        continue
-      }
-      // put: skip when the stored doc matches what we already rendered
-      // (e.g. our own self-echo right after finalise).
-      const existing = featuresByLosId.get(op.key)
-      if (existing && !docChanged(existing.doc, op.value)) continue
-      renderPersistedLos(op.key, op.value)
-    }
-  })
-
-  // ────────────────────────────────────────────────────────────
   // Tool lifecycle
   // ────────────────────────────────────────────────────────────
 
@@ -315,42 +236,23 @@ export default ({ map, services }) => {
 
   const finalise = async (coordinate) => {
     const result = await recompute(coordinate)
-    if (!result || !observerFeature || !visibleSegmentFeature) {
-      clearInProgressOverlay()
-      return
-    }
+    clearInProgressOverlay()
+    if (!result) return
 
-    // Hand the in-progress features over as a persistent entry; assigning
-    // the losId lets the select-interaction map clicks on any sub-feature
-    // back to the same document.
-    const losId = ID.losId()
-    const features = {
-      observer: observerFeature,
-      visible: visibleSegmentFeature,
-      blocked: blockedSegmentFeature,
-      blocker: blockerFeature,
-      clip: clipMarkerFeature
-    }
-    Object.values(features).forEach(f => f && f.setId(losId))
-
-    // Persist using the clamped target (so re-render after reload is identical).
-    const persistedTarget = result.samples[result.samples.length - 1].coordinate
+    // Persist observer→clamped target; the feature pipeline renders it.
     const doc = {
-      type: LOS_DOC_TYPE,
-      observer: result.samples[0].coordinate,
-      target: persistedTarget,
-      observerHeight,
-      targetHeight
+      type: 'Feature',
+      name: `LoS - ${militaryFormat.now()}`,
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          result.samples[0].coordinate,
+          result.samples[result.samples.length - 1].coordinate
+        ]
+      },
+      properties: { observerHeight, targetHeight }
     }
-    featuresByLosId.set(losId, { doc, features })
-
-    visibleSegmentFeature = null
-    blockedSegmentFeature = null
-    observerFeature = null
-    blockerFeature = null
-    clipMarkerFeature = null
-
-    services.store.insert([[losId, doc]])
+    services.store.insert([[ID.losId(), doc]])
   }
 
   const onPointerMove = (event) => {

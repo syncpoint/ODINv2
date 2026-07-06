@@ -8,6 +8,8 @@ import sseService from './documents/sse-service'
 import bookmark from './documents/bookmark'
 import place from './documents/place'
 import measure from './documents/measure'
+import los from './documents/los'
+import aos from './documents/aos'
 import invited from './documents/invited'
 
 export default function DocumentStore (store) {
@@ -22,6 +24,8 @@ DocumentStore.prototype['link+feature'] = DocumentStore.prototype.link
 DocumentStore.prototype.symbol = symbol
 DocumentStore.prototype.marker = marker
 DocumentStore.prototype.measure = measure
+DocumentStore.prototype.los = los
+DocumentStore.prototype.aos = aos
 DocumentStore.prototype['tile-service'] = tileService
 DocumentStore.prototype['sse-service'] = sseService
 DocumentStore.prototype.bookmark = bookmark
