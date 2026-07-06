@@ -340,6 +340,9 @@ export default ({ map, services }) => {
     if (gen !== generation) return
     preview = rendered
     rasterSource.changed()
+    // re-assert the hint — a lost race with another tool's OSD clear
+    // right after start() would otherwise leave the cell empty
+    showOSD(`AoS: ${settingsInfo()} | click to place`)
   }
 
   const track = async (coordinate) => {
@@ -366,6 +369,9 @@ export default ({ map, services }) => {
   }
 
   const reset = () => {
+    // The emitter dispatches asynchronously: an unconditional OSD clear
+    // from an idle tool would erase the hint another tool just showed.
+    const wasActive = mode !== 'idle'
     detachMapListeners()
     clearPreview()
     mode = 'idle'
@@ -374,7 +380,7 @@ export default ({ map, services }) => {
     generation++
     setCursor('')
     setSelectActive(true)
-    showOSD('')
+    if (wasActive) showOSD('')
   }
 
   const finalise = (coordinate) => {

@@ -223,6 +223,9 @@ export default ({ map, services }) => {
   }
 
   const reset = () => {
+    // The emitter dispatches asynchronously: an unconditional OSD clear
+    // from an idle tool would erase the hint another tool just showed.
+    const wasActive = mode !== 'idle'
     detachMapListeners()
     clearInProgressOverlay()
     observer = null
@@ -232,7 +235,7 @@ export default ({ map, services }) => {
     setSelectActive(true)
     // Invalidate any in-flight compute so its result will not be rendered.
     computeGeneration++
-    showOSD('')
+    if (wasActive) showOSD('')
   }
 
   const finalise = async (coordinate) => {
@@ -258,10 +261,15 @@ export default ({ map, services }) => {
   }
 
   const onPointerMove = (event) => {
-    if (mode !== 'tracking-target' || !observer) return
     if (event.dragging) return
-    lastTarget = event.coordinate
-    recompute(event.coordinate)
+    if (mode === 'placing-observer') {
+      // re-assert the hint — a lost race with another tool's OSD clear
+      // right after start() would otherwise leave the cell empty
+      showOSD(`LoS: click to place observer | ${heightsInfo()}`)
+    } else if (mode === 'tracking-target' && observer) {
+      lastTarget = event.coordinate
+      recompute(event.coordinate)
+    }
   }
 
   // Height adjustment and cancel while the tool is active. Capture phase
