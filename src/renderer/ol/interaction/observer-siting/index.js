@@ -43,6 +43,7 @@ export default ({ map, services }) => {
   let generation = 0
   let running = false
   let radiusM = DEFAULT_RADIUS_M
+  let pendingPolygon = null // selected polygon, waiting for radius confirmation
 
   const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
 
@@ -197,6 +198,9 @@ export default ({ map, services }) => {
   const drawHint = () =>
     showOSD(`Observer siting: draw the area (double-click to finish) | sensor radius ${formatRadius(radiusM)} ↑↓`)
 
+  const armedHint = () =>
+    showOSD(`Observer siting: sensor radius ${formatRadius(radiusM)} ↑↓ | Enter to compute, Escape to cancel`)
+
   const start = async () => {
     cancelDraw()
     generation++
@@ -210,9 +214,12 @@ export default ({ map, services }) => {
     const defaults = await services.sessionStore.get('tools.aos', {})
     radiusM = Math.min(defaults.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
 
+    // With a preselected polygon, wait for radius confirmation instead
+    // of computing right away — this is the moment to set the radius.
     const selected = findSelectedPolygon()
     if (selected) {
-      run(selected.clone())
+      pendingPolygon = selected.clone()
+      armedHint()
       return
     }
 
@@ -232,8 +239,9 @@ export default ({ map, services }) => {
   }
 
   const cancel = () => {
-    if (!drawInteraction && !running) return false
+    if (!drawInteraction && !running && !pendingPolygon) return false
     cancelDraw()
+    pendingPolygon = null
     generation++
     running = false
     showOSD('')
@@ -248,14 +256,25 @@ export default ({ map, services }) => {
       }
       return
     }
-    // adjust sensor radius while drawing the area
-    if (!drawInteraction) return
+
+    if (event.key === 'Enter' && pendingPolygon) {
+      event.preventDefault()
+      event.stopPropagation()
+      const polygon = pendingPolygon
+      pendingPolygon = null
+      run(polygon)
+      return
+    }
+
+    // adjust sensor radius while drawing or while waiting for Enter
+    if (!drawInteraction && !pendingPolygon) return
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
     event.preventDefault()
     event.stopPropagation()
     const delta = event.key === 'ArrowUp' ? RADIUS_STEP_M : -RADIUS_STEP_M
     radiusM = Math.min(MAX_RADIUS_M, Math.max(MIN_RADIUS_M, radiusM + delta))
-    drawHint()
+    if (pendingPolygon) armedHint()
+    else drawHint()
   }
   document.addEventListener('keydown', onKeyDown, true)
 
