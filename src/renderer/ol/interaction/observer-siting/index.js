@@ -8,6 +8,7 @@ import { ElevationService } from '../../../model/ElevationService'
 import { ViewshedEngine, VISIBLE, NO_DATA } from '../area-of-sight/engine'
 import { DEFAULT_RADIUS_M, MAX_RADIUS_M } from '../area-of-sight'
 import { rasterizePolygon, findCandidates, greedySiting } from './solve'
+import { polygonOf } from './geometry'
 import GeometryType from '../GeometryType'
 
 const ORIGINATOR_ID = uuid()
@@ -54,7 +55,13 @@ export default ({ map, services }) => {
     drawInteraction = null
   }
 
-  const findSelectedPolygon = () => {
+  /**
+   * @returns {{ polygon: Polygon } | { unsuitable: true } | null}
+   *   polygon: selected feature usable as area (polygon or closed line)
+   *   unsuitable: something is selected but cannot serve as an area
+   *   null: nothing selected
+   */
+  const findSelectedArea = () => {
     const selectedIds = services.selection.selected()
     if (selectedIds.length !== 1) return null
     const layers = map.getLayerGroup().getLayersArray()
@@ -63,8 +70,9 @@ export default ({ map, services }) => {
       const source = layer.getSource()
       if (typeof source?.getFeatureById !== 'function') continue
       const feature = source.getFeatureById(selectedIds[0])
-      const geometry = feature?.getGeometry()
-      if (geometry && geometry.getType() === GeometryType.POLYGON) return geometry
+      if (!feature) continue
+      const polygon = polygonOf(feature.getGeometry())
+      return polygon ? { polygon } : { unsuitable: true }
     }
     return null
   }
@@ -214,16 +222,20 @@ export default ({ map, services }) => {
     const defaults = await services.sessionStore.get('tools.aos', {})
     radiusM = Math.min(defaults.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
 
-    // With a preselected polygon, wait for radius confirmation instead
+    // With a preselected area, wait for radius confirmation instead
     // of computing right away — this is the moment to set the radius.
-    const selected = findSelectedPolygon()
-    if (selected) {
-      pendingPolygon = selected.clone()
+    const selected = findSelectedArea()
+    if (selected?.polygon) {
+      pendingPolygon = selected.polygon
       armedHint()
       return
     }
-
-    drawHint()
+    if (selected?.unsuitable) {
+      showOSD('Observer siting: selection is not a closed area — draw one')
+      setTimeout(() => { if (drawInteraction) drawHint() }, 2500)
+    } else {
+      drawHint()
+    }
     drawInteraction = new Draw({ type: GeometryType.POLYGON, source: new VectorSource() })
     drawInteraction.once('drawend', ({ feature }) => {
       map.removeInteraction(drawInteraction)

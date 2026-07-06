@@ -1,12 +1,45 @@
 import assert from 'assert'
+import LineString from 'ol/geom/LineString'
+import Polygon from 'ol/geom/Polygon'
 import {
   rasterizePolygon,
   findCandidates,
   greedySiting
 } from '../../src/renderer/ol/interaction/observer-siting/solve'
+import { polygonOf } from '../../src/renderer/ol/interaction/observer-siting/geometry'
 import { viewshedCPU, VISIBLE } from '../../src/renderer/ol/interaction/area-of-sight/engine'
 
 describe('observer siting', function () {
+  describe('polygonOf', function () {
+    it('passes polygons through', function () {
+      const polygon = new Polygon([[[0, 0], [100, 0], [100, 100], [0, 100], [0, 0]]])
+      const result = polygonOf(polygon)
+      assert.strictEqual(result.getType(), 'Polygon')
+      assert.notStrictEqual(result, polygon, 'clone, not the original')
+    })
+
+    it('converts a closed boundary line to a polygon', function () {
+      const boundary = new LineString([[0, 0], [1000, 0], [1000, 1000], [0, 1000], [0, 0]])
+      const result = polygonOf(boundary)
+      assert.strictEqual(result.getType(), 'Polygon')
+      assert.strictEqual(result.getCoordinates()[0].length, 5)
+    })
+
+    it('accepts a nearly closed line and closes the ring', function () {
+      const boundary = new LineString([[0, 0], [1000, 0], [1000, 1000], [0, 1000], [30, 40]])
+      const result = polygonOf(boundary)
+      assert.strictEqual(result.getType(), 'Polygon')
+      const ring = result.getCoordinates()[0]
+      assert.deepStrictEqual(ring[ring.length - 1], ring[0], 'ring explicitly closed')
+    })
+
+    it('rejects open lines and points', function () {
+      const open = new LineString([[0, 0], [1000, 0], [1000, 1000], [0, 1000], [500, 500]])
+      assert.strictEqual(polygonOf(open), null)
+      assert.strictEqual(polygonOf(null), null)
+    })
+  })
+
   describe('rasterizePolygon', function () {
     it('fills a rectangle', function () {
       const rings = [[[10, 10], [30, 10], [30, 20], [10, 20]]]
