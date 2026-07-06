@@ -50,8 +50,9 @@ export default ({ map, services }) => {
   /** @type {'idle' | 'placing-observer' | 'tracking-target'} */
   let mode = 'idle'
   let observer = null
-  const observerHeight = DEFAULT_OBSERVER_HEIGHT_M
-  const targetHeight = DEFAULT_TARGET_HEIGHT_M
+  let observerHeight = DEFAULT_OBSERVER_HEIGHT_M
+  let targetHeight = DEFAULT_TARGET_HEIGHT_M
+  let lastTarget = null
   let computeGeneration = 0
   let clickKey = null
   let moveKey = null
@@ -62,6 +63,9 @@ export default ({ map, services }) => {
   }
 
   const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
+
+  const heightsInfo = () =>
+    `Obs ${observerHeight.toFixed(1)} m ↑↓ | Tgt ${targetHeight.toFixed(1)} m ⇧↑↓`
 
   // ────────────────────────────────────────────────────────────
   // Terrain discovery: the los style computes through this bridge.
@@ -185,7 +189,7 @@ export default ({ map, services }) => {
       ? ` | blocked at ${(firstBlocker.distance / 1000).toFixed(2)} km`
       : ' | clear'
     const clipInfo = result.clipped ? ' (max 10 km)' : ''
-    showOSD(`LoS: ${dKm} km${clipInfo} | Δh ${dEye} m${blockerInfo}`)
+    showOSD(`LoS: ${dKm} km${clipInfo} | Δh ${dEye} m${blockerInfo} | ${heightsInfo()}`)
   }
 
   const recompute = async (target) => {
@@ -226,6 +230,7 @@ export default ({ map, services }) => {
     detachMapListeners()
     clearInProgressOverlay()
     observer = null
+    lastTarget = null
     mode = 'idle'
     setCursor('')
     setSelectActive(true)
@@ -253,13 +258,36 @@ export default ({ map, services }) => {
       properties: { observerHeight, targetHeight }
     }
     services.store.insert([[ID.losId(), doc]])
+    services.sessionStore.put('tools.los', { observerHeight, targetHeight })
   }
 
   const onPointerMove = (event) => {
     if (mode !== 'tracking-target' || !observer) return
     if (event.dragging) return
+    lastTarget = event.coordinate
     recompute(event.coordinate)
   }
+
+  // Height adjustment and cancel while the tool is active. Capture phase
+  // so map keyboard handlers (Escape deselect, pan) do not interfere.
+  const onKeyDown = (event) => {
+    if (mode === 'idle') return
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      reset()
+      return
+    }
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+    event.preventDefault()
+    event.stopPropagation()
+    const delta = event.key === 'ArrowUp' ? 0.5 : -0.5
+    if (event.shiftKey) targetHeight = Math.max(0, targetHeight + delta)
+    else observerHeight = Math.max(0, observerHeight + delta)
+    if (mode === 'tracking-target' && lastTarget) recompute(lastTarget)
+    else showOSD(`LoS: click to place observer | ${heightsInfo()}`)
+  }
+  document.addEventListener('keydown', onKeyDown, true)
 
   const onSingleClick = async (event) => {
     if (mode === 'placing-observer') {
@@ -279,17 +307,21 @@ export default ({ map, services }) => {
     }
   }
 
-  const start = () => {
+  const start = async () => {
     reset()
     if (!elevationService.setSource(map)) {
       showOSD('No terrain layer available')
       setTimeout(() => showOSD(''), 3000)
       return
     }
+    // last-used heights are the defaults for the next placement
+    const defaults = await services.sessionStore.get('tools.los', {})
+    observerHeight = defaults.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M
+    targetHeight = defaults.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
     mode = 'placing-observer'
     setCursor('crosshair')
     setSelectActive(false)
-    showOSD('LoS: click to place observer')
+    showOSD(`LoS: click to place observer | ${heightsInfo()}`)
     clickKey = map.on('singleclick', onSingleClick)
     moveKey = map.on('pointermove', onPointerMove)
   }

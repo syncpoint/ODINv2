@@ -296,6 +296,10 @@ export default ({ map, services }) => {
   let busy = false
   let pending = null
   let generation = 0
+  let lastCoordinate = null
+
+  const RADIUS_STEP_M = 250
+  const MIN_RADIUS_M = 250
 
   const liveProperties = {
     radius: DEFAULT_RADIUS_M,
@@ -309,6 +313,14 @@ export default ({ map, services }) => {
   }
 
   const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
+
+  const settingsInfo = () => {
+    const km = liveProperties.radius >= 1000
+      ? `${(liveProperties.radius / 1000).toFixed(2)} km`
+      : `${liveProperties.radius} m`
+    return `Radius ${km} ↑↓ | Obs ${liveProperties.observerHeight.toFixed(1)} m ⇧↑↓ | ` +
+      `Tgt ${liveProperties.targetHeight.toFixed(1)} m ⌥↑↓`
+  }
 
   const selectInteraction = () =>
     map.getInteractions().getArray().find(i => i instanceof Select)
@@ -359,6 +371,7 @@ export default ({ map, services }) => {
     clearPreview()
     mode = 'idle'
     pending = null
+    lastCoordinate = null
     generation++
     setCursor('')
     setSelectActive(true)
@@ -373,12 +386,41 @@ export default ({ map, services }) => {
       properties: { ...liveProperties }
     }
     services.store.insert([[ID.aosId(), doc]])
+    services.sessionStore.put('tools.aos', { ...liveProperties })
   }
 
   const onPointerMove = (event) => {
     if (mode !== 'tracking' || event.dragging) return
+    lastCoordinate = event.coordinate
     track(event.coordinate)
   }
+
+  // Radius/height adjustment and cancel while the tool is active.
+  // Capture phase so map keyboard handlers do not interfere.
+  const onKeyDown = (event) => {
+    if (mode !== 'tracking') return
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      reset()
+      return
+    }
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+    event.preventDefault()
+    event.stopPropagation()
+    const up = event.key === 'ArrowUp'
+    if (event.shiftKey) {
+      liveProperties.observerHeight = Math.max(0, liveProperties.observerHeight + (up ? 0.5 : -0.5))
+    } else if (event.altKey) {
+      liveProperties.targetHeight = Math.max(0, liveProperties.targetHeight + (up ? 0.5 : -0.5))
+    } else {
+      liveProperties.radius = Math.min(MAX_RADIUS_M,
+        Math.max(MIN_RADIUS_M, liveProperties.radius + (up ? RADIUS_STEP_M : -RADIUS_STEP_M)))
+    }
+    showOSD(`AoS: ${settingsInfo()} | click to place`)
+    if (lastCoordinate) track(lastCoordinate)
+  }
+  document.addEventListener('keydown', onKeyDown, true)
 
   const onSingleClick = (event) => {
     if (mode !== 'tracking') return
@@ -392,7 +434,7 @@ export default ({ map, services }) => {
     finalise(event.coordinate)
   }
 
-  const start = () => {
+  const start = async () => {
     reset()
     if (!elevationService.setSource(map)) {
       showOSD('No terrain layer available')
@@ -402,10 +444,15 @@ export default ({ map, services }) => {
     engine.init().then(backend => {
       if (backend === 'cpu') console.warn('[AoS] WebGPU unavailable — CPU fallback active')
     })
+    // last-used settings are the defaults for the next placement
+    const defaults = await services.sessionStore.get('tools.aos', {})
+    liveProperties.radius = defaults.radius ?? DEFAULT_RADIUS_M
+    liveProperties.observerHeight = defaults.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M
+    liveProperties.targetHeight = defaults.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
     mode = 'tracking'
     setCursor('crosshair')
     setSelectActive(false)
-    showOSD('AoS: move cursor to preview, click to place observer')
+    showOSD(`AoS: ${settingsInfo()} | click to place`)
     clickKey = map.on('singleclick', onSingleClick)
     moveKey = map.on('pointermove', onPointerMove)
   }
