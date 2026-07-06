@@ -95,9 +95,9 @@ const mapHandlers = (services, map) => {
   map.once('rendercomplete', ({ target }) => sendPreview(services, target))
   map.on('pointermove', throttle(75, event => osdDriver.pointermove(event)))
 
-  // Deselect everything except features and markers.
+  // Deselect everything except features, markers and analysis results.
   map.on('click', () => {
-    const exclude = [ID.isFeatureId, ID.isMarkerId, ID.isMeasureId]
+    const exclude = [ID.isFeatureId, ID.isMarkerId, ID.isMeasureId, ID.isLosId, ID.isAosId]
     const deselect = selection.selected(x => !exclude.some(p => p(x)))
     if (deselect.length) selection.deselect(deselect)
   })

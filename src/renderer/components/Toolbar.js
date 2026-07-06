@@ -53,7 +53,8 @@ export const Toolbar = () => {
     commandRegistry.command('MEASURE_AREA'),
     commandRegistry.command('MEASURE_CIRCLE'),
     commandRegistry.command('ELEVATION_PROFILE'),
-    commandRegistry.command('LINE_OF_SIGHT')
+    commandRegistry.command('LINE_OF_SIGHT'),
+    commandRegistry.command('AREA_OF_SIGHT')
   ]
 
   const replicationCommands = [
