@@ -1,0 +1,244 @@
+import { Draw } from 'ol/interaction'
+import { Vector as VectorSource } from 'ol/source'
+import { toLonLat } from 'ol/proj'
+import uuid from '../../../../shared/uuid'
+import { militaryFormat } from '../../../../shared/datetime'
+import * as ID from '../../../ids'
+import { ElevationService } from '../../../model/ElevationService'
+import { ViewshedEngine, VISIBLE, NO_DATA } from '../area-of-sight/engine'
+import { DEFAULT_RADIUS_M, MAX_RADIUS_M } from '../area-of-sight'
+import { rasterizePolygon, findCandidates, greedySiting } from './solve'
+import GeometryType from '../GeometryType'
+
+const ORIGINATOR_ID = uuid()
+
+const TARGET_COVERAGE = 0.95 // stop when this fraction of the area is visible
+const MAX_OBSERVERS = 8
+const MIN_GAIN = 0.01 // stop when the best candidate adds < 1 % of the area
+const MIN_SPACING_M = 250 // candidate thinning (non-maximum suppression)
+const MAX_CANDIDATES = 120
+const DEFAULT_OBSERVER_HEIGHT_M = 2
+const DEFAULT_TARGET_HEIGHT_M = 2
+
+/**
+ * Observer siting: given an area (drawn or selected polygon), find a
+ * small set of observer positions inside it whose combined viewsheds
+ * cover as much of the area as possible (greedy max-coverage over
+ * candidate viewsheds, computed by the shared WebGPU engine).
+ *
+ * The chosen positions are inserted as regular AoS documents — their
+ * viewsheds render through the standard pipeline and each observer
+ * stays individually editable and deletable.
+ */
+export default ({ map, services }) => {
+  const elevationService = new ElevationService()
+  const engine = new ViewshedEngine()
+
+  let drawInteraction = null
+  let generation = 0
+  let running = false
+
+  const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
+
+  const cancelDraw = () => {
+    if (!drawInteraction) return
+    drawInteraction.abortDrawing()
+    map.removeInteraction(drawInteraction)
+    drawInteraction = null
+  }
+
+  const findSelectedPolygon = () => {
+    const selectedIds = services.selection.selected()
+    if (selectedIds.length !== 1) return null
+    const layers = map.getLayerGroup().getLayersArray()
+    for (const layer of layers) {
+      if (typeof layer.getSource !== 'function') continue
+      const source = layer.getSource()
+      if (typeof source?.getFeatureById !== 'function') continue
+      const feature = source.getFeatureById(selectedIds[0])
+      const geometry = feature?.getGeometry()
+      if (geometry && geometry.getType() === GeometryType.POLYGON) return geometry
+    }
+    return null
+  }
+
+  const run = async (polygon) => {
+    const gen = ++generation
+    const cancelled = () => gen !== generation
+    running = true
+    try {
+      await solveArea(polygon, gen, cancelled)
+    } finally {
+      if (!cancelled()) running = false
+    }
+  }
+
+  const solveArea = async (polygon, gen, cancelled) => {
+
+    if (!elevationService.setSource(map)) {
+      showOSD('No terrain layer available')
+      setTimeout(() => showOSD(''), 3000)
+      return
+    }
+
+    const defaults = await services.sessionStore.get('tools.aos', {})
+    const radiusM = Math.min(defaults.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
+    const observerHeight = defaults.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M
+    const targetHeight = defaults.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
+
+    showOSD('Observer siting: loading terrain …')
+
+    const extent = polygon.getExtent()
+    const margin = 100 // sight lines between points inside stay within the hull
+    const grid = await elevationService.getGrid([
+      extent[0] - margin, extent[1] - margin, extent[2] + margin, extent[3] + margin
+    ])
+    if (cancelled()) return
+    if (!grid) {
+      showOSD('Observer siting: area too large or no terrain')
+      setTimeout(() => showOSD(''), 3000)
+      return
+    }
+    for (let i = 0; i < grid.data.length; i++) {
+      if (Number.isNaN(grid.data[i])) grid.data[i] = NO_DATA
+    }
+
+    const res = grid.resolution
+    const toCell = ([x, y]) => [(x - grid.origin[0]) / res, (grid.origin[1] - y) / res]
+    const toCoordinate = ({ x, y }) => [
+      grid.origin[0] + (x + 0.5) * res,
+      grid.origin[1] - (y + 0.5) * res
+    ]
+
+    const rings = polygon.getCoordinates().map(ring => ring.map(toCell))
+    const { mask: inArea, cells } = rasterizePolygon(rings, grid.width, grid.height)
+    if (!cells) {
+      showOSD('Observer siting: empty area')
+      setTimeout(() => showOSD(''), 3000)
+      return
+    }
+
+    const center = toLonLat([(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2])
+    const metersPerCell = res * Math.max(0.087, Math.cos(center[1] * Math.PI / 180))
+    const radius = Math.max(2, Math.round(radiusM / metersPerCell))
+    const minSpacing = Math.max(2, MIN_SPACING_M / metersPerCell)
+
+    const candidates = findCandidates(grid, inArea, { minSpacing, maxCandidates: MAX_CANDIDATES })
+    if (!candidates.length) {
+      showOSD('Observer siting: no candidate positions found')
+      setTimeout(() => showOSD(''), 3000)
+      return
+    }
+
+    const viewsheds = []
+    for (let i = 0; i < candidates.length; i++) {
+      if (cancelled()) return
+      if (i % 10 === 0) showOSD(`Observer siting: analysing candidate ${i + 1}/${candidates.length} …`)
+      const candidate = candidates[i]
+      const result = await engine.compute(grid, {
+        ox: candidate.x,
+        oy: candidate.y,
+        radius,
+        metersPerCell,
+        observerHeight,
+        targetHeight
+      })
+      if (!result) continue
+      const covers = new Uint8Array(grid.width * grid.height)
+      for (let y = 0; y < result.h; y++) {
+        for (let x = 0; x < result.w; x++) {
+          const idx = (result.y0 + y) * grid.width + (result.x0 + x)
+          if (inArea[idx] && result.mask[y * result.w + x] === VISIBLE) covers[idx] = 1
+        }
+      }
+      viewsheds.push({ candidate, covers })
+    }
+    if (cancelled()) return
+
+    const { picks, coverage } = greedySiting({
+      areaCells: cells,
+      viewsheds,
+      targetCoverage: TARGET_COVERAGE,
+      maxObservers: MAX_OBSERVERS,
+      minGain: MIN_GAIN
+    })
+
+    if (!picks.length) {
+      showOSD('Observer siting: no viable observer position')
+      setTimeout(() => showOSD(''), 3000)
+      return
+    }
+
+    // one batch insert → a single undo step removes all observers
+    const stamp = militaryFormat.now()
+    const tuples = picks.map(({ candidate }, index) => [ID.aosId(), {
+      type: 'Feature',
+      name: `OP ${index + 1}/${picks.length} - ${stamp}`,
+      geometry: { type: 'Point', coordinates: toCoordinate(candidate) },
+      properties: { radius: radiusM, observerHeight, targetHeight }
+    }])
+    services.store.insert(tuples)
+
+    showOSD(`Observer siting: ${picks.length} observer${picks.length > 1 ? 's' : ''} ` +
+      `cover ${(coverage * 100).toFixed(0)} % of the area`)
+    setTimeout(() => { if (!cancelled()) showOSD('') }, 6000)
+  }
+
+  const start = () => {
+    cancelDraw()
+    generation++
+
+    if (!elevationService.setSource(map)) {
+      showOSD('No terrain layer available')
+      setTimeout(() => showOSD(''), 3000)
+      return
+    }
+
+    const selected = findSelectedPolygon()
+    if (selected) {
+      run(selected.clone())
+      return
+    }
+
+    showOSD('Observer siting: draw the area to cover (double-click to finish)')
+    drawInteraction = new Draw({ type: GeometryType.POLYGON, source: new VectorSource() })
+    drawInteraction.once('drawend', ({ feature }) => {
+      map.removeInteraction(drawInteraction)
+      drawInteraction = null
+      run(feature.getGeometry().clone())
+    })
+    drawInteraction.once('drawabort', () => {
+      map.removeInteraction(drawInteraction)
+      drawInteraction = null
+      showOSD('')
+    })
+    map.addInteraction(drawInteraction)
+  }
+
+  const cancel = () => {
+    if (!drawInteraction && !running) return false
+    cancelDraw()
+    generation++
+    running = false
+    showOSD('')
+    return true
+  }
+
+  const onKeyDown = (event) => {
+    if (event.key !== 'Escape') return
+    if (cancel()) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+  }
+  document.addEventListener('keydown', onKeyDown, true)
+
+  services.emitter.on('OBSERVER_SITING', () => {
+    services.emitter.emit('command/draw/cancel', { originatorId: ORIGINATOR_ID })
+    start()
+  })
+
+  services.emitter.on('command/draw/cancel', ({ originatorId }) => {
+    if (originatorId !== ORIGINATOR_ID) cancel()
+  })
+}
