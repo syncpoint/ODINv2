@@ -50,67 +50,54 @@ export const rasterizePolygon = (rings, width, height) => {
 }
 
 /**
- * Candidate observer cells: local terrain maxima inside the area,
- * thinned by non-maximum suppression so candidates keep a minimum
- * spacing. Falls back to a regular lattice when the terrain yields
- * too few maxima (flat areas).
+ * Candidate observer cells via block max-pooling: the grid is divided
+ * into square blocks and each block contributes its highest in-area
+ * cell. This spreads candidates uniformly over the whole area — flat
+ * parts get their share of candidates instead of being crowded out by
+ * higher terrain elsewhere — while hilly blocks still contribute their
+ * local summit. The block size grows until the candidate count fits
+ * the budget.
  *
  * @param {{data: Float32Array, width: number, height: number}} grid
  * @param {Uint8Array} inArea - rasterized polygon mask (grid-sized)
- * @param {object} options - minSpacing [cells], maxCandidates
- * @returns {Array<{x: number, y: number, elevation: number}>}
+ * @param {object} options - minSpacing [cells] (initial block size),
+ *   maxCandidates
+ * @returns {Array<{x: number, y: number, elevation: number}>} sorted
+ *   by elevation, highest first
  */
 export const findCandidates = (grid, inArea, { minSpacing, maxCandidates }) => {
   const { data, width, height } = grid
 
-  const peaks = []
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      const idx = y * width + x
-      if (!inArea[idx]) continue
-      const v = data[idx]
-      if (!Number.isFinite(v)) continue
-      if (
-        v >= data[idx - 1] && v >= data[idx + 1] &&
-        v >= data[idx - width] && v >= data[idx + width] &&
-        v >= data[idx - width - 1] && v >= data[idx - width + 1] &&
-        v >= data[idx + width - 1] && v >= data[idx + width + 1]
-      ) peaks.push({ x, y, elevation: v })
-    }
-  }
-  peaks.sort((a, b) => b.elevation - a.elevation)
-
-  // non-maximum suppression: keep highest, drop peaks closer than minSpacing
-  const spacing2 = minSpacing * minSpacing
-  const selected = []
-  for (const peak of peaks) {
-    if (selected.length >= maxCandidates) break
-    const tooClose = selected.some(s => {
-      const dx = s.x - peak.x
-      const dy = s.y - peak.y
-      return dx * dx + dy * dy < spacing2
-    })
-    if (!tooClose) selected.push(peak)
-  }
-
-  // lattice fallback for flat terrain: sample area cells on a grid
-  if (selected.length < Math.min(8, maxCandidates)) {
-    const step = Math.max(1, Math.round(minSpacing))
-    for (let y = Math.floor(step / 2); y < height && selected.length < maxCandidates; y += step) {
-      for (let x = Math.floor(step / 2); x < width && selected.length < maxCandidates; x += step) {
-        const idx = y * width + x
-        if (!inArea[idx] || !Number.isFinite(data[idx])) continue
-        const tooClose = selected.some(s => {
-          const dx = s.x - x
-          const dy = s.y - y
-          return dx * dx + dy * dy < spacing2
-        })
-        if (!tooClose) selected.push({ x, y, elevation: data[idx] })
+  const collect = size => {
+    const candidates = []
+    for (let by = 0; by < height; by += size) {
+      for (let bx = 0; bx < width; bx += size) {
+        let best = null
+        const yMax = Math.min(height, by + size)
+        const xMax = Math.min(width, bx + size)
+        for (let y = by; y < yMax; y++) {
+          for (let x = bx; x < xMax; x++) {
+            const idx = y * width + x
+            if (!inArea[idx]) continue
+            const v = data[idx]
+            if (!Number.isFinite(v)) continue
+            if (!best || v > best.elevation) best = { x, y, elevation: v }
+          }
+        }
+        if (best) candidates.push(best)
       }
     }
+    return candidates
   }
 
-  return selected
+  let size = Math.max(2, Math.round(minSpacing))
+  let candidates = collect(size)
+  while (candidates.length > maxCandidates) {
+    size = Math.ceil(size * Math.sqrt(candidates.length / maxCandidates))
+    candidates = collect(size)
+  }
+
+  return candidates.sort((a, b) => b.elevation - a.elevation)
 }
 
 /**

@@ -46,22 +46,27 @@ describe('observer siting', function () {
       assert.ok(candidates.some(c => Math.abs(c.x - 75) <= 1 && Math.abs(c.y - 20) <= 1), 'second hill found')
     })
 
-    it('keeps minimum spacing between candidates', function () {
-      const g = grid(60, 60, (x, y) => 100 - (x + y) * 0.001) // near-flat ridge
-      const candidates = findCandidates(g, everywhere(60, 60), { minSpacing: 15, maxCandidates: 20 })
-      for (let i = 0; i < candidates.length; i++) {
-        for (let j = i + 1; j < candidates.length; j++) {
-          const dx = candidates[i].x - candidates[j].x
-          const dy = candidates[i].y - candidates[j].y
-          assert.ok(dx * dx + dy * dy >= 15 * 15, 'spacing respected')
-        }
-      }
+    it('respects the candidate budget by growing the block size', function () {
+      const g = grid(120, 120, (x, y) => Math.sin(x) * Math.cos(y)) // busy terrain
+      const candidates = findCandidates(g, everywhere(120, 120), { minSpacing: 5, maxCandidates: 30 })
+      assert.ok(candidates.length <= 30)
+      assert.ok(candidates.length >= 15, 'still spatially dense')
     })
 
-    it('falls back to a lattice on flat terrain', function () {
+    it('covers flat terrain with candidates', function () {
       const g = grid(60, 60, () => 100)
-      const candidates = findCandidates(g, everywhere(60, 60), { minSpacing: 10, maxCandidates: 30 })
-      assert.ok(candidates.length >= 8, `expected lattice fallback, got ${candidates.length}`)
+      const candidates = findCandidates(g, everywhere(60, 60), { minSpacing: 10, maxCandidates: 60 })
+      assert.ok(candidates.length >= 30, `expected block candidates on flat terrain, got ${candidates.length}`)
+    })
+
+    it('does not starve a low flat region next to high terrain', function () {
+      // left half: 500 m mountains; right half: dead-flat 100 m plain
+      const g = grid(120, 60, (x, y) =>
+        x < 60 ? 500 + 50 * Math.sin(x / 3) * Math.cos(y / 3) : 100)
+      const candidates = findCandidates(g, everywhere(120, 60), { minSpacing: 10, maxCandidates: 40 })
+      const inPlain = candidates.filter(c => c.x >= 70)
+      assert.ok(inPlain.length >= 5,
+        `flat plain must keep its share of candidates, got ${inPlain.length}`)
     })
   })
 

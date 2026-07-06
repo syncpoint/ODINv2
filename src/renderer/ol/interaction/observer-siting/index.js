@@ -13,12 +13,17 @@ import GeometryType from '../GeometryType'
 const ORIGINATOR_ID = uuid()
 
 const TARGET_COVERAGE = 0.95 // stop when this fraction of the area is visible
-const MAX_OBSERVERS = 8
+const MAX_OBSERVERS = 12
 const MIN_GAIN = 0.01 // stop when the best candidate adds < 1 % of the area
-const MIN_SPACING_M = 250 // candidate thinning (non-maximum suppression)
+const MIN_SPACING_M = 250 // initial candidate block size
 const MAX_CANDIDATES = 120
+const RADIUS_STEP_M = 250
+const MIN_RADIUS_M = 250
 const DEFAULT_OBSERVER_HEIGHT_M = 2
 const DEFAULT_TARGET_HEIGHT_M = 2
+
+const formatRadius = radiusM =>
+  radiusM >= 1000 ? `${(radiusM / 1000).toFixed(2)} km` : `${radiusM} m`
 
 /**
  * Observer siting: given an area (drawn or selected polygon), find a
@@ -37,6 +42,7 @@ export default ({ map, services }) => {
   let drawInteraction = null
   let generation = 0
   let running = false
+  let radiusM = DEFAULT_RADIUS_M
 
   const showOSD = message => services.emitter.emit('osd', { message, cell: 'A3' })
 
@@ -82,9 +88,9 @@ export default ({ map, services }) => {
     }
 
     const defaults = await services.sessionStore.get('tools.aos', {})
-    const radiusM = Math.min(defaults.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
     const observerHeight = defaults.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M
     const targetHeight = defaults.targetHeight ?? DEFAULT_TARGET_HEIGHT_M
+    services.sessionStore.put('tools.aos', { ...defaults, radius: radiusM })
 
     showOSD('Observer siting: loading terrain …')
 
@@ -179,12 +185,19 @@ export default ({ map, services }) => {
     }])
     services.store.insert(tuples)
 
-    showOSD(`Observer siting: ${picks.length} observer${picks.length > 1 ? 's' : ''} ` +
-      `cover ${(coverage * 100).toFixed(0)} % of the area`)
-    setTimeout(() => { if (!cancelled()) showOSD('') }, 6000)
+    const summary = `Observer siting: ${picks.length} observer${picks.length > 1 ? 's' : ''} ` +
+      `cover ${(coverage * 100).toFixed(0)} % of the area (sensor radius ${formatRadius(radiusM)})`
+    const advice = coverage < TARGET_COVERAGE
+      ? ' — increase the sensor radius for better coverage'
+      : ''
+    showOSD(summary + advice)
+    setTimeout(() => { if (!cancelled()) showOSD('') }, 8000)
   }
 
-  const start = () => {
+  const drawHint = () =>
+    showOSD(`Observer siting: draw the area (double-click to finish) | sensor radius ${formatRadius(radiusM)} ↑↓`)
+
+  const start = async () => {
     cancelDraw()
     generation++
 
@@ -194,13 +207,16 @@ export default ({ map, services }) => {
       return
     }
 
+    const defaults = await services.sessionStore.get('tools.aos', {})
+    radiusM = Math.min(defaults.radius ?? DEFAULT_RADIUS_M, MAX_RADIUS_M)
+
     const selected = findSelectedPolygon()
     if (selected) {
       run(selected.clone())
       return
     }
 
-    showOSD('Observer siting: draw the area to cover (double-click to finish)')
+    drawHint()
     drawInteraction = new Draw({ type: GeometryType.POLYGON, source: new VectorSource() })
     drawInteraction.once('drawend', ({ feature }) => {
       map.removeInteraction(drawInteraction)
@@ -225,11 +241,21 @@ export default ({ map, services }) => {
   }
 
   const onKeyDown = (event) => {
-    if (event.key !== 'Escape') return
-    if (cancel()) {
-      event.preventDefault()
-      event.stopPropagation()
+    if (event.key === 'Escape') {
+      if (cancel()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      return
     }
+    // adjust sensor radius while drawing the area
+    if (!drawInteraction) return
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+    event.preventDefault()
+    event.stopPropagation()
+    const delta = event.key === 'ArrowUp' ? RADIUS_STEP_M : -RADIUS_STEP_M
+    radiusM = Math.min(MAX_RADIUS_M, Math.max(MIN_RADIUS_M, radiusM + delta))
+    drawHint()
   }
   document.addEventListener('keydown', onKeyDown, true)
 
