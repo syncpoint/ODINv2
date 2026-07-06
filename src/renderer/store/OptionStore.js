@@ -8,6 +8,8 @@ import sseService from './options/sse-service'
 import bookmark from './options/bookmark'
 import place from './options/place'
 import measure from './options/measure'
+import los from './options/los'
+import aos from './options/aos'
 import invited from './options/invited'
 
 export default function OptionStore (coordinatesFormat, store, sessionStore) {
@@ -28,4 +30,6 @@ OptionStore.prototype['sse-service'] = sseService
 OptionStore.prototype.bookmark = bookmark
 OptionStore.prototype.place = place
 OptionStore.prototype.measure = measure
+OptionStore.prototype.los = los
+OptionStore.prototype.aos = aos
 OptionStore.prototype.invited = invited

@@ -80,7 +80,9 @@ const ord = R.cond([
   [R.T, R.always(4)]
 ])
 
-const isCandidateId = id => ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id)
+const isCandidateId = id =>
+  ID.isFeatureId(id) || ID.isMarkerId(id) || ID.isMeasureId(id) ||
+  ID.isLosId(id) || ID.isAosId(id)
 
 const operations = R.compose(
   flat,
@@ -123,7 +125,9 @@ export const featureSource = services => {
     const tuples = [
       ...await store.tuples(ID.FEATURE_SCOPE),
       ...await store.tuples(ID.MARKER_SCOPE),
-      ...await store.tuples(ID.MEASURE_SCOPE)
+      ...await store.tuples(ID.MEASURE_SCOPE),
+      ...await store.tuples(ID.LOS_SCOPE),
+      ...await store.tuples(ID.AOS_SCOPE)
     ]
 
     // Filter out entries with invalid geometry before parsing

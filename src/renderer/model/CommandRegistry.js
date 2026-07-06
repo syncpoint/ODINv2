@@ -7,6 +7,8 @@ import creationCommand from './commands/CreationCommands'
 import measureCommands from './commands/MeasureCommands'
 import shapeCommands from './commands/ShapeCommands'
 import elevationProfileCommands from './commands/ElevationProfileCommands'
+import lineOfSightCommands from './commands/LineOfSightCommands'
+import areaOfSightCommands from './commands/AreaOfSightCommands'
 import printCommands from './commands/PrintCommands'
 import replicationCommands from './commands/ReplicationCommands'
 
@@ -23,6 +25,8 @@ export function CommandRegistry (services) {
   Object.assign(this, measureCommands(services))
   Object.assign(this, shapeCommands(services))
   Object.assign(this, elevationProfileCommands(services))
+  Object.assign(this, lineOfSightCommands(services))
+  Object.assign(this, areaOfSightCommands(services))
   Object.assign(this, printCommands(services))
   Object.assign(this, replicationCommands(services))
 

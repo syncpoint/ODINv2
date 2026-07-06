@@ -21,7 +21,7 @@ const SCOPES = {
   [`@${ID.PLACE}`]: 'mdiSearchWeb',
   [`@${ID.TILE_SERVICE}`]: 'mdiEarth',
   [`@${ID.SSE_SERVICE}`]: 'mdiAccessPointNetwork',
-  [`@${ID.MEASURE}`]: 'mdiAndroidStudio',
+  [`@${ID.MEASURE} @${ID.LOS} @${ID.AOS}`]: 'mdiAndroidStudio',
   [`@${ID.INVITED}`]: 'mdiCloudPlusOutline'
 }
 
@@ -36,7 +36,7 @@ const TOOLTIPS = {
   [`@${ID.PLACE}`]: 'Search for addresses based on OSM (online only)',
   [`@${ID.TILE_SERVICE}`]: 'Manage existing tile services for maps',
   [`@${ID.SSE_SERVICE}`]: 'Manage live data sources',
-  [`@${ID.MEASURE}`]: 'Manage existing measurements',
+  [`@${ID.MEASURE} @${ID.LOS} @${ID.AOS}`]: 'Manage existing measurements and sight analyses',
   [`@${ID.INVITED}`]: 'Show invitations and join shared layers'
 }
 
@@ -46,9 +46,12 @@ const TOOLTIPS = {
 const ScopeSwitch = props => {
   const [search, setSearch] = useMemento('ui.sidebar.search', defaultSearch)
 
+  // A switch may cover multiple scope tokens (e.g. '@measure @los @aos');
+  // it is active when all of its tokens are part of the current search.
+  const activeTokens = search.history[0].scope.split(' ')
   const enabled = search.history.length > 1
     ? false
-    : search.history[0].scope.split(' ').includes(props.scope)
+    : props.scope.split(' ').every(token => activeTokens.includes(token))
 
   const className = props.name
     ? 'a74a-named'
