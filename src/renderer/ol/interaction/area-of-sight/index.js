@@ -7,7 +7,7 @@ import { containsExtent } from 'ol/extent'
 import uuid from '../../../../shared/uuid'
 import { militaryFormat } from '../../../../shared/datetime'
 import * as ID from '../../../ids'
-import { ElevationService } from '../../../model/ElevationService'
+import { ElevationService, onTerrainReady } from '../../../model/ElevationService'
 import { ViewshedEngine, VISIBLE, HIDDEN, NO_DATA } from './engine'
 
 const ORIGINATOR_ID = uuid()
@@ -209,14 +209,12 @@ export default ({ map, services }) => {
     rasterSource.changed()
   }
 
-  const tryInitialLoad = async () => {
-    if (!elevationService.setSource(map)) return false
+  const loadPersistedDocs = async () => {
     const tuples = await services.store.tuples(ID.AOS_SCOPE)
     for (const [id, doc] of tuples) {
       const existing = entries.get(id)
       if (!existing || docChanged(existing.doc, doc)) renderPersistedAos(id, doc)
     }
-    return true
   }
 
   ;(async () => {
@@ -243,9 +241,10 @@ export default ({ map, services }) => {
       .filter(ID.isAosId)
       .forEach(id => hiddenIds.add(id))
 
-    if (await tryInitialLoad()) return
-    const key = map.getLayers().on('add', async () => {
-      if (await tryInitialLoad()) unByKey(key)
+    onTerrainReady(map, () => {
+      if (!elevationService.setSource(map)) return false
+      loadPersistedDocs()
+      return true
     })
   })()
 

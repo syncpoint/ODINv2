@@ -30,6 +30,38 @@ const makeService = (fetched = []) => {
 }
 
 describe('ElevationService', function () {
+  describe('setSource', function () {
+    const mapWith = layer => ({ getLayerGroup: () => ({ getLayersArray: () => [layer] }) })
+    const terrainLayer = source => ({
+      get: key => (key === 'contentType' ? 'terrain/mapbox-rgb' : undefined),
+      getSource: () => source
+    })
+
+    it('returns false while the TileJSON source has no tile grid yet', function () {
+      const service = new ElevationService()
+      const pending = terrainLayer({ getTileGrid: () => null })
+      assert.strictEqual(service.setSource(mapWith(pending)), false)
+    })
+
+    it('returns true once the tile grid is available', function () {
+      const service = new ElevationService()
+      const ready = terrainLayer({
+        getTileGrid: () => makeTileGrid(),
+        getTileUrlFunction: () => () => undefined
+      })
+      assert.strictEqual(service.setSource(mapWith(ready)), true)
+    })
+
+    it('queries never throw without a tile grid', async function () {
+      const service = new ElevationService()
+      service.source_ = {} // simulates the pre-fix partial state
+      service.tileGrid_ = null
+      assert.strictEqual(await service.getGrid([0, 0, 1000, 1000]), null)
+      assert.deepStrictEqual(await service.profileAlongLine(new LineString([[0, 0], [1000, 0]]), 10), [])
+      assert.strictEqual(await service.elevationAt([0, 0]), null)
+    })
+  })
+
   describe('analysisZoom', function () {
     it('picks the coarsest zoom at or below the target resolution', function () {
       const service = makeService()

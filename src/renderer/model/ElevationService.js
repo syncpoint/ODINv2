@@ -1,4 +1,5 @@
 import { getLength } from 'ol/sphere'
+import { unByKey } from 'ol/Observable'
 
 const MAX_CACHE_SIZE = 200 // decoded tiles à 256 KB → ≤ 50 MB
 const TILE_SIZE = 256
@@ -41,24 +42,48 @@ export function ElevationService () {
   this.tileCache_ = new Map() // 'z/x/y' -> Promise<Float32Array|null>
 }
 
+const terrainLayers = map => map.getLayerGroup().getLayersArray()
+  .filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
+
 /**
  * Discovers terrain layer from the map and extracts source + tileGrid.
+ * Returns false while a TileJSON source is still loading its metadata
+ * (getTileGrid() is null until then).
  * @param {import('ol/Map').default} map
- * @returns {boolean} true if a terrain source was found
+ * @returns {boolean} true if a ready terrain source was found
  */
 ElevationService.prototype.setSource = function (map) {
-  const terrainLayers = map.getLayerGroup().getLayersArray()
-    .filter(l => l.get('contentType') === 'terrain/mapbox-rgb')
+  const layers = terrainLayers(map)
+  if (layers.length === 0) return false
 
-  if (terrainLayers.length === 0) return false
+  const source = layers[0].getSource()
+  const tileGrid = source && source.getTileGrid()
+  if (!tileGrid) return false
 
-  const layer = terrainLayers[0]
-  const source = layer.getSource()
   if (source !== this.source_) this.tileCache_.clear()
   this.source_ = source
-  this.tileGrid_ = source.getTileGrid()
+  this.tileGrid_ = tileGrid
   this.tileUrlFunction_ = source.getTileUrlFunction()
   return true
+}
+
+/**
+ * Run `attempt` (sync, returns true when it could do its work) now and
+ * again whenever terrain availability may have changed: a layer gets
+ * added, or a pending TileJSON source finishes loading its metadata.
+ */
+export const onTerrainReady = (map, attempt) => {
+  const tryNow = () => {
+    if (attempt()) return true
+    // a terrain layer may exist whose metadata is still loading
+    terrainLayers(map).forEach(layer => {
+      const source = layer.getSource()
+      if (source) source.once('change', tryNow)
+    })
+    return false
+  }
+  if (tryNow()) return
+  const key = map.getLayers().on('add', () => { if (tryNow()) unByKey(key) })
 }
 
 /**
@@ -147,6 +172,7 @@ ElevationService.prototype.sample_ = function (elevations, tileCoord, coordinate
 ElevationService.prototype.elevationAt = async function (coordinate) {
   if (!this.source_) return null
   const z = this.analysisZoom()
+  if (z === null) return null
   const tileCoord = this.tileGrid_.getTileCoordForCoordAndZ(coordinate, z)
   const elevations = await this.fetchTile_(...tileCoord)
   return elevations ? this.sample_(elevations, tileCoord, coordinate) : null
@@ -165,6 +191,7 @@ ElevationService.prototype.profileAlongLine = async function (lineStringGeom, nu
   if (totalLength === 0 || numSamples < 2) return []
 
   const z = this.analysisZoom()
+  if (z === null) return []
   const samples = []
   for (let i = 0; i < numSamples; i++) {
     const fraction = i / (numSamples - 1)
@@ -203,6 +230,7 @@ ElevationService.prototype.getGrid = async function (extent) {
   if (!this.source_) return null
 
   let z = this.analysisZoom()
+  if (z === null) return null
   const minZ = this.tileGrid_.getMinZoom()
   const rangeFor = z => this.tileGrid_.getTileRangeForExtentAndZ(extent, z)
   let range = rangeFor(z)

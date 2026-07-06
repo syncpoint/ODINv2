@@ -8,7 +8,7 @@ import { unByKey } from 'ol/Observable'
 import uuid from '../../../../shared/uuid'
 import { militaryFormat } from '../../../../shared/datetime'
 import * as ID from '../../../ids'
-import { ElevationService } from '../../../model/ElevationService'
+import { ElevationService, onTerrainReady } from '../../../model/ElevationService'
 import { setComputer } from '../../style/losCompute'
 import {
   computeLineOfSight,
@@ -77,11 +77,7 @@ export default ({ map, services }) => {
     return true
   }
 
-  if (!tryEnableComputer()) {
-    const key = map.getLayers().on('add', () => {
-      if (tryEnableComputer()) unByKey(key)
-    })
-  }
+  onTerrainReady(map, tryEnableComputer);
 
   // ────────────────────────────────────────────────────────────
   // Migration: pre-pipeline docs {observer, target, heights} → GeoJSON
