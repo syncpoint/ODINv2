@@ -184,18 +184,28 @@ export default ({ map, services }) => {
       return
     }
 
-    // one batch insert → a single undo step removes all observers
+    // One batch insert → a single undo step removes all observers.
+    // All observers of a run share a random group tag so they remain
+    // recognizable (and filterable via #tag) as covering one area.
     const stamp = militaryFormat.now()
-    const tuples = picks.map(({ candidate }, index) => [ID.aosId(), {
-      type: 'Feature',
-      name: `OP ${index + 1}/${picks.length} - ${stamp}`,
-      geometry: { type: 'Point', coordinates: toCoordinate(candidate) },
-      properties: { radius: radiusM, observerHeight, targetHeight }
-    }])
+    const groupTag = `OP-${uuid().slice(0, 4)}`
+    const tuples = picks.flatMap(({ candidate }, index) => {
+      const aosId = ID.aosId()
+      return [
+        [aosId, {
+          type: 'Feature',
+          name: `OP ${index + 1}/${picks.length} - ${stamp}`,
+          geometry: { type: 'Point', coordinates: toCoordinate(candidate) },
+          properties: { radius: radiusM, observerHeight, targetHeight }
+        }],
+        [ID.tagsId(aosId), [groupTag]]
+      ]
+    })
     services.store.insert(tuples)
 
     const summary = `Observer siting: ${picks.length} observer${picks.length > 1 ? 's' : ''} ` +
-      `cover ${(coverage * 100).toFixed(0)} % of the area (sensor radius ${formatRadius(radiusM)})`
+      `cover ${(coverage * 100).toFixed(0)} % of the area ` +
+      `(sensor radius ${formatRadius(radiusM)}, tag #${groupTag})`
     const advice = coverage < TARGET_COVERAGE
       ? ' — increase the sensor radius for better coverage'
       : ''
