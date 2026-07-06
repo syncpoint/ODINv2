@@ -9,26 +9,12 @@ const hasTerrainService = async (store) => {
   )
 }
 
-const hasWebGL2 = () => {
-  try {
-    const canvas = document.createElement('canvas')
-    return !!canvas.getContext('webgl2')
-  } catch {
-    return false
-  }
-}
-
 const LineOfSight = function (services) {
   this.emitter = services.emitter
   this.store = services.store
   this.label = 'Line of Sight'
   this.path = 'mdiEye'
   this.isEnabled = false
-
-  // WebGL2 is a hard requirement (shared with planned Area-of-Sight).
-  // Without it, the command stays disabled regardless of terrain availability.
-  this.webgl2_ = hasWebGL2()
-  if (!this.webgl2_) return
 
   hasTerrainService(this.store).then(available => {
     this.isEnabled = available

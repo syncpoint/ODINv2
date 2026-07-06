@@ -42,23 +42,21 @@ export const clampToMaxDistance = (observer, target) => {
  * }>}
  */
 export const computeLineOfSight = async ({
-  observer, target, observerHeight, targetHeight, elevationService, zoom
+  observer, target, observerHeight, targetHeight, elevationService
 }) => {
   const { coordinate: clampedTarget, distance, clipped } = clampToMaxDistance(observer, target)
   if (distance < 1) return null
 
-  const tileGrid = elevationService.tileGrid_
-  if (!tileGrid) return null
+  // Sampling is tied to the service's fixed analysis resolution, never to
+  // the view zoom — the same LoS must yield the same result at any zoom.
+  const resolution = elevationService.analysisResolution()
+  if (resolution === null) return null
 
-  const maxZ = tileGrid.getMaxZoom()
-  const minZ = tileGrid.getMinZoom()
-  const z = Math.max(minZ, Math.min(maxZ, Math.round(zoom)))
-  const tileResolutionMeters = tileGrid.getResolution(z)
-  const step = Math.max(5, tileResolutionMeters)
+  const step = Math.max(5, resolution)
   const numSamples = Math.min(800, Math.max(20, Math.ceil(distance / step)))
 
   const geometry = new LineString([observer, clampedTarget])
-  const samples = await elevationService.profileAlongLine(geometry, numSamples, zoom)
+  const samples = await elevationService.profileAlongLine(geometry, numSamples)
   if (samples.length < 2) return null
   if (samples[0].elevation == null || samples[samples.length - 1].elevation == null) return null
 

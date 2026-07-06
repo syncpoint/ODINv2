@@ -166,22 +166,17 @@ export default ({ map, services }) => {
       return
     }
 
-    const zoom = map.getView().getZoom()
     const lineLength = getLength(geometry)
     if (lineLength === 0) return
 
-    // Determine resolution-appropriate sample count
-    // Clamp to tile grid's zoom range — terrain tiles have a maxZoom
-    const tileGrid = elevationService.tileGrid_
-    const maxZ = tileGrid.getMaxZoom()
-    const minZ = tileGrid.getMinZoom()
-    const z = Math.max(minZ, Math.min(maxZ, Math.round(zoom)))
-    const tilePixelResolution = tileGrid.getResolution(z)
-    const numSamples = Math.min(600, Math.max(20, Math.round(lineLength / tilePixelResolution)))
+    // Sample count from the service's fixed analysis resolution — the
+    // profile must not change with the current view zoom.
+    const resolution = elevationService.analysisResolution()
+    const numSamples = Math.min(600, Math.max(20, Math.round(lineLength / resolution)))
 
     showProfileLine(geometry)
 
-    const profile = await elevationService.profileAlongLine(geometry, numSamples, zoom)
+    const profile = await elevationService.profileAlongLine(geometry, numSamples)
 
     // Discard result if a newer computation has started
     if (generation !== profileGeneration) return

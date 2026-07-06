@@ -158,8 +158,7 @@ export default ({ map, services }) => {
       target,
       observerHeight,
       targetHeight,
-      elevationService,
-      zoom: map.getView().getZoom()
+      elevationService
     })
     if (gen !== computeGeneration) return null
     renderResult(result)
@@ -231,8 +230,7 @@ export default ({ map, services }) => {
       target: doc.target,
       observerHeight: doc.observerHeight ?? DEFAULT_OBSERVER_HEIGHT_M,
       targetHeight: doc.targetHeight ?? DEFAULT_TARGET_HEIGHT_M,
-      elevationService,
-      zoom: map.getView().getZoom()
+      elevationService
     })
     if (!result) return
     // A concurrent path may have rendered it while we awaited; if so,
