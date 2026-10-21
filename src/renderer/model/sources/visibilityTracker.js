@@ -8,8 +8,14 @@ import { filter } from './filter'
  */
 export const visibilityTracker = async (source, store, emitter) => {
   const keySet = new Set()
-  const hidden = key => keySet.has(key)
-  const visible = key => !keySet.has(key)
+
+  // A feature is hidden when it is hidden itself or when its layer is.
+  // Hiding a layer marks the features present at that moment, but features
+  // arriving later (NIDO WebSocket, Matrix replication) carry no marker of
+  // their own; they still must not show up in a hidden layer.
+  const hidden = key => keySet.has(key) ||
+    (ID.isFeatureId(key) && keySet.has(ID.layerId(key)))
+  const visible = key => !hidden(key)
 
   await (async () => {
     emitter.on('feature/show', ({ ids }) => {
